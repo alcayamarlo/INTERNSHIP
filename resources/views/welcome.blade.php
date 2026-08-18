@@ -126,8 +126,6 @@
                 </ul>
                 <div class="d-flex gap-3 align-items-center">
                     @auth
-                        <a href="{{ route(auth()->user()->dashboardRoute()) }}" class="nav-link">Dashboard</a>
-                    @else
                         <a href="{{ route('login') }}" class="nav-link">Log In</a>
                         <a href="{{ route('register') }}" class="btn btn-cyan">Get Started →</a>
                     @endauth

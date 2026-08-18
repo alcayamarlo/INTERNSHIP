@@ -97,7 +97,8 @@
 
 @push('scripts')
 <script>
-    fetch(@json(route('analytics.charts')))
+    const analyticsUrl = "{{ route('analytics.charts') }}";
+    fetch(analyticsUrl)
         .then(r => r.json())
         .then(data => {
             new Chart(document.getElementById('applicationsChart'), {

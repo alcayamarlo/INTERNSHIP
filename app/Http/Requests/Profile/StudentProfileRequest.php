@@ -8,7 +8,7 @@ class StudentProfileRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->user()->isRole(\App\Enums\UserRole::Student);
+        return auth()?->user()?->isRole(\App\Enums\UserRole::Student) ?? false;
     }
 
     public function rules(): array
@@ -23,7 +23,7 @@ class StudentProfileRequest extends FormRequest
             'date_of_birth' => ['nullable', 'date', 'before:today'],
 
             // Contact Information
-            'email' => ['required', 'email', 'unique:users,email,' . auth()->id()],
+            'email' => ['required', 'email', 'unique:users,email,' . (auth()?->id() ?? 'NULL')],
             'phone' => ['required', 'regex:/^(\+?\d{1,3}[-.\s]?)?\d{7,14}$/'],
             'address' => ['required', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:100'],

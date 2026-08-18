@@ -168,14 +168,17 @@
                                 <td>{{ $application->student->user->name }}</td>
                                 <td>{{ $application->internship->title }}</td>
                                 <td>
-                                    <span class="badge" style="background-color: {{ match($application->status->value) {
-                                        'submitted' => '#3B82F6',
-                                        'reviewed' => '#F59E0B',
-                                        'interview' => '#8B5CF6',
-                                        'accepted' => '#10B981',
-                                        'rejected' => '#EF4444',
-                                        default => '#6B7280'
-                                    } }}">
+                                    @php
+                                        $statusColors = [
+                                            'submitted' => '#3B82F6',
+                                            'reviewed' => '#F59E0B',
+                                            'interview' => '#8B5CF6',
+                                            'accepted' => '#10B981',
+                                            'rejected' => '#EF4444',
+                                        ];
+                                        $statusColor = $statusColors[$application->status->value] ?? '#6B7280';
+                                    @endphp
+                                    <span class="badge" style="background-color: {{ $statusColor }}">
                                         {{ $application->status->label() }}
                                     </span>
                                 </td>
