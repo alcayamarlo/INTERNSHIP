@@ -11,48 +11,33 @@ use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
-    public function __construct(private ActivityLogService $activityLog) {}
-
     public function showLoginForm()
     {
-        return view('auth.login');
+        return view('admin.users.auth.login');
     }
 
-    public function login(LoginRequest $request)
+    public function login(Request $request)
     {
-        $credentials = $request->validated();
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
-            $this->activityLog->log(null, 'login_failed', ['email' => $credentials['email']]);
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
 
-            throw ValidationException::withMessages([
-                'email' => __('The provided credentials do not match our records.'),
-            ]);
+            return redirect()->intended('/dashboard');
         }
 
-        $user = Auth::user();
-
-        if (! $user->is_active) {
-            Auth::logout();
-
-            throw ValidationException::withMessages([
-                'email' => __('Your account has been deactivated.'),
-            ]);
-        }
-
-        $request->session()->regenerate();
-
-        $user->update(['last_login_at' => now()]);
-        $this->activityLog->log($user, 'login');
-
-        return redirect()->intended(route($user->dashboardRoute()));
+        return back()->withErrors([
+            'email' => 'The provided credentials do not match our records.',
+        ])->onlyInput('email');
     }
 
     public function logout(Request $request)
     {
-        $this->activityLog->log($request->user(), 'logout');
-
         Auth::logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

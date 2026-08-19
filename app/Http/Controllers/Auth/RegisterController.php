@@ -23,7 +23,7 @@ class RegisterController extends Controller
      */
     public function showRegistrationForm()
     {
-        return view('auth.register', [
+        return view('admin.users.auth.register', [
             'institutions' => Institution::orderBy('name')->get(),
             'roles' => [
                 UserRole::Student,
