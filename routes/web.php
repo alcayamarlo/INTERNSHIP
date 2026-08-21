@@ -68,6 +68,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/profile', [\App\Http\Controllers\Student\ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/profile', [\App\Http\Controllers\Student\ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/profile-picture', [\App\Http\Controllers\Student\ProfileController::class, 'deleteProfilePicture'])->name('profile.delete-picture');
+        Route::post('/profile-picture', [\App\Http\Controllers\Student\ProfileController::class, 'updatePicture'])->name('profile.update-picture');
         // Competencies
         Route::get('/competencies', [CompetencyController::class, 'index'])->name('competencies.index');
         Route::get('/competencies/create', [CompetencyController::class, 'create'])->name('competencies.create');
@@ -93,11 +94,16 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::delete('/certificates/{certificate}', [PortfolioController::class, 'destroyCertificate'])->name('certificates.destroy');
         Route::get('/resume', [ResumeController::class, 'index'])->name('resume.index');
         Route::post('/resume/generate', [ResumeController::class, 'generate'])->name('resume.generate');
+        Route::get('/resume/{resume}/view', [ResumeController::class, 'view'])->name('resume.view');
         Route::get('/resume/{resume}/download', [ResumeController::class, 'download'])->name('resume.download');
         Route::get('/internships', [StudentInternshipController::class, 'index'])->name('internships.index');
         Route::get('/internships/{internship}', [StudentInternshipController::class, 'show'])->name('internships.show');
         Route::post('/internships/{internship}/apply', [StudentInternshipController::class, 'apply'])->name('internships.apply');
         Route::get('/applications', [StudentInternshipController::class, 'applications'])->name('applications.index');
+        Route::get('/applications/{application}', [StudentInternshipController::class, 'showApplication'])->name('applications.show');
+        Route::get('/applications/{application}/edit', [StudentInternshipController::class, 'editApplication'])->name('applications.edit');
+        Route::put('/applications/{application}', [StudentInternshipController::class, 'updateApplication'])->name('applications.update');
+        Route::delete('/applications/{application}', [StudentInternshipController::class, 'destroyApplication'])->name('applications.destroy');
     });
 
     Route::prefix('employer')->name('employer.')->middleware('role:employer')->group(function () {
@@ -127,6 +133,8 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::get('/users/create', [AdminUserController::class, 'create'])->name('users.create');
+        Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
         Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
         Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
         Route::get('/announcements', [AdminAnnouncementController::class, 'index'])->name('announcements.index');

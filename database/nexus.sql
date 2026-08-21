@@ -10,6 +10,12 @@
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
+SET FOREIGN_KEY_CHECKS = 0;
+
+CREATE DATABASE IF NOT EXISTS `nexus` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `nexus`;
+
+DROP TABLE IF EXISTS `student_competencies`, `system_logs`, `students`, `resumes`, `reports`, `portfolios`, `password_reset_tokens`, `notifications`, `messages`, `migrations`, `job_batches`, `jobs`, `internship_requirements`, `internship_applications`, `internships`, `institutions`, `failed_jobs`, `employers`, `coordinators`, `competencies`, `certificates`, `cache_locks`, `cache`, `announcements`, `users`;
 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -87,6 +93,8 @@ CREATE TABLE `certificates` (
   `issuer` varchar(255) DEFAULT NULL,
   `issue_date` date DEFAULT NULL,
   `file_path` varchar(255) DEFAULT NULL,
+  `expiration_date` date DEFAULT NULL,
+  `verification_status` varchar(255) NOT NULL DEFAULT 'evidence_submitted',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -213,7 +221,7 @@ CREATE TABLE `institutions` (
 --
 
 INSERT INTO `institutions` (`id`, `name`, `address`, `contact_email`, `contact_phone`, `description`, `created_at`, `updated_at`) VALUES
-(1, 'Metro State University', '123 Education Ave, Manila', 'info@msu.edu.ph', '+63 2 1234 5678', 'Leading institution for technology and business programs.', '2026-06-30 04:23:25', '2026-06-30 04:23:25');
+(1, 'St. Cecilia''s College-Cebu, Inc.', NULL, NULL, NULL, NULL, '2026-06-30 04:23:25', '2026-06-30 04:23:25');
 
 -- --------------------------------------------------------
 
@@ -375,7 +383,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (18, '2026_06_30_000005_create_internship_tables', 1),
 (19, '2026_06_30_000006_create_communication_tables', 1),
 (20, '2026_06_30_000007_add_profile_to_coordinators', 1),
-(21, '2026_06_30_124845_normalize_admin_user_role', 2);
+(21, '2026_06_30_124845_normalize_admin_user_role', 2),
+(22, '2026_08_22_000001_add_evidence_and_persistent_profile_fields', 3);
 
 -- --------------------------------------------------------
 
@@ -543,6 +552,19 @@ CREATE TABLE `students` (
   `profile_picture` varchar(255) DEFAULT NULL,
   `address` text DEFAULT NULL,
   `date_of_birth` date DEFAULT NULL,
+  `first_name` varchar(255) DEFAULT NULL,
+  `last_name` varchar(255) DEFAULT NULL,
+  `middle_name` varchar(255) DEFAULT NULL,
+  `suffix` varchar(255) DEFAULT NULL,
+  `gender` varchar(255) DEFAULT NULL,
+  `city` varchar(255) DEFAULT NULL,
+  `province` varchar(255) DEFAULT NULL,
+  `zip_code` varchar(255) DEFAULT NULL,
+  `department` varchar(255) DEFAULT NULL,
+  `expected_graduation` date DEFAULT NULL,
+  `preferred_internship_field` varchar(255) DEFAULT NULL,
+  `preferred_work_setup` varchar(255) DEFAULT NULL,
+  `preferred_location` varchar(255) DEFAULT NULL,
   `profile_completion` tinyint(3) UNSIGNED NOT NULL DEFAULT 0,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -570,6 +592,11 @@ CREATE TABLE `student_competencies` (
   `description` text DEFAULT NULL,
   `proficiency_level` varchar(255) NOT NULL DEFAULT 'beginner',
   `obtained_at` date DEFAULT NULL,
+  `assessment_name` varchar(255) DEFAULT NULL,
+  `issuing_organization` varchar(255) DEFAULT NULL,
+  `evidence_path` varchar(255) DEFAULT NULL,
+  `evidence_name` varchar(255) DEFAULT NULL,
+  `verification_status` varchar(255) NOT NULL DEFAULT 'evidence_submitted',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -654,10 +681,10 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `role`, `phone`, `avatar`, `is_active`, `email_verified_at`, `last_login_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'System Administrator', 'admin@skillbridge.test', 'admin', '+63 900 000 0001', NULL, 1, NULL, '2026-06-30 04:46:20', '$2y$12$zaqDsPpTxS3fb.bKIKzjI.Zj37kl7pFy5y9llhLeCS/fqAhP/bRki', NULL, '2026-06-30 04:23:26', '2026-06-30 05:14:08'),
-(2, 'Maria Santos', 'coordinator@skillbridge.test', 'coordinator', '+63 900 000 0002', NULL, 1, NULL, '2026-06-30 05:15:57', '$2y$12$zaqDsPpTxS3fb.bKIKzjI.Zj37kl7pFy5y9llhLeCS/fqAhP/bRki', NULL, '2026-06-30 04:23:26', '2026-06-30 05:15:57'),
-(3, 'John Reyes', 'employer@skillbridge.test', 'employer', '+63 900 000 0003', NULL, 1, NULL, '2026-06-30 05:16:51', '$2y$12$zaqDsPpTxS3fb.bKIKzjI.Zj37kl7pFy5y9llhLeCS/fqAhP/bRki', NULL, '2026-06-30 04:23:26', '2026-06-30 05:16:51'),
-(4, 'Anna Dela Cruz', 'student@skillbridge.test', 'student', '+63 900 000 0004', NULL, 1, NULL, '2026-06-30 05:17:23', '$2y$12$zaqDsPpTxS3fb.bKIKzjI.Zj37kl7pFy5y9llhLeCS/fqAhP/bRki', NULL, '2026-06-30 04:23:26', '2026-06-30 05:17:23');
+(1, 'System Administrator', 'admin@skillbridge.test', 'admin', '+63 900 000 0001', NULL, 1, NULL, '2026-06-30 04:46:20', '$2y$10$z9dVIRMg5DqXTtAsjj/bceyoQD9rgxC0Wh5jMaODMGVmVW6Z78Vjy', NULL, '2026-06-30 04:23:26', '2026-06-30 05:14:08'),
+(2, 'Maria Santos', 'coordinator@skillbridge.test', 'coordinator', '+63 900 000 0002', NULL, 1, NULL, '2026-06-30 05:15:57', '$2y$10$z9dVIRMg5DqXTtAsjj/bceyoQD9rgxC0Wh5jMaODMGVmVW6Z78Vjy', NULL, '2026-06-30 04:23:26', '2026-06-30 05:15:57'),
+(3, 'John Reyes', 'employer@skillbridge.test', 'employer', '+63 900 000 0003', NULL, 1, NULL, '2026-06-30 05:16:51', '$2y$10$z9dVIRMg5DqXTtAsjj/bceyoQD9rgxC0Wh5jMaODMGVmVW6Z78Vjy', NULL, '2026-06-30 04:23:26', '2026-06-30 05:16:51'),
+(4, 'Anna Dela Cruz', 'student@skillbridge.test', 'student', '+63 900 000 0004', NULL, 1, NULL, '2026-06-30 05:17:23', '$2y$10$z9dVIRMg5DqXTtAsjj/bceyoQD9rgxC0Wh5jMaODMGVmVW6Z78Vjy', NULL, '2026-06-30 05:17:23');
 
 --
 -- Indexes for dumped tables
@@ -1092,6 +1119,7 @@ ALTER TABLE `student_competencies`
 ALTER TABLE `system_logs`
   ADD CONSTRAINT `system_logs_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 COMMIT;
+SET FOREIGN_KEY_CHECKS = 1;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

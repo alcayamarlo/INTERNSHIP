@@ -45,6 +45,14 @@
     box-sizing: border-box;
 }
 
+#account-type > .section-title:first-child,
+#account-type > .role-grid,
+#account-type > #roleError,
+#account-type > #role,
+#account-type > select[name="role_backend"] {
+    display: none !important;
+}
+
 
 /* =========================================================
    RIGHT SIDE REGISTRATION PANEL
@@ -1875,7 +1883,7 @@
                      PERSONAL
                 ================================================== --}}
 
-                <div class="form-section">
+                <div class="form-section" id="account-type">
 
                     <div class="section-title">
 
@@ -2146,7 +2154,7 @@
                                     id="role_{{ $roleValue }}"
                                     name="role"
                                     value="{{ $roleValue }}"
-                                    {{ old('role') === $roleValue ? 'checked' : '' }}
+                                    {{ old('role', 'student') === $roleValue ? 'checked' : '' }}
                                 >
 
 
@@ -2224,10 +2232,7 @@
                          ADDITIONAL PROFILE
                     ================================================== --}}
 
-                    <div
-                        id="roleDetails"
-                        style="display:none;"
-                    >
+                    <div id="roleDetails" style="display:block;">
 
                         <div
                             class="section-title"
@@ -2287,31 +2292,19 @@
                                 </label>
 
 
-                                <select
-                                    class="form-select @error('institution_id') is-invalid @enderror"
-                                    id="institution_id"
-                                    name="institution_id"
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    value="{{ $institution->name }}"
+                                    readonly
                                 >
 
-                                    <option value="">
-                                        Select your institution
-                                    </option>
-
-
-                                    @foreach($institutions as $institution)
-
-                                        <option
-                                            value="{{ $institution->id }}"
-                                            {{ old('institution_id') == $institution->id ? 'selected' : '' }}
-                                        >
-
-                                            {{ $institution->name }}
-
-                                        </option>
-
-                                    @endforeach
-
-                                </select>
+                                <input
+                                    type="hidden"
+                                    id="institution_id"
+                                    name="institution_id"
+                                    value="{{ $institution->id }}"
+                                >
 
 
                                 @error('institution_id')
@@ -2355,15 +2348,17 @@
                                 </label>
 
 
-                                <input
-                                    type="text"
-                                    class="form-control @error('program') is-invalid @enderror"
+                                <select
+                                    class="form-select @error('program') is-invalid @enderror"
                                     id="program"
                                     name="program"
-                                    value="{{ old('program') }}"
-                                    placeholder="e.g. BS Information Technology"
-                                    maxlength="150"
+                                    required
                                 >
+                                    <option value="">Select your program</option>
+                                    <option value="Bachelor of Science in Information Technology" {{ old('program') === 'Bachelor of Science in Information Technology' ? 'selected' : '' }}>Bachelor of Science in Information Technology</option>
+                                    <option value="Bachelor of Science in Hospitality Management" {{ old('program') === 'Bachelor of Science in Hospitality Management' ? 'selected' : '' }}>Bachelor of Science in Hospitality Management</option>
+                                    <option value="Bachelor of Science in Business Administration" {{ old('program') === 'Bachelor of Science in Business Administration' ? 'selected' : '' }}>Bachelor of Science in Business Administration</option>
+                                </select>
 
 
                                 @error('program')

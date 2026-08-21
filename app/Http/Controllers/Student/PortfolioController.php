@@ -38,8 +38,8 @@ class PortfolioController extends Controller
             $query->where('type', $request->type);
         }
 
-        $sortBy = $request->get('sort_by', 'created_at');
-        $sortOrder = $request->get('sort_order', 'desc');
+        $sortBy = in_array($request->get('sort_by'), ['title', 'type', 'created_at'], true) ? $request->get('sort_by') : 'created_at';
+        $sortOrder = $request->get('sort_order') === 'asc' ? 'asc' : 'desc';
         $query->orderBy($sortBy, $sortOrder);
 
         $portfolios = $query->paginate(12);
@@ -108,6 +108,8 @@ class PortfolioController extends Controller
             'title' => $validated['title'],
             'issuer' => $validated['issuer'] ?? null,
             'issue_date' => $validated['issue_date'] ?? null,
+            'expiration_date' => $validated['expiration_date'] ?? null,
+            'verification_status' => 'evidence_submitted',
             'file_path' => $path,
         ]);
 

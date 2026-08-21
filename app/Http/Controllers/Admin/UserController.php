@@ -4,11 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
+use App\Models\Coordinator;
+use App\Models\Employer;
+use App\Models\Institution;
 use App\Models\User;
 use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
@@ -34,6 +39,48 @@ class UserController extends Controller
             'users' => $query->latest()->paginate(15)->withQueryString(),
             'roles' => UserRole::cases(),
         ]);
+    }
+
+    public function create()
+    {
+        return view('admin.users.create', [
+            'institutions' => Institution::orderBy('name')->get(),
+            'roles' => [UserRole::Employer, UserRole::Coordinator],
+        ]);
+    }
+
+    public function store(StoreUserRequest $request)
+    {
+        $validated = $request->validated();
+
+        $user = DB::transaction(function () use ($validated) {
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => $validated['password'],
+                'role' => $validated['role'],
+                'phone' => $validated['phone'] ?? null,
+            ]);
+
+            if ($validated['role'] === UserRole::Employer->value) {
+                Employer::create([
+                    'user_id' => $user->id,
+                    'company_name' => $validated['company_name'],
+                    'contact_person' => $validated['name'],
+                ]);
+            } else {
+                Coordinator::create([
+                    'user_id' => $user->id,
+                    'institution_id' => $validated['institution_id'],
+                ]);
+            }
+
+            return $user;
+        });
+
+        $this->activityLog->log(Auth::user(), 'admin_create_user', ['user_id' => $user->id]);
+
+        return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
     }
 
     public function update(UpdateUserRequest $request, User $user)

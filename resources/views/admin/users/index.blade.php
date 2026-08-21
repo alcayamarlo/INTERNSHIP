@@ -6,8 +6,9 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="h3 mb-1">User Management</h1>
-        <p class="text-muted mb-0">Manage platform users and roles</p>
+        <p class="text-muted mb-0">Manage employer and coordinator accounts</p>
     </div>
+    <a href="{{ route('admin.users.create') }}" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i>Create User</a>
 </div>
 
 <div class="card mb-4">
@@ -20,7 +21,9 @@
                 <select class="form-select" name="role">
                     <option value="">All Roles</option>
                     @foreach($roles as $role)
+                        @if($role !== \App\Enums\UserRole::Admin && $role !== \App\Enums\UserRole::Student)
                         <option value="{{ $role->value }}" {{ request('role') === $role->value ? 'selected' : '' }}>{{ $role->label() }}</option>
+                        @endif
                     @endforeach
                 </select>
             </div>
@@ -83,7 +86,9 @@
                                             <label class="form-label">Role</label>
                                             <select class="form-select" name="role" required>
                                                 @foreach($roles as $role)
+                                                    @if($role !== \App\Enums\UserRole::Admin && $role !== \App\Enums\UserRole::Student)
                                                     <option value="{{ $role->value }}" {{ $user->role === $role ? 'selected' : '' }}>{{ $role->label() }}</option>
+                                                    @endif
                                                 @endforeach
                                             </select>
                                         </div>

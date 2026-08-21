@@ -12,7 +12,7 @@
     <div class="col-lg-8">
         <div class="card">
             <div class="card-body">
-                <form method="POST" action="{{ route('student.competencies.store') }}">
+                <form method="POST" action="{{ route('student.competencies.store') }}" enctype="multipart/form-data">
                     @csrf
 
                     <div class="mb-3">
@@ -40,7 +40,7 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Proficiency Level *</label>
+                            <label class="form-label">Earned Level *</label>
                             <select class="form-select @error('proficiency_level') is-invalid @enderror" name="proficiency_level" required>
                                 <option value="">Select a level</option>
                                 @foreach($levels as $level)
@@ -54,6 +54,9 @@
                             @enderror
                         </div>
                     </div>
+
+                    <div class="alert alert-info small">Skills must be earned through an assessment, certification, or verified training. Self-declared skills are not accepted.</div>
+                    <div class="row g-3 mb-3"><div class="col-md-6"><label class="form-label">Assessment / credential *</label><input name="assessment_name" class="form-control" value="{{ old('assessment_name') }}" required placeholder="e.g. Python Skills Assessment"></div><div class="col-md-6"><label class="form-label">Evidence document *</label><input type="file" name="evidence" class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required><small class="text-muted">Pending verification until reviewed.</small></div></div>
 
                     <div class="mb-3">
                         <label class="form-label">Description</label>

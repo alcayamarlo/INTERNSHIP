@@ -37,7 +37,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('internship_id')->constrained()->cascadeOnDelete();
             $table->foreignId('student_id')->constrained()->cascadeOnDelete();
-            $table->string('status')->default('pending');
+            $table->string('status')->default('submitted');
             $table->text('cover_letter')->nullable();
             $table->unsignedTinyInteger('match_percentage')->default(0);
             $table->timestamp('applied_at')->useCurrent();

@@ -13,12 +13,14 @@ class Certificate extends Model
         'issuer',
         'issue_date',
         'file_path',
+        'expiration_date', 'verification_status',
     ];
 
     protected function casts(): array
     {
         return [
             'issue_date' => 'date',
+            'expiration_date' => 'date',
         ];
     }
 

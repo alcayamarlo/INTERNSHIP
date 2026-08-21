@@ -12,7 +12,7 @@
     <div class="col-lg-8">
         <div class="card">
             <div class="card-body">
-                <form method="POST" action="{{ route('student.competencies.update', $competency) }}">
+                <form method="POST" action="{{ route('student.competencies.update', $competency) }}" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -23,6 +23,9 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
+
+                    <div class="alert alert-info small">This competency is earned from submitted evidence. Changing the evidence resets verification to Pending Verification.</div>
+                    <div class="row g-3 mb-3"><div class="col-md-6"><label class="form-label">Assessment / credential *</label><input name="assessment_name" class="form-control" value="{{ old('assessment_name', $competency->assessment_name) }}" required></div><div class="col-md-6"><label class="form-label">Replace evidence (optional)</label><input type="file" name="evidence" class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"></div></div>
 
                     <div class="row g-3">
                         <div class="col-md-6">

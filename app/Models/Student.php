@@ -17,6 +17,9 @@ class Student extends Model
         'career_objectives',
         'profile_picture',
         'address',
+        'middle_name', 'suffix', 'gender', 'city', 'province', 'zip_code', 'department',
+        'first_name', 'last_name',
+        'expected_graduation', 'preferred_internship_field', 'preferred_work_setup', 'preferred_location',
         'date_of_birth',
         'profile_completion',
     ];
@@ -25,6 +28,7 @@ class Student extends Model
     {
         return [
             'date_of_birth' => 'date',
+            'expected_graduation' => 'date',
         ];
     }
 

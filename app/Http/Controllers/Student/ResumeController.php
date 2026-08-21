@@ -28,8 +28,28 @@ class ResumeController extends Controller
 
     public function download(Resume $resume)
     {
-        abort_unless($resume->student_id === Auth::user()->student->id, 403);
+        $this->authorizeResume($resume);
 
-        return Storage::disk('public')->download($resume->file_path);
+        return response()->download(
+            Storage::disk('public')->path($resume->file_path),
+            'resume-'.$resume->student_id.'.pdf',
+            ['Content-Type' => 'application/pdf']
+        );
+    }
+
+    public function view(Resume $resume)
+    {
+        $this->authorizeResume($resume);
+
+        return response()->file(
+            Storage::disk('public')->path($resume->file_path),
+            ['Content-Type' => 'application/pdf']
+        );
+    }
+
+    private function authorizeResume(Resume $resume): void
+    {
+        abort_unless($resume->student_id === Auth::user()->student->id, 403);
+        abort_unless($resume->file_path && Storage::disk('public')->exists($resume->file_path), 404, 'Resume file not found. Please regenerate it.');
     }
 }

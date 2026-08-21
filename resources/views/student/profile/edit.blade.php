@@ -23,9 +23,8 @@
                     @endif
                 </div>
 
-                <form method="POST" action="{{ route('student.profile.update') }}" enctype="multipart/form-data" id="pictureForm" class="d-none">
+                <form method="POST" action="{{ route('student.profile.update-picture') }}" enctype="multipart/form-data" id="pictureForm" class="d-none">
                     @csrf
-                    @method('PUT')
                     <input type="file" name="profile_picture" id="profilePictureInput" accept="image/jpeg,image/jpg,image/png" onchange="document.getElementById('pictureForm').submit();">
                 </form>
 
@@ -50,6 +49,13 @@
                     </div>
                     <small class="text-muted">{{ $student->profile_completion }}%</small>
                 </div>
+                <div class="mt-3 d-grid gap-2">
+                    <a href="{{ route('student.resume.index') }}" class="btn btn-outline-primary"><i class="bi bi-file-earmark-person"></i> View Resume</a>
+                    <form method="POST" action="{{ route('student.resume.generate') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-arrow-repeat"></i> Generate / Regenerate Resume</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -69,16 +75,16 @@
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label">First Name</label>
-                            <input type="text" class="form-control @error('first_name') is-invalid @enderror" name="first_name" value="{{ old('first_name', explode(' ', $user->name)[0] ?? '') }}" required>
+                            <input type="text" class="form-control @error('first_name') is-invalid @enderror" name="first_name" value="{{ old('first_name', $student->first_name ?: explode(' ', $user->name)[0] ?? '') }}" required>
                             @error('first_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Middle Name</label>
-                            <input type="text" class="form-control" name="middle_name" value="{{ old('middle_name') }}">
+                            <input type="text" class="form-control" name="middle_name" value="{{ old('middle_name', $student->middle_name) }}">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Last Name</label>
-                            <input type="text" class="form-control @error('last_name') is-invalid @enderror" name="last_name" value="{{ old('last_name', explode(' ', $user->name, 2)[1] ?? '') }}" required>
+                            <input type="text" class="form-control @error('last_name') is-invalid @enderror" name="last_name" value="{{ old('last_name', $student->last_name ?: str($user->name)->afterLast(' ')->toString()) }}" required>
                             @error('last_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                     </div>
@@ -86,16 +92,16 @@
                     <div class="row g-3 mt-0">
                         <div class="col-md-3">
                             <label class="form-label">Suffix</label>
-                            <input type="text" class="form-control" name="suffix" placeholder="Jr., Sr., etc." value="{{ old('suffix') }}">
+                            <input type="text" class="form-control" name="suffix" placeholder="Jr., Sr., etc." value="{{ old('suffix', $student->suffix) }}">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Gender</label>
                             <select class="form-select" name="gender">
                                 <option value="">Select...</option>
-                                <option value="Male" {{ old('gender') === 'Male' ? 'selected' : '' }}>Male</option>
-                                <option value="Female" {{ old('gender') === 'Female' ? 'selected' : '' }}>Female</option>
-                                <option value="Other" {{ old('gender') === 'Other' ? 'selected' : '' }}>Other</option>
-                                <option value="Prefer Not to Say" {{ old('gender') === 'Prefer Not to Say' ? 'selected' : '' }}>Prefer Not to Say</option>
+                                <option value="Male" {{ old('gender', $student->gender) === 'Male' ? 'selected' : '' }}>Male</option>
+                                <option value="Female" {{ old('gender', $student->gender) === 'Female' ? 'selected' : '' }}>Female</option>
+                                <option value="Other" {{ old('gender', $student->gender) === 'Other' ? 'selected' : '' }}>Other</option>
+                                <option value="Prefer Not to Say" {{ old('gender', $student->gender) === 'Prefer Not to Say' ? 'selected' : '' }}>Prefer Not to Say</option>
                             </select>
                         </div>
                         <div class="col-md-3">
@@ -131,17 +137,17 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">City</label>
-                            <input type="text" class="form-control @error('city') is-invalid @enderror" name="city" value="{{ old('city') }}" required>
+                            <input type="text" class="form-control @error('city') is-invalid @enderror" name="city" value="{{ old('city', $student->city) }}" required>
                             @error('city')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Province</label>
-                            <input type="text" class="form-control @error('province') is-invalid @enderror" name="province" value="{{ old('province') }}" required>
+                            <input type="text" class="form-control @error('province') is-invalid @enderror" name="province" value="{{ old('province', $student->province) }}" required>
                             @error('province')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">ZIP Code</label>
-                            <input type="text" class="form-control @error('zip_code') is-invalid @enderror" name="zip_code" value="{{ old('zip_code') }}" required>
+                            <input type="text" class="form-control @error('zip_code') is-invalid @enderror" name="zip_code" value="{{ old('zip_code', $student->zip_code) }}" required>
                             @error('zip_code')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                     </div>
@@ -168,7 +174,7 @@
                     <div class="row g-3 mt-0">
                         <div class="col-md-6">
                             <label class="form-label">Department</label>
-                            <input type="text" class="form-control" name="department" value="{{ old('department') }}">
+                            <input type="text" class="form-control" name="department" value="{{ old('department', $student->department) }}">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Year Level</label>
@@ -183,7 +189,7 @@
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Expected Graduation</label>
-                            <input type="date" class="form-control" name="expected_graduation" value="{{ old('expected_graduation', $careerInfo['expected_graduation'] ?? '') }}">
+                            <input type="date" class="form-control" name="expected_graduation" value="{{ old('expected_graduation', $student->expected_graduation?->format('Y-m-d')) }}">
                         </div>
                     </div>
                 </div>
@@ -203,20 +209,20 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Preferred Internship Field</label>
-                            <input type="text" class="form-control" name="preferred_internship_field" value="{{ old('preferred_internship_field', $careerInfo['preferred_internship_field'] ?? '') }}">
+                            <input type="text" class="form-control" name="preferred_internship_field" value="{{ old('preferred_internship_field', $student->preferred_internship_field) }}">
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Work Setup</label>
                             <select class="form-select" name="preferred_work_setup">
                                 <option value="">Select...</option>
-                                <option value="Remote" {{ old('preferred_work_setup', $careerInfo['preferred_work_setup'] ?? '') === 'Remote' ? 'selected' : '' }}>Remote</option>
-                                <option value="Hybrid" {{ old('preferred_work_setup', $careerInfo['preferred_work_setup'] ?? '') === 'Hybrid' ? 'selected' : '' }}>Hybrid</option>
-                                <option value="Onsite" {{ old('preferred_work_setup', $careerInfo['preferred_work_setup'] ?? '') === 'Onsite' ? 'selected' : '' }}>Onsite</option>
+                                <option value="Remote" {{ old('preferred_work_setup', $student->preferred_work_setup) === 'Remote' ? 'selected' : '' }}>Remote</option>
+                                <option value="Hybrid" {{ old('preferred_work_setup', $student->preferred_work_setup) === 'Hybrid' ? 'selected' : '' }}>Hybrid</option>
+                                <option value="Onsite" {{ old('preferred_work_setup', $student->preferred_work_setup) === 'Onsite' ? 'selected' : '' }}>Onsite</option>
                             </select>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Preferred Location</label>
-                            <input type="text" class="form-control" name="preferred_location" value="{{ old('preferred_location', $careerInfo['preferred_location'] ?? '') }}">
+                            <input type="text" class="form-control" name="preferred_location" value="{{ old('preferred_location', $student->preferred_location) }}">
                         </div>
                     </div>
                 </div>

@@ -7,10 +7,10 @@
     <div class="d-flex justify-content-between align-items-center">
         <div>
             <h1 class="h3 mb-1">My Competencies</h1>
-            <p class="text-muted mb-0">Manage your skills, certifications, and training</p>
+            <p class="text-muted mb-0">Earned skills backed by assessments, certificates, or verified training</p>
         </div>
         <a href="{{ route('student.competencies.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg"></i> Add Competency
+            <i class="bi bi-plus-lg"></i> Submit Evidence
         </a>
     </div>
 </div>
@@ -126,6 +126,8 @@
                                 <i class="bi bi-calendar"></i> {{ $competency->obtained_at->format('M d, Y') }}
                             </small>
                         @endif
+
+                        <div class="small mb-3"><i class="bi bi-shield-check"></i> Evidence: {{ $competency->verification_status === 'verified' ? 'Verified' : 'Pending Verification' }} @if($competency->evidence_name)<span class="text-muted">({{ $competency->evidence_name }})</span>@endif</div>
 
                         <div class="btn-group btn-group-sm w-100" role="group">
                             <a href="{{ route('student.competencies.show', $competency) }}" class="btn btn-outline-primary" title="View">

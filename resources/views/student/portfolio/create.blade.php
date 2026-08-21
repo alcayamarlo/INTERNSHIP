@@ -30,7 +30,7 @@
             <div class="tab-pane fade show active" id="portfolio" role="tabpanel" aria-labelledby="portfolio-tab">
                 <div class="card">
                     <div class="card-body">
-                        <form method="POST" action="{{ route('student.portfolio.storePortfolio') }}" enctype="multipart/form-data">
+                        <form method="POST" action="{{ route('student.portfolio.store') }}" enctype="multipart/form-data">
                             @csrf
 
                             <div class="mb-3">
@@ -113,6 +113,11 @@
                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
                                 </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Expiration Date</label>
+                                    <input type="date" class="form-control @error('expiration_date') is-invalid @enderror" name="expiration_date" value="{{ old('expiration_date') }}">
+                                    @error('expiration_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                </div>
 
                                 <div class="col-md-6">
                                     <label class="form-label">Issue Date</label>
@@ -134,6 +139,7 @@
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
+                            <div class="alert alert-warning small">Uploaded evidence is marked <strong>Pending Verification</strong> until an authorized evaluator reviews it.</div>
 
                             <div class="d-flex gap-2">
                                 <button type="submit" class="btn btn-primary">

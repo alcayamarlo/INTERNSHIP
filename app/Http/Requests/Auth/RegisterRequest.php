@@ -14,21 +14,26 @@ class RegisterRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge(['role' => UserRole::Student->value]);
+    }
+
     public function rules(): array
     {
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::defaults()],
-            'role' => ['required', Rule::in([
-                UserRole::Student->value,
-                UserRole::Employer->value,
-                UserRole::Coordinator->value,
-            ])],
+            'role' => ['required', Rule::in([UserRole::Student->value])],
             'phone' => ['nullable', 'string', 'max:20'],
-            'institution_id' => ['nullable', 'exists:institutions,id'],
-            'company_name' => ['required_if:role,employer', 'nullable', 'string', 'max:255'],
-            'program' => ['nullable', 'string', 'max:255'],
+            'institution_id' => ['required', 'exists:institutions,id'],
+            'company_name' => ['nullable'],
+            'program' => ['required', Rule::in([
+                'Bachelor of Science in Information Technology',
+                'Bachelor of Science in Hospitality Management',
+                'Bachelor of Science in Business Administration',
+            ])],
         ];
     }
 

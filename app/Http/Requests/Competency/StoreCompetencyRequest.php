@@ -7,6 +7,7 @@ use App\Enums\ProficiencyLevel;
 use App\Enums\UserRole;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Services\FileUploadService;
 
 class StoreCompetencyRequest extends FormRequest
 {
@@ -24,6 +25,8 @@ class StoreCompetencyRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:1000'],
             'obtained_at' => ['nullable', 'date', 'before_or_equal:today'],
             'issuing_organization' => ['nullable', 'string', 'max:255'],
+            'assessment_name' => ['required', 'string', 'max:255'],
+            'evidence' => ['required', ...FileUploadService::documentRules()],
         ];
     }
 

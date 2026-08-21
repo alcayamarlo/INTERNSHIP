@@ -17,6 +17,7 @@ class StudentCompetency extends Model
         'description',
         'proficiency_level',
         'obtained_at',
+        'assessment_name', 'issuing_organization', 'evidence_path', 'evidence_name', 'verification_status',
     ];
 
     protected function casts(): array

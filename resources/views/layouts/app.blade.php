@@ -1979,6 +1979,17 @@
         substr($userName, 0, 1)
     );
 
+    $profilePicture = match ($userRole) {
+        UserRole::Student => $currentUser?->student?->profile_picture,
+        UserRole::Coordinator => $currentUser?->coordinator?->profile_picture,
+        UserRole::Employer => $currentUser?->employer?->logo,
+        default => null,
+    };
+
+    $profilePictureUrl = $profilePicture
+        ? \Illuminate\Support\Facades\Storage::disk('public')->url($profilePicture)
+        : null;
+
 @endphp
 
 
@@ -2034,7 +2045,11 @@
     <div class="sb-user-card">
 
         <div class="sb-user-avatar">
-            {{ $userInitial }}
+            @if($profilePictureUrl)
+                <img src="{{ $profilePictureUrl }}" alt="{{ $userName }}" class="w-100 h-100 rounded-circle object-fit-cover">
+            @else
+                {{ $userInitial }}
+            @endif
         </div>
 
 
@@ -2122,18 +2137,6 @@
                 <i class="bi bi-folder-fill"></i>
 
                 <span>Portfolio</span>
-
-            </a>
-
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('student.resume.*') ? 'active' : '' }}"
-                href="{{ route('student.resume.index') }}"
-            >
-
-                <i class="bi bi-file-earmark-person-fill"></i>
-
-                <span>Resume</span>
 
             </a>
 
@@ -2545,8 +2548,11 @@
                 >
 
                     <div class="sb-profile-avatar">
-
-                        {{ $userInitial }}
+                        @if($profilePictureUrl)
+                            <img src="{{ $profilePictureUrl }}" alt="{{ $userName }}" class="w-100 h-100 rounded-circle object-fit-cover">
+                        @else
+                            {{ $userInitial }}
+                        @endif
 
                     </div>
 

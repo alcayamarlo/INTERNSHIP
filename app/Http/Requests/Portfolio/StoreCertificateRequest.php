@@ -19,6 +19,7 @@ class StoreCertificateRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'issuer' => ['nullable', 'string', 'max:255'],
             'issue_date' => ['nullable', 'date', 'before_or_equal:today'],
+            'expiration_date' => ['nullable', 'date', 'after_or_equal:issue_date'],
             'file' => FileUploadService::documentRules(),
         ];
     }

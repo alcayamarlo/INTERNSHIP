@@ -23,12 +23,15 @@ class RegisterController extends Controller
      */
     public function showRegistrationForm()
     {
+        $institution = Institution::firstOrCreate(
+            ['name' => "St. Cecilia's College-Cebu, Inc."],
+            ['address' => null]
+        );
+
         return view('admin.users.auth.register', [
-            'institutions' => Institution::orderBy('name')->get(),
+            'institution' => $institution,
             'roles' => [
                 UserRole::Student,
-                UserRole::Employer,
-                UserRole::Coordinator,
             ],
         ]);
     }
@@ -43,6 +46,10 @@ class RegisterController extends Controller
     public function register(RegisterRequest $request)
     {
         $validated = $request->validated();
+        $validated['institution_id'] = Institution::where(
+            'name',
+            "St. Cecilia's College-Cebu, Inc."
+        )->value('id');
 
         $user = DB::transaction(function () use ($validated) {
             $user = User::create([

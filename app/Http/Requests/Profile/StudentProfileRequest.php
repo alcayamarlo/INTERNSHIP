@@ -11,6 +11,15 @@ class StudentProfileRequest extends FormRequest
         return auth()?->user()?->isRole(\App\Enums\UserRole::Student) ?? false;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->filled('phone')) {
+            $this->merge([
+                'phone' => preg_replace('/[\s().-]+/', '', $this->input('phone')),
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [
@@ -35,7 +44,7 @@ class StudentProfileRequest extends FormRequest
             'program' => ['nullable', 'string', 'max:255'],
             'department' => ['nullable', 'string', 'max:100'],
             'year_level' => ['nullable', 'string', 'in:1st Year,2nd Year,3rd Year,4th Year,5th Year'],
-            'expected_graduation' => ['nullable', 'date', 'after:today'],
+            'expected_graduation' => ['nullable', 'date', 'after:date_of_birth'],
 
             // Career Information
             'career_objectives' => ['nullable', 'string', 'max:1000'],

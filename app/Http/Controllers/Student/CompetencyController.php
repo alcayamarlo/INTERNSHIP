@@ -9,12 +9,13 @@ use App\Http\Requests\Competency\StoreCompetencyRequest;
 use App\Http\Requests\Competency\UpdateCompetencyRequest;
 use App\Models\StudentCompetency;
 use App\Services\ActivityLogService;
+use App\Services\FileUploadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CompetencyController extends Controller
 {
-    public function __construct(private ActivityLogService $activityLog) {}
+    public function __construct(private ActivityLogService $activityLog, private FileUploadService $fileUpload) {}
 
     public function index(Request $request)
     {
@@ -36,8 +37,8 @@ class CompetencyController extends Controller
             $query->where('proficiency_level', $request->level);
         }
 
-        $sortBy = $request->get('sort_by', 'created_at');
-        $sortOrder = $request->get('sort_order', 'desc');
+        $sortBy = in_array($request->get('sort_by'), ['name', 'obtained_at', 'created_at', 'proficiency_level'], true) ? $request->get('sort_by') : 'created_at';
+        $sortOrder = $request->get('sort_order') === 'asc' ? 'asc' : 'desc';
         $query->orderBy($sortBy, $sortOrder);
 
         $competencies = $query->paginate(12);
@@ -92,7 +93,11 @@ class CompetencyController extends Controller
             return back()->with('error', 'You already have this competency. Please edit the existing one instead.');
         }
 
-        $competency = $student->competencies()->create(collect($validated)->except('issuing_organization')->all());
+        $data = collect($validated)->except('evidence')->all();
+        $data['evidence_path'] = $this->fileUpload->upload($request->file('evidence'), 'competencies/'.$student->id, (string) $student->id);
+        $data['evidence_name'] = $request->file('evidence')->getClientOriginalName();
+        $data['verification_status'] = 'evidence_submitted';
+        $competency = $student->competencies()->create($data);
         $student->calculateProfileCompletion();
 
         $this->activityLog->log(Auth::user(), 'competency_create', ['competency_id' => $competency->id]);
@@ -135,7 +140,14 @@ class CompetencyController extends Controller
             return back()->with('error', 'You already have another competency with this name and category.');
         }
 
-        $competency->update(collect($validated)->except('issuing_organization')->all());
+        $data = collect($validated)->except('evidence')->all();
+        if ($request->hasFile('evidence')) {
+            $this->fileUpload->delete($competency->evidence_path);
+            $data['evidence_path'] = $this->fileUpload->upload($request->file('evidence'), 'competencies/'.$competency->student_id, (string) $competency->student_id);
+            $data['evidence_name'] = $request->file('evidence')->getClientOriginalName();
+            $data['verification_status'] = 'evidence_submitted';
+        }
+        $competency->update($data);
         Auth::user()->student->calculateProfileCompletion();
 
         $this->activityLog->log(Auth::user(), 'competency_update', ['competency_id' => $competency->id]);
@@ -149,6 +161,7 @@ class CompetencyController extends Controller
         $this->authorize('delete', $competency);
 
         $competencyId = $competency->id;
+        $this->fileUpload->delete($competency->evidence_path);
         $competency->delete();
         Auth::user()->student->calculateProfileCompletion();
 
