@@ -3252,7 +3252,7 @@
      *
      * IMPORTANT:
      *
-     * Instead of putting @if / @endif directly
+    * Instead of putting Blade conditionals directly
      * around JavaScript statements, we safely pass
      * Laravel session values into JavaScript.
      */

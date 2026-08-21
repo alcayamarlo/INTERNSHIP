@@ -22,7 +22,6 @@ use App\Models\Student;
 use App\Models\StudentCompetency;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
 class DatabaseSeeder extends Seeder
@@ -40,7 +39,7 @@ class DatabaseSeeder extends Seeder
         $admin = User::create([
             'name' => 'System Administrator',
             'email' => 'admin@skillbridge.test',
-            'password' => Hash::make('password'),
+            'password' => 'password',
             'role' => UserRole::Admin,
             'phone' => '+63 900 000 0001',
         ]);
@@ -48,7 +47,7 @@ class DatabaseSeeder extends Seeder
         $coordinatorUser = User::create([
             'name' => 'Maria Santos',
             'email' => 'coordinator@skillbridge.test',
-            'password' => Hash::make('password'),
+            'password' => 'password',
             'role' => UserRole::Coordinator,
             'phone' => '+63 900 000 0002',
         ]);
@@ -62,7 +61,7 @@ class DatabaseSeeder extends Seeder
         $employerUser = User::create([
             'name' => 'John Reyes',
             'email' => 'employer@skillbridge.test',
-            'password' => Hash::make('password'),
+            'password' => 'password',
             'role' => UserRole::Employer,
             'phone' => '+63 900 000 0003',
         ]);
@@ -80,7 +79,7 @@ class DatabaseSeeder extends Seeder
         $studentUser = User::create([
             'name' => 'Anna Dela Cruz',
             'email' => 'student@skillbridge.test',
-            'password' => Hash::make('password'),
+            'password' => 'password',
             'role' => UserRole::Student,
             'phone' => '+63 900 000 0004',
         ]);
