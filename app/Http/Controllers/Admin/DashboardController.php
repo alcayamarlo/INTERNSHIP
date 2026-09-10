@@ -11,27 +11,30 @@ use App\Models\InternshipApplication;
 use App\Models\Student;
 use App\Models\SystemLog;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
     /**
      * Display the admin dashboard with system-wide metrics and logs.
-     *
-     * Shows user statistics, activity logs, recent announcements,
-     * and quick links for system administration.
      */
     public function index()
     {
-        $stats = [
-            'users' => User::count(),
-            'students' => Student::count(),
-            'employers' => Employer::count(),
-            'internships' => Internship::count(),
-            'applications' => InternshipApplication::count(),
-            'placements' => InternshipApplication::where('status', ApplicationStatus::Accepted)->count(),
-        ];
+        $stats = Cache::remember('admin_dashboard_stats', 300, function () {
+            return [
+                'users' => User::count(),
+                'students' => Student::count(),
+                'employers' => Employer::count(),
+                'internships' => Internship::count(),
+                'applications' => InternshipApplication::count(),
+                'placements' => InternshipApplication::where('status', ApplicationStatus::Accepted)->count(),
+            ];
+        });
 
-        $recentUsers = User::latest()->take(5)->get();
+        $recentUsers = Cache::remember('admin_recent_users', 300, function () {
+            return User::latest()->take(5)->get();
+        });
+
         $recentLogs = SystemLog::with('user')->latest()->take(10)->get();
         $announcements = Announcement::latest()->take(5)->get();
 

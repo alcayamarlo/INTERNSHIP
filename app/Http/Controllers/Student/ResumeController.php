@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\BuildResume;
 use App\Models\Resume;
 use App\Services\ResumeBuilderService;
 use Illuminate\Support\Facades\Auth;
@@ -21,9 +22,9 @@ class ResumeController extends Controller
 
     public function generate()
     {
-        $resume = $this->resumeBuilder->build(Auth::user()->student);
+        BuildResume::dispatch(Auth::user()->student->id);
 
-        return back()->with('success', 'Resume generated successfully.')->with('download', $resume->id);
+        return back()->with('success', 'Resume is being generated. You will be notified when it is ready.');
     }
 
     public function download(Resume $resume)

@@ -6,36 +6,39 @@ use App\Enums\ApplicationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\InternshipApplication;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
     /**
      * Display the employer dashboard with key metrics.
-     *
-     * Shows active internships, recent applications, applicant stats,
-     * and quick links to manage internship postings.
      */
     public function index()
     {
         $employer = Auth::user()->employer;
+        $employerId = $employer->id;
 
-        $activeInternships = $employer->internships()
-            ->where('status', 'open')
-            ->count();
+        $activeInternships = Cache::remember("employer_active_internships_{$employerId}", 300, function () use ($employer) {
+            return $employer->internships()->where('status', 'open')->count();
+        });
 
-        $allApplications = InternshipApplication::whereIn(
-            'internship_id',
-            $employer->internships()->pluck('id')
-        )->get();
+        $allApplications = Cache::remember("employer_all_apps_{$employerId}", 300, function () use ($employer) {
+            return InternshipApplication::whereIn(
+                'internship_id',
+                $employer->internships()->pluck('id')
+            )->get();
+        });
 
-        $recentApplications = InternshipApplication::whereHas(
-            'internship',
-            fn ($q) => $q->where('employer_id', $employer->id)
-        )
-            ->with(['student.user', 'internship'])
-            ->latest('applied_at')
-            ->take(5)
-            ->get();
+        $recentApplications = Cache::remember("employer_recent_apps_{$employerId}", 300, function () use ($employer) {
+            return InternshipApplication::whereHas(
+                'internship',
+                fn ($q) => $q->where('employer_id', $employer->id)
+            )
+                ->with(['student.user', 'internship'])
+                ->latest('applied_at')
+                ->take(5)
+                ->get();
+        });
 
         $applicationStats = [
             'total' => $allApplications->count(),

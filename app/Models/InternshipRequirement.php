@@ -14,12 +14,14 @@ class InternshipRequirement extends Model
         'skill_id',
         'requirement_name',
         'required_level',
+        'is_required',
     ];
 
     protected function casts(): array
     {
         return [
             'required_level' => ProficiencyLevel::class,
+            'is_required' => 'boolean',
         ];
     }
 

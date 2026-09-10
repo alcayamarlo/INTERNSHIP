@@ -14,12 +14,16 @@ class Portfolio extends Model
         'type',
         'description',
         'file_path',
+        'verification_status',
+        'review_notes',
+        'reviewed_at',
     ];
 
     protected function casts(): array
     {
         return [
             'type' => PortfolioType::class,
+            'reviewed_at' => 'datetime',
         ];
     }
 

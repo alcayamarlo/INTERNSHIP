@@ -6,41 +6,46 @@ use App\Enums\ApplicationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\InternshipApplication;
 use App\Models\Student;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     /**
      * Display the coordinator dashboard with institution statistics.
-     *
-     * Shows student count, applications, placements, and quick overview
-     * specific to the coordinator's institution.
      */
     public function index()
     {
         $coordinator = Auth::user()->coordinator;
-        $studentsQuery = $coordinator->scopedStudentsQuery()->with('user');
+        $institutionId = $coordinator->institution_id;
 
-        $students = $studentsQuery->count();
+        $stats = Cache::remember("coordinator_stats_{$institutionId}", 300, function () use ($coordinator, $institutionId) {
+            $studentIds = $coordinator->scopedStudentsQuery()->pluck('id');
 
-        $applications = InternshipApplication::whereIn(
-            'student_id',
-            $studentsQuery->pluck('id')
-        )->get();
+            $applications = InternshipApplication::whereIn('student_id', $studentIds)->get();
 
-        $stats = [
-            'total_students' => $students,
-            'total_applications' => $applications->count(),
-            'accepted' => $applications->where('status', ApplicationStatus::Accepted)->count(),
-            'placement_rate' => $this->calculatePlacementRate($applications),
-        ];
+            return [
+                'total_students' => $studentIds->count(),
+                'total_applications' => $applications->count(),
+                'accepted' => $applications->where('status', ApplicationStatus::Accepted)->count(),
+                'placement_rate' => $this->calculatePlacementRate($applications),
+            ];
+        });
 
-        $recentStudents = (clone $studentsQuery)->latest()->take(5)->get();
-        $recentApplications = InternshipApplication::with(['student.user', 'internship.employer'])
-            ->whereIn('student_id', $studentsQuery->pluck('id'))
-            ->latest('applied_at')
-            ->take(5)
-            ->get();
+        $recentStudents = Cache::remember("coordinator_recent_students_{$institutionId}", 300, function () use ($coordinator) {
+            return $coordinator->scopedStudentsQuery()->with('user')->latest()->take(5)->get();
+        });
+
+        $recentApplications = Cache::remember("coordinator_recent_apps_{$institutionId}", 300, function () use ($coordinator) {
+            $studentIds = $coordinator->scopedStudentsQuery()->pluck('id');
+            return InternshipApplication::with(['student.user', 'internship.employer'])
+                ->whereIn('student_id', $studentIds)
+                ->latest('applied_at')
+                ->take(5)
+                ->get();
+        });
 
         return view('coordinator.dashboard', [
             'coordinator' => $coordinator,
@@ -79,8 +84,47 @@ class DashboardController extends Controller
     }
 
     /**
-     * Calculate the placement rate for applications.
+     * Batch verify competencies, certificates, or portfolios.
      */
+    public function batchVerify(Request $request)
+    {
+        $coordinator = Auth::user()->coordinator;
+        abort_unless($coordinator && $coordinator->institution_id, 403, 'No institution assigned.');
+
+        $validated = $request->validate([
+            'type' => ['required', 'in:competency,certificate,portfolio'],
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer'],
+            'verification_status' => ['required', 'in:verified,rejected'],
+            'review_notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $modelClass = match ($validated['type']) {
+            'competency' => \App\Models\StudentCompetency::class,
+            'certificate' => \App\Models\Certificate::class,
+            'portfolio' => \App\Models\Portfolio::class,
+        };
+
+        DB::transaction(function () use ($modelClass, $validated, $coordinator) {
+            $items = $modelClass::whereIn('id', $validated['ids'])
+                ->whereIn('verification_status', ['evidence_submitted', 'rejected'])
+                ->get();
+
+            foreach ($items as $item) {
+                $student = $item->student()->first();
+                if ($student && $coordinator->canAccessStudent($student)) {
+                    $item->update([
+                        'verification_status' => $validated['verification_status'],
+                        'review_notes' => $validated['review_notes'] ?? null,
+                        'reviewed_at' => now(),
+                    ]);
+                }
+            }
+        });
+
+        return back()->with('success', count($validated['ids']).' '.$validated['type'].'(s) have been '.$validated['verification_status'].'.');
+    }
+
     private function calculatePlacementRate($applications): float
     {
         if ($applications->isEmpty()) {

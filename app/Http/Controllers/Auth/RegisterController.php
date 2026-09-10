@@ -86,7 +86,9 @@ class RegisterController extends Controller
         Auth::login($user);
         $this->activityLog->log($user, 'register', ['role' => $user->role->value]);
 
-        return redirect()->route($user->dashboardRoute())
-            ->with('status', 'Welcome! Your account has been successfully created.');
+        $user->sendEmailVerificationNotification();
+
+        return redirect()->route('verification.notice')
+            ->with('status', 'Welcome! Please verify your email address to continue.');
     }
 }

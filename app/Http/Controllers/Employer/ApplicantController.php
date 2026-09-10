@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Employer;
 
+use App\Enums\ApplicationStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Application\UpdateApplicationStatusRequest;
 use App\Models\InternshipApplication;
@@ -50,7 +51,24 @@ class ApplicantController extends Controller
     {
         $this->authorize('updateStatus', $application);
 
-        $application->update($request->validated());
+        $validated = $request->validated();
+        $previousStatus = $application->status;
+        $status = $validated['status'] instanceof ApplicationStatus
+            ? $validated['status']
+            : ApplicationStatus::from($validated['status']);
+
+        $application->update([
+            'status' => $status,
+            'interview_at' => $validated['interview_at'] ?? $application->interview_at,
+            'employer_notes' => $validated['employer_notes'] ?? $application->employer_notes,
+        ]);
+
+        $application->statusHistory()->create([
+            'actor_id' => Auth::id(),
+            'status' => $status->value,
+            'notes' => $validated['employer_notes'] ?? null,
+            'interview_at' => $validated['interview_at'] ?? null,
+        ]);
 
         $studentUser = $application->student->user;
         $this->notificationService->send(
@@ -63,7 +81,8 @@ class ApplicantController extends Controller
 
         $this->activityLog->log(Auth::user(), 'application_status_update', [
             'application_id' => $application->id,
-            'status' => $application->status->value,
+            'from_status' => $previousStatus?->value,
+            'to_status' => $application->status->value,
         ]);
 
         return back()->with('success', 'Application status updated.');

@@ -62,6 +62,41 @@
             </div>
         </div>
 
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>Recommendation Feedback</h5>
+                @if($recommendationFeedback)
+                    <div class="alert alert-success mb-3">
+                        <i class="bi bi-check-circle"></i> You previously marked this recommendation as <strong>{{ $recommendationFeedback->feedback === 'helpful' ? 'helpful' : 'not helpful' }}</strong>.
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('student.internships.recommendation-feedback', $internship) }}">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label">Was this recommendation helpful?</label>
+                        <div class="d-flex gap-2">
+                            <label class="btn btn-outline-success flex-fill @if(old('feedback', $recommendationFeedback?->feedback) === 'helpful') active @endif">
+                                <input type="radio" class="form-check-input me-1" name="feedback" value="helpful" @checked(old('feedback', $recommendationFeedback?->feedback) === 'helpful')>
+                                Helpful
+                            </label>
+                            <label class="btn btn-outline-danger flex-fill @if(old('feedback', $recommendationFeedback?->feedback) === 'not_helpful') active @endif">
+                                <input type="radio" class="form-check-input me-1" name="feedback" value="not_helpful" @checked(old('feedback', $recommendationFeedback?->feedback) === 'not_helpful')>
+                                Not helpful
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Comment <span class="text-muted">(optional)</span></label>
+                        <textarea class="form-control" name="comment" rows="3" placeholder="Share why this recommendation was helpful or not helpful...">{{ old('comment', $recommendationFeedback?->comment) }}</textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-star"></i> Save Feedback</button>
+                </form>
+            </div>
+        </div>
+
         <div class="card">
             <div class="card-body">
                 @if($hasApplied)

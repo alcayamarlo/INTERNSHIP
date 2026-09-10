@@ -15,7 +15,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 CREATE DATABASE IF NOT EXISTS `nexus` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `nexus`;
 
-DROP TABLE IF EXISTS `student_competencies`, `system_logs`, `students`, `resumes`, `reports`, `portfolios`, `password_reset_tokens`, `notifications`, `messages`, `migrations`, `job_batches`, `jobs`, `internship_requirements`, `internship_applications`, `internships`, `institutions`, `failed_jobs`, `employers`, `coordinators`, `competencies`, `certificates`, `cache_locks`, `cache`, `announcements`, `users`;
+DROP TABLE IF EXISTS `student_competencies`, `system_logs`, `students`, `resumes`, `reports`, `recommendation_feedback`, `portfolios`, `password_reset_tokens`, `notifications`, `messages`, `migrations`, `job_batches`, `jobs`, `internship_requirements`, `internship_applications`, `internships`, `institutions`, `failed_jobs`, `employers`, `coordinators`, `competencies`, `certificates`, `cache_locks`, `cache`, `application_status_histories`, `announcements`, `users`;
 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -26,6 +26,41 @@ DROP TABLE IF EXISTS `student_competencies`, `system_logs`, `students`, `resumes
 --
 -- Database: `nexus`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `application_status_histories`
+--
+
+CREATE TABLE `application_status_histories` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `application_id` bigint(20) UNSIGNED NOT NULL,
+  `actor_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `status` varchar(255) NOT NULL,
+  `notes` text DEFAULT NULL,
+  `interview_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `recommendation_feedback`
+--
+
+CREATE TABLE `recommendation_feedback` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `student_id` bigint(20) UNSIGNED NOT NULL,
+  `internship_id` bigint(20) UNSIGNED NOT NULL,
+  `feedback` varchar(255) NOT NULL,
+  `comment` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `recommendation_feedback_student_id_internship_id_unique` (`student_id`,`internship_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -95,6 +130,8 @@ CREATE TABLE `certificates` (
   `file_path` varchar(255) DEFAULT NULL,
   `expiration_date` date DEFAULT NULL,
   `verification_status` varchar(255) NOT NULL DEFAULT 'evidence_submitted',
+  `review_notes` text DEFAULT NULL,
+  `reviewed_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -103,8 +140,8 @@ CREATE TABLE `certificates` (
 -- Dumping data for table `certificates`
 --
 
-INSERT INTO `certificates` (`id`, `student_id`, `title`, `issuer`, `issue_date`, `file_path`, `created_at`, `updated_at`) VALUES
-(1, 1, 'AWS Certified Cloud Practitioner', 'Amazon Web Services', '2026-03-30', 'portfolios/1/cert_aws.pdf', '2026-06-30 04:23:26', '2026-06-30 04:23:26');
+INSERT INTO `certificates` (`id`, `student_id`, `title`, `issuer`, `issue_date`, `file_path`, `expiration_date`, `verification_status`, `review_notes`, `reviewed_at`, `created_at`, `updated_at`) VALUES
+(1, 1, 'AWS Certified Cloud Practitioner', 'Amazon Web Services', '2026-03-30', 'portfolios/1/cert_aws.pdf', NULL, 'verified', 'Official certificate verified by the coordinator after matching issuer records.', '2026-06-30 05:00:00', '2026-06-30 04:23:26', '2026-06-30 05:00:00');
 
 -- --------------------------------------------------------
 
@@ -384,7 +421,10 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (19, '2026_06_30_000006_create_communication_tables', 1),
 (20, '2026_06_30_000007_add_profile_to_coordinators', 1),
 (21, '2026_06_30_124845_normalize_admin_user_role', 2),
-(22, '2026_08_22_000001_add_evidence_and_persistent_profile_fields', 3);
+(22, '2026_08_22_000001_add_evidence_and_persistent_profile_fields', 3),
+(23, '2026_09_10_000001_create_application_status_histories_table', 4),
+(24, '2026_09_10_000002_add_review_metadata_to_evidence_tables', 4),
+(25, '2026_09_11_000001_create_recommendation_feedback_table', 4);
 
 -- --------------------------------------------------------
 
@@ -429,6 +469,9 @@ CREATE TABLE `portfolios` (
   `type` varchar(255) NOT NULL DEFAULT 'project',
   `description` text DEFAULT NULL,
   `file_path` varchar(255) NOT NULL,
+  `verification_status` varchar(255) NOT NULL DEFAULT 'evidence_submitted',
+  `review_notes` text DEFAULT NULL,
+  `reviewed_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -437,13 +480,22 @@ CREATE TABLE `portfolios` (
 -- Dumping data for table `portfolios`
 --
 
-INSERT INTO `portfolios` (`id`, `student_id`, `title`, `type`, `description`, `file_path`, `created_at`, `updated_at`) VALUES
-(1, 1, 'E-Commerce Platform Project', 'project', 'Full-stack e-commerce platform built with Laravel and Vue.js. Features include product catalog, shopping cart, payment integration, and admin dashboard.', 'portfolios/1/project_ecommerce.pdf', '2026-04-30 04:23:26', '2026-06-30 04:23:26'),
-(2, 1, 'AWS Certified Cloud Practitioner', 'certificate', 'Official AWS certification demonstrating cloud computing knowledge.', 'portfolios/1/cert_aws.pdf', '2026-03-30 04:23:26', '2026-06-30 04:23:26'),
-(3, 1, 'GitHub Portfolio', 'project', 'Collection of personal projects showcasing coding skills and best practices.', 'portfolios/1/portfolio_github.pdf', '2026-05-30 04:23:26', '2026-06-30 04:23:26'),
-(4, 1, 'Capstone Project Documentation', 'project', 'Final year capstone project: Skill-Bridge Internship Platform. Complete documentation including architecture, database design, and implementation details.', 'portfolios/1/capstone_documentation.pdf', '2026-03-02 04:23:26', '2026-06-30 04:23:26'),
-(5, 1, 'Academic Transcript', 'transcript', 'Official academic transcript from Metro State University.', 'portfolios/1/transcript.pdf', '2026-05-30 04:23:26', '2026-06-30 04:23:26'),
-(6, 1, 'Recommendation Letter - Professor John Doe', 'award', 'Letter of recommendation from Professor John Doe, highlighting technical excellence and leadership.', 'portfolios/1/recommendation_letter.pdf', '2026-06-16 04:23:26', '2026-06-30 04:23:26');
+INSERT INTO `portfolios` (`id`, `student_id`, `title`, `type`, `description`, `file_path`, `verification_status`, `review_notes`, `reviewed_at`, `created_at`, `updated_at`) VALUES
+(1, 1, 'E-Commerce Platform Project', 'project', 'Full-stack e-commerce platform built with Laravel and Vue.js. Features include product catalog, shopping cart, payment integration, and admin dashboard.', 'portfolios/1/project_ecommerce.pdf', 'evidence_submitted', NULL, NULL, '2026-04-30 04:23:26', '2026-06-30 04:23:26'),
+(2, 1, 'AWS Certified Cloud Practitioner', 'certificate', 'Official AWS certification demonstrating cloud computing knowledge.', 'portfolios/1/cert_aws.pdf', 'verified', 'Professional credential reviewed and confirmed valid.', '2026-06-30 05:01:00', '2026-03-30 04:23:26', '2026-06-30 05:01:00'),
+(3, 1, 'GitHub Portfolio', 'project', 'Collection of personal projects showcasing coding skills and best practices.', 'portfolios/1/portfolio_github.pdf', 'evidence_submitted', NULL, NULL, '2026-05-30 04:23:26', '2026-06-30 04:23:26'),
+(4, 1, 'Capstone Project Documentation', 'project', 'Final year capstone project: Skill-Bridge Internship Platform. Complete documentation including architecture, database design, and implementation details.', 'portfolios/1/capstone_documentation.pdf', 'verified', 'Capstone documentation reviewed and approved for internship evaluation.', '2026-06-30 04:58:00', '2026-03-02 04:23:26', '2026-06-30 04:58:00'),
+(5, 1, 'Academic Transcript', 'transcript', 'Official academic transcript from Metro State University.', 'portfolios/1/transcript.pdf', 'rejected', 'Transcript could not be validated against the student record.', '2026-06-30 05:05:00', '2026-05-30 04:23:26', '2026-06-30 05:05:00'),
+(6, 1, 'Recommendation Letter - Professor John Doe', 'award', 'Letter of recommendation from Professor John Doe, highlighting technical excellence and leadership.', 'portfolios/1/recommendation_letter.pdf', 'evidence_submitted', NULL, NULL, '2026-06-16 04:23:26', '2026-06-30 04:23:26');
+
+-- --------------------------------------------------------
+
+--
+-- Dumping data for table `recommendation_feedback`
+--
+
+INSERT INTO `recommendation_feedback` (`id`, `student_id`, `internship_id`, `feedback`, `comment`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, 'helpful', 'This recommendation aligned with my PHP development experience and internship goals.', '2026-06-30 05:20:00', '2026-06-30 05:20:00');
 
 -- --------------------------------------------------------
 
@@ -597,6 +649,8 @@ CREATE TABLE `student_competencies` (
   `evidence_path` varchar(255) DEFAULT NULL,
   `evidence_name` varchar(255) DEFAULT NULL,
   `verification_status` varchar(255) NOT NULL DEFAULT 'evidence_submitted',
+  `review_notes` text DEFAULT NULL,
+  `reviewed_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -605,17 +659,17 @@ CREATE TABLE `student_competencies` (
 -- Dumping data for table `student_competencies`
 --
 
-INSERT INTO `student_competencies` (`id`, `student_id`, `competency_id`, `name`, `category`, `description`, `proficiency_level`, `obtained_at`, `created_at`, `updated_at`) VALUES
-(1, 1, NULL, 'PHP Development', 'technical', 'Built web applications using PHP.', 'advanced', NULL, '2026-06-30 04:23:26', '2026-06-30 04:23:26'),
-(2, 1, NULL, 'Laravel Framework', 'technical', 'Developed MVC applications with Laravel.', 'intermediate', NULL, '2026-06-30 04:23:26', '2026-06-30 04:23:26'),
-(3, 1, NULL, 'Communication', 'soft', NULL, 'advanced', NULL, '2026-06-30 04:23:26', '2026-06-30 04:23:26'),
-(4, 1, NULL, 'JavaScript', 'technical', 'Frontend development with vanilla JavaScript and frameworks.', 'intermediate', '2025-12-30', '2026-06-30 04:23:26', '2026-06-30 04:23:26'),
-(5, 1, NULL, 'MySQL Database Design', 'technical', 'Database design and SQL optimization.', 'advanced', '2025-10-30', '2026-06-30 04:23:26', '2026-06-30 04:23:26'),
-(6, 1, NULL, 'AWS Cloud Services', 'certification', 'AWS Certified Cloud Practitioner (Passed)', 'intermediate', '2026-03-30', '2026-06-30 04:23:26', '2026-06-30 04:23:26'),
-(7, 1, NULL, 'Team Leadership', 'soft', 'Led a team of 5 developers on capstone project.', 'advanced', '2026-03-02', '2026-06-30 04:23:26', '2026-06-30 04:23:26'),
-(8, 1, NULL, 'Project Management', 'soft', 'Managed multiple projects using Agile methodologies.', 'intermediate', NULL, '2026-06-30 04:23:26', '2026-06-30 04:23:26'),
-(9, 1, NULL, 'Git Version Control', 'technical', 'Git and GitHub for collaborative development.', 'advanced', NULL, '2026-06-30 04:23:26', '2026-06-30 04:23:26'),
-(10, 1, NULL, 'REST API Development', 'technical', 'Building and consuming REST APIs.', 'advanced', '2026-01-30', '2026-06-30 04:23:26', '2026-06-30 04:23:26');
+INSERT INTO `student_competencies` (`id`, `student_id`, `competency_id`, `name`, `category`, `description`, `proficiency_level`, `obtained_at`, `assessment_name`, `issuing_organization`, `evidence_path`, `evidence_name`, `verification_status`, `review_notes`, `reviewed_at`, `created_at`, `updated_at`) VALUES
+(1, 1, NULL, 'PHP Development', 'technical', 'Built web applications using PHP.', 'advanced', NULL, 'PHP Skills Assessment', 'Metro State University', 'competencies/1/php_assessment.pdf', 'php_assessment.pdf', 'verified', 'Competency verified after reviewing the submitted assessment record.', '2026-06-30 04:55:00', '2026-06-30 04:23:26', '2026-06-30 04:55:00'),
+(2, 1, NULL, 'Laravel Framework', 'technical', 'Developed MVC applications with Laravel.', 'intermediate', NULL, 'Laravel Workshop Certificate', 'SkillBridge Academy', 'competencies/1/laravel_workshop.pdf', 'laravel_workshop.pdf', 'verified', 'Workshop attendance and project output were accepted.', '2026-06-30 04:56:00', '2026-06-30 04:23:26', '2026-06-30 04:56:00'),
+(3, 1, NULL, 'Communication', 'soft', NULL, 'advanced', NULL, 'Communication Seminar', 'Metro State University', 'competencies/1/communication_seminar.pdf', 'communication_seminar.pdf', 'rejected', 'Evidence is incomplete and does not clearly prove the stated competency.', '2026-06-30 04:57:00', '2026-06-30 04:23:26', '2026-06-30 04:57:00'),
+(4, 1, NULL, 'JavaScript', 'technical', 'Frontend development with vanilla JavaScript and frameworks.', 'intermediate', '2025-12-30', NULL, NULL, NULL, NULL, 'evidence_submitted', NULL, NULL, '2026-06-30 04:23:26', '2026-06-30 04:23:26'),
+(5, 1, NULL, 'MySQL Database Design', 'technical', 'Database design and SQL optimization.', 'advanced', '2025-10-30', 'Database Design Assessment', 'Metro State University', 'competencies/1/mysql_assessment.pdf', 'mysql_assessment.pdf', 'verified', 'Assessment was verified and matched the student profile.', '2026-06-30 04:58:00', '2026-06-30 04:23:26', '2026-06-30 04:58:00'),
+(6, 1, NULL, 'AWS Cloud Services', 'certification', 'AWS Certified Cloud Practitioner (Passed)', 'intermediate', '2026-03-30', 'AWS Certified Cloud Practitioner', 'Amazon Web Services', 'competencies/1/aws_certificate.pdf', 'aws_certificate.pdf', 'verified', 'Credential verified through the official AWS certification record.', '2026-06-30 04:59:00', '2026-06-30 04:23:26', '2026-06-30 04:59:00'),
+(7, 1, NULL, 'Team Leadership', 'soft', 'Led a team of 5 developers on capstone project.', 'advanced', '2026-03-02', NULL, NULL, NULL, NULL, 'evidence_submitted', NULL, NULL, '2026-06-30 04:23:26', '2026-06-30 04:23:26'),
+(8, 1, NULL, 'Project Management', 'soft', 'Managed multiple projects using Agile methodologies.', 'intermediate', NULL, 'Agile Project Management Proof', 'Metro State University', 'competencies/1/agile_project.pdf', 'agile_project.pdf', 'rejected', 'Submission lacked corroborating project documentation and dates.', '2026-06-30 05:00:00', '2026-06-30 04:23:26', '2026-06-30 05:00:00'),
+(9, 1, NULL, 'Git Version Control', 'technical', 'Git and GitHub for collaborative development.', 'advanced', NULL, NULL, NULL, NULL, NULL, 'evidence_submitted', NULL, NULL, '2026-06-30 04:23:26', '2026-06-30 04:23:26'),
+(10, 1, NULL, 'REST API Development', 'technical', 'Building and consuming REST APIs.', 'advanced', '2026-01-30', 'REST API Portfolio Review', 'SkillBridge Academy', 'competencies/1/rest_api.pdf', 'rest_api.pdf', 'verified', 'API project artifacts were reviewed and approved.', '2026-06-30 05:02:00', '2026-06-30 04:23:26', '2026-06-30 05:02:00');
 
 -- --------------------------------------------------------
 
@@ -684,7 +738,7 @@ INSERT INTO `users` (`id`, `name`, `email`, `role`, `phone`, `avatar`, `is_activ
 (1, 'System Administrator', 'admin@skillbridge.test', 'admin', '+63 900 000 0001', NULL, 1, NULL, '2026-06-30 04:46:20', '$2y$10$z9dVIRMg5DqXTtAsjj/bceyoQD9rgxC0Wh5jMaODMGVmVW6Z78Vjy', NULL, '2026-06-30 04:23:26', '2026-06-30 05:14:08'),
 (2, 'Maria Santos', 'coordinator@skillbridge.test', 'coordinator', '+63 900 000 0002', NULL, 1, NULL, '2026-06-30 05:15:57', '$2y$10$z9dVIRMg5DqXTtAsjj/bceyoQD9rgxC0Wh5jMaODMGVmVW6Z78Vjy', NULL, '2026-06-30 04:23:26', '2026-06-30 05:15:57'),
 (3, 'John Reyes', 'employer@skillbridge.test', 'employer', '+63 900 000 0003', NULL, 1, NULL, '2026-06-30 05:16:51', '$2y$10$z9dVIRMg5DqXTtAsjj/bceyoQD9rgxC0Wh5jMaODMGVmVW6Z78Vjy', NULL, '2026-06-30 04:23:26', '2026-06-30 05:16:51'),
-(4, 'Anna Dela Cruz', 'student@skillbridge.test', 'student', '+63 900 000 0004', NULL, 1, NULL, '2026-06-30 05:17:23', '$2y$10$z9dVIRMg5DqXTtAsjj/bceyoQD9rgxC0Wh5jMaODMGVmVW6Z78Vjy', NULL, '2026-06-30 05:17:23');
+(4, 'Anna Dela Cruz', 'student@skillbridge.test', 'student', '+63 900 000 0004', NULL, 1, NULL, '2026-06-30 05:17:23', '$2y$10$z9dVIRMg5DqXTtAsjj/bceyoQD9rgxC0Wh5jMaODMGVmVW6Z78Vjy', NULL, '2026-06-30 05:17:23', '2026-06-30 05:17:23');
 
 --
 -- Indexes for dumped tables
@@ -962,7 +1016,7 @@ ALTER TABLE `messages`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `notifications`
@@ -1021,6 +1075,21 @@ ALTER TABLE `users`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `application_status_histories`
+--
+ALTER TABLE `application_status_histories`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `application_status_histories_application_id_foreign` (`application_id`),
+  ADD KEY `application_status_histories_actor_id_foreign` (`actor_id`);
+
+--
+-- Constraints for table `recommendation_feedback`
+--
+ALTER TABLE `recommendation_feedback`
+  ADD KEY `recommendation_feedback_student_id_foreign` (`student_id`),
+  ADD KEY `recommendation_feedback_internship_id_foreign` (`internship_id`);
 
 --
 -- Constraints for table `announcements`
@@ -1086,6 +1155,13 @@ ALTER TABLE `notifications`
 --
 ALTER TABLE `portfolios`
   ADD CONSTRAINT `portfolios_student_id_foreign` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `recommendation_feedback`
+--
+ALTER TABLE `recommendation_feedback`
+  ADD CONSTRAINT `recommendation_feedback_internship_id_foreign` FOREIGN KEY (`internship_id`) REFERENCES `internships` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `recommendation_feedback_student_id_foreign` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `reports`

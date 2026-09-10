@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Application\ApplyInternshipRequest;
 use App\Models\Internship;
 use App\Models\InternshipApplication;
+use App\Models\RecommendationFeedback;
 use App\Services\ApplicationService;
 use App\Services\CompetencyMatchingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class InternshipController extends Controller
@@ -58,8 +60,34 @@ class InternshipController extends Controller
         $hasApplied = InternshipApplication::where('internship_id', $internship->id)
             ->where('student_id', $student->id)
             ->exists();
+        $recommendationFeedback = RecommendationFeedback::where('student_id', $student->id)
+            ->where('internship_id', $internship->id)
+            ->first();
 
-        return view('student.internships.show', compact('internship', 'matchPercentage', 'hasApplied'));
+        return view('student.internships.show', compact('internship', 'matchPercentage', 'hasApplied', 'recommendationFeedback'));
+    }
+
+    public function storeRecommendationFeedback(Request $request, Internship $internship)
+    {
+        $validated = $request->validate([
+            'feedback' => ['required', Rule::in(['helpful', 'not_helpful'])],
+            'comment' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $student = Auth::user()->student;
+
+        RecommendationFeedback::updateOrCreate(
+            [
+                'student_id' => $student->id,
+                'internship_id' => $internship->id,
+            ],
+            [
+                'feedback' => $validated['feedback'],
+                'comment' => $validated['comment'] ?? null,
+            ]
+        );
+
+        return back()->with('success', 'Recommendation feedback saved successfully.');
     }
 
     public function apply(ApplyInternshipRequest $request, Internship $internship)
@@ -113,7 +141,7 @@ class InternshipController extends Controller
     public function showApplication(InternshipApplication $application)
     {
         $this->authorize('view', $application);
-        $application->load('internship.employer');
+        $application->load(['internship.employer', 'statusHistory.actor']);
         return view('student.internships.application-show', compact('application'));
     }
 

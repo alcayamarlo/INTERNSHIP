@@ -11,6 +11,8 @@ use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
+use InvalidArgumentException;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportExportService
@@ -23,16 +25,20 @@ class ReportExportService
             'competency' => $this->competencyData(),
             'employer' => $this->employerData(),
             'internship' => $this->internshipData(),
-            default => [],
+            default => throw new InvalidArgumentException("Unsupported report type: {$type}."),
         };
 
-        $filename = 'reports/'.$type.'_'.time().'.'.$format;
+        $filename = 'reports/'.$type.'_'.now()->format('Ymd_His').'.'.$format;
 
         if ($format === 'pdf') {
             $pdf = Pdf::loadView('reports.pdf', ['type' => $type, 'data' => $data, 'title' => ucfirst($type).' Report']);
-            Storage::disk('public')->put($filename, $pdf->output());
+            $stored = Storage::disk('public')->put($filename, $pdf->output());
         } else {
-            Storage::disk('public')->put($filename, $this->toCsv($data));
+            $stored = Storage::disk('public')->put($filename, $this->toCsv($data));
+        }
+
+        if (! $stored) {
+            throw new RuntimeException("Unable to generate report {$type} in {$format} format.");
         }
 
         return Report::create([
@@ -47,6 +53,8 @@ class ReportExportService
     public function download(Report $report): StreamedResponse
     {
         $mime = $report->format === 'pdf' ? 'application/pdf' : 'text/csv';
+
+        abort_unless($report->file_path && Storage::disk('public')->exists($report->file_path), 404, 'Report file not found.');
 
         return Response::streamDownload(function () use ($report) {
             echo Storage::disk('public')->get($report->file_path);

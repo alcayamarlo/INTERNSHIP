@@ -2258,6 +2258,17 @@
 
 
             <a
+                class="sb-nav-link {{ request()->routeIs('coordinator.verification.*') ? 'active' : '' }}"
+                href="{{ route('coordinator.verification.index') }}"
+            >
+
+                <i class="bi bi-shield-check"></i>
+
+                <span>Verification</span>
+
+            </a>
+
+            <a
                 class="sb-nav-link {{ request()->routeIs('coordinator.reports.*') ? 'active' : '' }}"
                 href="{{ route('coordinator.reports.index') }}"
             >

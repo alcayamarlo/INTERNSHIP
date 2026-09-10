@@ -52,7 +52,13 @@ class SystemController extends Controller
 
     public function backup()
     {
-        $database = config('database.connections.mysql.database');
+        $config = config('database.connections.mysql', []);
+        $database = $config['database'] ?? null;
+
+        if (empty($database)) {
+            return back()->with('error', 'Database backup is unavailable because the MySQL configuration is missing.');
+        }
+
         $filename = 'backups/backup_'.now()->format('Y_m_d_His').'.sql';
         $path = storage_path('app/private/'.$filename);
 
@@ -61,18 +67,18 @@ class SystemController extends Controller
         }
 
         $command = sprintf(
-            'mysqldump --user=%s --password=%s --host=%s %s > %s',
-            escapeshellarg(config('database.connections.mysql.username')),
-            escapeshellarg(config('database.connections.mysql.password')),
-            escapeshellarg(config('database.connections.mysql.host')),
+            'mysqldump --user=%s --password=%s --host=%s %s > %s 2>&1',
+            escapeshellarg($config['username'] ?? ''),
+            escapeshellarg($config['password'] ?? ''),
+            escapeshellarg($config['host'] ?? '127.0.0.1'),
             escapeshellarg($database),
             escapeshellarg($path)
         );
 
         exec($command, $output, $result);
 
-        if ($result !== 0 || ! file_exists($path)) {
-            return back()->with('error', 'Database backup failed. Ensure mysqldump is available in your PATH.');
+        if ($result !== 0 || ! file_exists($path) || filesize($path) === 0) {
+            return back()->with('error', 'Database backup failed. Ensure mysqldump is available in your PATH and the database connection is valid.');
         }
 
         $this->activityLog->log(Auth::user(), 'database_backup', ['filename' => $filename]);

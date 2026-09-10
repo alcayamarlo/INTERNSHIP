@@ -12,6 +12,8 @@ use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
+    public function __construct(private ActivityLogService $activityLog) {}
+
     public function showLoginForm()
     {
         return view('admin.users.auth.login');
@@ -30,6 +32,21 @@ class LoginController extends Controller
 
             if (! $user instanceof User) {
                 abort(401);
+            }
+
+            if (! $user->is_active) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return back()->withErrors([
+                    'email' => 'Your account has been deactivated. Please contact support.',
+                ])->onlyInput('email');
+            }
+
+            $this->activityLog->log($user, 'login');
+
+            if (! $user->hasVerifiedEmail()) {
+                return redirect()->route('verification.notice');
             }
 
             return redirect()->intended(route($user->dashboardRoute()));

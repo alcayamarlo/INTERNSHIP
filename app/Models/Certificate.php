@@ -13,7 +13,7 @@ class Certificate extends Model
         'issuer',
         'issue_date',
         'file_path',
-        'expiration_date', 'verification_status',
+        'expiration_date', 'verification_status', 'review_notes', 'reviewed_at',
     ];
 
     protected function casts(): array
@@ -21,6 +21,7 @@ class Certificate extends Model
         return [
             'issue_date' => 'date',
             'expiration_date' => 'date',
+            'reviewed_at' => 'datetime',
         ];
     }
 

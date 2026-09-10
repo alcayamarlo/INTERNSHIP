@@ -11,6 +11,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Coordinator\DashboardController as CoordinatorDashboardController;
 use App\Http\Controllers\Coordinator\ReportController as CoordinatorReportController;
+use App\Http\Controllers\Coordinator\VerificationController;
 use App\Http\Controllers\Employer\ApplicantController;
 use App\Http\Controllers\Employer\DashboardController as EmployerDashboardController;
 use App\Http\Controllers\Employer\InternshipController as EmployerInternshipController;
@@ -25,10 +26,40 @@ use App\Http\Controllers\Student\PortfolioController;
 use App\Http\Controllers\Student\ProfileController as StudentProfileController;
 use App\Http\Controllers\Student\ResumeController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
+
+Route::get('/health', function () {
+    $checks = [
+        'database' => fn () => \DB::connection()->getPdo() !== null,
+        'cache' => fn () => \Cache::store('file')->put('__health_check', 1),
+        'queue' => fn () => true,
+    ];
+
+    $status = 'healthy';
+    $details = [];
+
+    foreach ($checks as $name => $check) {
+        try {
+            $check();
+            $details[$name] = 'ok';
+        } catch (\Throwable $e) {
+            $status = 'unhealthy';
+            $details[$name] = $e->getMessage();
+        }
+    }
+
+    $code = $status === 'healthy' ? 200 : 503;
+
+    return response()->json([
+        'status' => $status,
+        'timestamp' => now()->toIso8601String(),
+        'checks' => $details,
+    ], $code);
+})->name('health');
 
 Route::middleware('guest')->group(function () {
     // LOGIN
@@ -43,14 +74,48 @@ Route::middleware('guest')->group(function () {
         ->name('register');
 
     Route::post('/register', [RegisterController::class, 'register'])
-        ->name('register.store');
+        ->name('register.store')
+        ->middleware('throttle:register');
+
     Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
     Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email')->middleware('throttle:password');
     Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
     Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update')->middleware('throttle:password');
 });
 
-Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->name('logout');
+// EMAIL VERIFICATION (requires auth, but not guest)
+Route::middleware('auth')->group(function () {
+    Route::get('/email/verify', function () {
+        return view('auth.verify-email');
+    })->name('verification.notice');
+
+    Route::get('/email/verify/{id}/{hash}', function (Request $request) {
+        if (! hash_equals((string) $request->route('id'), (string) $request->user()->getKey())) {
+            abort(403);
+        }
+        if (! hash_equals(sha1($request->user()->getEmailForVerification()), (string) $request->route('hash'))) {
+            abort(403);
+        }
+        if ($request->user()->hasVerifiedEmail()) {
+            return redirect()->intended(route($request->user()->dashboardRoute()));
+        }
+        $request->user()->markEmailAsVerified();
+        event(new \Illuminate\Auth\Events\Verified($request->user()));
+        return redirect()->intended(route($request->user()->dashboardRoute()));
+    })->middleware('signed')->name('verification.verify');
+
+    Route::post('/email/verify/resend', function (Request $request) {
+        if ($request->user()->hasVerifiedEmail()) {
+            return redirect()->intended(route($request->user()->dashboardRoute()));
+        }
+        $request->user()->sendEmailVerificationNotification();
+        return back()->with('status', 'verification-link-sent');
+    })->middleware('throttle:6,1')->name('verification.resend');
+});
+
+Route::match(['get', 'post'], '/logout', [LoginController::class, 'logout'])
+    ->middleware('auth')
+    ->name('logout');
 
 Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/search', [SearchController::class, 'index'])->name('search');
@@ -98,6 +163,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/resume/{resume}/download', [ResumeController::class, 'download'])->name('resume.download');
         Route::get('/internships', [StudentInternshipController::class, 'index'])->name('internships.index');
         Route::get('/internships/{internship}', [StudentInternshipController::class, 'show'])->name('internships.show');
+        Route::post('/internships/{internship}/recommendation-feedback', [StudentInternshipController::class, 'storeRecommendationFeedback'])->name('internships.recommendation-feedback');
         Route::post('/internships/{internship}/apply', [StudentInternshipController::class, 'apply'])->name('internships.apply');
         Route::get('/applications', [StudentInternshipController::class, 'applications'])->name('applications.index');
         Route::get('/applications/{application}', [StudentInternshipController::class, 'showApplication'])->name('applications.show');
@@ -126,6 +192,11 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::delete('/profile-picture', [\App\Http\Controllers\Coordinator\ProfileController::class, 'deleteProfilePicture'])->name('profile.delete-picture');
         Route::get('/students', [CoordinatorDashboardController::class, 'students'])->name('students.index');
         Route::get('/students/{student}', [CoordinatorDashboardController::class, 'showStudent'])->name('students.show');
+        Route::get('/verification', [VerificationController::class, 'index'])->name('verification.index');
+        Route::post('/verification/batch', [CoordinatorDashboardController::class, 'batchVerify'])->name('verification.batch');
+        Route::post('/verification/competencies/{competency}', [VerificationController::class, 'reviewCompetency'])->name('verification.reviewCompetency');
+        Route::post('/verification/certificates/{certificate}', [VerificationController::class, 'reviewCertificate'])->name('verification.reviewCertificate');
+        Route::post('/verification/portfolios/{portfolio}', [VerificationController::class, 'reviewPortfolio'])->name('verification.reviewPortfolio');
         Route::get('/reports', [CoordinatorReportController::class, 'index'])->name('reports.index');
         Route::post('/reports/generate', [CoordinatorReportController::class, 'generate'])->name('reports.generate');
     });

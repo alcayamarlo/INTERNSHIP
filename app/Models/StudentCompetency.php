@@ -17,7 +17,7 @@ class StudentCompetency extends Model
         'description',
         'proficiency_level',
         'obtained_at',
-        'assessment_name', 'issuing_organization', 'evidence_path', 'evidence_name', 'verification_status',
+        'assessment_name', 'issuing_organization', 'evidence_path', 'evidence_name', 'verification_status', 'review_notes', 'reviewed_at',
     ];
 
     protected function casts(): array
@@ -26,6 +26,7 @@ class StudentCompetency extends Model
             'category' => CompetencyCategory::class,
             'proficiency_level' => ProficiencyLevel::class,
             'obtained_at' => 'date',
+            'reviewed_at' => 'datetime',
         ];
     }
 
