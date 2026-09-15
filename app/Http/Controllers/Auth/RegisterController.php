@@ -11,7 +11,6 @@ use App\Models\Institution;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\ActivityLogService;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class RegisterController extends Controller
@@ -83,12 +82,9 @@ class RegisterController extends Controller
             return $user;
         });
 
-        Auth::login($user);
         $this->activityLog->log($user, 'register', ['role' => $user->role->value]);
 
-        $user->sendEmailVerificationNotification();
-
-        return redirect()->route('verification.notice')
-            ->with('status', 'Welcome! Please verify your email address to continue.');
+        return redirect()->route('login')
+            ->with('status', 'Your account has been created. Please log in to continue.');
     }
 }

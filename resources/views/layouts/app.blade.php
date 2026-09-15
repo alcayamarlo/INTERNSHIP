@@ -1954,6 +1954,188 @@
                 rgba(8,217,245,.35);
         }
 
+
+        /* =====================================================
+           SIDEBAR VISUAL POLISH
+        ====================================================== */
+
+        .sb-sidebar {
+            background:
+                linear-gradient(180deg, #0a2135 0%, #071526 48%, #061321 100%);
+
+            border-right-color:
+                rgba(90, 170, 210, .2);
+
+            box-shadow:
+                10px 0 35px rgba(1, 8, 17, .16);
+        }
+
+
+        .sb-sidebar::after {
+            content: "";
+
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 2px;
+            height: 86%;
+
+            background:
+                linear-gradient(180deg, rgba(8,217,245,.75), rgba(8,217,245,.12), transparent);
+
+            opacity: .7;
+            pointer-events: none;
+        }
+
+
+        .sb-brand {
+            height: 104px;
+            padding: 0 30px;
+            gap: 15px;
+            border-bottom-color: rgba(117, 176, 215, .12);
+        }
+
+
+        .sb-brand-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #19def7, #079abb);
+            font-size: 23px;
+            box-shadow: 0 10px 28px rgba(8,217,245,.22);
+        }
+
+
+        .sb-brand-title {
+            font-size: 18px;
+            letter-spacing: .01em;
+        }
+
+
+        .sb-brand-subtitle {
+            margin-top: 6px;
+            color: #8ba9c2;
+            font-size: 8px;
+            letter-spacing: .16em;
+        }
+
+
+        .sb-user-card {
+            margin: 27px 22px 28px;
+            padding: 18px;
+            gap: 14px;
+            border-color: rgba(117, 176, 215, .18);
+            border-radius: 17px;
+            background: linear-gradient(135deg, rgba(14, 39, 61, .86), rgba(8, 25, 42, .7));
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.025), 0 8px 24px rgba(1, 9, 18, .12);
+        }
+
+
+        .sb-user-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 13px;
+            background: rgba(8,217,245,.08);
+            border-color: rgba(8,217,245,.32);
+            font-size: 18px;
+        }
+
+
+        .sb-user-name {
+            color: #e6f3fc;
+            font-size: 11px;
+        }
+
+
+        .sb-user-role {
+            margin-top: 5px;
+            font-size: 8px;
+            letter-spacing: .1em;
+        }
+
+
+        .sb-nav {
+            padding: 0 15px 20px;
+        }
+
+
+        .sb-nav-label {
+            padding: 8px 25px 11px;
+            color: #6f8ca5;
+            font-size: 8px;
+            letter-spacing: .18em;
+        }
+
+
+        .sb-nav-link {
+            min-height: 54px;
+            margin-bottom: 4px;
+            padding: 0 17px;
+            gap: 15px;
+            border-radius: 13px;
+            color: #91abc0;
+            font-size: 11px;
+            font-weight: 650;
+        }
+
+
+        .sb-nav-link i {
+            width: 22px;
+            color: #8199ae;
+            font-size: 17px;
+        }
+
+
+        .sb-nav-link:hover {
+            color: #e5f7ff;
+            background: rgba(8,217,245,.07);
+            border-color: rgba(8,217,245,.1);
+            transform: translateX(2px);
+        }
+
+
+        .sb-nav-link.active {
+            color: #2ee0f7;
+            background: linear-gradient(90deg, rgba(8,217,245,.16), rgba(8,217,245,.07));
+            border-color: rgba(8,217,245,.2);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.025), 0 8px 20px rgba(1, 11, 21, .14);
+        }
+
+
+        .sb-nav-link.active::before {
+            left: -15px;
+            top: 12px;
+            bottom: 12px;
+            width: 4px;
+        }
+
+
+        .sb-nav-divider {
+            margin: 18px 15px;
+            background: rgba(117,176,215,.13);
+        }
+
+
+        .sb-sidebar-footer {
+            margin: 16px 22px 24px;
+            padding: 15px;
+            border-color: rgba(117,176,215,.13);
+            border-radius: 13px;
+            background: rgba(4,17,31,.28);
+        }
+
+
+        .sb-sidebar-footer small {
+            font-size: 8px;
+            letter-spacing: .1em;
+        }
+
+
+        .sb-sidebar-footer strong {
+            margin-top: 5px;
+            font-size: 10px;
+        }
+
     </style>
 
 

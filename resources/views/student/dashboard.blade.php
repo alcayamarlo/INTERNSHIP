@@ -2,16 +2,51 @@
 
 @section('title', 'Student Dashboard')
 
-@section('content')
+@push('styles')
+<style>
+    .student-dashboard-shell { padding: 10px 0 0; }
+    .student-dashboard-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 26px; }
+    .student-dashboard-header h1 { margin: 0; color: #f2f7ff; font-size: clamp(2.1rem, 2.3vw, 3rem); font-weight: 800; letter-spacing: -0.04em; }
+    .student-dashboard-header p { margin-top: 8px; color: rgba(197, 214, 234, .8); font-size: 1.05rem; }
+    .student-dashboard-search { position: relative; width: min(420px, 42vw); min-width: 260px; }
+    .student-dashboard-search .form-control { height: 46px; padding-left: 44px; border: 1px solid rgba(113, 180, 214, .18); border-radius: 12px; background: rgba(15, 32, 47, .9); color: #eaf6ff; }
+    .student-dashboard-search i { position: absolute; top: 50%; left: 16px; z-index: 2; color: #88a9c3; transform: translateY(-50%); }
+    .student-dashboard-shell .card, .student-dashboard-shell .list-group-item { border-color: rgba(110, 176, 215, .18) !important; background: rgba(10, 22, 35, .82) !important; color: #ebf5ff; }
+    .student-dashboard-shell .card { border-radius: 18px; box-shadow: 0 8px 30px rgba(2, 8, 18, .2); }
+    .student-dashboard-shell .card-body { padding: 1.35rem 1.25rem; }
+    .student-dashboard-shell > .row:first-of-type .card { position: relative; overflow: hidden; background: linear-gradient(145deg, rgba(14,34,51,.96), rgba(8,21,34,.94)) !important; }
+    .student-dashboard-shell > .row:first-of-type .card::before { content: ""; position: absolute; inset: 0 0 auto; height: 2px; background: linear-gradient(90deg, transparent, rgba(41,212,255,.9), transparent); }
+    .student-dashboard-shell > .row:first-of-type .card .h3 { font-size: 2rem; }
+    .student-dashboard-shell .h3 { color: #eef8ff; font-weight: 800; letter-spacing: -.04em; }
+    .student-dashboard-shell .btn-primary { border: 0; background: linear-gradient(135deg, #29d4ff, #25c7ff) !important; color: #062338 !important; font-weight: 700; box-shadow: 0 8px 20px rgba(37,194,255,.18); }
+    .student-dashboard-shell .btn-outline-primary { border-color: rgba(77,210,255,.5); color: #7fe0ff; }
+    .student-dashboard-shell .card:hover { border-color: rgba(49,217,244,.36) !important; }
+    .student-dashboard-shell .card-header { border-bottom: 1px solid rgba(110, 176, 215, .16); background: rgba(11, 27, 41, .92) !important; color: #ebf5ff; }
+    .student-dashboard-shell .card-title, .student-dashboard-shell h5, .student-dashboard-shell h6 { color: rgba(221, 235, 248, .9); }
+    .student-dashboard-shell .text-muted, .student-dashboard-shell small, .student-dashboard-shell .small, .student-dashboard-shell .table td { color: rgba(176, 201, 219, .82) !important; }
+    .student-dashboard-shell .progress { background: rgba(120, 148, 175, .18); border-radius: 999px; }
+    .student-dashboard-shell .progress-bar { border-radius: 999px; background: linear-gradient(90deg, #27d4ff, #4fd1ff); }
+    .student-dashboard-shell .list-group-item { border-top: 1px solid rgba(110, 176, 215, .12); transition: background .18s ease, transform .18s ease; }
+    .student-dashboard-shell .list-group-item:hover { background: rgba(16, 39, 59, .9) !important; transform: translateX(2px); }
+    .student-dashboard-shell .badge { border-radius: 999px; padding: .45rem .7rem; }
+    .student-dashboard-shell .table thead th { background: rgba(12,28,40,.9); color: rgba(220,235,246,.9); border-color: rgba(110,176,215,.16); }
+    @media (max-width: 991.98px) { .student-dashboard-header { align-items: flex-start; flex-direction: column; } .student-dashboard-search { width: 100%; min-width: 100%; } }
+</style>
+@endpush
 
-<div class="mb-4">
-    <h1 class="h3 mb-1">
+@section('content')
+<div class="student-dashboard-shell">
+<div class="student-dashboard-header">
+    <div>
+    <h1>
         Welcome, {{ Auth::user()->name }}!
     </h1>
 
-    <p class="text-muted mb-0">
+    <p>
         Monitor your progress and explore internship opportunities
     </p>
+</div>
+<div class="student-dashboard-search"><i class="bi bi-search"></i><input class="form-control" type="search" placeholder="Search internships, skills, or applications..."></div>
 </div>
 
 
@@ -709,4 +744,5 @@
 
 @endif
 
+</div>
 @endsection

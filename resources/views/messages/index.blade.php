@@ -2,10 +2,27 @@
 
 @section('title', 'Messages')
 
+@push('styles')
+<style>
+    .student-page-shell { padding: 8px 0; color: #edf8ff; }
+    .student-page-shell .card, .student-page-shell .list-group-item, .student-page-shell .btn { border-color: rgba(117,176,215,.18) !important; background: rgba(12,24,36,.9) !important; color: #edf8ff !important; }
+    .student-page-shell .card { border-radius: 18px; box-shadow: 0 8px 28px rgba(2,9,20,.2); }
+    .student-page-shell .card:hover { border-color: rgba(49,217,244,.36) !important; }
+    .student-page-shell .card-header { background: rgba(13,30,44,.92) !important; border-bottom: 1px solid rgba(117,176,215,.18); }
+    .student-page-title { margin: 0 0 8px; color: #f4f9ff; font-size: clamp(2.2rem,2.3vw,3.2rem); font-weight: 800; letter-spacing: -.05em; }
+    .student-page-subtitle { margin: 0; color: rgba(186,209,228,.8); font-size: 1.05rem; }
+    .student-page-shell .list-group-item { border-bottom: 1px solid rgba(117,176,215,.12); }
+    .student-page-shell .list-group-item-action.active { background: rgba(31,191,255,.14) !important; border-color: rgba(31,191,255,.4); }
+    .student-page-shell .list-group-item-action:hover { background: rgba(31,191,255,.08) !important; }
+    .student-page-shell .card-body.text-center { min-height: 230px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+</style>
+@endpush
+
 @section('content')
+<div class="student-page-shell">
 <div class="mb-4">
-    <h1 class="h3 mb-1">Messages</h1>
-    <p class="text-muted mb-0">Your conversations</p>
+    <h1 class="student-page-title">Messages</h1>
+    <p class="student-page-subtitle">Your conversations</p>
 </div>
 
 <div class="row g-4">
@@ -48,5 +65,6 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 @endsection

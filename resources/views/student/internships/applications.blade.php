@@ -2,11 +2,30 @@
 
 @section('title', 'My Applications')
 
+@push('styles')
+<style>
+    .student-page-shell { padding: 8px 0; color: #edf8ff; }
+    .student-page-shell .card, .student-page-shell .form-control, .student-page-shell .form-select, .student-page-shell .btn { border-color: rgba(117,176,215,.18) !important; background: rgba(12,24,36,.9) !important; color: #edf8ff !important; }
+    .student-page-shell .card { border-radius: 18px; box-shadow: 0 8px 28px rgba(2,9,20,.2); }
+    .student-page-shell .card:hover { border-color: rgba(49,217,244,.36) !important; }
+    .student-page-shell .card-header { background: rgba(13,30,44,.92) !important; border-bottom: 1px solid rgba(117,176,215,.18); }
+    .student-page-title { margin: 0 0 8px; color: #f4f9ff; font-size: clamp(2.2rem,2.3vw,3.2rem); font-weight: 800; letter-spacing: -.05em; }
+    .student-page-subtitle { margin: 0; color: rgba(186,209,228,.8); font-size: 1.05rem; }
+    .student-page-shell .btn-primary { border: 0; background: linear-gradient(135deg,#29d4ff,#25c7ff) !important; color: #062338 !important; font-weight: 700; box-shadow: 0 8px 20px rgba(37,194,255,.18); }
+    .student-page-shell .btn-outline-primary { border-color: rgba(77,210,255,.5); color: #7fe0ff !important; }
+    .student-page-shell .table thead th { background: rgba(12,28,40,.9); color: rgba(220,235,246,.9); border-color: rgba(117,176,215,.18); }
+    .student-page-shell .table td { color: rgba(216,232,243,.9); border-color: rgba(117,176,215,.08); }
+    .student-page-shell .table tbody tr { transition: background .18s ease; }
+    .student-page-shell .table tbody tr:hover { background: rgba(31,191,255,.05); }
+</style>
+@endpush
+
 @section('content')
+<div class="student-page-shell">
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h1 class="h3 mb-1">My Applications</h1>
-        <p class="text-muted mb-0">Track your internship application status</p>
+        <h1 class="student-page-title">My Applications</h1>
+        <p class="student-page-subtitle">Track your internship application status</p>
     </div>
     <a href="{{ route('student.internships.index') }}" class="btn btn-primary"><i class="bi bi-search"></i> Browse Internships</a>
 </div>
@@ -55,5 +74,6 @@
         </table>
     </div>
     @if($applications->hasPages())<div class="card-footer">{{ $applications->links() }}</div>@endif
+</div>
 </div>
 @endsection

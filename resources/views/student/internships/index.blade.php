@@ -2,11 +2,30 @@
 
 @section('title', 'Internships')
 
+@push('styles')
+<style>
+    .student-page-shell { padding: 8px 0; color: #edf8ff; }
+    .student-page-shell .card, .student-page-shell .form-control, .student-page-shell .form-select, .student-page-shell .btn { border-color: rgba(117,176,215,.18) !important; background: rgba(12,24,36,.9) !important; color: #edf8ff !important; }
+    .student-page-shell .card { border-radius: 18px; box-shadow: 0 8px 28px rgba(2,9,20,.2); }
+    .student-page-shell .card:hover { border-color: rgba(49,217,244,.36) !important; }
+    .student-page-shell .card-header { background: rgba(13,30,44,.92) !important; border-bottom: 1px solid rgba(117,176,215,.18); }
+    .student-page-title { margin: 0 0 8px; color: #f4f9ff; font-size: clamp(2.2rem,2.3vw,3.2rem); font-weight: 800; letter-spacing: -.05em; }
+    .student-page-subtitle { margin: 0; color: rgba(186,209,228,.8); font-size: 1.05rem; }
+    .student-page-shell .btn-primary { border: 0; background: linear-gradient(135deg,#29d4ff,#25c7ff) !important; color: #062338 !important; font-weight: 700; box-shadow: 0 8px 20px rgba(37,194,255,.18); }
+    .student-page-shell .btn-outline-secondary { border-color: rgba(117,176,215,.28); color: #bed5e7 !important; }
+    .student-page-shell .border { border-color: rgba(117,176,215,.28) !important; }
+    .student-page-shell .bg-light { background: #eef4f8 !important; color: #102337 !important; }
+    .student-page-shell .text-primary { color: #58d9ff !important; }
+    .student-page-shell .badge { border-radius: 999px; padding: .4rem .7rem; }
+</style>
+@endpush
+
 @section('content')
+<div class="student-page-shell">
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h1 class="h3 mb-1">Browse Internships</h1>
-        <p class="text-muted mb-0">Find opportunities matched to your competencies</p>
+        <h1 class="student-page-title">Browse Internships</h1>
+        <p class="student-page-subtitle">Find opportunities matched to your competencies</p>
     </div>
 </div>
 
@@ -84,4 +103,5 @@
 </div>
 
 @if($internships->hasPages())<div class="mt-4">{{ $internships->links() }}</div>@endif
+</div>
 @endsection

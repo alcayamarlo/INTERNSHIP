@@ -2,10 +2,28 @@
 
 @section('title', 'Edit Profile')
 
+@push('styles')
+<style>
+    .student-page-shell { padding: 8px 0; color: #edf8ff; }
+    .student-page-shell .card, .student-page-shell .form-control, .student-page-shell .form-select, .student-page-shell .btn { border-color: rgba(117,176,215,.18) !important; background: rgba(12,24,36,.9) !important; color: #edf8ff !important; }
+    .student-page-shell .card { border-radius: 18px; box-shadow: 0 8px 28px rgba(2,9,20,.2); }
+    .student-page-shell .card:hover { border-color: rgba(49,217,244,.36) !important; }
+    .student-page-shell .card-header { background: rgba(14,31,46,.92) !important; border-bottom: 1px solid rgba(117,176,215,.18); }
+    .student-page-title { margin: 0 0 8px; color: #eef8ff; font-size: clamp(2.2rem,2.4vw,3.3rem); font-weight: 800; letter-spacing: -.05em; }
+    .student-page-subtitle { margin: 0; color: rgba(187,211,228,.8); font-size: 1.06rem; }
+    .student-page-shell .btn-primary { border: 0; background: linear-gradient(135deg,#29d4ff,#25c7ff) !important; color: #062338 !important; font-weight: 700; box-shadow: 0 8px 20px rgba(37,194,255,.18); }
+    .student-page-shell .btn-outline-primary { border-color: rgba(77,210,255,.5); color: #7fe0ff !important; }
+    .student-page-shell .bg-light { background: #102a40 !important; color: #edf8ff !important; }
+    .student-page-shell .progress { height: 7px !important; background: rgba(120,148,175,.18); border-radius: 999px; }
+    .student-page-shell .progress-bar { border-radius: 999px; background: linear-gradient(90deg,#27d4ff,#4fd1ff) !important; }
+</style>
+@endpush
+
 @section('content')
+<div class="student-page-shell">
 <div class="mb-4">
-    <h1 class="h3 mb-1">Your Profile</h1>
-    <p class="text-muted mb-0">Update your personal and academic information</p>
+    <h1 class="student-page-title">Your Profile</h1>
+    <p class="student-page-subtitle">Update your personal and academic information</p>
 </div>
 
 <div class="row g-4">
@@ -239,5 +257,6 @@
             </div>
         </form>
     </div>
+</div>
 </div>
 @endsection

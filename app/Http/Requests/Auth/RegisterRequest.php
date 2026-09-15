@@ -27,11 +27,8 @@ class RegisterRequest extends FormRequest
             'password' => [
                 'required',
                 'confirmed',
-                Password::min(8)
-                    ->mixedCase()
-                    ->numbers()
-                    ->symbols()
-                    ->uncompromised(),
+                Password::min(8),
+                'regex:/[A-Z]/',
             ],
             'role' => ['required', Rule::in([UserRole::Student->value])],
             'phone' => ['nullable', 'string', 'max:20'],
@@ -54,6 +51,8 @@ class RegisterRequest extends FormRequest
             'email.unique' => 'This email is already registered.',
             'password.required' => 'Password is required.',
             'password.confirmed' => 'Passwords do not match.',
+            'password.min' => 'Password must be at least 8 characters.',
+            'password.regex' => 'Password must contain at least one uppercase letter.',
             'role.required' => 'Please select a role.',
             'company_name.required_if' => 'Company name is required for employers.',
         ];

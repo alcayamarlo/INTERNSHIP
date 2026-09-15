@@ -45,10 +45,6 @@ class LoginController extends Controller
 
             $this->activityLog->log($user, 'login');
 
-            if (! $user->hasVerifiedEmail()) {
-                return redirect()->route('verification.notice');
-            }
-
             return redirect()->intended(route($user->dashboardRoute()));
         }
 
