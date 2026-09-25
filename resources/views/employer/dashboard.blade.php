@@ -4,49 +4,259 @@
 
 @push('styles')
 <style>
-    .employer-dashboard-shell { padding: 10px 0; color: #edf8ff; }
-    .employer-dashboard-header { position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 25px; }
-    .employer-dashboard-header::before { content: "EMPLOYER WORKSPACE"; position: absolute; margin-top: -70px; color: #31d9f4; font-size: .68rem; font-weight: 800; letter-spacing: .16em; }
-    .employer-dashboard-header h1 { margin: 0; color: #f4f9ff; font-size: clamp(2.1rem,2.5vw,3.3rem); font-weight: 800; letter-spacing: -.05em; }
-    .employer-dashboard-header p { margin: 7px 0 0; color: rgba(186,211,228,.82); font-size: 1.05rem; }
-    .employer-dashboard-status { display: flex; align-items: center; gap: 7px; margin-top: 10px; color: rgba(175,205,222,.76); font-size: .68rem; font-weight: 700; }
-    .employer-dashboard-status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #45df9a; box-shadow: 0 0 10px rgba(69,223,154,.7); }
-    .employer-dashboard-shell .card { overflow: hidden; border: 1px solid rgba(117,176,215,.18); border-radius: 18px; background: linear-gradient(145deg,rgba(13,35,54,.96),rgba(8,22,37,.96)); box-shadow: 0 10px 28px rgba(2,9,20,.18); }
-    .employer-dashboard-shell .card:hover { border-color: rgba(49,217,244,.36); }
-    .employer-dashboard-shell .card-header { padding: .95rem 1.1rem; border-bottom: 1px solid rgba(117,176,215,.14); background: rgba(14,35,51,.9) !important; color: #edf8ff; }
-    .employer-dashboard-shell .card-header h5 { margin: 0; color: #edf8ff; font-size: .92rem; font-weight: 750; }
-    .employer-dashboard-shell .card-header h5 i { margin-right: 7px; color: #31d9f4; }
-    .employer-dashboard-shell .card-body { padding: 1.15rem; }
-    .employer-dashboard-shell .card .h3 { color: #f3f9ff; font-weight: 800; letter-spacing: -.04em; }
-    .employer-dashboard-shell > .row:first-of-type .card { position: relative; background: linear-gradient(145deg,rgba(14,39,60,.98),rgba(8,22,37,.96)); }
-    .employer-dashboard-shell > .row:first-of-type .card::before { content: ""; position: absolute; inset: 0 0 auto; height: 2px; background: linear-gradient(90deg,transparent,rgba(49,217,244,.95),transparent); }
-    .employer-dashboard-shell > .row:first-of-type .col-md-6:nth-child(2) .card::before { background: linear-gradient(90deg,transparent,rgba(138,169,255,.95),transparent); }
-    .employer-dashboard-shell > .row:first-of-type .col-md-6:nth-child(3) .card::before { background: linear-gradient(90deg,transparent,rgba(251,191,36,.95),transparent); }
-    .employer-dashboard-shell > .row:first-of-type .col-md-6:nth-child(4) .card::before { background: linear-gradient(90deg,transparent,rgba(69,223,154,.95),transparent); }
-    .employer-dashboard-shell > .row:first-of-type .card .h3 { font-size: 2.15rem; }
-    .employer-dashboard-shell .text-primary { color: #31d9f4 !important; }
-    .employer-dashboard-shell .text-accent { color: #8aa9ff !important; }
-    .employer-dashboard-shell .text-warning { color: #fbbf24 !important; }
-    .employer-dashboard-shell .text-success { color: #45df9a !important; }
-    .employer-dashboard-shell .text-muted, .employer-dashboard-shell small { color: rgba(170,200,218,.78) !important; }
-    .employer-dashboard-shell .list-group-item { border-color: rgba(117,176,215,.1); background: transparent; color: #dcebf5; transition: background .18s ease, padding-left .18s ease; }
-    .employer-dashboard-shell .list-group-item:hover { background: rgba(49,217,244,.06); padding-left: 1.25rem; }
-    .employer-dashboard-shell .list-group-item i { width: 24px; color: #31d9f4; }
-    .employer-dashboard-shell .list-group-item-action { display: flex; align-items: center; min-height: 54px; font-size: 1rem; }
-    .employer-dashboard-shell .list-group-item-action::after { content: ""; width: 7px; height: 7px; margin-left: auto; border-top: 1px solid #7fe7f8; border-right: 1px solid #7fe7f8; transform: rotate(45deg); opacity: .65; }
-    .employer-dashboard-shell .progress { height: 7px !important; overflow: hidden; border-radius: 999px; background: rgba(120,148,175,.18); }
-    .employer-dashboard-shell .progress-bar { border-radius: 999px; }
-    .employer-dashboard-shell .table { --bs-table-bg: transparent; --bs-table-color: rgba(216,232,243,.9); --bs-table-border-color: rgba(117,176,215,.1); }
-    .employer-dashboard-shell .table thead th { background: rgba(12,29,41,.9) !important; color: rgba(185,211,228,.78) !important; border-color: rgba(117,176,215,.12); font-size: .68rem; letter-spacing: .05em; text-transform: uppercase; }
-    .employer-dashboard-shell .table td { color: rgba(216,232,243,.9) !important; border-color: rgba(117,176,215,.08); vertical-align: middle; }
-    .employer-dashboard-shell .table tbody tr:hover { background: rgba(49,217,244,.045); }
-    .employer-dashboard-shell .btn-primary { border: 0; background: linear-gradient(135deg,#29d4ff,#25c7ff) !important; color: #062338 !important; font-weight: 700; box-shadow: 0 9px 20px rgba(37,194,255,.18); }
-    .employer-dashboard-shell .btn-outline-primary { border-color: rgba(77,210,255,.55); color: #7fe0ff; }
-    .employer-dashboard-shell .status-label { color: #dcebf5; font-weight: 650; }
-    .employer-dashboard-shell .status-row { padding: 10px 0; border-bottom: 1px solid rgba(117,176,215,.08); }
-    .employer-dashboard-shell .status-row:last-child { padding-bottom: 0; border-bottom: 0; }
-    .employer-dashboard-shell .status-count { min-width: 28px; text-align: center; }
-    @media (max-width: 767.98px) { .employer-dashboard-header { align-items: flex-start; flex-direction: column; } }
+    .employer-dashboard-shell {
+        padding: 6px 0 0;
+        color: #edf5fb;
+    }
+
+    .employer-dashboard-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+        gap: 1rem;
+    }
+
+    .employer-dashboard-header h1 {
+        margin: 0;
+        color: #f4f9ff;
+        font-size: clamp(2.1rem, 2vw + 1rem, 3rem);
+        font-weight: 800;
+        letter-spacing: -0.05em;
+    }
+
+    .employer-dashboard-header p {
+        margin-top: 6px;
+        color: rgba(196, 214, 228, 0.8);
+        font-size: 1rem;
+    }
+
+    .employer-dashboard-status {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-top: 10px;
+        color: rgba(175, 205, 222, 0.8);
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .employer-dashboard-status::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #7ac6a4;
+    }
+
+    .employer-dashboard-shell > .row:first-of-type {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .employer-dashboard-shell .card,
+    .employer-dashboard-shell .list-group-item,
+    .employer-dashboard-shell .btn {
+        border-color: rgba(148, 163, 184, 0.14) !important;
+        background: rgba(16, 31, 45, 0.86) !important;
+        color: #edf5fb;
+    }
+
+    .employer-dashboard-shell .card {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        border-radius: 18px;
+        background: rgba(15, 30, 43, 0.88);
+        box-shadow: 0 10px 22px rgba(3, 8, 18, 0.14);
+    }
+
+    .employer-dashboard-shell .card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto;
+        height: 2px;
+        background: rgba(148, 163, 184, 0.18);
+    }
+
+    .employer-dashboard-shell .card-body {
+        padding: 1rem 1.1rem;
+    }
+
+    .employer-dashboard-shell .card-header {
+        border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+        background: rgba(14, 27, 38, 0.9) !important;
+        padding: 1rem 1.1rem;
+    }
+
+    .employer-dashboard-shell .card-header h5 {
+        margin: 0;
+        color: #edf8ff;
+        font-size: 1.1rem;
+        font-weight: 800;
+    }
+
+    .employer-dashboard-shell .card-header h5 i {
+        margin-right: 0.5rem;
+        color: #b9c9d9;
+    }
+
+    .employer-dashboard-shell .card-title {
+        margin-bottom: 0.75rem;
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(196, 214, 228, 0.82);
+        font-weight: 700;
+    }
+
+    .employer-dashboard-shell .h3 {
+        color: #f4fbff;
+        font-size: clamp(1.4rem, 1vw + 0.8rem, 1.8rem);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        margin: 0;
+    }
+
+    .employer-dashboard-shell .text-muted,
+    .employer-dashboard-shell small,
+    .employer-dashboard-shell .small {
+        color: rgba(176, 201, 219, 0.84) !important;
+    }
+
+    .employer-dashboard-shell .list-group-item {
+        border-color: rgba(148, 163, 184, 0.1);
+        background: transparent;
+        color: #dcebf5;
+        transition: background 0.18s ease;
+    }
+
+    .employer-dashboard-shell .list-group-item:hover {
+        background: rgba(148, 163, 184, 0.04);
+    }
+
+    .employer-dashboard-shell .list-group-item i {
+        width: 24px;
+        color: #dfeaf6;
+    }
+
+    .employer-dashboard-shell .list-group-item-action {
+        display: flex;
+        align-items: center;
+        min-height: 58px;
+        font-size: 1.02rem;
+        font-weight: 600;
+        padding: 0.9rem 1rem;
+    }
+
+    .employer-dashboard-shell .list-group-item-action::after {
+        content: "";
+        width: 7px;
+        height: 7px;
+        margin-left: auto;
+        border-top: 1px solid rgba(197, 213, 230, 0.9);
+        border-right: 1px solid rgba(197, 213, 230, 0.9);
+        transform: rotate(45deg);
+        opacity: 0.7;
+    }
+
+    .employer-dashboard-shell .progress {
+        height: 7px !important;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.14);
+    }
+
+    .employer-dashboard-shell .progress-bar {
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(160, 181, 201, 0.85), rgba(140, 160, 180, 0.95));
+    }
+
+    .employer-dashboard-shell .table {
+        --bs-table-bg: transparent;
+        --bs-table-color: rgba(216, 232, 243, 0.9);
+        --bs-table-border-color: rgba(148, 163, 184, 0.1);
+    }
+
+    .employer-dashboard-shell .table thead th {
+        background: rgba(16, 32, 46, 0.8);
+        color: rgba(214, 227, 240, 0.8);
+        border-color: rgba(148, 163, 184, 0.12);
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 0.8rem 0.9rem;
+    }
+
+    .employer-dashboard-shell .table td {
+        color: rgba(216, 232, 243, 0.9) !important;
+        border-color: rgba(148, 163, 184, 0.08);
+        vertical-align: middle;
+        padding: 0.8rem 0.9rem;
+        font-size: 0.92rem;
+    }
+
+    .employer-dashboard-shell .table tbody tr:hover {
+        background: rgba(148, 163, 184, 0.03);
+    }
+
+    .employer-dashboard-shell .btn-primary {
+        border: 0;
+        background: linear-gradient(135deg, #6ab6d7, #4f9ed1) !important;
+        color: #eef9ff !important;
+        font-weight: 700;
+        box-shadow: 0 8px 20px rgba(37,194,255,.15);
+    }
+
+    .employer-dashboard-shell .btn-outline-primary {
+        border-color: rgba(148, 163, 184, 0.25);
+        color: #ebf4ff;
+        background: rgba(30, 46, 60, 0.85);
+        border-radius: 8px;
+        font-weight: 700;
+    }
+
+    .employer-dashboard-shell .status-label {
+        color: #dcebf5;
+        font-weight: 650;
+    }
+
+    .employer-dashboard-shell .status-row {
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+    }
+
+    .employer-dashboard-shell .status-row:last-child {
+        padding-bottom: 0;
+        border-bottom: 0;
+    }
+
+    .employer-dashboard-shell .status-count {
+        min-width: 28px;
+        text-align: center;
+    }
+
+    @media (max-width: 991.98px) {
+        .employer-dashboard-shell > .row:first-of-type {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .employer-dashboard-shell > .row:first-of-type {
+            grid-template-columns: 1fr;
+        }
+
+        .employer-dashboard-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }
 </style>
 @endpush
 

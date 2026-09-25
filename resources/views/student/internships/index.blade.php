@@ -4,19 +4,82 @@
 
 @push('styles')
 <style>
-    .student-page-shell { padding: 8px 0; color: #edf8ff; }
-    .student-page-shell .card, .student-page-shell .form-control, .student-page-shell .form-select, .student-page-shell .btn { border-color: rgba(117,176,215,.18) !important; background: rgba(12,24,36,.9) !important; color: #edf8ff !important; }
-    .student-page-shell .card { border-radius: 18px; box-shadow: 0 8px 28px rgba(2,9,20,.2); }
-    .student-page-shell .card:hover { border-color: rgba(49,217,244,.36) !important; }
-    .student-page-shell .card-header { background: rgba(13,30,44,.92) !important; border-bottom: 1px solid rgba(117,176,215,.18); }
-    .student-page-title { margin: 0 0 8px; color: #f4f9ff; font-size: clamp(2.2rem,2.3vw,3.2rem); font-weight: 800; letter-spacing: -.05em; }
-    .student-page-subtitle { margin: 0; color: rgba(186,209,228,.8); font-size: 1.05rem; }
-    .student-page-shell .btn-primary { border: 0; background: linear-gradient(135deg,#29d4ff,#25c7ff) !important; color: #062338 !important; font-weight: 700; box-shadow: 0 8px 20px rgba(37,194,255,.18); }
-    .student-page-shell .btn-outline-secondary { border-color: rgba(117,176,215,.28); color: #bed5e7 !important; }
-    .student-page-shell .border { border-color: rgba(117,176,215,.28) !important; }
-    .student-page-shell .bg-light { background: #eef4f8 !important; color: #102337 !important; }
-    .student-page-shell .text-primary { color: #58d9ff !important; }
-    .student-page-shell .badge { border-radius: 999px; padding: .4rem .7rem; }
+    .student-page-shell {
+        padding: 6px 0 0;
+        color: #edf8ff;
+    }
+
+    .student-page-title {
+        margin: 0 0 8px;
+        color: #f4f9ff;
+        font-size: clamp(1.8rem, 1.2vw + 1.1rem, 2.5rem);
+        font-weight: 800;
+        letter-spacing: -0.05em;
+    }
+
+    .student-page-subtitle {
+        margin: 0;
+        color: rgba(186,209,228,.8);
+        font-size: 0.95rem;
+    }
+
+    .student-page-shell .card,
+    .student-page-shell .form-control,
+    .student-page-shell .form-select,
+    .student-page-shell .btn {
+        border-color: rgba(117,176,215,.18) !important;
+        background: rgba(16,31,45,.86) !important;
+        color: #edf8ff !important;
+    }
+
+    .student-page-shell .card {
+        border-radius: 18px;
+        border: 1px solid rgba(148,163,184,.14);
+        box-shadow: 0 10px 22px rgba(2,9,20,.12);
+        overflow: hidden;
+    }
+
+    .student-page-shell .card:hover {
+        border-color: rgba(49,217,244,.36) !important;
+    }
+
+    .student-page-shell .card-header {
+        background: rgba(13,30,44,.92) !important;
+        border-bottom: 1px solid rgba(117,176,215,.18);
+        padding: 1rem 1.1rem;
+    }
+
+    .student-page-shell .btn-primary {
+        border: 0;
+        background: linear-gradient(135deg, #6ab6d7, #4f9ed1) !important;
+        color: #eef9ff !important;
+        font-weight: 700;
+        box-shadow: 0 8px 20px rgba(37,194,255,.15);
+    }
+
+    .student-page-shell .btn-outline-secondary {
+        border-color: rgba(117,176,215,.28);
+        color: #bed5e7 !important;
+    }
+
+    .student-page-shell .border {
+        border-color: rgba(117,176,215,.28) !important;
+    }
+
+    .student-page-shell .bg-light {
+        background: rgba(238,244,248,.08) !important;
+        color: #edf8ff !important;
+    }
+
+    .student-page-shell .text-primary {
+        color: #58d9ff !important;
+    }
+
+    .student-page-shell .badge {
+        border-radius: 999px;
+        padding: 0.4rem 0.7rem;
+        font-weight: 700;
+    }
 </style>
 @endpush
 

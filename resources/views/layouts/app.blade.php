@@ -62,31 +62,31 @@
 
         :root {
 
-            --sb-cyan: #08d9f5;
-            --sb-cyan-dark: #05b8d1;
-            --sb-cyan-soft: rgba(8, 217, 245, .08);
-            --sb-cyan-border: rgba(8, 217, 245, .18);
+            --sb-cyan: #9ca9b8;
+            --sb-cyan-dark: #7f8fa1;
+            --sb-cyan-soft: rgba(156, 169, 184, .06);
+            --sb-cyan-border: rgba(156, 169, 184, .12);
 
-            --sb-bg: #071426;
-            --sb-bg-deep: #04101d;
+            --sb-bg: #0c1722;
+            --sb-bg-deep: #09141d;
 
-            --sb-sidebar: #081a2d;
-            --sb-sidebar-2: #0a1e33;
+            --sb-sidebar: #101d2a;
+            --sb-sidebar-2: #132536;
 
-            --sb-card: #0c2036;
-            --sb-card-light: #102944;
+            --sb-card: #132536;
+            --sb-card-light: #172e3f;
 
-            --sb-border: rgba(148, 163, 184, .13);
+            --sb-border: rgba(148, 163, 184, .12);
 
-            --sb-text: #f8fafc;
-            --sb-text-soft: #d8e3ef;
-            --sb-muted: #8da4bd;
+            --sb-text: #edf3f8;
+            --sb-text-soft: #dfeaf4;
+            --sb-muted: #9aa9ba;
 
-            --sb-green: #4ade80;
-            --sb-red: #fb7185;
-            --sb-yellow: #fbbf24;
-            --sb-blue: #60a5fa;
-            --sb-purple: #a78bfa;
+            --sb-green: #5bbf89;
+            --sb-red: #d96a7d;
+            --sb-yellow: #d4a94d;
+            --sb-blue: #7d9cc5;
+            --sb-purple: #9b8ec6;
 
             --sb-sidebar-width: 270px;
             --sb-topbar-height: 72px;
@@ -172,7 +172,7 @@
             background:
                 radial-gradient(
                     circle,
-                    rgba(8,217,245,.07),
+                    rgba(148, 163, 184, .04),
                     transparent 68%
                 );
 
@@ -233,7 +233,7 @@
         .sb-sidebar::-webkit-scrollbar-thumb {
 
             background:
-                rgba(8,217,245,.25);
+                rgba(148, 163, 184, .22);
 
             border-radius: 20px;
         }
@@ -242,7 +242,7 @@
         .sb-sidebar::-webkit-scrollbar-thumb:hover {
 
             background:
-                rgba(8,217,245,.55);
+                rgba(148, 163, 184, .38);
         }
 
 
@@ -283,17 +283,15 @@
             background:
                 linear-gradient(
                     135deg,
-                    var(--sb-cyan),
-                    #0891b2
+                    #b8c6d5,
+                    #8aa0b7
                 );
 
-            color: #032333;
+            color: #102231;
 
             font-size: 19px;
 
-            box-shadow:
-                0 8px 25px
-                rgba(8,217,245,.12);
+            box-shadow: none;
         }
 
 
@@ -413,7 +411,7 @@
 
             color: var(--sb-cyan);
 
-            font-size: 7px;
+            font-size: 9px;
 
             font-weight: 700;
 
@@ -433,7 +431,7 @@
 
             color: #5f7892;
 
-            font-size: 7px;
+            font-size: 9px;
 
             font-weight: 800;
 
@@ -456,7 +454,7 @@
 
             position: relative;
 
-            min-height: 44px;
+            min-height: 47px;
 
             margin-bottom: 3px;
 
@@ -475,7 +473,7 @@
 
             color: var(--sb-muted);
 
-            font-size: 9px;
+            font-size: 12px;
 
             font-weight: 650;
 
@@ -489,7 +487,7 @@
 
             color: #6f879e;
 
-            font-size: 14px;
+            font-size: 16px;
 
             text-align: center;
 
@@ -502,10 +500,10 @@
             color: var(--sb-text);
 
             background:
-                rgba(8,217,245,.055);
+                rgba(148, 163, 184, .05);
 
             border-color:
-                rgba(8,217,245,.07);
+                rgba(148, 163, 184, .08);
         }
 
 
@@ -519,10 +517,10 @@
             color: var(--sb-cyan);
 
             background:
-                rgba(8,217,245,.09);
+                rgba(148, 163, 184, .08);
 
             border-color:
-                rgba(8,217,245,.12);
+                rgba(148, 163, 184, .12);
         }
 
 
@@ -549,9 +547,7 @@
 
             background: var(--sb-cyan);
 
-            box-shadow:
-                0 0 12px
-                rgba(8,217,245,.5);
+            box-shadow: none;
         }
 
 

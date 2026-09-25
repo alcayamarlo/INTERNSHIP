@@ -16,13 +16,13 @@
 
 :root {
     --sb-cyan: #08d9f5;
-    --sb-cyan-dark: #05b8d1;
+    --sb-cyan-dark: #0891b2;
 
     --sb-bg: #071526;
-    --sb-panel: #091a2e;
-    --sb-card: #0c2036;
+    --sb-panel: #081a2e;
+    --sb-card: #0b2036;
 
-    --sb-border: rgba(148, 163, 184, .14);
+    --sb-border: rgba(8, 217, 245, 0.12);
 
     --sb-text: #f8fafc;
     --sb-text-soft: #d8e3ef;
@@ -66,11 +66,6 @@
     right: 0;
     bottom: 0;
 
-    /*
-     * Your screenshot is basically 50/50.
-     * This makes the registration side ALWAYS fit
-     * exactly on the right half of the screen.
-     */
     width: 50vw;
 
     height: 100vh;
@@ -91,6 +86,10 @@
             #071426 0%,
             #08182b 100%
         );
+
+    border-left:
+        1px solid
+        rgba(8, 217, 245, 0.10);
 
     scrollbar-width: thin;
 
@@ -755,16 +754,16 @@
 
     border:
         1px solid
-        rgba(148,163,184,.15);
+        rgba(8, 217, 245, 0.90);
 
     border-radius:
-        8px;
+        10px;
 
     outline:
         none;
 
     background:
-        rgba(4,17,31,.72);
+        rgba(9, 27, 39, 0.92);
 
     color:
         var(--sb-text);
@@ -776,13 +775,13 @@
         10px;
 
     transition:
-        .2s ease;
+        0.2s ease;
 }
 
 
 .form-control::placeholder {
     color:
-        rgba(141,164,189,.45);
+        rgba(166, 182, 201, 0.72);
 }
 
 
@@ -809,7 +808,7 @@
 .form-select:hover {
 
     border-color:
-        rgba(8,217,245,.28);
+        rgba(8, 217, 245, 1);
 }
 
 
@@ -820,11 +819,14 @@
         var(--sb-cyan);
 
     background:
-        rgba(4,17,31,.92);
+        rgba(8, 24, 36, 0.97);
 
     box-shadow:
         0 0 0 3px
-        rgba(8,217,245,.06);
+        rgba(8, 217, 245, 0.12);
+
+    color:
+        var(--sb-text);
 }
 
 
@@ -3030,7 +3032,7 @@
 
                             <i class="bi bi-rocket-takeoff-fill"></i>
 
-                            Create My Skill Bridge Account
+                            Sign Up
 
                         </span>
 

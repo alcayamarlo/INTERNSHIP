@@ -110,7 +110,18 @@
                     <div class="row g-3 mt-0">
                         <div class="col-md-3">
                             <label class="form-label">Suffix</label>
-                            <input type="text" class="form-control" name="suffix" placeholder="Jr., Sr., etc." value="{{ old('suffix', $student->suffix) }}">
+                            @php
+                                $suffixValue = old('suffix', $student->suffix ?? '');
+                            @endphp
+                            <select class="form-select" name="suffix">
+                                <option value="" {{ $suffixValue === '' ? 'selected' : '' }}>N/A</option>
+                                <option value="Jr." {{ $suffixValue === 'Jr.' ? 'selected' : '' }}>Jr.</option>
+                                <option value="Sr." {{ $suffixValue === 'Sr.' ? 'selected' : '' }}>Sr.</option>
+                                <option value="II" {{ $suffixValue === 'II' ? 'selected' : '' }}>II</option>
+                                <option value="III" {{ $suffixValue === 'III' ? 'selected' : '' }}>III</option>
+                                <option value="IV" {{ $suffixValue === 'IV' ? 'selected' : '' }}>IV</option>
+                                <option value="V" {{ $suffixValue === 'V' ? 'selected' : '' }}>V</option>
+                            </select>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Gender</label>

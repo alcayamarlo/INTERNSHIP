@@ -4,17 +4,71 @@
 
 @push('styles')
 <style>
-    .student-page-shell { padding: 8px 0; color: #edf8ff; }
-    .student-page-shell .card, .student-page-shell .list-group-item, .student-page-shell .btn { border-color: rgba(117,176,215,.18) !important; background: rgba(12,24,36,.9) !important; color: #edf8ff !important; }
-    .student-page-shell .card { border-radius: 18px; box-shadow: 0 8px 28px rgba(2,9,20,.2); }
-    .student-page-shell .card:hover { border-color: rgba(49,217,244,.36) !important; }
-    .student-page-shell .card-header { background: rgba(13,30,44,.92) !important; border-bottom: 1px solid rgba(117,176,215,.18); }
-    .student-page-title { margin: 0 0 8px; color: #f4f9ff; font-size: clamp(2.2rem,2.3vw,3.2rem); font-weight: 800; letter-spacing: -.05em; }
-    .student-page-subtitle { margin: 0; color: rgba(186,209,228,.8); font-size: 1.05rem; }
-    .student-page-shell .list-group-item { border-bottom: 1px solid rgba(117,176,215,.12); }
-    .student-page-shell .list-group-item-action.active { background: rgba(31,191,255,.14) !important; border-color: rgba(31,191,255,.4); }
-    .student-page-shell .list-group-item-action:hover { background: rgba(31,191,255,.08) !important; }
-    .student-page-shell .card-body.text-center { min-height: 230px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .student-page-shell {
+        padding: 6px 0 0;
+        color: #edf8ff;
+    }
+
+    .student-page-title {
+        margin: 0 0 8px;
+        color: #f4f9ff;
+        font-size: clamp(1.8rem, 1.2vw + 1.1rem, 2.5rem);
+        font-weight: 800;
+        letter-spacing: -0.05em;
+    }
+
+    .student-page-subtitle {
+        margin: 0;
+        color: rgba(186,209,228,.8);
+        font-size: 0.95rem;
+    }
+
+    .student-page-shell .card,
+    .student-page-shell .list-group-item,
+    .student-page-shell .btn {
+        border-color: rgba(117,176,215,.18) !important;
+        background: rgba(16,31,45,.86) !important;
+        color: #edf8ff !important;
+    }
+
+    .student-page-shell .card {
+        border-radius: 18px;
+        border: 1px solid rgba(148,163,184,.14);
+        box-shadow: 0 10px 22px rgba(2,9,20,.12);
+        overflow: hidden;
+    }
+
+    .student-page-shell .card:hover {
+        border-color: rgba(49,217,244,.36) !important;
+    }
+
+    .student-page-shell .card-header {
+        background: rgba(13,30,44,.92) !important;
+        border-bottom: 1px solid rgba(117,176,215,.18);
+        padding: 1rem 1.1rem;
+    }
+
+    .student-page-shell .list-group-item {
+        border-bottom: 1px solid rgba(117,176,215,.12);
+        padding: 0.9rem 1rem;
+    }
+
+    .student-page-shell .list-group-item-action.active {
+        background: rgba(31,191,255,.14) !important;
+        border-color: rgba(31,191,255,.4);
+    }
+
+    .student-page-shell .list-group-item-action:hover {
+        background: rgba(31,191,255,.08) !important;
+    }
+
+    .student-page-shell .card-body.text-center {
+        min-height: 230px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
 </style>
 @endpush
 

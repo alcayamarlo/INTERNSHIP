@@ -8,7 +8,7 @@ use App\Models\User;
 
 class NotificationService
 {
-    public function send(User $user, string $type, string $title, string $message, array $data = [], bool $queue = true): AppNotification
+    public function send(User $user, string $type, string $title, string $message, array $data = [], bool $queue = false): AppNotification
     {
         if ($queue) {
             SendNotification::dispatch($user->id, $type, $title, $message, $data);
