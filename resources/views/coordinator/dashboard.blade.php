@@ -2,120 +2,382 @@
 
 @section('title', 'Coordinator Dashboard')
 
+@push('styles')
+<style>
+    .coordinator-dashboard-shell {
+        padding: 8px 0 0;
+        color: #edf5fb;
+    }
+
+    .coordinator-dashboard-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+        gap: 1rem;
+    }
+
+    .coordinator-dashboard-header h1 {
+        margin: 0;
+        color: #f4f9ff;
+        font-size: clamp(2.2rem, 1.8vw + 1.2rem, 3.2rem);
+        font-weight: 800;
+        letter-spacing: -0.06em;
+        line-height: 1.1;
+    }
+
+    .coordinator-dashboard-header .subtitle {
+        margin: 0.5rem 0 0;
+        color: rgba(196, 214, 228, 0.74);
+        font-size: 0.98rem;
+        line-height: 1.5;
+        max-width: 700px;
+    }
+
+    .coordinator-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.4rem;
+    }
+
+    .coordinator-stat-card {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        min-height: 110px;
+        padding: 1rem 1.1rem;
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        border-radius: 18px;
+        background: rgba(15, 28, 40, 0.9);
+        box-shadow: 0 10px 20px rgba(3, 8, 18, 0.12);
+        transition: transform 0.18s ease, border-color 0.18s ease;
+    }
+
+    .coordinator-stat-card:hover {
+        transform: translateY(-1px);
+        border-color: rgba(148, 163, 184, 0.2);
+    }
+
+    .coordinator-stat-icon {
+        width: 46px;
+        height: 46px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: rgba(123, 163, 205, 0.12);
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        color: #dfeefc;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .coordinator-stat-content {
+        min-width: 0;
+    }
+
+    .coordinator-stat-label {
+        display: block;
+        margin-bottom: 0.2rem;
+        color: rgba(196, 214, 228, 0.76);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .coordinator-stat-value {
+        margin: 0;
+        color: #f3f9ff;
+        font-size: clamp(1.5rem, 2vw, 2.2rem);
+        font-weight: 800;
+        line-height: 1.05;
+        letter-spacing: -0.05em;
+    }
+
+    .coordinator-dashboard-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .coordinator-dashboard-card {
+        overflow: hidden;
+        border: 1px solid rgba(148, 163, 184, 0.15);
+        border-radius: 18px;
+        background: rgba(15, 30, 43, 0.88);
+        box-shadow: 0 12px 24px rgba(3, 8, 18, 0.14);
+    }
+
+    .coordinator-dashboard-card .card-header {
+        border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+        background: rgba(13, 24, 35, 0.9) !important;
+        padding: 1rem 1.1rem;
+    }
+
+    .coordinator-dashboard-card .card-header h5 {
+        margin: 0;
+        color: #edf8ff;
+        font-size: 1.08rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+
+    .coordinator-dashboard-card .card-header h5 i {
+        margin-right: 0.5rem;
+        color: #cedeef;
+    }
+
+    .coordinator-dashboard-card .card-body {
+        padding: 1rem 1.1rem;
+    }
+
+    .coordinator-dashboard-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.38rem;
+    }
+
+    .coordinator-dashboard-list a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 58px;
+        border-radius: 12px;
+        padding: 0.88rem 0.95rem;
+        background: rgba(18, 36, 50, 0.6);
+        color: #edf6ff;
+        font-size: 1rem;
+        font-weight: 600;
+        border: 1px solid rgba(148, 163, 184, 0.08);
+        transition: all 0.18s ease;
+    }
+
+    .coordinator-dashboard-list a:hover {
+        background: rgba(26, 44, 59, 0.88);
+        border-color: rgba(148, 163, 184, 0.16);
+        text-decoration: none;
+    }
+
+    .coordinator-dashboard-list a .left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .coordinator-dashboard-list a .left i {
+        width: 20px;
+        color: #d6e8f9;
+        font-size: 1.1rem;
+    }
+
+    .coordinator-dashboard-list a .arrow {
+        color: rgba(220, 235, 246, 0.8);
+        font-size: 1.1rem;
+    }
+
+    .coordinator-info-list {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 0.8rem 0.7rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .coordinator-info-list li {
+        color: #edf6ff;
+        font-size: 0.98rem;
+        line-height: 1.5;
+        word-break: break-word;
+    }
+
+    .coordinator-info-list li:nth-child(odd) {
+        color: rgba(214, 227, 240, 0.82);
+        font-weight: 700;
+    }
+
+    .coordinator-bottom-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+        gap: 1rem;
+        margin-top: 0.3rem;
+    }
+
+    .coordinator-table-wrap {
+        overflow: hidden;
+    }
+
+    .coordinator-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: #ebf4ff;
+    }
+
+    .coordinator-table thead th {
+        background: rgba(16, 32, 46, 0.8);
+        color: rgba(214, 227, 240, 0.8);
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 0.8rem 0.9rem;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+        text-align: left;
+    }
+
+    .coordinator-table tbody td {
+        padding: 0.8rem 0.9rem;
+        border-top: 1px solid rgba(148, 163, 184, 0.12);
+        font-size: 0.92rem;
+        color: rgba(239, 247, 255, 0.95);
+        vertical-align: middle;
+    }
+
+    .coordinator-table tbody tr:hover {
+        background: rgba(148, 163, 184, 0.03);
+    }
+
+    .coordinator-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 72px;
+        padding: 0.38rem 0.72rem;
+        border-radius: 999px;
+        font-size: 0.68rem;
+        font-weight: 800;
+        text-transform: capitalize;
+        color: #eaf6ff;
+    }
+
+    .coordinator-view-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 62px;
+        padding: 0.42rem 0.76rem;
+        border-radius: 9px;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        background: rgba(36, 52, 68, 0.88);
+        color: #ebf4ff;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+
+    .coordinator-view-btn:hover {
+        text-decoration: none;
+        color: #fff;
+        background: rgba(50, 70, 90, 0.95);
+    }
+
+    @media (max-width: 991.98px) {
+        .coordinator-stat-grid,
+        .coordinator-dashboard-grid,
+        .coordinator-bottom-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
-<div class="mb-4">
-    <h1 class="h3 mb-1">Institution Dashboard</h1>
-    <p class="text-muted mb-0">Manage students and track placements at {{ auth()->user()->coordinator->institution->name ?? 'Your Institution' }}</p>
-</div>
+<div class="coordinator-dashboard-shell">
+    <div class="coordinator-dashboard-header">
+        <div>
+            <h1>Coordinator Dashboard</h1>
+            <p class="subtitle">Manage students and track placements at St. Cecilia’s College-Cebu, Inc.</p>
+        </div>
+    </div>
 
-<div class="row g-4 mb-4">
-    <!-- Total Students -->
-    <div class="col-md-6 col-lg-3">
-        <div class="card stat-card">
-            <div class="card-body">
-                <h6 class="card-title mb-3 text-muted small">Total Students</h6>
-                <div class="h3 mb-0">{{ $stats['total_students'] }}</div>
-                <small class="text-muted d-block mt-2">
-                    <i class="bi bi-people"></i> Active students
-                </small>
+    <div class="coordinator-stat-grid">
+        <div class="coordinator-stat-card">
+            <div class="coordinator-stat-icon"><i class="bi bi-people-fill"></i></div>
+            <div class="coordinator-stat-content">
+                <span class="coordinator-stat-label">Active Students</span>
+                <p class="coordinator-stat-value">{{ $stats['total_students'] }}</p>
+            </div>
+        </div>
+
+        <div class="coordinator-stat-card">
+            <div class="coordinator-stat-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
+            <div class="coordinator-stat-content">
+                <span class="coordinator-stat-label">Internship Applications</span>
+                <p class="coordinator-stat-value">{{ $stats['total_applications'] }}</p>
+            </div>
+        </div>
+
+        <div class="coordinator-stat-card">
+            <div class="coordinator-stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+            <div class="coordinator-stat-content">
+                <span class="coordinator-stat-label">Placements</span>
+                <p class="coordinator-stat-value">{{ $stats['accepted'] }}</p>
+            </div>
+        </div>
+
+        <div class="coordinator-stat-card">
+            <div class="coordinator-stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
+            <div class="coordinator-stat-content">
+                <span class="coordinator-stat-label">Success Rate</span>
+                <p class="coordinator-stat-value">{{ $stats['placement_rate'] }}%</p>
             </div>
         </div>
     </div>
 
-    <!-- Total Applications -->
-    <div class="col-md-6 col-lg-3">
-        <div class="card stat-card accent">
-            <div class="card-body">
-                <h6 class="card-title mb-3 text-muted small">Applications</h6>
-                <div class="h3 mb-0">{{ $stats['total_applications'] }}</div>
-                <small class="text-muted d-block mt-2">
-                    <i class="bi bi-send"></i> Internship applications
-                </small>
-            </div>
-        </div>
-    </div>
-
-    <!-- Accepted -->
-    <div class="col-md-6 col-lg-3">
-        <div class="card stat-card">
-            <div class="card-body">
-                <h6 class="card-title mb-3 text-muted small">Accepted</h6>
-                <div class="h3 mb-0">{{ $stats['accepted'] }}</div>
-                <small class="text-muted d-block mt-2">
-                    <i class="bi bi-check-circle"></i> Placements
-                </small>
-            </div>
-        </div>
-    </div>
-
-    <!-- Placement Rate -->
-    <div class="col-md-6 col-lg-3">
-        <div class="card stat-card accent">
-            <div class="card-body">
-                <h6 class="card-title mb-3 text-muted small">Placement Rate</h6>
-                <div class="h3 mb-0">{{ $stats['placement_rate'] }}%</div>
-                <small class="text-muted d-block mt-2">
-                    <i class="bi bi-graph-up"></i> Success rate
-                </small>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Quick Actions -->
-<div class="row g-4 mb-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-white">
-                <h5 class="mb-0"><i class="bi bi-lightning-charge"></i> Quick Actions</h5>
-            </div>
-            <div class="list-group list-group-flush">
-                <a href="{{ route('coordinator.students.index') }}" class="list-group-item list-group-item-action">
-                    <i class="bi bi-people"></i> Manage Students
-                </a>
-                <a href="{{ route('coordinator.reports.index') }}" class="list-group-item list-group-item-action">
-                    <i class="bi bi-file-earmark-bar-graph"></i> Generate Reports
-                </a>
-                <a href="{{ route('messages.index') }}" class="list-group-item list-group-item-action">
-                    <i class="bi bi-chat-dots"></i> Messages & Announcements
-                </a>
-                <a href="{{ route('notifications.index') }}" class="list-group-item list-group-item-action">
-                    <i class="bi bi-bell"></i> Notifications
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header bg-white">
-                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Institution Info</h5>
+    <div class="coordinator-dashboard-grid">
+        <div class="coordinator-dashboard-card">
+            <div class="card-header">
+                <h5><i class="bi bi-lightning-charge-fill"></i> Quick Actions</h5>
             </div>
             <div class="card-body">
-                <dl class="row mb-0">
-                    <dt class="col-sm-4">Institution:</dt>
-                    <dd class="col-sm-8">{{ auth()->user()->coordinator->institution->name ?? 'N/A' }}</dd>
-                    <dt class="col-sm-4">Department:</dt>
-                    <dd class="col-sm-8">{{ auth()->user()->coordinator->department ?? 'N/A' }}</dd>
-                    <dt class="col-sm-4">Contact:</dt>
-                    <dd class="col-sm-8">{{ auth()->user()->email }}</dd>
-                </dl>
+                <div class="coordinator-dashboard-list">
+                    <a href="{{ route('coordinator.students.index') }}">
+                        <span class="left"><i class="bi bi-people-fill"></i> Manage Students</span>
+                        <span class="arrow"><i class="bi bi-chevron-right"></i></span>
+                    </a>
+                    <a href="{{ route('coordinator.reports.index') }}">
+                        <span class="left"><i class="bi bi-file-earmark-bar-graph-fill"></i> Generate Reports</span>
+                        <span class="arrow"><i class="bi bi-chevron-right"></i></span>
+                    </a>
+                    <a href="{{ route('messages.index') }}">
+                        <span class="left"><i class="bi bi-chat-dots-fill"></i> Messages & Announcements</span>
+                        <span class="arrow"><i class="bi bi-chevron-right"></i></span>
+                    </a>
+                    <a href="{{ route('notifications.index') }}">
+                        <span class="left"><i class="bi bi-bell-fill"></i> Notifications</span>
+                        <span class="arrow"><i class="bi bi-chevron-right"></i></span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="coordinator-dashboard-card">
+            <div class="card-header">
+                <h5><i class="bi bi-info-circle-fill"></i> Institution Info</h5>
+            </div>
+            <div class="card-body">
+                <ul class="coordinator-info-list">
+                    <li>Institution:</li>
+                    <li>{{ auth()->user()->coordinator->institution->name ?? 'N/A' }}</li>
+                    <li>Department:</li>
+                    <li>{{ auth()->user()->coordinator->department ?? 'N/A' }}</li>
+                    <li>Contact:</li>
+                    <li>{{ auth()->user()->email }}</li>
+                </ul>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Recent Students -->
-<div class="row g-4 mb-4">
-    <div class="col-lg-6">
-        <div class="card">
-            <div class="card-header bg-white d-flex justify-content-between">
-                <h5 class="mb-0"><i class="bi bi-people"></i> Recent Students</h5>
-                <a href="{{ route('coordinator.students.index') }}" class="btn btn-sm btn-outline-primary">View All</a>
+    <div class="coordinator-bottom-grid">
+        <div class="coordinator-dashboard-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="bi bi-people-fill"></i> Recent Students</h5>
+                <a href="{{ route('coordinator.students.index') }}" class="coordinator-view-btn">View All</a>
             </div>
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
+            <div class="coordinator-table-wrap">
+                <table class="coordinator-table">
+                    <thead>
                         <tr>
                             <th>Name</th>
                             <th>Program</th>
@@ -128,33 +390,28 @@
                             <tr>
                                 <td>{{ $student->user->name }}</td>
                                 <td>{{ $student->program ?? 'N/A' }}</td>
-                                <td><span class="badge bg-light text-dark">{{ $student->competencies()->count() }}</span></td>
+                                <td><span class="coordinator-pill" style="background: rgba(110, 168, 255, 0.18);">{{ $student->competencies()->count() }}</span></td>
                                 <td>
-                                    <a href="{{ route('coordinator.students.show', $student) }}" class="btn btn-sm btn-outline-primary">
-                                        View
-                                    </a>
+                                    <a href="{{ route('coordinator.students.show', $student) }}" class="coordinator-view-btn">View</a>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-3">No students yet.</td>
+                                <td colspan="4" class="text-center py-3 text-muted">No students yet.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
-    </div>
 
-    <!-- Recent Applications -->
-    <div class="col-lg-6">
-        <div class="card">
-            <div class="card-header bg-white">
-                <h5 class="mb-0"><i class="bi bi-send"></i> Recent Applications</h5>
+        <div class="coordinator-dashboard-card">
+            <div class="card-header">
+                <h5><i class="bi bi-send-fill"></i> Recent Applications</h5>
             </div>
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
+            <div class="coordinator-table-wrap">
+                <table class="coordinator-table">
+                    <thead>
                         <tr>
                             <th>Student</th>
                             <th>Position</th>
@@ -178,15 +435,13 @@
                                         ];
                                         $statusColor = $statusColors[$application->status->value] ?? '#6B7280';
                                     @endphp
-                                    <span class="badge" style="background-color: {{ $statusColor }}">
-                                        {{ $application->status->label() }}
-                                    </span>
+                                    <span class="coordinator-pill" style="background: {{ $statusColor }}; color: white;">{{ $application->status->label() }}</span>
                                 </td>
-                                <td><small class="text-muted">{{ $application->applied_at->format('M d, Y') }}</small></td>
+                                <td>{{ $application->applied_at->format('M d, Y') }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="text-center text-muted py-3">No applications yet.</td>
+                                <td colspan="4" class="text-center py-3 text-muted">No applications yet.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -195,26 +450,4 @@
         </div>
     </div>
 </div>
-
-<!-- Notifications -->
-@if($notifications->count())
-<div class="card">
-    <div class="card-header bg-white">
-        <h5 class="mb-0"><i class="bi bi-bell"></i> Recent Notifications</h5>
-    </div>
-    <div class="list-group list-group-flush">
-        @foreach($notifications as $notification)
-            <div class="list-group-item">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <h6 class="mb-1">{{ $notification->title }}</h6>
-                        <p class="mb-0 text-muted small">{{ $notification->message }}</p>
-                    </div>
-                    <small class="text-muted">{{ $notification->created_at->diffForHumans() }}</small>
-                </div>
-            </div>
-        @endforeach
-    </div>
-</div>
-@endif
 @endsection

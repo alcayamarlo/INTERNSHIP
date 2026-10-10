@@ -1,49 +1,84 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>{{ $title ?? 'Report' }}</title>
     <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 10px; color: #333; }
-        h1 { color: #2563EB; font-size: 18px; border-bottom: 2px solid #2563EB; padding-bottom: 8px; }
-        .meta { color: #666; margin-bottom: 20px; font-size: 9px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: #2563EB; color: #fff; padding: 6px 8px; text-align: left; font-size: 9px; }
-        td { padding: 5px 8px; border-bottom: 1px solid #e2e8f0; }
-        tr:nth-child(even) td { background: #f8fafc; }
-        .footer { margin-top: 30px; font-size: 8px; color: #999; text-align: center; }
+        body {
+            font-family: DejaVu Sans, sans-serif;
+            color: #1f2937;
+            margin: 30px;
+        }
+
+        h1 {
+            margin-bottom: 18px;
+            font-size: 28px;
+            color: #0f172a;
+        }
+
+        .meta {
+            margin-bottom: 20px;
+            color: #475569;
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 11px;
+        }
+
+        th, td {
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #e2e8f0;
+            color: #0f172a;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) td {
+            background: #f8fafc;
+        }
     </style>
 </head>
 <body>
-    <h1>{{ $title ?? ucfirst($type ?? 'System') . ' Report' }}</h1>
+    <h1>{{ $title ?? 'Report' }}</h1>
     <div class="meta">
-        Generated: {{ now()->format('F d, Y h:i A') }} | Skill-Bridge System
+        Generated: {{ now()->format('F d, Y h:i A') }}
     </div>
 
-    @if(!empty($data))
+    @php
+        $rows = $data ?? [];
+        $headers = !empty($rows) ? array_keys($rows[0]) : [];
+    @endphp
+
+    @if(empty($rows))
+        <p>No records available for this report.</p>
+    @else
         <table>
             <thead>
                 <tr>
-                    @foreach(array_keys($data[0]) as $header)
-                        <th>{{ ucwords(str_replace('_', ' ', $header)) }}</th>
+                    @foreach($headers as $header)
+                        <th>{{ ucfirst(str_replace('_', ' ', $header)) }}</th>
                     @endforeach
                 </tr>
             </thead>
             <tbody>
-                @foreach($data as $row)
+                @foreach($rows as $row)
                     <tr>
-                        @foreach($row as $value)
-                            <td>{{ $value ?? '—' }}</td>
+                        @foreach($headers as $header)
+                            <td>{{ $row[$header] ?? '-' }}</td>
                         @endforeach
                     </tr>
                 @endforeach
             </tbody>
         </table>
-        <p class="meta" style="margin-top:10px;">Total records: {{ count($data) }}</p>
-    @else
-        <p>No data available for this report.</p>
     @endif
-
-    <div class="footer">Skill-Bridge System &mdash; Confidential Report</div>
 </body>
 </html>

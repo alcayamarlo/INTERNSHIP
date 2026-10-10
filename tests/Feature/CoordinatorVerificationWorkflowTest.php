@@ -102,6 +102,12 @@ it('shows pending evidence for coordinators and allows reviewing it', function (
         'verification_status' => 'verified',
     ]);
 
+    $this->assertDatabaseHas('notifications', [
+        'user_id' => $student->user_id,
+        'type' => 'verification',
+        'title' => 'Competency Evidence Verified',
+    ]);
+
     $this->actingAs($coordinator)
         ->post(route('coordinator.verification.reviewCertificate', $certificate), [
             'verification_status' => 'rejected',
@@ -114,6 +120,12 @@ it('shows pending evidence for coordinators and allows reviewing it', function (
         'verification_status' => 'rejected',
     ]);
 
+    $this->assertDatabaseHas('notifications', [
+        'user_id' => $student->user_id,
+        'type' => 'verification',
+        'title' => 'Certificate Evidence Rejected',
+    ]);
+
     $this->actingAs($coordinator)
         ->post(route('coordinator.verification.reviewPortfolio', $portfolio), [
             'verification_status' => 'verified',
@@ -124,5 +136,11 @@ it('shows pending evidence for coordinators and allows reviewing it', function (
     $this->assertDatabaseHas('portfolios', [
         'id' => $portfolio->id,
         'verification_status' => 'verified',
+    ]);
+
+    $this->assertDatabaseHas('notifications', [
+        'user_id' => $student->user_id,
+        'type' => 'verification',
+        'title' => 'Portfolio Evidence Verified',
     ]);
 });

@@ -80,10 +80,10 @@ class RegisterController extends Controller
                 default => null,
             };
 
-            $this->activityLog->log($user, 'register', ['role' => $user->role->value]);
-
             return $user;
         });
+
+        $this->activityLog->log($user, 'register', ['role' => $user->role->value]);
 
         Auth::login($user);
 

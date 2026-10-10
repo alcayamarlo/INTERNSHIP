@@ -59,15 +59,29 @@ class DashboardController extends Controller
     /**
      * List students in the coordinator's institution.
      */
-    public function students()
+    public function students(Request $request)
     {
         $coordinator = Auth::user()->coordinator;
+        $search = trim((string) $request->query('search', ''));
+
+        $students = $coordinator->scopedStudentsQuery()
+            ->with(['user', 'institution', 'competencies'])
+            ->join('users', 'students.user_id', '=', 'users.id')
+            ->select('students.*')
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($studentQuery) use ($search) {
+                    $studentQuery->where('users.name', 'like', "%{$search}%")
+                        ->orWhere('users.email', 'like', "%{$search}%")
+                        ->orWhere('students.program', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('users.name', 'asc')
+            ->paginate(15)
+            ->appends(['search' => $search]);
 
         return view('coordinator.students.index', [
-            'students' => $coordinator->scopedStudentsQuery()
-                ->with(['user', 'institution', 'competencies'])
-                ->latest()
-                ->paginate(15),
+            'students' => $students,
+            'search' => $search,
         ]);
     }
 

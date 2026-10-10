@@ -2,16 +2,312 @@
 
 @section('title', 'Student Dashboard')
 
-@section('content')
+@push('styles')
+<style>
+    .student-dashboard-shell {
+        padding: 6px 0 0;
+        color: #edf5fb;
+    }
 
-<div class="mb-4">
-    <h1 class="h3 mb-1">
+    .student-dashboard-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .student-dashboard-header h1 {
+        margin: 0;
+        color: #f4f9ff;
+        font-size: clamp(1.8rem, 1.2vw + 1.1rem, 2.5rem);
+        font-weight: 800;
+        letter-spacing: -0.05em;
+    }
+
+    .student-dashboard-header p {
+        margin-top: 6px;
+        color: rgba(196, 214, 228, 0.8);
+        font-size: 0.95rem;
+    }
+
+    .student-dashboard-search {
+        position: relative;
+        width: min(430px, 42vw);
+        min-width: 260px;
+    }
+
+    .student-dashboard-search .form-control {
+        height: 48px;
+        padding-left: 44px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        border-radius: 14px;
+        background: rgba(17, 29, 42, 0.9);
+        color: #edf5fb;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+    }
+
+    .student-dashboard-search .form-control::placeholder {
+        color: rgba(168, 184, 201, 0.8);
+    }
+
+    .student-dashboard-search i {
+        position: absolute;
+        top: 50%;
+        left: 16px;
+        z-index: 2;
+        color: #b4c5d5;
+        transform: translateY(-50%);
+    }
+
+    .student-dashboard-shell > .row:first-of-type {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .student-dashboard-shell .card,
+    .student-dashboard-shell .list-group-item {
+        border-color: rgba(148, 163, 184, 0.16) !important;
+        background: rgba(16, 31, 45, 0.86) !important;
+        color: #edf5fb;
+    }
+
+    .student-dashboard-shell .card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        background: rgba(15, 30, 43, 0.88);
+        box-shadow: 0 10px 22px rgba(3, 8, 18, 0.14);
+    }
+
+    .student-dashboard-shell .card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto;
+        height: 2px;
+        background: rgba(148, 163, 184, 0.18);
+    }
+
+    .student-dashboard-shell .card-body {
+        padding: 1rem 1.1rem;
+    }
+
+    .student-dashboard-shell .card-header {
+        border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+        background: rgba(14, 27, 38, 0.9) !important;
+        padding: 1rem 1.1rem;
+    }
+
+    .student-dashboard-shell .card-header h5 {
+        margin: 0;
+        color: #edf8ff;
+        font-size: 1.1rem;
+        font-weight: 800;
+    }
+
+    .student-dashboard-shell .card-header h5 i {
+        margin-right: 0.5rem;
+        color: #b9c9d9;
+    }
+
+    .student-dashboard-shell .card-footer {
+        border-top: 1px solid rgba(148, 163, 184, 0.12);
+        background: rgba(14, 27, 38, 0.9) !important;
+        padding: 0.9rem 1.1rem;
+    }
+
+    .student-dashboard-shell .h3 {
+        color: #f4fbff;
+        font-size: clamp(1.4rem, 1vw + 0.8rem, 1.8rem);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        margin: 0;
+    }
+
+    .student-dashboard-shell .card-title,
+    .student-dashboard-shell h5,
+    .student-dashboard-shell h6 {
+        color: rgba(221, 235, 248, 0.92);
+    }
+
+    .student-dashboard-shell .card-title {
+        margin-bottom: 0.75rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgba(196, 214, 228, 0.82);
+    }
+
+    .student-dashboard-shell .text-muted,
+    .student-dashboard-shell small,
+    .student-dashboard-shell .small,
+    .student-dashboard-shell .table td {
+        color: rgba(176, 201, 219, 0.84) !important;
+    }
+
+    .student-dashboard-shell .progress {
+        background: rgba(148, 163, 184, 0.14);
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .student-dashboard-shell .progress-bar {
+        border-radius: 999px;
+        background: linear-gradient(90deg, #9ab8d9, #7aa8d8);
+    }
+
+    .student-dashboard-shell .list-group-item {
+        border-top: 1px solid rgba(148, 163, 184, 0.1);
+        transition: background 0.18s ease, border-color 0.18s ease;
+    }
+
+    .student-dashboard-shell .list-group-item:hover {
+        background: rgba(22, 38, 54, 0.92) !important;
+        border-color: rgba(148, 163, 184, 0.12) !important;
+    }
+
+    .student-dashboard-shell .list-group-item-action {
+        display: flex;
+        align-items: center;
+        min-height: 54px;
+        font-size: 0.98rem;
+        font-weight: 600;
+        padding: 0.82rem 0.95rem;
+    }
+
+    .student-dashboard-shell .list-group-item-action i {
+        color: #dfeaf6;
+        font-size: 1.1rem;
+        margin-right: 0.75rem;
+    }
+
+    .student-dashboard-shell .list-group-item-action::after {
+        content: "";
+        width: 7px;
+        height: 7px;
+        margin-left: auto;
+        border-top: 1px solid rgba(197, 213, 230, 0.9);
+        border-right: 1px solid rgba(197, 213, 230, 0.9);
+        transform: rotate(45deg);
+        opacity: 0.7;
+    }
+
+    .student-dashboard-shell .badge {
+        border-radius: 999px;
+        padding: 0.45rem 0.7rem;
+        letter-spacing: 0.02em;
+        font-weight: 700;
+    }
+
+    .student-dashboard-shell .table thead th {
+        background: rgba(16, 32, 46, 0.8);
+        color: rgba(214, 227, 240, 0.8);
+        border-color: rgba(148, 163, 184, 0.12);
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 0.8rem 0.9rem;
+    }
+
+    .student-dashboard-shell .table {
+        --bs-table-bg: transparent;
+        --bs-table-border-color: rgba(148, 163, 184, 0.1);
+        color: #ebf4ff;
+    }
+
+    .student-dashboard-shell .table tbody td {
+        padding: 0.8rem 0.82rem;
+        color: rgba(239, 247, 255, 0.95);
+        font-size: 0.92rem;
+    }
+
+    .student-dashboard-shell .table tbody tr:hover {
+        background: rgba(148, 163, 184, 0.03);
+    }
+
+    .student-dashboard-shell .card-footer a,
+    .student-dashboard-shell .text-decoration-none {
+        color: #dfeaf6 !important;
+        font-weight: 700;
+    }
+
+    .student-dashboard-shell .getting-started-list {
+        margin: 0;
+        padding-left: 1.35rem;
+        color: rgba(202, 222, 237, 0.88);
+    }
+
+    .student-dashboard-shell .getting-started-list li {
+        padding: 0.28rem 0;
+        line-height: 1.5;
+    }
+
+    .student-dashboard-shell .getting-started-list strong {
+        color: #f0f8ff;
+    }
+
+    .student-dashboard-shell .match-badge {
+        min-width: 42px;
+        text-align: center;
+        box-shadow: none;
+    }
+
+    .student-dashboard-shell .btn-outline-primary {
+        border-color: rgba(148, 163, 184, 0.25);
+        color: #ebf4ff;
+        background: rgba(30, 46, 60, 0.85);
+        border-radius: 8px;
+        font-weight: 700;
+    }
+
+    .student-dashboard-shell .btn-outline-primary:hover {
+        border-color: rgba(148, 163, 184, 0.4);
+        background: rgba(38, 57, 75, 0.95);
+        color: #fff;
+    }
+
+    @media (max-width: 991.98px) {
+        .student-dashboard-shell > .row:first-of-type {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .student-dashboard-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .student-dashboard-search {
+            width: 100%;
+            min-width: 100%;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .student-dashboard-shell > .row:first-of-type {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+@endpush
+
+@section('content')
+<div class="student-dashboard-shell">
+<div class="student-dashboard-header">
+    <div>
+    <h1>
         Welcome, {{ Auth::user()->name }}!
     </h1>
 
-    <p class="text-muted mb-0">
+    <p>
         Monitor your progress and explore internship opportunities
     </p>
+</div>
+<div class="student-dashboard-search"><i class="bi bi-search"></i><input class="form-control" type="search" placeholder="Search internships, skills, or applications..."></div>
 </div>
 
 
@@ -288,7 +584,7 @@
 
             <div class="card-body">
 
-                <ol class="mb-0 ps-3">
+                <ol class="getting-started-list">
 
                     <li class="mb-2">
                         <strong>Complete Profile</strong>
@@ -434,7 +730,7 @@
                         <td>
 
                             <span
-                                class="badge"
+                                class="badge match-badge"
                                 style="background-color: {{ $matchColor }};"
                             >
                                 {{ $matchPercentage }}%
@@ -709,4 +1005,5 @@
 
 @endif
 
+</div>
 @endsection

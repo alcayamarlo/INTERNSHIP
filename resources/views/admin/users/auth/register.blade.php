@@ -16,13 +16,13 @@
 
 :root {
     --sb-cyan: #08d9f5;
-    --sb-cyan-dark: #05b8d1;
+    --sb-cyan-dark: #0891b2;
 
     --sb-bg: #071526;
-    --sb-panel: #091a2e;
-    --sb-card: #0c2036;
+    --sb-panel: #081a2e;
+    --sb-card: #0b2036;
 
-    --sb-border: rgba(148, 163, 184, .14);
+    --sb-border: rgba(8, 217, 245, 0.12);
 
     --sb-text: #f8fafc;
     --sb-text-soft: #d8e3ef;
@@ -66,11 +66,6 @@
     right: 0;
     bottom: 0;
 
-    /*
-     * Your screenshot is basically 50/50.
-     * This makes the registration side ALWAYS fit
-     * exactly on the right half of the screen.
-     */
     width: 50vw;
 
     height: 100vh;
@@ -91,6 +86,10 @@
             #071426 0%,
             #08182b 100%
         );
+
+    border-left:
+        1px solid
+        rgba(8, 217, 245, 0.10);
 
     scrollbar-width: thin;
 
@@ -181,7 +180,16 @@
         9px;
 
     color:
-        var(--sb-text);
+        #f8fafc !important;
+
+    -webkit-text-fill-color:
+        #f8fafc !important;
+
+    color-scheme:
+        dark;
+
+    caret-color:
+        var(--sb-cyan);
 
     font-size:
         12px;
@@ -746,16 +754,16 @@
 
     border:
         1px solid
-        rgba(148,163,184,.15);
+        rgba(8, 217, 245, 0.90);
 
     border-radius:
-        8px;
+        10px;
 
     outline:
         none;
 
     background:
-        rgba(4,17,31,.72);
+        rgba(9, 27, 39, 0.92);
 
     color:
         var(--sb-text);
@@ -767,13 +775,32 @@
         10px;
 
     transition:
-        .2s ease;
+        0.2s ease;
 }
 
 
 .form-control::placeholder {
     color:
-        rgba(141,164,189,.45);
+        rgba(166, 182, 201, 0.72);
+}
+
+
+.form-control:-webkit-autofill,
+.form-control:-webkit-autofill:hover,
+.form-control:-webkit-autofill:focus,
+.form-control:-webkit-autofill:active,
+.form-select:-webkit-autofill,
+.form-select:-webkit-autofill:hover,
+.form-select:-webkit-autofill:focus,
+.form-select:-webkit-autofill:active {
+    -webkit-box-shadow:
+        0 0 0 1000px rgba(4,17,31,.72) inset;
+
+    -webkit-text-fill-color:
+        #f8fafc !important;
+
+    color:
+        #f8fafc !important;
 }
 
 
@@ -781,7 +808,7 @@
 .form-select:hover {
 
     border-color:
-        rgba(8,217,245,.28);
+        rgba(8, 217, 245, 1);
 }
 
 
@@ -792,11 +819,14 @@
         var(--sb-cyan);
 
     background:
-        rgba(4,17,31,.92);
+        rgba(8, 24, 36, 0.97);
 
     box-shadow:
         0 0 0 3px
-        rgba(8,217,245,.06);
+        rgba(8, 217, 245, 0.12);
+
+    color:
+        var(--sb-text);
 }
 
 
@@ -1733,6 +1763,283 @@
 
 }
 
+
+/* =========================================================
+   VISUAL POLISH PASS
+   ========================================================= */
+
+.register-page {
+    background:
+        radial-gradient(circle at 85% 8%, rgba(8,217,245,.09), transparent 28%),
+        linear-gradient(rgba(100,170,205,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(100,170,205,.035) 1px, transparent 1px),
+        linear-gradient(180deg, #071426 0%, #081a2d 100%);
+
+    background-size: auto, 34px 34px, 34px 34px, auto;
+}
+
+
+.register-content {
+    max-width: 700px;
+}
+
+
+.register-top {
+    margin-bottom: 30px;
+}
+
+
+.register-brand {
+    color: #f8fafc !important;
+    font-size: 14px;
+    letter-spacing: .05em;
+}
+
+
+.register-brand-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(8,217,245,.2);
+}
+
+
+.register-hero {
+    margin-bottom: 24px;
+}
+
+
+.register-badge {
+    padding: 7px 12px;
+    border-color: rgba(8,217,245,.25);
+    background: rgba(8,217,245,.08);
+    box-shadow: 0 0 22px rgba(8,217,245,.06);
+}
+
+
+.register-hero h1 {
+    max-width: 620px;
+    font-size: clamp(30px, 3vw, 43px);
+    line-height: 1.04;
+    letter-spacing: -.045em;
+}
+
+
+.register-hero p {
+    max-width: 620px;
+    color: rgba(172,199,219,.82);
+    font-size: 12px;
+}
+
+
+.register-progress {
+    min-height: 58px;
+    margin-bottom: 20px;
+    padding: 11px 15px;
+    border-color: rgba(117,176,215,.2);
+    border-radius: 13px;
+    background: rgba(10,31,50,.72);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+
+.progress-step {
+    font-size: 9px;
+}
+
+
+.progress-number {
+    width: 25px;
+    height: 25px;
+    border-color: rgba(117,176,215,.26);
+}
+
+
+.progress-step.active .progress-number {
+    box-shadow: 0 0 0 4px rgba(8,217,245,.07), 0 0 15px rgba(8,217,245,.18);
+}
+
+
+.progress-line {
+    background: linear-gradient(90deg, rgba(8,217,245,.28), rgba(148,163,184,.12));
+}
+
+
+.register-card {
+    padding: 26px;
+    border-color: rgba(117,176,215,.22);
+    border-radius: 18px;
+    background: linear-gradient(145deg, rgba(13,38,61,.96), rgba(7,21,38,.98));
+    box-shadow: 0 22px 60px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+
+.register-card::before {
+    height: 3px;
+    box-shadow: 0 0 20px rgba(8,217,245,.32);
+}
+
+
+.form-section {
+    margin-bottom: 25px;
+}
+
+
+.section-title {
+    gap: 11px;
+    margin-bottom: 16px;
+    padding-bottom: 11px;
+    border-bottom-color: rgba(117,176,215,.15);
+}
+
+
+.section-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: linear-gradient(145deg, rgba(8,217,245,.16), rgba(8,217,245,.04));
+    border-color: rgba(8,217,245,.24);
+    box-shadow: 0 6px 18px rgba(8,217,245,.08);
+}
+
+
+.section-title h3 {
+    font-size: 12px;
+    letter-spacing: .01em;
+}
+
+
+.section-title p {
+    font-size: 9px;
+}
+
+
+.form-grid {
+    gap: 15px;
+}
+
+
+.form-label {
+    margin-bottom: 7px;
+    color: #dcebf5;
+    font-size: 8px;
+    letter-spacing: .08em;
+}
+
+
+.form-control,
+.form-select {
+    height: 45px;
+    padding: 0 13px;
+    border-color: rgba(117,176,215,.2);
+    border-radius: 10px;
+    background: rgba(3,17,31,.68);
+    font-size: 11px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.018);
+}
+
+
+.form-control:hover,
+.form-select:hover {
+    border-color: rgba(8,217,245,.42);
+}
+
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--sb-cyan);
+    background: rgba(3,17,31,.88);
+    box-shadow: 0 0 0 4px rgba(8,217,245,.08), 0 8px 22px rgba(1,10,20,.14);
+}
+
+
+.terms-wrapper {
+    margin-top: 16px;
+    padding: 13px;
+    border-color: rgba(117,176,215,.17);
+    border-radius: 10px;
+    background: rgba(3,17,31,.46);
+}
+
+
+.terms-label {
+    color: rgba(184,209,225,.78);
+    font-size: 8px;
+}
+
+
+.btn-register {
+    height: 48px;
+    margin-top: 16px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #1cdef5, #08b9d6);
+    font-size: 11px;
+    box-shadow: 0 12px 28px rgba(8,217,245,.16);
+}
+
+
+.btn-register:hover:not(:disabled) {
+    box-shadow: 0 14px 30px rgba(8,217,245,.28);
+}
+
+
+.register-features {
+    gap: 10px;
+    margin-top: 14px;
+}
+
+
+.feature-item {
+    min-height: 48px;
+    padding: 9px 10px;
+    border-color: rgba(117,176,215,.12);
+    border-radius: 10px;
+    background: rgba(8,27,46,.48);
+}
+
+
+@media (max-width: 600px) {
+    .register-card {
+        padding: 20px 16px;
+    }
+
+    .register-hero h1 {
+        font-size: 30px;
+    }
+}
+
+
+/* Keep entered values readable on the dark registration surface. */
+.register-page input.form-control,
+.register-page select.form-select,
+.register-page textarea.form-control {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    caret-color: var(--sb-cyan) !important;
+}
+
+
+.register-page input.form-control:focus,
+.register-page select.form-select:focus,
+.register-page textarea.form-control:focus {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+
+.register-page input.form-control:-webkit-autofill,
+.register-page input.form-control:-webkit-autofill:hover,
+.register-page input.form-control:-webkit-autofill:focus,
+.register-page input.form-control:-webkit-autofill:active,
+.register-page select.form-select:-webkit-autofill,
+.register-page select.form-select:-webkit-autofill:hover,
+.register-page select.form-select:-webkit-autofill:focus,
+.register-page select.form-select:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px rgba(4,17,31,.72) inset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    color: #ffffff !important;
+}
+
 </style>
 
 @endpush
@@ -2073,6 +2380,8 @@
 
                 <div class="form-section">
 
+                    @if(false)
+
                     <div class="section-title">
 
                         <div class="section-icon">
@@ -2228,8 +2537,10 @@
                     </select>
 
 
+                    @endif
+
                     {{-- =================================================
-                         ADDITIONAL PROFILE
+                        ADDITIONAL PROFILE
                     ================================================== --}}
 
                     <div id="roleDetails" style="display:block;">
@@ -2597,6 +2908,9 @@
 
 
                         {{-- CONFIRM PASSWORD --}}
+                                <span id="ruleLower" class="d-none"></span>
+                                <span id="ruleNumber" class="d-none"></span>
+                                <span id="ruleSpecial" class="d-none"></span>
 
                         <div class="form-group">
 
@@ -2718,7 +3032,7 @@
 
                             <i class="bi bi-rocket-takeoff-fill"></i>
 
-                            Create My Skill Bridge Account
+                            Sign Up
 
                         </span>
 
@@ -2909,8 +3223,12 @@ document.addEventListener(
                     'input[name="role"]:checked'
                 );
 
-            return checked
-                ? checked.value
+            if (checked) {
+                return checked.value;
+            }
+
+            return roleCards.length === 0
+                ? 'student'
                 : '';
 
         }
@@ -3169,18 +3487,6 @@ document.addEventListener(
                 /[A-Z]/.test(value);
 
 
-            const hasLower =
-                /[a-z]/.test(value);
-
-
-            const hasNumber =
-                /[0-9]/.test(value);
-
-
-            const hasSpecial =
-                /[^A-Za-z0-9]/.test(value);
-
-
             setRule(
                 'ruleLength',
                 hasLength
@@ -3190,24 +3496,6 @@ document.addEventListener(
             setRule(
                 'ruleUpper',
                 hasUpper
-            );
-
-
-            setRule(
-                'ruleLower',
-                hasLower
-            );
-
-
-            setRule(
-                'ruleNumber',
-                hasNumber
-            );
-
-
-            setRule(
-                'ruleSpecial',
-                hasSpecial
             );
 
 
@@ -3261,18 +3549,11 @@ document.addEventListener(
 
             if (hasUpper) score++;
 
-            if (hasLower) score++;
-
-            if (hasNumber) score++;
-
-            if (hasSpecial) score++;
-
-
             bar.className =
                 'password-strength-bar';
 
 
-            if (score <= 2) {
+            if (score < 2) {
 
                 bar.classList.add(
                     'weak'
@@ -3281,15 +3562,6 @@ document.addEventListener(
                 text.textContent =
                     'Weak password';
 
-            } else if (score <= 4) {
-
-                bar.classList.add(
-                    'medium'
-                );
-
-                text.textContent =
-                    'Good password';
-
             } else {
 
                 bar.classList.add(
@@ -3297,7 +3569,7 @@ document.addEventListener(
                 );
 
                 text.textContent =
-                    'Strong password';
+                    'Password meets the requirements';
 
             }
 
@@ -3782,18 +4054,6 @@ document.addEventListener(
                 &&
                 /[A-Z]/.test(
                     passwordValue
-                )
-                &&
-                /[a-z]/.test(
-                    passwordValue
-                )
-                &&
-                /[0-9]/.test(
-                    passwordValue
-                )
-                &&
-                /[^A-Za-z0-9]/.test(
-                    passwordValue
                 );
 
 
@@ -3804,7 +4064,7 @@ document.addEventListener(
                 showError(
                     password,
                     'passwordError',
-                    'Password must contain at least 8 characters, uppercase, lowercase, number, and special character.'
+                    'Password must be at least 8 characters and contain one uppercase letter.'
                 );
 
                 valid =
