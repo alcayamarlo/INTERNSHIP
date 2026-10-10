@@ -338,9 +338,32 @@
                 <span class="student-competency-badge">
                     <strong>{{ $comp->name }}</strong>
                     &nbsp;— {{ $comp->proficiency_level->label() }}
+                    @if($comp->verification_status === 'verified')
+                        <span class="badge bg-success ms-2"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                    @endif
                 </span>
             @empty
                 <span class="student-info-value" style="padding: 0.5rem 0; color: rgba(196,214,228,0.8);">No competencies recorded.</span>
+            @endforelse
+        </div>
+    </div>
+
+    <div class="student-detail-section" style="grid-column: 2 / 3;">
+        <div class="student-section-header">Certificates ({{ $student->certificates->count() }})</div>
+
+        <div class="student-badge-list">
+            @forelse($student->certificates as $certificate)
+                <span class="student-competency-badge">
+                    <strong>{{ $certificate->title }}</strong>
+                    &nbsp;— {{ $certificate->issuer ?? 'Issuer not provided' }}
+                    @if($certificate->verification_status === 'verified')
+                        <span class="badge bg-success ms-2"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                    @else
+                        <span class="badge bg-warning text-dark ms-2">{{ ucfirst(str_replace('_', ' ', $certificate->verification_status)) }}</span>
+                    @endif
+                </span>
+            @empty
+                <span class="student-info-value" style="padding: 0.5rem 0; color: rgba(196,214,228,0.8);">No certificates recorded.</span>
             @endforelse
         </div>
     </div>

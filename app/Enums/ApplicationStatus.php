@@ -10,6 +10,7 @@ enum ApplicationStatus: string
     case Accepted = 'accepted';
     case Rejected = 'rejected';
     case Completed = 'completed';
+    case Withdrawn = 'withdrawn';
 
     public function label(): string
     {
@@ -20,6 +21,7 @@ enum ApplicationStatus: string
             self::Accepted => 'Accepted',
             self::Rejected => 'Rejected',
             self::Completed => 'Completed',
+            self::Withdrawn => 'Withdrawn',
         };
     }
 
@@ -32,6 +34,26 @@ enum ApplicationStatus: string
             self::Accepted => 'bg-success',
             self::Rejected => 'bg-danger',
             self::Completed => 'bg-dark',
+            self::Withdrawn => 'bg-secondary',
         };
+    }
+
+    /**
+     * @return list<self>
+     */
+    public function allowedNextStatuses(): array
+    {
+        return match ($this) {
+            self::Submitted => [self::Reviewed, self::Rejected, self::Withdrawn],
+            self::Reviewed => [self::Interview, self::Accepted, self::Rejected, self::Withdrawn],
+            self::Interview => [self::Accepted, self::Rejected, self::Withdrawn],
+            self::Accepted => [self::Completed],
+            self::Rejected, self::Completed, self::Withdrawn => [],
+        };
+    }
+
+    public function canTransitionTo(self $status): bool
+    {
+        return in_array($status, $this->allowedNextStatuses(), true);
     }
 }

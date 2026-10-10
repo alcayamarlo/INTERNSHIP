@@ -9,10 +9,12 @@ use App\Http\Requests\Portfolio\StorePortfolioRequest;
 use App\Http\Requests\Portfolio\UpdatePortfolioRequest;
 use App\Models\Certificate;
 use App\Models\Portfolio;
+use App\Models\Student;
 use App\Services\ActivityLogService;
 use App\Services\FileUploadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class PortfolioController extends Controller
@@ -22,9 +24,26 @@ class PortfolioController extends Controller
         private ActivityLogService $activityLog
     ) {}
 
+    protected function getStudentProfile(): Student
+    {
+        $user = Auth::user();
+
+        $student = $user?->student;
+
+        if (! $student) {
+            $student = Student::create([
+                'user_id' => $user->id,
+                'institution_id' => null,
+                'profile_completion' => 0,
+            ]);
+        }
+
+        return $student;
+    }
+
     public function index(Request $request)
     {
-        $student = Auth::user()->student;
+        $student = $this->getStudentProfile();
         $query = Portfolio::where('student_id', $student->id);
 
         if ($request->filled('search')) {
@@ -46,6 +65,7 @@ class PortfolioController extends Controller
 
         return view('student.portfolio.index', [
             'portfolios' => $portfolios,
+            'certificates' => $student->certificates()->latest()->get(),
             'types' => PortfolioType::cases(),
             'stats' => [
                 'total' => Portfolio::where('student_id', $student->id)->count(),
@@ -69,7 +89,7 @@ class PortfolioController extends Controller
 
     public function storePortfolio(StorePortfolioRequest $request)
     {
-        $student = Auth::user()->student;
+        $student = $this->getStudentProfile();
         $validated = $request->validated();
 
         $path = $this->fileUpload->upload(
@@ -78,23 +98,85 @@ class PortfolioController extends Controller
             (string) $student->id
         );
 
-        $portfolio = Portfolio::create([
-            'student_id' => $student->id,
-            'title' => $validated['title'],
-            'type' => $validated['type'],
-            'description' => $validated['description'] ?? null,
-            'file_path' => $path,
-        ]);
+        try {
+            $portfolio = DB::transaction(function () use ($student, $validated, $path) {
+                $portfolio = Portfolio::create([
+                    'student_id' => $student->id,
+                    'title' => $validated['title'],
+                    'type' => $validated['type'],
+                    'description' => $validated['description'] ?? null,
+                    'file_path' => $path,
+                ]);
 
-        $this->activityLog->log(Auth::user(), 'portfolio_upload', ['portfolio_id' => $portfolio->id]);
+                $this->activityLog->log(Auth::user(), 'portfolio_upload', ['portfolio_id' => $portfolio->id]);
+
+                return $portfolio;
+            });
+        } catch (\Throwable $exception) {
+            $this->fileUpload->delete($path);
+            throw $exception;
+        }
 
         return redirect()->route('student.portfolio.index')
             ->with('success', 'Portfolio item uploaded successfully!');
     }
 
+    public function bulkStore(StorePortfolioRequest $request)
+    {
+        $this->authorize('create', Portfolio::class);
+
+        $items = $request->input('items', []);
+
+        if (! is_array($items) || empty($items)) {
+            return back()->withErrors(['items' => 'Please upload at least one portfolio item.']);
+        }
+
+        $student = $this->getStudentProfile();
+        $created = 0;
+        $uploadedPaths = [];
+
+        try {
+            DB::transaction(function () use ($items, $request, $student, &$created, &$uploadedPaths) {
+                foreach ($items as $index => $item) {
+                    $file = $request->file('items.'.$index.'.file');
+
+                    if (empty($item['title']) || empty($item['type']) || ! $file) {
+                        continue;
+                    }
+
+                    $path = $this->fileUpload->upload(
+                        $file,
+                        'portfolios/'.$student->id,
+                        (string) $student->id.'_'.$created
+                    );
+                    $uploadedPaths[] = $path;
+
+                    Portfolio::create([
+                        'student_id' => $student->id,
+                        'title' => $item['title'],
+                        'type' => $item['type'],
+                        'description' => $item['description'] ?? null,
+                        'file_path' => $path,
+                    ]);
+
+                    $created++;
+                }
+            });
+        } catch (\Throwable $exception) {
+            foreach ($uploadedPaths as $path) {
+                $this->fileUpload->delete($path);
+            }
+
+            throw $exception;
+        }
+
+        return redirect()->route('student.portfolio.index')
+            ->with('success', $created.' portfolio items uploaded successfully!');
+    }
+
     public function storeCertificate(StoreCertificateRequest $request)
     {
-        $student = Auth::user()->student;
+        $student = $this->getStudentProfile();
         $validated = $request->validated();
 
         $path = $this->fileUpload->upload(
@@ -103,25 +185,32 @@ class PortfolioController extends Controller
             $student->id.'_cert'
         );
 
-        Certificate::create([
-            'student_id' => $student->id,
-            'title' => $validated['title'],
-            'issuer' => $validated['issuer'] ?? null,
-            'issue_date' => $validated['issue_date'] ?? null,
-            'expiration_date' => $validated['expiration_date'] ?? null,
-            'verification_status' => 'evidence_submitted',
-            'file_path' => $path,
-        ]);
+        try {
+            DB::transaction(function () use ($student, $validated, $path) {
+                Certificate::create([
+                    'student_id' => $student->id,
+                    'title' => $validated['title'],
+                    'issuer' => $validated['issuer'] ?? null,
+                    'issue_date' => $validated['issue_date'] ?? null,
+                    'expiration_date' => $validated['expiration_date'] ?? null,
+                    'verification_status' => 'evidence_submitted',
+                    'file_path' => $path,
+                ]);
 
-        Portfolio::create([
-            'student_id' => $student->id,
-            'title' => $validated['title'],
-            'type' => 'certificate',
-            'description' => 'Issued by '.($validated['issuer'] ?? 'Unknown'),
-            'file_path' => $path,
-        ]);
+                Portfolio::create([
+                    'student_id' => $student->id,
+                    'title' => $validated['title'],
+                    'type' => 'certificate',
+                    'description' => 'Issued by '.($validated['issuer'] ?? 'Unknown'),
+                    'file_path' => $path,
+                ]);
 
-        $this->activityLog->log(Auth::user(), 'certificate_upload', ['student_id' => $student->id]);
+                $this->activityLog->log(Auth::user(), 'certificate_upload', ['student_id' => $student->id]);
+            });
+        } catch (\Throwable $exception) {
+            $this->fileUpload->delete($path);
+            throw $exception;
+        }
 
         return redirect()->route('student.portfolio.index')
             ->with('success', 'Certificate uploaded successfully!');
@@ -150,18 +239,35 @@ class PortfolioController extends Controller
 
         $validated = $request->validated();
 
+        $previousPath = $portfolio->file_path;
+        $newPath = null;
+
         if ($request->hasFile('file')) {
-            $this->fileUpload->delete($portfolio->file_path);
-            $validated['file_path'] = $this->fileUpload->upload(
+            $newPath = $this->fileUpload->upload(
                 $request->file('file'),
                 'portfolios/'.$portfolio->student_id,
                 (string) $portfolio->student_id
             );
+            $validated['file_path'] = $newPath;
         }
 
-        $portfolio->update(collect($validated)->except('file')->all());
+        try {
+            DB::transaction(function () use ($portfolio, $validated) {
+                $portfolio->update(collect($validated)->except('file')->all());
 
-        $this->activityLog->log(Auth::user(), 'portfolio_update', ['portfolio_id' => $portfolio->id]);
+                $this->activityLog->log(Auth::user(), 'portfolio_update', ['portfolio_id' => $portfolio->id]);
+            });
+        } catch (\Throwable $exception) {
+            if ($newPath) {
+                $this->fileUpload->delete($newPath);
+            }
+
+            throw $exception;
+        }
+
+        if ($newPath && $previousPath !== $newPath) {
+            $this->fileUpload->deleteIfUnreferenced($previousPath);
+        }
 
         return redirect()->route('student.portfolio.index')
             ->with('success', 'Portfolio item updated successfully!');
@@ -172,10 +278,14 @@ class PortfolioController extends Controller
         $this->authorize('delete', $portfolio);
 
         $portfolioId = $portfolio->id;
-        $this->fileUpload->delete($portfolio->file_path);
-        $portfolio->delete();
+        $path = $portfolio->file_path;
 
-        $this->activityLog->log(Auth::user(), 'portfolio_delete', ['portfolio_id' => $portfolioId]);
+        DB::transaction(function () use ($portfolio, $portfolioId) {
+            $portfolio->delete();
+            $this->activityLog->log(Auth::user(), 'portfolio_delete', ['portfolio_id' => $portfolioId]);
+        });
+
+        $this->fileUpload->deleteIfUnreferenced($path);
 
         return redirect()->route('student.portfolio.index')
             ->with('success', 'Portfolio item deleted successfully!');
@@ -185,15 +295,14 @@ class PortfolioController extends Controller
     {
         $this->authorize('delete', $certificate);
 
-        $this->fileUpload->delete($certificate->file_path);
+        $path = $certificate->file_path;
 
-        Portfolio::where('student_id', $certificate->student_id)
-            ->where('file_path', $certificate->file_path)
-            ->delete();
+        DB::transaction(function () use ($certificate) {
+            $certificate->delete();
+            $this->activityLog->log(Auth::user(), 'certificate_delete', ['certificate_id' => $certificate->id]);
+        });
 
-        $certificate->delete();
-
-        $this->activityLog->log(Auth::user(), 'certificate_delete', ['certificate_id' => $certificate->id]);
+        $this->fileUpload->deleteIfUnreferenced($path);
 
         return redirect()->route('student.portfolio.index')
             ->with('success', 'Certificate deleted successfully!');

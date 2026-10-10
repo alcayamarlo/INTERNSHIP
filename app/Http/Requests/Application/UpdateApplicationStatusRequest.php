@@ -20,10 +20,29 @@ class UpdateApplicationStatusRequest extends FormRequest
 
     public function rules(): array
     {
+        $status = $this->input('status');
+        $application = $this->route('application');
+        $allowedStatuses = $application?->status->allowedNextStatuses() ?? [];
+
+        $interviewRules = ['nullable'];
+        if ($status instanceof ApplicationStatus) {
+            $status = $status->value;
+        }
+
+        if ($status === ApplicationStatus::Interview->value) {
+            $interviewRules = ['required', 'date', 'after:now'];
+        } elseif ($status !== null) {
+            $interviewRules = ['nullable', 'date', 'after:now'];
+        }
+
         return [
-            'status' => ['required', Rule::enum(ApplicationStatus::class)],
+            'status' => [
+                'required',
+                Rule::enum(ApplicationStatus::class),
+                Rule::in(array_map(fn (ApplicationStatus $allowedStatus) => $allowedStatus->value, $allowedStatuses)),
+            ],
             'employer_notes' => ['nullable', 'string', 'max:2000'],
-            'interview_at' => ['nullable', 'date', 'after:now'],
+            'interview_at' => $interviewRules,
         ];
     }
 
@@ -31,6 +50,8 @@ class UpdateApplicationStatusRequest extends FormRequest
     {
         return [
             'status.required' => 'Please select an application status.',
+            'status.in' => 'That status transition is not allowed from the current application status.',
+            'interview_at.required' => 'Interview date is required when moving to the interview stage.',
             'interview_at.after' => 'Interview date must be in the future.',
         ];
     }

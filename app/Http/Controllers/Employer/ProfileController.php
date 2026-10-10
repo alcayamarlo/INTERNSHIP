@@ -8,6 +8,7 @@ use App\Models\Employer;
 use App\Services\ActivityLogService;
 use App\Services\FileUploadService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ProfileController extends Controller
 {
@@ -20,8 +21,11 @@ class ProfileController extends Controller
      */
     public function edit()
     {
-        $employer = Auth::user()->employer()->firstOrFail();
         $user = Auth::user();
+        $employer = $user->employer()->firstOrCreate([], [
+            'company_name' => $user->name,
+            'contact_person' => $user->name,
+        ]);
         $employerInfo = session('employer_info', []);
         $address = $this->parseAddress($employer->address);
 
@@ -39,46 +43,61 @@ class ProfileController extends Controller
      */
     public function update(EmployerProfileRequest $request)
     {
-        $employer = Auth::user()->employer()->firstOrFail();
         $user = Auth::user();
+        $employer = $user->employer()->firstOrCreate([], [
+            'company_name' => $user->name,
+            'contact_person' => $user->name,
+        ]);
         $validated = $request->validated();
 
-        // Handle company logo upload
-        if ($request->hasFile('company_logo')) {
-            $this->fileUpload->delete($employer->logo);
+        $previousLogo = $employer->logo;
+        $newLogo = null;
 
-            $validated['logo'] = $this->fileUpload->uploadImage(
+        if ($request->hasFile('company_logo')) {
+            $newLogo = $this->fileUpload->uploadImage(
                 $request->file('company_logo'),
                 'logos/employers',
                 (string) $employer->id
             );
+            $validated['logo'] = $newLogo;
         }
 
-        // Update user information
-        $user->update([
-            'name' => $validated['contact_person'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'],
-        ]);
+        try {
+            DB::transaction(function () use ($user, $employer, $validated, $newLogo) {
+                $user->update([
+                    'name' => $validated['contact_person'],
+                    'email' => $validated['email'],
+                    'phone' => $validated['phone'],
+                ]);
 
-        // Update employer information
-        $employer->update([
-            'company_name' => $validated['company_name'],
-            'industry' => $validated['industry'],
-            'description' => $validated['description'] ?? null,
-            'website' => $validated['website'] ?? null,
-            'logo' => $validated['logo'] ?? $employer->logo,
-            'contact_person' => $validated['contact_person'],
-            'address' => "{$validated['street']}, {$validated['city']}, {$validated['province']} {$validated['zip_code']}",
-        ]);
+                $employer->update([
+                    'company_name' => $validated['company_name'],
+                    'industry' => $validated['industry'],
+                    'description' => $validated['description'] ?? null,
+                    'website' => $validated['website'] ?? null,
+                    'logo' => $newLogo ?? $employer->logo,
+                    'contact_person' => $validated['contact_person'],
+                    'address' => "{$validated['street']}, {$validated['city']}, {$validated['province']} {$validated['zip_code']}",
+                ]);
+                $this->activityLog->log($user, 'profile_update', ['role' => 'employer']);
+            });
+        } catch (\Throwable $exception) {
+            if ($newLogo) {
+                $this->fileUpload->delete($newLogo);
+            }
+
+            throw $exception;
+        }
+
+        if ($previousLogo && $previousLogo !== $newLogo) {
+            $this->fileUpload->delete($previousLogo);
+        }
 
         // Store additional fields
         session()->put('employer_info', [
             'company_size' => $validated['company_size'] ?? null,
             'position' => $validated['position'] ?? null,
         ]);
-
-        $this->activityLog->log($user, 'profile_update', ['role' => 'employer']);
 
         return redirect()->route('employer.profile.edit')
             ->with('success', 'Company profile updated successfully!');
@@ -113,8 +132,11 @@ class ProfileController extends Controller
         $employer = Auth::user()->employer()->firstOrFail();
 
         if ($employer->logo) {
-            $this->fileUpload->delete($employer->logo);
-            $employer->update(['logo' => null]);
+            $previousLogo = $employer->logo;
+            DB::transaction(function () use ($employer, $previousLogo) {
+                $employer->update(['logo' => null]);
+            });
+            $this->fileUpload->delete($previousLogo);
 
             return redirect()->route('employer.profile.edit')
                 ->with('success', 'Company logo removed successfully!');

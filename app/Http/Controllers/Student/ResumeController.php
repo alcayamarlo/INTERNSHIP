@@ -22,9 +22,12 @@ class ResumeController extends Controller
 
     public function generate()
     {
-        BuildResume::dispatch(Auth::user()->student->id);
+        BuildResume::dispatchSync(Auth::user()->student->id);
 
-        return back()->with('success', 'Resume is being generated. You will be notified when it is ready.');
+        return redirect()->route('student.resume.index')->with(
+            'success',
+            'Resume generated successfully.'
+        );
     }
 
     public function download(Resume $resume)

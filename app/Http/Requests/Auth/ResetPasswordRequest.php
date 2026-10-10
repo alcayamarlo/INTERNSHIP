@@ -7,6 +7,13 @@ use Illuminate\Validation\Rules\Password;
 
 class ResetPasswordRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if (is_string($this->input('email'))) {
+            $this->merge(['email' => mb_strtolower(trim($this->input('email')))]);
+        }
+    }
+
     public function authorize(): bool
     {
         return true;
@@ -15,8 +22,8 @@ class ResetPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'token' => ['required'],
             'email' => ['required', 'email'],
+            'code' => ['required', 'string', 'regex:/\A[0-9]{6}\z/'],
             'password' => ['required', 'confirmed', Password::defaults()],
         ];
     }
@@ -24,9 +31,10 @@ class ResetPasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'token.required' => 'Invalid reset token.',
             'email.required' => 'Email address is required.',
             'email.email' => 'Please enter a valid email address.',
+            'code.required' => 'Enter the six-digit reset code.',
+            'code.regex' => 'The reset code must contain exactly six digits.',
             'password.required' => 'Password is required.',
             'password.confirmed' => 'Passwords do not match.',
         ];

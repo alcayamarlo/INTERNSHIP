@@ -27,7 +27,7 @@ class SendNotification implements ShouldQueue
         public array $data = []
     ) {}
 
-    public function handle(): void
+    public function handle(\App\Services\NotificationService $notificationService): void
     {
         $user = User::findOrFail($this->userId);
 
@@ -38,6 +38,13 @@ class SendNotification implements ShouldQueue
             'message' => $this->message,
             'data' => $this->data,
         ]);
+
+        $notificationService->sendEmail(
+            $user,
+            $this->title,
+            $this->message,
+            $this->data
+        );
 
         Log::info("Notification sent to user {$this->userId}: {$this->title}");
     }

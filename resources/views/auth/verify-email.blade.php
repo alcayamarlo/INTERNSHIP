@@ -87,6 +87,33 @@
     font-size: 12px;
     font-weight: 700;
 }
+.verify-code-input {
+    width: 100%;
+    height: 48px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 8px;
+    background: rgba(4, 17, 31, 0.72);
+    color: #f8fafc;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.35em;
+    text-align: center;
+}
+.verify-code-input:focus {
+    outline: 2px solid rgba(8, 217, 245, 0.55);
+    outline-offset: 1px;
+}
+.verify-alert-error {
+    border: 1px solid rgba(251, 113, 133, 0.25);
+    background: rgba(251, 113, 133, 0.07);
+    color: #fb7185;
+}
+.verify-field-error {
+    margin: 0 0 12px;
+    color: #fb7185;
+    font-size: 11px;
+}
 .btn-verify {
     width: 100%;
     height: 43px;
@@ -179,8 +206,7 @@
         <h2 class="verify-title">Verify Your Email</h2>
 
         <p class="verify-text">
-            We've sent a verification link to your email address.
-            Please check your inbox and click the link to verify your account.
+            Enter the 6-digit code sent to your email address. The code expires in 10 minutes.
         </p>
 
         <div class="verify-email-display">
@@ -188,28 +214,49 @@
             {{ Auth::user()->email ?? 'your email address' }}
         </div>
 
-        @if (session('status') == 'verification-link-sent')
-            <div class="verify-alert verify-alert-success">
+        @if (session('status'))
+            <div class="verify-alert verify-alert-success" role="status">
                 <i class="bi bi-check-circle-fill"></i>
-                A new verification link has been sent to your email address.
+                {{ session('status') }}
             </div>
         @endif
 
-        @if (session('status'))
-            @if (session('status') !== 'verification-link-sent')
-                <div class="verify-alert verify-alert-success">
-                    <i class="bi bi-check-circle-fill"></i>
-                    {{ session('status') }}
-                </div>
-            @endif
-        @endif
+        @error('code')
+            <div id="verification-code-error" class="verify-alert verify-alert-error" role="alert">{{ $message }}</div>
+        @enderror
+
+        <form method="POST" action="{{ route('verification.verify') }}">
+            @csrf
+            <label for="verification-code" class="verify-text" style="display: block; margin-bottom: 8px;">
+                Verification code
+            </label>
+            <input
+                id="verification-code"
+                class="verify-code-input"
+                type="text"
+                name="code"
+                inputmode="numeric"
+                maxlength="6"
+                pattern="[0-9]{6}"
+                autocomplete="one-time-code"
+                @if ($errors->has('code'))
+                    aria-describedby="verification-code-error"
+                    aria-invalid="true"
+                @endif
+                required
+            >
+            <button type="submit" class="btn-verify" style="margin-bottom: 10px;">
+                <i class="bi bi-shield-check"></i>
+                Verify email
+            </button>
+        </form>
 
         <div style="position: relative;">
             <form method="POST" action="{{ route('verification.resend') }}">
                 @csrf
-                <button type="submit" class="btn-verify" style="margin-bottom: 10px;">
+                <button type="submit" class="btn-resend">
                     <i class="bi bi-send-fill"></i>
-                    Resend Verification Email
+                    Resend code
                 </button>
             </form>
         </div>

@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Cache;
 
 class CompetencyMatchingService
 {
+    private const RECOMMENDATION_LIMITS = [3, 5, 10];
+
     public function calculateMatch(Student $student, Internship $internship): int
     {
         $cacheKey = "match_{$student->id}_{$internship->id}";
@@ -49,7 +51,13 @@ class CompetencyMatchingService
 
     public function invalidateCache(Student $student): void
     {
-        Cache::forget("recommendations_{$student->id}_10");
+        foreach (self::RECOMMENDATION_LIMITS as $limit) {
+            Cache::forget("recommendations_{$student->id}_{$limit}");
+        }
+
+        foreach (Internship::query()->pluck('id') as $internshipId) {
+            Cache::forget("match_{$student->id}_{$internshipId}");
+        }
     }
 
     protected function buildRecommendationResult(Student $student, Internship $internship): array
@@ -70,7 +78,7 @@ class CompetencyMatchingService
         }
 
         $studentCompetencies = $student->competencies()->get();
-        $feedback = $this->getStudentFeedback($student);
+        $feedback = $this->getStudentFeedback($student, $internship->id);
         $matchedRequirements = [];
         $missingRequirements = [];
         $verifiedMatchCount = 0;
@@ -117,7 +125,7 @@ class CompetencyMatchingService
             ? (int) round(($weightedScore / $totalWeight) * 100)
             : (int) round(($verifiedMatchCount / $requirements->count()) * 100);
 
-        $feedbackAdjustment = $this->calculateFeedbackAdjustment($feedback, $internship->id);
+        $feedbackAdjustment = $this->calculateFeedbackAdjustment($feedback);
         $matchPercentage = max(0, min(100, $matchPercentage + $feedbackAdjustment));
 
         return [
@@ -134,12 +142,14 @@ class CompetencyMatchingService
         ];
     }
 
-    private function getStudentFeedback(Student $student): Collection
+    private function getStudentFeedback(Student $student, int $internshipId): Collection
     {
-        return RecommendationFeedback::where('student_id', $student->id)->get();
+        return RecommendationFeedback::where('student_id', $student->id)
+            ->where('internship_id', $internshipId)
+            ->get();
     }
 
-    private function calculateFeedbackAdjustment($feedback, int $internshipId): int
+    private function calculateFeedbackAdjustment(Collection $feedback): int
     {
         if ($feedback->isEmpty()) {
             return 0;

@@ -564,6 +564,10 @@
     <p class="text-muted mb-0">Platform analytics and administration</p>
     <span class="admin-dashboard-help">Review the overview first, then use quick actions and platform insights below.</span>
     <div class="admin-dashboard-status">All systems operational</div>
+    <div class="mt-3 d-flex gap-2">
+        <a href="{{ route('admin.skills.index') }}" class="btn btn-sm btn-outline-primary">Manage Skills</a>
+        <a href="{{ route('admin.skill-categories.index') }}" class="btn btn-sm btn-outline-primary">Manage Skill Categories</a>
+    </div>
 </div>
     <div class="admin-dashboard-date"><i class="bi bi-calendar3"></i> {{ now()->format('M d, Y') }}</div>
 </div>

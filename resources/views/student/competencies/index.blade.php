@@ -200,6 +200,9 @@
                             <div>
                                 <h5 class="card-title mb-1">{{ $competency->name }}</h5>
                                 <span class="badge bg-light text-dark">{{ $competency->category->label() }}</span>
+                                @if($competency->verification_status === 'verified')
+                                    <span class="badge bg-success"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                                @endif
                             </div>
                             <span class="badge" style="background-color: {{ getProficiencyColor($competency->proficiency_level->value) }}">
                                 {{ $competency->proficiency_level->label() }}
@@ -216,7 +219,7 @@
                             </small>
                         @endif
 
-                        <div class="small mb-3"><i class="bi bi-shield-check"></i> Evidence: {{ $competency->verification_status === 'verified' ? 'Verified' : 'Pending Verification' }} @if($competency->evidence_name)<span class="text-muted">({{ $competency->evidence_name }})</span>@endif</div>
+                        <div class="small mb-3"><i class="bi bi-shield-check"></i> Evidence: {{ ucfirst(str_replace('_', ' ', $competency->verification_status)) }} @if($competency->evidence_name)<span class="text-muted">({{ $competency->evidence_name }})</span>@endif</div>
 
                         <div class="btn-group btn-group-sm w-100" role="group">
                             <a href="{{ route('student.competencies.show', $competency) }}" class="btn btn-outline-primary" title="View">

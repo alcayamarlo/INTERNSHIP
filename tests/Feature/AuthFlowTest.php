@@ -1,11 +1,13 @@
 <?php
 
 use App\Enums\UserRole;
+use App\Mail\EmailVerificationCodeMail;
 use App\Models\Coordinator;
 use App\Models\Employer;
 use App\Models\Institution;
 use App\Models\Student;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 
 it('shows a streamlined student-only registration form', function () {
 	$this->get('/register')
@@ -14,7 +16,9 @@ it('shows a streamlined student-only registration form', function () {
 		->assertDontSee('Choose your role in Skill Bridge');
 });
 
-it('registers a student and redirects to the login form', function () {
+it('registers a student, logs them in, and sends one verification email', function () {
+	Mail::fake();
+
 	$institution = Institution::create([
 		'name' => "St. Cecilia's College-Cebu, Inc.",
 		'address' => null,
@@ -30,13 +34,43 @@ it('registers a student and redirects to the login form', function () {
 		'program' => 'Bachelor of Science in Information Technology',
 	]);
 
-	$response->assertRedirect('/login');
-	$response->assertSessionHas('status', 'Your account has been created. Please log in to continue.');
-	$this->assertGuest();
+	$response->assertRedirect('/email/verify');
+	$response->assertSessionHas('status', 'A 6-digit verification code has been sent to your email address.');
+	$this->assertAuthenticated();
 	$this->assertDatabaseHas('users', [
 		'email' => 'student.regression@example.com',
 		'role' => UserRole::Student->value,
 	]);
+
+	Mail::assertSent(EmailVerificationCodeMail::class, 1);
+});
+
+it('redirects unverified users to email verification', function () {
+	$user = User::factory()->unverified()->create([
+		'role' => UserRole::Student,
+	]);
+	Student::create(['user_id' => $user->id]);
+
+	$this->actingAs($user)
+		->get('/student/dashboard')
+		->assertRedirect('/email/verify');
+});
+
+it('allows a verified user to log in and access their dashboard', function () {
+	$user = User::factory()->create([
+		'role' => UserRole::Student,
+		'email' => 'verified.login@example.com',
+		'password' => 'Password',
+		'email_verified_at' => now(),
+	]);
+	Student::create(['user_id' => $user->id]);
+
+	$this->post('/login', [
+		'email' => $user->email,
+		'password' => 'Password',
+	])->assertRedirect('/student/dashboard');
+
+	$this->get('/student/dashboard')->assertOk();
 });
 
 it('loads role-based dashboards for authenticated users', function () {

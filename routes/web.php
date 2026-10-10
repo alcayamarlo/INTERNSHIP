@@ -1,14 +1,17 @@
-<?php
+﻿<?php
 
 use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncementController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\SystemController as AdminSystemController;
+use App\Http\Controllers\Admin\SkillCategoryController as AdminSkillCategoryController;
+use App\Http\Controllers\Admin\SkillController as AdminSkillController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Coordinator\DashboardController as CoordinatorDashboardController;
 use App\Http\Controllers\Coordinator\ReportController as CoordinatorReportController;
 use App\Http\Controllers\Coordinator\VerificationController;
@@ -18,6 +21,7 @@ use App\Http\Controllers\Employer\InternshipController as EmployerInternshipCont
 use App\Http\Controllers\Employer\ProfileController as EmployerProfileController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProfileCompletionController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Student\CompetencyController;
 use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
@@ -26,40 +30,10 @@ use App\Http\Controllers\Student\PortfolioController;
 use App\Http\Controllers\Student\ProfileController as StudentProfileController;
 use App\Http\Controllers\Student\ResumeController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
 
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
-
-Route::get('/health', function () {
-    $checks = [
-        'database' => fn () => \DB::connection()->getPdo() !== null,
-        'cache' => fn () => \Cache::store('file')->put('__health_check', 1),
-        'queue' => fn () => true,
-    ];
-
-    $status = 'healthy';
-    $details = [];
-
-    foreach ($checks as $name => $check) {
-        try {
-            $check();
-            $details[$name] = 'ok';
-        } catch (\Throwable $e) {
-            $status = 'unhealthy';
-            $details[$name] = $e->getMessage();
-        }
-    }
-
-    $code = $status === 'healthy' ? 200 : 503;
-
-    return response()->json([
-        'status' => $status,
-        'timestamp' => now()->toIso8601String(),
-        'checks' => $details,
-    ], $code);
-})->name('health');
 
 Route::middleware('guest')->group(function () {
     // LOGIN
@@ -77,40 +51,9 @@ Route::middleware('guest')->group(function () {
         ->name('register.store')
         ->middleware('throttle:register');
 
-    Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
-    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email')->middleware('throttle:password');
-    Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
-    Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update')->middleware('throttle:password');
-});
-
-// EMAIL VERIFICATION (requires auth, but not guest)
-Route::middleware('auth')->group(function () {
-    Route::get('/email/verify', function () {
-        return view('auth.verify-email');
-    })->name('verification.notice');
-
-    Route::get('/email/verify/{id}/{hash}', function (Request $request) {
-        if (! hash_equals((string) $request->route('id'), (string) $request->user()->getKey())) {
-            abort(403);
-        }
-        if (! hash_equals(sha1($request->user()->getEmailForVerification()), (string) $request->route('hash'))) {
-            abort(403);
-        }
-        if ($request->user()->hasVerifiedEmail()) {
-            return redirect()->intended(route($request->user()->dashboardRoute()));
-        }
-        $request->user()->markEmailAsVerified();
-        event(new \Illuminate\Auth\Events\Verified($request->user()));
-        return redirect()->intended(route($request->user()->dashboardRoute()));
-    })->middleware('signed')->name('verification.verify');
-
-    Route::post('/email/verify/resend', function (Request $request) {
-        if ($request->user()->hasVerifiedEmail()) {
-            return redirect()->intended(route($request->user()->dashboardRoute()));
-        }
-        $request->user()->sendEmailVerificationNotification();
-        return back()->with('status', 'verification-link-sent');
-    })->middleware('throttle:6,1')->name('verification.resend');
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'showResetForm'])->name('password.request');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetCode'])->name('password.email')->middleware('throttle:password-reset-request');
+    Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update')->middleware('throttle:password-reset-submit');
 });
 
 Route::match(['get', 'post'], '/logout', [LoginController::class, 'logout'])
@@ -118,6 +61,19 @@ Route::match(['get', 'post'], '/logout', [LoginController::class, 'logout'])
     ->name('logout');
 
 Route::middleware(['auth', 'active'])->group(function () {
+    Route::get('/profile/complete', ProfileCompletionController::class)
+        ->name('profile.complete');
+
+    Route::get('/email/verify', [EmailVerificationController::class, 'notice'])
+        ->name('verification.notice');
+    Route::post('/email/verify', [EmailVerificationController::class, 'verify'])
+        ->middleware('throttle:6,1')
+        ->name('verification.verify');
+    Route::post('/email/verify/resend', [EmailVerificationController::class, 'resend'])
+        ->middleware('throttle:1,1')
+        ->name('verification.resend');
+
+    Route::middleware('verified')->group(function () {
     Route::get('/search', [SearchController::class, 'index'])->name('search');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
@@ -147,6 +103,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/portfolio', [PortfolioController::class, 'index'])->name('portfolio.index');
         Route::get('/portfolio/create', [PortfolioController::class, 'create'])->name('portfolio.create');
         Route::post('/portfolio', [PortfolioController::class, 'storePortfolio'])->name('portfolio.store');
+        Route::post('/portfolio/bulk', [PortfolioController::class, 'bulkStore'])->name('portfolio.bulk-store');
         Route::get('/portfolio/{portfolio}', [PortfolioController::class, 'show'])->name('portfolio.show');
         Route::get('/portfolio/{portfolio}/edit', [PortfolioController::class, 'edit'])->name('portfolio.edit');
         Route::put('/portfolio/{portfolio}', [PortfolioController::class, 'update'])->name('portfolio.update');
@@ -208,11 +165,16 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
         Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
         Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+        Route::resource('skills', AdminSkillController::class)->except(['show']);
+        Route::resource('skill-categories', AdminSkillCategoryController::class)
+            ->except(['show'])
+            ->parameters(['skill-categories' => 'skill_category']);
         Route::get('/announcements', [AdminAnnouncementController::class, 'index'])->name('announcements.index');
         Route::post('/announcements', [AdminAnnouncementController::class, 'store'])->name('announcements.store');
         Route::delete('/announcements/{announcement}', [AdminAnnouncementController::class, 'destroy'])->name('announcements.destroy');
         Route::get('/logs', [AdminSystemController::class, 'logs'])->name('logs');
         Route::match(['get', 'post'], '/reports', [AdminSystemController::class, 'reports'])->name('reports');
         Route::post('/backup', [AdminSystemController::class, 'backup'])->name('backup');
+    });
     });
 });

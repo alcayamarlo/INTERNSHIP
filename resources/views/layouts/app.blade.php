@@ -2643,6 +2643,8 @@
             class="sb-mobile-toggle d-none"
             onclick="toggleSidebar()"
             aria-label="Open navigation"
+            aria-controls="sidebar"
+            aria-expanded="false"
         >
 
             <i class="bi bi-list"></i>
@@ -2688,6 +2690,7 @@
                     class="form-control"
                     placeholder="Search students, companies, skills..."
                     value="{{ request('q') }}"
+                    aria-label="Search the platform"
                 >
 
             </div>
@@ -3118,15 +3121,26 @@
         const overlay =
             document.getElementById('sidebarOverlay');
 
+        const toggleButton =
+            document.querySelector('.sb-mobile-toggle');
+
 
         if (!sidebar || !overlay) {
             return;
         }
 
 
-        sidebar.classList.toggle('show');
+        const isOpen = sidebar.classList.toggle('show');
 
         overlay.classList.toggle('show');
+
+        if (toggleButton) {
+            toggleButton.setAttribute('aria-expanded', String(isOpen));
+            toggleButton.setAttribute(
+                'aria-label',
+                isOpen ? 'Close navigation' : 'Open navigation'
+            );
+        }
 
     }
 
@@ -3139,6 +3153,9 @@
         const overlay =
             document.getElementById('sidebarOverlay');
 
+        const toggleButton =
+            document.querySelector('.sb-mobile-toggle');
+
 
         if (!sidebar || !overlay) {
             return;
@@ -3148,6 +3165,11 @@
         sidebar.classList.remove('show');
 
         overlay.classList.remove('show');
+
+        if (toggleButton) {
+            toggleButton.setAttribute('aria-expanded', 'false');
+            toggleButton.setAttribute('aria-label', 'Open navigation');
+        }
 
     }
 

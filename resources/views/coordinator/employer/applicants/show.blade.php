@@ -39,6 +39,9 @@
                         <div class="col-md-6">
                             <div class="border rounded p-2">
                                 <strong>{{ $comp->name }}</strong>
+                                @if($comp->verification_status === 'verified')
+                                    <span class="badge bg-success"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                                @endif
                                 <span class="badge bg-light text-dark ms-1">{{ $comp->category->label() }}</span>
                                 <span class="badge bg-primary">{{ $comp->proficiency_level->label() }}</span>
                             </div>
@@ -55,11 +58,27 @@
             <div class="card-body">
                 @if($application->student->portfolios->count())
                     <h6>Portfolio Items</h6>
-                    <ul>@foreach($application->student->portfolios as $p)<li>{{ $p->title }} ({{ $p->type->label() }})</li>@endforeach</ul>
+                    <ul>
+                        @foreach($application->student->portfolios as $p)
+                            <li>{{ $p->title }} ({{ $p->type->label() }})
+                                <a href="{{ route('employer.applicants.portfolios.download', [$application, $p]) }}" class="btn btn-sm btn-outline-primary ms-1" aria-label="Download {{ $p->title }}">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
                 @endif
                 @if($application->student->certificates->count())
                     <h6>Certificates</h6>
-                    <ul>@foreach($application->student->certificates as $c)<li>{{ $c->title }} — {{ $c->issuer ?? 'N/A' }}</li>@endforeach</ul>
+                    <ul>
+                        @foreach($application->student->certificates as $c)
+                            <li>{{ $c->title }} — {{ $c->issuer ?? 'N/A' }}
+                                @if($c->verification_status === 'verified')
+                                    <span class="badge bg-success"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
                 @endif
             </div>
         </div>
@@ -77,26 +96,33 @@
         <div class="card">
             <div class="card-header bg-white"><h5 class="mb-0">Update Status</h5></div>
             <div class="card-body">
-                <form method="POST" action="{{ route('employer.applicants.status', $application) }}">
-                    @csrf @method('PUT')
-                    <div class="mb-3">
-                        <label class="form-label">Status</label>
-                        <select class="form-select @error('status') is-invalid @enderror" name="status" required>
-                            @foreach(\App\Enums\ApplicationStatus::cases() as $status)
-                                <option value="{{ $status->value }}" {{ $application->status === $status ? 'selected' : '' }}>{{ $status->label() }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Interview Date</label>
-                        <input type="datetime-local" class="form-control" name="interview_at" value="{{ old('interview_at', $application->interview_at?->format('Y-m-d\TH:i')) }}">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Notes</label>
-                        <textarea class="form-control" name="employer_notes" rows="3">{{ old('employer_notes', $application->employer_notes) }}</textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Update Status</button>
-                </form>
+                @if($availableStatuses !== [])
+                    <form method="POST" action="{{ route('employer.applicants.status', $application) }}">
+                        @csrf @method('PUT')
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select @error('status') is-invalid @enderror" name="status" required>
+                                @foreach($availableStatuses as $status)
+                                    <option value="{{ $status->value }}" @selected(old('status') === $status->value)>{{ $status->label() }}</option>
+                                @endforeach
+                            </select>
+                            @error('status')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Interview Date</label>
+                            <input type="datetime-local" class="form-control" name="interview_at" value="{{ old('interview_at', $application->interview_at?->format('Y-m-d\TH:i')) }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" name="employer_notes" rows="3">{{ old('employer_notes', $application->employer_notes) }}</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Update Status</button>
+                    </form>
+                @else
+                    <p class="mb-0 text-muted">No further status changes are available.</p>
+                @endif
             </div>
         </div>
     </div>

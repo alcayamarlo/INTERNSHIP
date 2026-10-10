@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Employer;
 use App\Enums\ApplicationStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Application\UpdateApplicationStatusRequest;
+use App\Mail\InterviewInvitationMail;
 use App\Models\InternshipApplication;
 use App\Services\ActivityLogService;
 use App\Services\NotificationService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class ApplicantController extends Controller
 {
@@ -28,7 +32,7 @@ class ApplicantController extends Controller
             ->latest('applied_at')
             ->paginate(15);
 
-        return view('employer.applicants.index', compact('applications'));
+        return view('coordinator.employer.applicants.index', compact('applications'));
     }
 
     public function show(InternshipApplication $application)
@@ -44,7 +48,9 @@ class ApplicantController extends Controller
             'internship',
         ]);
 
-        return view('employer.applicants.show', compact('application'));
+        $availableStatuses = $application->status->allowedNextStatuses();
+
+        return view('coordinator.employer.applicants.show', compact('application', 'availableStatuses'));
     }
 
     public function updateStatus(UpdateApplicationStatusRequest $request, InternshipApplication $application)
@@ -52,23 +58,43 @@ class ApplicantController extends Controller
         $this->authorize('updateStatus', $application);
 
         $validated = $request->validated();
-        $previousStatus = $application->status;
         $status = $validated['status'] instanceof ApplicationStatus
             ? $validated['status']
             : ApplicationStatus::from($validated['status']);
 
-        $application->update([
-            'status' => $status,
-            'interview_at' => $validated['interview_at'] ?? $application->interview_at,
-            'employer_notes' => $validated['employer_notes'] ?? $application->employer_notes,
-        ]);
+        $application = DB::transaction(function () use ($application, $validated, $status) {
+            $application = InternshipApplication::query()
+                ->lockForUpdate()
+                ->findOrFail($application->id);
+            $previousStatus = $application->status;
 
-        $application->statusHistory()->create([
-            'actor_id' => Auth::id(),
-            'status' => $status->value,
-            'notes' => $validated['employer_notes'] ?? null,
-            'interview_at' => $validated['interview_at'] ?? null,
-        ]);
+            if (! $previousStatus->canTransitionTo($status)) {
+                throw ValidationException::withMessages([
+                    'status' => 'That status transition is not allowed from the current application status.',
+                ]);
+            }
+
+            $application->update([
+                'status' => $status,
+                'interview_at' => $validated['interview_at'] ?? $application->interview_at,
+                'employer_notes' => $validated['employer_notes'] ?? $application->employer_notes,
+            ]);
+
+            $application->statusHistory()->create([
+                'actor_id' => Auth::id(),
+                'status' => $status->value,
+                'notes' => $validated['employer_notes'] ?? null,
+                'interview_at' => $validated['interview_at'] ?? null,
+            ]);
+
+            $this->activityLog->log(Auth::user(), 'application_status_update', [
+                'application_id' => $application->id,
+                'from_status' => $previousStatus->value,
+                'to_status' => $status->value,
+            ]);
+
+            return $application;
+        });
 
         $studentUser = $application->student->user;
         $this->notificationService->send(
@@ -79,11 +105,15 @@ class ApplicantController extends Controller
             ['application_id' => $application->id]
         );
 
-        $this->activityLog->log(Auth::user(), 'application_status_update', [
-            'application_id' => $application->id,
-            'from_status' => $previousStatus?->value,
-            'to_status' => $application->status->value,
-        ]);
+        if ($status === ApplicationStatus::Interview && $application->interview_at) {
+            Mail::to($studentUser->email)->send(new InterviewInvitationMail(
+                internshipTitle: $application->internship->title,
+                interviewAt: $application->interview_at,
+                companyName: $application->internship->employer?->company_name ?? 'The employer',
+                location: $application->internship->location ?? '',
+                recipientName: $studentUser->name,
+            ));
+        }
 
         return back()->with('success', 'Application status updated.');
     }
