@@ -78,7 +78,7 @@ class DashboardController extends Controller
     {
         $this->authorize('view', $student);
 
-        $student->load(['user', 'institution', 'competencies', 'applications.internship.employer']);
+        $student->load(['user', 'institution', 'competencies', 'certificates', 'applications.internship.employer']);
 
         return view('coordinator.students.show', compact('student'));
     }

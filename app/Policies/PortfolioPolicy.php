@@ -8,6 +8,11 @@ use App\Models\User;
 
 class PortfolioPolicy
 {
+    public function create(User $user): bool
+    {
+        return $user->isRole(UserRole::Student);
+    }
+
     public function view(User $user, Portfolio $portfolio): bool
     {
         return $user->isRole(UserRole::Student)

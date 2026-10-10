@@ -80,15 +80,16 @@ class RegisterController extends Controller
                 default => null,
             };
 
+            $this->activityLog->log($user, 'register', ['role' => $user->role->value]);
+
             return $user;
         });
 
         Auth::login($user);
-        $this->activityLog->log($user, 'register', ['role' => $user->role->value]);
 
         $user->sendEmailVerificationNotification();
 
         return redirect()->route('verification.notice')
-            ->with('status', 'Welcome! Please verify your email address to continue.');
+            ->with('status', 'A 6-digit verification code has been sent to your email address.');
     }
 }

@@ -8,6 +8,7 @@ use App\Models\InternshipApplication;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ApplicationService
@@ -41,35 +42,38 @@ class ApplicationService
 
         $matchPercentage = $this->matchingService->calculateMatch($student, $internship);
 
-        try {
-            $application = InternshipApplication::create([
+        return DB::transaction(function () use ($student, $internship, $applicant, $coverLetter, $matchPercentage) {
+            try {
+                $application = InternshipApplication::create([
+                    'internship_id' => $internship->id,
+                    'student_id' => $student->id,
+                    'status' => ApplicationStatus::Submitted,
+                    'cover_letter' => $coverLetter,
+                    'match_percentage' => $matchPercentage,
+                    'applied_at' => now(),
+                ]);
+            } catch (QueryException) {
+                throw ValidationException::withMessages([
+                    'internship' => 'You have already applied for this internship.',
+                ]);
+            }
+
+            $this->activityLog->log($applicant, 'application_submit', [
+                'application_id' => $application->id,
                 'internship_id' => $internship->id,
-                'student_id' => $student->id,
-                'status' => ApplicationStatus::Submitted,
-                'cover_letter' => $coverLetter,
-                'match_percentage' => $matchPercentage,
-                'applied_at' => now(),
             ]);
-        } catch (QueryException) {
-            throw ValidationException::withMessages([
-                'internship' => 'You have already applied for this internship.',
-            ]);
-        }
 
-        $employerUser = $internship->employer->user;
-        $this->notificationService->send(
-            $employerUser,
-            'application',
-            'New Application Received',
-            $applicant->name.' applied for '.$internship->title,
-            ['application_id' => $application->id]
-        );
+            DB::afterCommit(function () use ($internship, $applicant, $application) {
+                $this->notificationService->send(
+                    $internship->employer->user,
+                    'application',
+                    'New Application Received',
+                    $applicant->name.' applied for '.$internship->title,
+                    ['application_id' => $application->id]
+                );
+            });
 
-        $this->activityLog->log($applicant, 'application_submit', [
-            'application_id' => $application->id,
-            'internship_id' => $internship->id,
-        ]);
-
-        return $application;
+            return $application;
+        });
     }
 }

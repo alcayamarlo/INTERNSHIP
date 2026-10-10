@@ -8,6 +8,7 @@ use App\Models\Coordinator;
 use App\Services\ActivityLogService;
 use App\Services\FileUploadService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ProfileController extends Controller
 {
@@ -20,8 +21,8 @@ class ProfileController extends Controller
      */
     public function edit()
     {
-        $coordinator = Auth::user()->coordinator()->firstOrFail();
         $user = Auth::user();
+        $coordinator = $user->coordinator()->firstOrCreate([]);
         $coordinatorInfo = session('coordinator_info', []);
 
         return view('coordinator.profile.edit', [
@@ -37,41 +38,53 @@ class ProfileController extends Controller
      */
     public function update(CoordinatorProfileRequest $request)
     {
-        $coordinator = Auth::user()->coordinator()->firstOrFail();
         $user = Auth::user();
+        $coordinator = $user->coordinator()->firstOrCreate([]);
         $validated = $request->validated();
 
-        // Handle profile picture upload
-        if ($request->hasFile('profile_picture')) {
-            $this->fileUpload->delete($coordinator->profile_picture ?? null);
+        $previousPicture = $coordinator->profile_picture;
+        $newPicture = null;
 
-            $validated['profile_picture'] = $this->fileUpload->uploadImage(
+        if ($request->hasFile('profile_picture')) {
+            $newPicture = $this->fileUpload->uploadImage(
                 $request->file('profile_picture'),
                 'profiles/coordinators',
                 (string) $coordinator->id
             );
+            $validated['profile_picture'] = $newPicture;
         }
 
-        // Update user information
-        $user->update([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'],
-        ]);
+        try {
+            DB::transaction(function () use ($user, $coordinator, $validated, $newPicture) {
+                $user->update([
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                    'phone' => $validated['phone'],
+                ]);
 
-        // Update coordinator information
-        $coordinator->update([
-            'department' => $validated['department'],
-            'office_address' => $validated['office_address'] ?? null,
-            'profile_picture' => $validated['profile_picture'] ?? $coordinator->profile_picture,
-        ]);
+                $coordinator->update([
+                    'department' => $validated['department'],
+                    'office_address' => $validated['office_address'] ?? null,
+                    'profile_picture' => $newPicture ?? $coordinator->profile_picture,
+                ]);
+                $this->activityLog->log($user, 'profile_update', ['role' => 'coordinator']);
+            });
+        } catch (\Throwable $exception) {
+            if ($newPicture) {
+                $this->fileUpload->delete($newPicture);
+            }
+
+            throw $exception;
+        }
+
+        if ($previousPicture && $previousPicture !== $newPicture) {
+            $this->fileUpload->delete($previousPicture);
+        }
 
         // Store position info
         session()->put('coordinator_info', [
             'position' => $validated['position'] ?? null,
         ]);
-
-        $this->activityLog->log($user, 'profile_update', ['role' => 'coordinator']);
 
         return redirect()->route('coordinator.profile.edit')
             ->with('success', 'Profile updated successfully!');
@@ -85,8 +98,11 @@ class ProfileController extends Controller
         $coordinator = Auth::user()->coordinator()->firstOrFail();
 
         if ($coordinator->profile_picture) {
-            $this->fileUpload->delete($coordinator->profile_picture);
-            $coordinator->update(['profile_picture' => null]);
+            $previousPicture = $coordinator->profile_picture;
+            DB::transaction(function () use ($coordinator, $previousPicture) {
+                $coordinator->update(['profile_picture' => null]);
+            });
+            $this->fileUpload->delete($previousPicture);
 
             return redirect()->route('coordinator.profile.edit')
                 ->with('success', 'Profile picture removed successfully!');

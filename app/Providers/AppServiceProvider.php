@@ -3,6 +3,13 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\Models\Certificate;
+use App\Models\Internship;
+use App\Models\InternshipApplication;
+use App\Models\Portfolio;
+use App\Models\Student;
+use App\Models\StudentCompetency;
+use App\Observers\DashboardCacheObserver;
 use App\Policies\MessagePolicy;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -19,6 +26,14 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        User::observe(DashboardCacheObserver::class);
+        Student::observe(DashboardCacheObserver::class);
+        Internship::observe(DashboardCacheObserver::class);
+        InternshipApplication::observe(DashboardCacheObserver::class);
+        StudentCompetency::observe(DashboardCacheObserver::class);
+        Certificate::observe(DashboardCacheObserver::class);
+        Portfolio::observe(DashboardCacheObserver::class);
+
         RateLimiter::for('login', function (Request $request) {
             $email = (string) $request->input('email');
 
@@ -29,10 +44,22 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(3)->by($request->ip());
         });
 
-        RateLimiter::for('password', function (Request $request) {
-            $email = (string) $request->input('email');
+        RateLimiter::for('password-reset-request', function (Request $request) {
+            $email = hash('sha256', mb_strtolower(trim((string) $request->input('email'))));
 
-            return Limit::perMinute(3)->by($email.$request->ip());
+            return [
+                Limit::perMinute(3)->by('password-reset-email:'.$email),
+                Limit::perMinute(10)->by('password-reset-ip:'.$request->ip()),
+            ];
+        });
+
+        RateLimiter::for('password-reset-submit', function (Request $request) {
+            $email = hash('sha256', mb_strtolower(trim((string) $request->input('email'))));
+
+            return [
+                Limit::perMinute(10)->by('password-reset-submit-email:'.$email),
+                Limit::perMinute(20)->by('password-reset-submit-ip:'.$request->ip()),
+            ];
         });
 
         Gate::define('message.send', function (User $user, User $recipient) {

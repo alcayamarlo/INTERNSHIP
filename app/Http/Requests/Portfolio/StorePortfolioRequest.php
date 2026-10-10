@@ -18,10 +18,15 @@ class StorePortfolioRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string', 'max:255'],
-            'type' => ['required', Rule::enum(PortfolioType::class)],
+            'title' => ['sometimes', 'required_without:items', 'string', 'max:255'],
+            'type' => ['sometimes', 'required_without:items', Rule::enum(PortfolioType::class)],
             'description' => ['nullable', 'string', 'max:1000'],
-            'file' => FileUploadService::documentRules(),
+            'file' => ['sometimes', 'required_without:items', ...FileUploadService::documentRules()],
+            'items' => ['nullable', 'array', 'min:1'],
+            'items.*.title' => ['required_with:items', 'string', 'max:255'],
+            'items.*.type' => ['required_with:items', Rule::enum(PortfolioType::class)],
+            'items.*.description' => ['nullable', 'string', 'max:1000'],
+            'items.*.file' => ['required_with:items', 'file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:10240'],
         ];
     }
 

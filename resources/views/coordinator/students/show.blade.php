@@ -49,8 +49,32 @@
             <div class="card-body">
                 @forelse($student->competencies as $comp)
                     <span class="badge bg-primary me-1 mb-1">{{ $comp->name }} — {{ $comp->proficiency_level->label() }}</span>
+                    @if($comp->verification_status === 'verified')
+                        <span class="badge bg-success me-1 mb-1"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                    @endif
                 @empty
                     <p class="text-muted mb-0">No competencies recorded.</p>
+                @endforelse
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-white"><h5 class="mb-0">Certificates ({{ $student->certificates->count() }})</h5></div>
+            <div class="list-group list-group-flush">
+                @forelse($student->certificates as $certificate)
+                    <div class="list-group-item d-flex justify-content-between align-items-start gap-3">
+                        <div>
+                            <strong>{{ $certificate->title }}</strong>
+                            <div class="small text-muted">{{ $certificate->issuer ?? 'Issuer not provided' }}</div>
+                        </div>
+                        @if($certificate->verification_status === 'verified')
+                            <span class="badge bg-success"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                        @else
+                            <span class="badge bg-warning text-dark">{{ ucfirst(str_replace('_', ' ', $certificate->verification_status)) }}</span>
+                        @endif
+                    </div>
+                @empty
+                    <div class="list-group-item text-muted">No certificates recorded.</div>
                 @endforelse
             </div>
         </div>

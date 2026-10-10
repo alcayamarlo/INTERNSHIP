@@ -86,6 +86,7 @@ class InternshipController extends Controller
                 'comment' => $validated['comment'] ?? null,
             ]
         );
+        $this->matchingService->invalidateCache($student);
 
         return back()->with('success', 'Recommendation feedback saved successfully.');
     }

@@ -6,6 +6,10 @@
 <div class="mb-4">
     <h1 class="h3 mb-1">System Dashboard</h1>
     <p class="text-muted mb-0">Platform analytics and administration</p>
+    <div class="mt-3 d-flex gap-2">
+        <a href="{{ route('admin.skills.index') }}" class="btn btn-sm btn-outline-primary">Manage Skills</a>
+        <a href="{{ route('admin.skill-categories.index') }}" class="btn btn-sm btn-outline-primary">Manage Skill Categories</a>
+    </div>
 </div>
 
 <div class="row g-4 mb-4">

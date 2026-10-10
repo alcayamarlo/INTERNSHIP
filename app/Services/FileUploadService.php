@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Certificate;
+use App\Models\Portfolio;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -60,7 +62,7 @@ class FileUploadService
         return $required ? array_merge(['required'], $rules) : array_merge(['nullable'], $rules);
     }
 
-    public function upload(UploadedFile $file, string $directory, string $prefix = '', string $disk = 'public'): string
+    public function upload(UploadedFile $file, string $directory, string $prefix = '', string $disk = 'private'): string
     {
         $extension = strtolower($file->extension() ?: 'bin');
 
@@ -89,10 +91,32 @@ class FileUploadService
         return $file->storeAs(trim($directory, '/'), $filename, $disk);
     }
 
-    public function delete(?string $path, string $disk = 'public'): void
+    public function delete(?string $path, ?string $disk = null): void
     {
-        if ($path && Storage::disk($disk)->exists($path)) {
-            Storage::disk($disk)->delete($path);
+        $disks = $disk
+            ? [$disk]
+            : (\Illuminate\Support\Str::startsWith($path ?? '', ['profiles/', 'logos/'])
+                ? ['public']
+                : ['private', 'public']);
+
+        foreach ($disks as $storageDisk) {
+            if ($path && Storage::disk($storageDisk)->exists($path)) {
+                Storage::disk($storageDisk)->delete($path);
+            }
         }
+    }
+
+    public function deleteIfUnreferenced(?string $path): void
+    {
+        if (! $path) {
+            return;
+        }
+
+        if (Certificate::where('file_path', $path)->exists()
+            || Portfolio::where('file_path', $path)->exists()) {
+            return;
+        }
+
+        $this->delete($path);
     }
 }

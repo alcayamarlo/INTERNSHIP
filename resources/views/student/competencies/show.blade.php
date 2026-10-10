@@ -21,6 +21,9 @@
                             <span class="badge" style="background-color: {{ getProficiencyColor($competency->proficiency_level->value) }}">
                                 {{ $competency->proficiency_level->label() }}
                             </span>
+                            @if($competency->verification_status === 'verified')
+                                <span class="badge bg-success"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                            @endif
                         </div>
                     </div>
                     <div class="btn-group" role="group">

@@ -8,9 +8,14 @@ use App\Models\User;
 
 class CertificatePolicy
 {
-    public function delete(User $user, Certificate $certificate): bool
+    public function view(User $user, Certificate $certificate): bool
     {
         return $user->isRole(UserRole::Student)
             && $user->student?->id === $certificate->student_id;
+    }
+
+    public function delete(User $user, Certificate $certificate): bool
+    {
+        return $this->view($user, $certificate);
     }
 }

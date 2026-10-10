@@ -28,13 +28,13 @@ php artisan migrate
 # Show migration status
 php artisan migrate:status
 
-# Rollback all migrations
+# Destructive: development databases only; drops/recreates schema
 php artisan migrate:reset
 
-# Rollback and re-run
+# Destructive: development databases only; drops/recreates schema
 php artisan migrate:refresh
 
-# Rollback and re-run with seeds
+# Destructive: development databases only; drops all tables and data
 php artisan migrate:fresh --seed
 
 # Rollback to specific migration
@@ -49,7 +49,7 @@ php artisan db:seed
 # Run specific seeder
 php artisan db:seed --class=DatabaseSeeder
 
-# Seed after fresh migration
+# Seed after fresh migration (disposable development database only)
 php artisan migrate:fresh --seed
 ```
 
@@ -446,7 +446,8 @@ php artisan tinker
 
 ```bash
 # Setup
-php artisan migrate:fresh --seed
+php artisan migrate
+php artisan db:seed
 
 # Development
 php artisan serve
@@ -524,8 +525,9 @@ cp .env.example .env
 php artisan key:generate
 # Edit .env with database config
 
-# 3. Run migrations and seed
-php artisan migrate:fresh --seed
+# 3. Run pending migrations and seed demo data
+php artisan migrate
+php artisan db:seed
 
 # 4. Install and build assets
 npm install

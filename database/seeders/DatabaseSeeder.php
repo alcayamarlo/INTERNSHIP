@@ -18,6 +18,7 @@ use App\Models\InternshipApplication;
 use App\Models\InternshipRequirement;
 use App\Models\Portfolio;
 use App\Models\Skill;
+use App\Models\SkillCategory;
 use App\Models\Student;
 use App\Models\StudentCompetency;
 use App\Models\User;
@@ -95,13 +96,29 @@ class DatabaseSeeder extends Seeder
             'profile_completion' => 75,
         ]);
 
+        $portfolioPaths = [
+            'portfolios/'.$student->id.'/project_ecommerce.pdf',
+            'portfolios/'.$student->id.'/cert_aws.pdf',
+            'portfolios/'.$student->id.'/portfolio_github.pdf',
+            'portfolios/'.$student->id.'/capstone_documentation.pdf',
+            'portfolios/'.$student->id.'/transcript.pdf',
+            'portfolios/'.$student->id.'/recommendation_letter.pdf',
+        ];
+
+        foreach ($portfolioPaths as $path) {
+            Storage::disk('private')->put($path, $this->placeholderPdf());
+        }
+
+        $technicalCategory = SkillCategory::create(['name' => 'technical']);
+        $softCategory = SkillCategory::create(['name' => 'soft']);
+
         $skills = [
-            ['name' => 'PHP', 'category' => 'technical'],
-            ['name' => 'Laravel', 'category' => 'technical'],
-            ['name' => 'JavaScript', 'category' => 'technical'],
-            ['name' => 'MySQL', 'category' => 'technical'],
-            ['name' => 'Communication', 'category' => 'soft'],
-            ['name' => 'Teamwork', 'category' => 'soft'],
+            ['name' => 'PHP', 'category_id' => $technicalCategory->id],
+            ['name' => 'Laravel', 'category_id' => $technicalCategory->id],
+            ['name' => 'JavaScript', 'category_id' => $technicalCategory->id],
+            ['name' => 'MySQL', 'category_id' => $technicalCategory->id],
+            ['name' => 'Communication', 'category_id' => $softCategory->id],
+            ['name' => 'Teamwork', 'category_id' => $softCategory->id],
         ];
 
         foreach ($skills as $skill) {
@@ -318,5 +335,33 @@ class DatabaseSeeder extends Seeder
 
         // Recalculate profile completion
         $student->calculateProfileCompletion();
+        $student->calculateProfileCompletion();
+    }
+    private function placeholderPdf(): string
+    {
+        $stream = 'BT /F1 10 Tf 10 40 Td (Demo placeholder document) Tj ET';
+        $objects = [
+            '<< /Type /Catalog /Pages 2 0 R >>',
+            '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+            '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 80] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>',
+            '<< /Length '.strlen($stream)." >>\nstream\n".$stream."\nendstream",
+            '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+        ];
+        $pdf = "%PDF-1.4\n";
+        $offsets = [0];
+
+        foreach ($objects as $index => $object) {
+            $offsets[] = strlen($pdf);
+            $pdf .= ($index + 1)." 0 obj\n".$object."\nendobj\n";
+        }
+
+        $xrefOffset = strlen($pdf);
+        $pdf .= "xref\n0 ".(count($objects) + 1)."\n0000000000 65535 f \n";
+
+        foreach (array_slice($offsets, 1) as $offset) {
+            $pdf .= sprintf("%010d 00000 n \n", $offset);
+        }
+
+        return $pdf."trailer\n<< /Size ".(count($objects) + 1)." /Root 1 0 R >>\nstartxref\n".$xrefOffset."\n%%EOF\n";
     }
 }

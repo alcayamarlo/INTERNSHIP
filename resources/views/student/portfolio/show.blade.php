@@ -64,7 +64,7 @@
                         <h5 class="mb-3">Preview</h5>
                         <div class="border rounded p-3 bg-light" style="min-height: 300px; display: flex; align-items: center; justify-content: center;">
                             @if(in_array($extension, ['jpg', 'jpeg', 'png']))
-                                <img src="{{ Storage::url($portfolio->file_path) }}" alt="{{ $portfolio->title }}" class="img-fluid" style="max-height: 400px;">
+                                <img src="{{ route('student.portfolio.preview', $portfolio) }}" alt="{{ $portfolio->title }}" class="img-fluid" style="max-height: 400px;">
                             @elseif($extension === 'pdf')
                                 <div class="text-center">
                                     <i class="bi bi-file-pdf fs-1 text-danger"></i>

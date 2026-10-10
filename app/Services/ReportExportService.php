@@ -11,13 +11,14 @@ use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportExportService
 {
-    public function generate(User $user, string $type, string $format = 'pdf'): Report
+    public function generate(User $user, string $type, string $format = 'pdf', ?callable $afterCreate = null): Report
     {
         $data = match ($type) {
             'placement' => $this->placementData(),
@@ -32,32 +33,48 @@ class ReportExportService
 
         if ($format === 'pdf') {
             $pdf = Pdf::loadView('reports.pdf', ['type' => $type, 'data' => $data, 'title' => ucfirst($type).' Report']);
-            $stored = Storage::disk('public')->put($filename, $pdf->output());
+            $stored = Storage::disk('private')->put($filename, $pdf->output());
         } else {
-            $stored = Storage::disk('public')->put($filename, $this->toCsv($data));
+            $stored = Storage::disk('private')->put($filename, $this->toCsv($data));
         }
 
         if (! $stored) {
             throw new RuntimeException("Unable to generate report {$type} in {$format} format.");
         }
 
-        return Report::create([
-            'generated_by' => $user->id,
-            'type' => $type,
-            'parameters' => ['generated_at' => now()->toDateTimeString()],
-            'file_path' => $filename,
-            'format' => $format,
-        ]);
+        try {
+            return DB::transaction(function () use ($user, $type, $format, $filename, $afterCreate) {
+                $report = Report::create([
+                    'generated_by' => $user->id,
+                    'type' => $type,
+                    'parameters' => ['generated_at' => now()->toDateTimeString()],
+                    'file_path' => $filename,
+                    'format' => $format,
+                ]);
+
+                if ($afterCreate) {
+                    $afterCreate($report);
+                }
+
+                return $report;
+            });
+        } catch (\Throwable $exception) {
+            Storage::disk('private')->delete($filename);
+            throw $exception;
+        }
     }
 
     public function download(Report $report): StreamedResponse
     {
         $mime = $report->format === 'pdf' ? 'application/pdf' : 'text/csv';
+        $disk = $report->file_path && Storage::disk('private')->exists($report->file_path)
+            ? 'private'
+            : 'public';
 
-        abort_unless($report->file_path && Storage::disk('public')->exists($report->file_path), 404, 'Report file not found.');
+        abort_unless($report->file_path && Storage::disk($disk)->exists($report->file_path), 404, 'Report file not found.');
 
-        return Response::streamDownload(function () use ($report) {
-            echo Storage::disk('public')->get($report->file_path);
+        return Response::streamDownload(function () use ($report, $disk) {
+            echo Storage::disk($disk)->get($report->file_path);
         }, basename($report->file_path), ['Content-Type' => $mime]);
     }
 

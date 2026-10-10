@@ -90,6 +90,32 @@
     </div>
 </div>
 
+@if($certificates->count())
+    <div class="card mb-4">
+        <div class="card-header bg-white"><h5 class="mb-0">Certificates</h5></div>
+        <div class="list-group list-group-flush">
+            @foreach($certificates as $certificate)
+                <div class="list-group-item d-flex justify-content-between align-items-start gap-3">
+                    <div>
+                        <strong>{{ $certificate->title }}</strong>
+                        <div class="small text-muted">{{ $certificate->issuer ?? 'Issuer not provided' }}</div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        @if($certificate->verification_status === 'verified')
+                            <span class="badge bg-success"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                        @else
+                            <span class="badge bg-warning text-dark">{{ ucfirst(str_replace('_', ' ', $certificate->verification_status)) }}</span>
+                        @endif
+                        <a href="{{ route('student.certificates.download', $certificate) }}" class="btn btn-sm btn-outline-primary" aria-label="Download {{ $certificate->title }}">
+                            <i class="bi bi-download"></i>
+                        </a>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+@endif
+
 <!-- Portfolio Items -->
 @if($portfolios->count())
     <div class="row g-4 mb-4">

@@ -5,7 +5,9 @@ namespace App\Services;
 use App\Models\Resume;
 use App\Models\Student;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 
 class ResumeBuilderService
 {
@@ -44,13 +46,21 @@ class ResumeBuilderService
 
         $pdf = Pdf::loadView('student.resume.pdf', ['content' => $content, 'student' => $student]);
         $filename = 'resumes/student_'.$student->id.'_'.time().'.pdf';
-        Storage::disk('public')->put($filename, $pdf->output());
 
-        return Resume::create([
-            'student_id' => $student->id,
-            'content' => $content,
-            'file_path' => $filename,
-            'generated_at' => now(),
-        ]);
+        if (! Storage::disk('private')->put($filename, $pdf->output())) {
+            throw new RuntimeException('Unable to store the generated resume.');
+        }
+
+        try {
+            return DB::transaction(fn () => Resume::create([
+                'student_id' => $student->id,
+                'content' => $content,
+                'file_path' => $filename,
+                'generated_at' => now(),
+            ]));
+        } catch (\Throwable $exception) {
+            Storage::disk('private')->delete($filename);
+            throw $exception;
+        }
     }
 }

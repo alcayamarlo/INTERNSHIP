@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\ActivityLogService;
 use App\Services\NotificationService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AnnouncementController extends Controller
 {
@@ -28,18 +29,25 @@ class AnnouncementController extends Controller
     {
         $validated = $request->validated();
 
-        $announcement = Announcement::create([
-            ...$validated,
-            'user_id' => Auth::id(),
-            'published_at' => now(),
-        ]);
+        [$announcement, $recipientIds] = DB::transaction(function () use ($validated) {
+            $announcement = Announcement::create([
+                ...$validated,
+                'user_id' => Auth::id(),
+                'published_at' => now(),
+            ]);
 
-        $usersQuery = User::query();
-        if (! empty($validated['target_role'])) {
-            $usersQuery->where('role', $validated['target_role']);
-        }
+            $usersQuery = User::query();
+            if (! empty($validated['target_role'])) {
+                $usersQuery->where('role', $validated['target_role']);
+            }
 
-        foreach ($usersQuery->get() as $user) {
+            $recipientIds = $usersQuery->pluck('id');
+            $this->activityLog->log(Auth::user(), 'announcement_create', ['announcement_id' => $announcement->id]);
+
+            return [$announcement, $recipientIds];
+        });
+
+        foreach (User::whereIn('id', $recipientIds)->get() as $user) {
             $this->notificationService->send(
                 $user,
                 'announcement',
@@ -49,8 +57,6 @@ class AnnouncementController extends Controller
             );
         }
 
-        $this->activityLog->log(Auth::user(), 'announcement_create', ['announcement_id' => $announcement->id]);
-
         return back()->with('success', 'Announcement published successfully.');
     }
 
@@ -59,9 +65,10 @@ class AnnouncementController extends Controller
         $this->authorize('delete', $announcement);
 
         $announcementId = $announcement->id;
-        $announcement->delete();
-
-        $this->activityLog->log(Auth::user(), 'announcement_delete', ['announcement_id' => $announcementId]);
+        DB::transaction(function () use ($announcement, $announcementId) {
+            $announcement->delete();
+            $this->activityLog->log(Auth::user(), 'announcement_delete', ['announcement_id' => $announcementId]);
+        });
 
         return back()->with('success', 'Announcement deleted.');
     }

@@ -6,6 +6,13 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ForgotPasswordRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if (is_string($this->input('email'))) {
+            $this->merge(['email' => mb_strtolower(trim($this->input('email')))]);
+        }
+    }
+
     public function authorize(): bool
     {
         return true;
@@ -14,7 +21,7 @@ class ForgotPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email', 'exists:users,email'],
+            'email' => ['required', 'email'],
         ];
     }
 
@@ -23,7 +30,6 @@ class ForgotPasswordRequest extends FormRequest
         return [
             'email.required' => 'Email address is required.',
             'email.email' => 'Please enter a valid email address.',
-            'email.exists' => 'No account found with this email address.',
         ];
     }
 }

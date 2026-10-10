@@ -34,13 +34,12 @@ class SystemController extends Controller
             $report = $this->reportService->generate(
                 Auth::user(),
                 $validated['type'],
-                $validated['format']
+                $validated['format'],
+                fn (Report $report) => $this->activityLog->log(Auth::user(), 'report_generate', [
+                    'report_id' => $report->id,
+                    'type' => $validated['type'],
+                ])
             );
-
-            $this->activityLog->log(Auth::user(), 'report_generate', [
-                'report_id' => $report->id,
-                'type' => $validated['type'],
-            ]);
 
             return $this->reportService->download($report);
         }

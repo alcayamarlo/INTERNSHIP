@@ -16,7 +16,10 @@ use Illuminate\Support\Facades\DB;
 
 class CompetencyController extends Controller
 {
-    public function __construct(private ActivityLogService $activityLog, private FileUploadService $fileUpload) {}
+    public function __construct(
+        private ActivityLogService $activityLog,
+        private FileUploadService $fileUpload
+    ) {}
 
     public function index(Request $request)
     {
@@ -94,18 +97,24 @@ class CompetencyController extends Controller
             return back()->with('error', 'You already have this competency. Please edit the existing one instead.');
         }
 
-        $competency = DB::transaction(function () use ($validated, $request, $student) {
-            $data = collect($validated)->except('evidence')->all();
-            $data['evidence_path'] = $this->fileUpload->upload($request->file('evidence'), 'competencies/'.$student->id, (string) $student->id);
-            $data['evidence_name'] = $request->file('evidence')->getClientOriginalName();
-            $data['verification_status'] = 'evidence_submitted';
-            $competency = $student->competencies()->create($data);
-            $student->calculateProfileCompletion();
+        $path = $this->fileUpload->upload($request->file('evidence'), 'competencies/'.$student->id, (string) $student->id);
 
-            return $competency;
-        });
+        try {
+            $competency = DB::transaction(function () use ($validated, $request, $student, $path) {
+                $data = collect($validated)->except('evidence')->all();
+                $data['evidence_path'] = $path;
+                $data['evidence_name'] = $request->file('evidence')->getClientOriginalName();
+                $data['verification_status'] = 'evidence_submitted';
+                $competency = $student->competencies()->create($data);
+                $student->calculateProfileCompletion();
+                $this->activityLog->log(Auth::user(), 'competency_create', ['competency_id' => $competency->id]);
 
-        $this->activityLog->log(Auth::user(), 'competency_create', ['competency_id' => $competency->id]);
+                return $competency;
+            });
+        } catch (\Throwable $exception) {
+            $this->fileUpload->delete($path);
+            throw $exception;
+        }
 
         return redirect()->route('student.competencies.index')
             ->with('success', 'Competency added successfully!');
@@ -145,19 +154,41 @@ class CompetencyController extends Controller
             return back()->with('error', 'You already have another competency with this name and category.');
         }
 
-        DB::transaction(function () use ($validated, $request, $competency) {
-            $data = collect($validated)->except('evidence')->all();
-            if ($request->hasFile('evidence')) {
-                $this->fileUpload->delete($competency->evidence_path);
-                $data['evidence_path'] = $this->fileUpload->upload($request->file('evidence'), 'competencies/'.$competency->student_id, (string) $competency->student_id);
-                $data['evidence_name'] = $request->file('evidence')->getClientOriginalName();
-                $data['verification_status'] = 'evidence_submitted';
-            }
-            $competency->update($data);
-            Auth::user()->student->calculateProfileCompletion();
-        });
+        $previousPath = $competency->evidence_path;
+        $newPath = null;
 
-        $this->activityLog->log(Auth::user(), 'competency_update', ['competency_id' => $competency->id]);
+        if ($request->hasFile('evidence')) {
+            $newPath = $this->fileUpload->upload(
+                $request->file('evidence'),
+                'competencies/'.$competency->student_id,
+                (string) $competency->student_id
+            );
+        }
+
+        try {
+            DB::transaction(function () use ($validated, $request, $competency, $newPath) {
+                $data = collect($validated)->except('evidence')->all();
+                if ($newPath) {
+                    $data['evidence_path'] = $newPath;
+                    $data['evidence_name'] = $request->file('evidence')->getClientOriginalName();
+                    $data['verification_status'] = 'evidence_submitted';
+                }
+                $competency->update($data);
+                Auth::user()->student->calculateProfileCompletion();
+
+                $this->activityLog->log(Auth::user(), 'competency_update', ['competency_id' => $competency->id]);
+            });
+        } catch (\Throwable $exception) {
+            if ($newPath) {
+                $this->fileUpload->delete($newPath);
+            }
+
+            throw $exception;
+        }
+
+        if ($newPath && $previousPath !== $newPath) {
+            $this->fileUpload->delete($previousPath);
+        }
 
         return redirect()->route('student.competencies.index')
             ->with('success', 'Competency updated successfully!');
@@ -167,16 +198,15 @@ class CompetencyController extends Controller
     {
         $this->authorize('delete', $competency);
 
-        $competencyId = $competency->id;
+        $path = $competency->evidence_path;
 
         DB::transaction(function () use ($competency) {
-            $this->fileUpload->delete($competency->evidence_path);
             $competency->delete();
             Auth::user()->student->calculateProfileCompletion();
+            $this->activityLog->log(Auth::user(), 'competency_delete', ['competency_id' => $competency->id]);
         });
 
-        $this->activityLog->log(Auth::user(), 'competency_delete', ['competency_id' => $competencyId]);
-
+        $this->fileUpload->delete($path);
         return redirect()->route('student.competencies.index')
             ->with('success', 'Competency deleted successfully!');
     }

@@ -23,6 +23,24 @@ class RoleMiddleware
             abort(403, 'You do not have permission to access this area.');
         }
 
+        $profileExists = match ($user->role) {
+            UserRole::Student => $user->student()->exists(),
+            UserRole::Employer => $user->employer()->exists(),
+            UserRole::Coordinator => $user->coordinator()->exists(),
+            UserRole::Admin => true,
+        };
+
+        $profileRoute = match ($user->role) {
+            UserRole::Student => $request->routeIs('student.profile.edit', 'student.profile.update'),
+            UserRole::Employer => $request->routeIs('employer.profile.edit', 'employer.profile.update'),
+            UserRole::Coordinator => $request->routeIs('coordinator.profile.edit', 'coordinator.profile.update'),
+            UserRole::Admin => false,
+        };
+
+        if (! $profileExists && ! $profileRoute) {
+            return redirect()->route('profile.complete');
+        }
+
         return $next($request);
     }
 }
