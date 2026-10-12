@@ -16,7 +16,7 @@
 
 @if(session('download'))
     <div class="alert alert-success">
-        Resume generated! <a href="{{ route('student.resume.download', session('download')) }}" class="alert-link">Download now</a>
+        Resume generated! <a href="{{ route('student.resume.download', session('download'), false) }}" class="alert-link">Download now</a>
     </div>
 @endif
 
@@ -30,10 +30,10 @@
                     <tr>
                         <td>{{ $resume->generated_at?->format('M d, Y h:i A') ?? $resume->created_at->format('M d, Y h:i A') }}</td>
                         <td>
-                            <a href="{{ route('student.resume.view', $resume) }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">
+                            <a href="{{ route('student.resume.view', $resume, false) }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-eye"></i> View PDF
                             </a>
-                            <a href="{{ route('student.resume.download', $resume) }}" class="btn btn-sm btn-primary">
+                            <a href="{{ route('student.resume.download', $resume, false) }}" class="btn btn-sm btn-primary">
                                 <i class="bi bi-download"></i> Download PDF
                             </a>
                         </td>

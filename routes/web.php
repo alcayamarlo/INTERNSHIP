@@ -1,6 +1,7 @@
-﻿<?php
+<?php
 
 use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncementController;
+use App\Http\Controllers\Admin\AcademicCatalogController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\SystemController as AdminSystemController;
 use App\Http\Controllers\Admin\SkillCategoryController as AdminSkillCategoryController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Coordinator\DashboardController as CoordinatorDashboardController;
 use App\Http\Controllers\Coordinator\ReportController as CoordinatorReportController;
+use App\Http\Controllers\Coordinator\StudentProfileReviewController;
 use App\Http\Controllers\Coordinator\VerificationController;
 use App\Http\Controllers\Employer\ApplicantController;
 use App\Http\Controllers\Employer\DashboardController as EmployerDashboardController;
@@ -28,6 +30,7 @@ use App\Http\Controllers\Student\DashboardController as StudentDashboardControll
 use App\Http\Controllers\Student\InternshipController as StudentInternshipController;
 use App\Http\Controllers\Student\PortfolioController;
 use App\Http\Controllers\Student\ProfileController as StudentProfileController;
+use App\Http\Controllers\Student\StudentChangeRequestController;
 use App\Http\Controllers\Student\ResumeController;
 use Illuminate\Support\Facades\Route;
 
@@ -88,6 +91,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
         Route::get('/profile', [\App\Http\Controllers\Student\ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/profile', [\App\Http\Controllers\Student\ProfileController::class, 'update'])->name('profile.update');
+        Route::post('/profile/change-requests', [StudentChangeRequestController::class, 'store'])->name('profile.change-requests.store');
         Route::delete('/profile-picture', [\App\Http\Controllers\Student\ProfileController::class, 'deleteProfilePicture'])->name('profile.delete-picture');
         Route::post('/profile-picture', [\App\Http\Controllers\Student\ProfileController::class, 'updatePicture'])->name('profile.update-picture');
         // Competencies
@@ -104,6 +108,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/portfolio/create', [PortfolioController::class, 'create'])->name('portfolio.create');
         Route::post('/portfolio', [PortfolioController::class, 'storePortfolio'])->name('portfolio.store');
         Route::post('/portfolio/bulk', [PortfolioController::class, 'bulkStore'])->name('portfolio.bulk-store');
+        Route::post('/portfolio/deployment-requirements/{deploymentRequirement}', [PortfolioController::class, 'storeDeploymentRequirement'])
+            ->name('portfolio.deployment-requirements.store');
         Route::get('/portfolio/{portfolio}', [PortfolioController::class, 'show'])->name('portfolio.show');
         Route::get('/portfolio/{portfolio}/edit', [PortfolioController::class, 'edit'])->name('portfolio.edit');
         Route::put('/portfolio/{portfolio}', [PortfolioController::class, 'update'])->name('portfolio.update');
@@ -113,6 +119,8 @@ Route::middleware(['auth', 'active'])->group(function () {
 
         // Certificates
         Route::post('/certificates', [PortfolioController::class, 'storeCertificate'])->name('certificates.store');
+        Route::get('/certificates/{certificate}/edit', [PortfolioController::class, 'editCertificate'])->name('certificates.edit');
+        Route::put('/certificates/{certificate}', [PortfolioController::class, 'updateCertificate'])->name('certificates.update');
         Route::delete('/certificates/{certificate}', [PortfolioController::class, 'destroyCertificate'])->name('certificates.destroy');
         Route::get('/resume', [ResumeController::class, 'index'])->name('resume.index');
         Route::post('/resume/generate', [ResumeController::class, 'generate'])->name('resume.generate');
@@ -139,7 +147,6 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/applicants', [ApplicantController::class, 'index'])->name('applicants.index');
         Route::get('/applicants/{application}', [ApplicantController::class, 'show'])->name('applicants.show');
         Route::put('/applicants/{application}/status', [ApplicantController::class, 'updateStatus'])->name('applicants.status');
-        Route::get('/applicants/{application}/resume', [ApplicantController::class, 'downloadResume'])->name('applicants.resume');
     });
 
     Route::prefix('coordinator')->name('coordinator.')->middleware('role:coordinator')->group(function () {
@@ -149,7 +156,24 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::delete('/profile-picture', [\App\Http\Controllers\Coordinator\ProfileController::class, 'deleteProfilePicture'])->name('profile.delete-picture');
         Route::get('/students', [CoordinatorDashboardController::class, 'students'])->name('students.index');
         Route::get('/students/{student}', [CoordinatorDashboardController::class, 'showStudent'])->name('students.show');
+        Route::post('/students/{student}/verify-profile', [StudentProfileReviewController::class, 'verify'])->name('students.verify-profile');
+        Route::put('/students/{student}/academic-readiness', [StudentProfileReviewController::class, 'updateAcademicReadiness'])->name('students.academic-readiness.update');
+        Route::patch('/students/{student}/change-requests/{studentChangeRequest}', [StudentProfileReviewController::class, 'reviewChangeRequest'])
+            ->name('students.change-requests.review');
+        Route::post('/students/{student}/deployment-documents', [VerificationController::class, 'uploadDeploymentDocument'])
+            ->name('students.deployment-documents.store');
         Route::get('/verification', [VerificationController::class, 'index'])->name('verification.index');
+        Route::get('/verification/students/{student}', [VerificationController::class, 'studentDetails'])->name('verification.students.show');
+        Route::post('/verification/students/{student}/verify-all', [VerificationController::class, 'verifyAll'])->name('verification.students.verify-all');
+        Route::get('/verification/{type}/{id}/evidence', [VerificationController::class, 'showEvidence'])
+            ->whereIn('type', ['competencies', 'certificates', 'portfolio', 'resumes'])
+            ->name('verification.evidence');
+        Route::get('/verification/{type}/{id}/download', [VerificationController::class, 'downloadEvidence'])
+            ->whereIn('type', ['competencies', 'certificates', 'portfolio', 'resumes'])
+            ->name('verification.download');
+        Route::patch('/verification/{type}/{id}', [VerificationController::class, 'updateStatus'])
+            ->whereIn('type', ['competencies', 'certificates', 'portfolio'])
+            ->name('verification.update');
         Route::post('/verification/batch', [CoordinatorDashboardController::class, 'batchVerify'])->name('verification.batch');
         Route::post('/verification/competencies/{competency}', [VerificationController::class, 'reviewCompetency'])->name('verification.reviewCompetency');
         Route::post('/verification/certificates/{certificate}', [VerificationController::class, 'reviewCertificate'])->name('verification.reviewCertificate');
@@ -160,6 +184,30 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/academics', [AcademicCatalogController::class, 'index'])->name('academics.index');
+        Route::get('/academics/settings', fn () => redirect()->route('admin.academics.index'))
+            ->name('academics.settings');
+        Route::post('/academics/settings', [AcademicCatalogController::class, 'updateSettings'])->name('academics.settings.update');
+        Route::post('/academics/deployment-requirements', [\App\Http\Controllers\Admin\DeploymentRequirementController::class, 'store'])
+            ->name('academics.deployment-requirements.store');
+        Route::patch('/academics/deployment-requirements/{deploymentRequirement}', [\App\Http\Controllers\Admin\DeploymentRequirementController::class, 'update'])
+            ->name('academics.deployment-requirements.update');
+        Route::delete('/academics/deployment-requirements/{deploymentRequirement}', [\App\Http\Controllers\Admin\DeploymentRequirementController::class, 'destroy'])
+            ->name('academics.deployment-requirements.destroy');
+        Route::get('/academics/programs/create', [AcademicCatalogController::class, 'create'])->name('academics.programs.create');
+        Route::post('/academics/programs', [AcademicCatalogController::class, 'store'])->name('academics.programs.store');
+        Route::get('/academics/programs/{program}/edit', [AcademicCatalogController::class, 'edit'])->name('academics.programs.edit');
+        Route::put('/academics/programs/{program}', [AcademicCatalogController::class, 'update'])->name('academics.programs.update');
+        Route::get('/students/{student}/files', [\App\Http\Controllers\Admin\PortfolioFileController::class, 'studentFiles'])
+            ->name('students.files');
+        Route::put('/students/{student}/student-id', [\App\Http\Controllers\Admin\PortfolioFileController::class, 'updateStudentId'])
+            ->name('students.student-id.update');
+        Route::post('/portfolio-files/{type}/{id}/review', [\App\Http\Controllers\Admin\PortfolioFileController::class, 'review'])
+            ->whereIn('type', ['portfolio', 'certificate', 'resume'])
+            ->name('portfolio-files.review');
+        Route::delete('/portfolio-files/{type}/{id}', [\App\Http\Controllers\Admin\PortfolioFileController::class, 'destroy'])
+            ->whereIn('type', ['portfolio', 'certificate', 'resume'])
+            ->name('portfolio-files.destroy');
         Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
         Route::get('/users/create', [AdminUserController::class, 'create'])->name('users.create');
         Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');

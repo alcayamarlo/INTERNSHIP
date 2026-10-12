@@ -32,28 +32,43 @@ class ResumeController extends Controller
 
     public function download(Resume $resume)
     {
-        $this->authorizeResume($resume);
+        $this->authorize('download', $resume);
 
-        return response()->download(
-            Storage::disk('public')->path($resume->file_path),
+        return Storage::disk($this->diskWithFile($resume->file_path))->download(
+            $resume->file_path,
             'resume-'.$resume->student_id.'.pdf',
-            ['Content-Type' => 'application/pdf']
+            ['Content-Type' => 'application/pdf', 'X-Content-Type-Options' => 'nosniff']
         );
     }
 
     public function view(Resume $resume)
     {
-        $this->authorizeResume($resume);
+        $this->authorize('view', $resume);
 
-        return response()->file(
-            Storage::disk('public')->path($resume->file_path),
-            ['Content-Type' => 'application/pdf']
-        );
+        return Storage::disk($this->diskWithFile($resume->file_path))->response($resume->file_path, null, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline',
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'private, no-store',
+        ]);
     }
 
     private function authorizeResume(Resume $resume): void
     {
-        abort_unless($resume->student_id === Auth::user()->student->id, 403);
-        abort_unless($resume->file_path && Storage::disk('public')->exists($resume->file_path), 404, 'Resume file not found. Please regenerate it.');
+        $this->authorize('view', $resume);
+        $this->diskWithFile($resume->file_path);
+    }
+
+    private function diskWithFile(?string $path): string
+    {
+        abort_unless($path, 404, 'Resume file not found. Please regenerate it.');
+
+        foreach (['private', 'public'] as $disk) {
+            if (Storage::disk($disk)->exists($path)) {
+                return $disk;
+            }
+        }
+
+        abort(404, 'Resume file not found. Please regenerate it.');
     }
 }

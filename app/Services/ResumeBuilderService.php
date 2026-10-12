@@ -52,12 +52,17 @@ class ResumeBuilderService
         }
 
         try {
-            return DB::transaction(fn () => Resume::create([
+            $resume = DB::transaction(fn () => Resume::create([
                 'student_id' => $student->id,
                 'content' => $content,
                 'file_path' => $filename,
+                'category' => \App\Enums\PortfolioCategory::Resume,
+                'uploaded_by_user_id' => auth()->id(),
                 'generated_at' => now(),
             ]));
+            $student->calculateProfileCompletion();
+
+            return $resume;
         } catch (\Throwable $exception) {
             Storage::disk('private')->delete($filename);
             throw $exception;

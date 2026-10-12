@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Employer;
 
 use App\Enums\ApplicationStatus;
+use App\Enums\PortfolioCategory;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Application\UpdateApplicationStatusRequest;
 use App\Mail\InterviewInvitationMail;
@@ -42,15 +43,41 @@ class ApplicantController extends Controller
         $application->load([
             'student.user',
             'student.competencies',
-            'student.portfolios',
-            'student.certificates',
-            'student.resumes',
+            'student.portfolios.reviewerUser:id,name',
+            'student.certificates.reviewerUser:id,name',
+            'student.resumes.reviewerUser:id,name',
             'internship',
         ]);
+        $student = $application->student;
+        if ($application->status === ApplicationStatus::Withdrawn) {
+            $student->setRelation('portfolios', collect());
+            $student->setRelation('certificates', collect());
+            $student->setRelation('resumes', collect());
+        }
+        $student->portfolios->each(fn ($file) => $file->setAttribute('file_size_display', $this->fileSize($file->file_path)));
+        $student->certificates->each(fn ($file) => $file->setAttribute('file_size_display', $this->fileSize($file->file_path)));
+        $student->resumes->each(fn ($file) => $file->setAttribute('file_size_display', $this->fileSize($file->file_path)));
+        $verifiedCertificates = $student->certificates
+            ->filter(fn ($file) => $file->verification_status === 'verified')
+            ->values();
+        $certificateKeys = $verifiedCertificates
+            ->map(fn ($file) => $file->title.'|'.$file->file_path)
+            ->flip();
+        $portfolioCertificates = $student->portfolios
+            ->filter(fn ($file) => $file->category === PortfolioCategory::Certificate
+                && $file->verification_status === 'verified'
+                && ! $certificateKeys->has($file->title.'|'.$file->file_path));
+        $student->setRelation(
+            'portfolios',
+            $student->portfolios
+                ->filter(fn ($file) => $file->category === PortfolioCategory::Project)
+                ->values()
+        );
+        $student->setRelation('certificates', $verifiedCertificates->concat($portfolioCertificates)->values());
 
         $availableStatuses = $application->status->allowedNextStatuses();
 
-        return view('coordinator.employer.applicants.show', compact('application', 'availableStatuses'));
+        return view('employer.applicants.show', compact('application', 'availableStatuses'));
     }
 
     public function updateStatus(UpdateApplicationStatusRequest $request, InternshipApplication $application)
@@ -126,10 +153,25 @@ class ApplicantController extends Controller
 
         abort_unless($resume && $resume->file_path, 404, 'Resume not found.');
 
-        if (! Storage::disk('public')->exists($resume->file_path)) {
-            abort(404, 'Resume file not found.');
+        $this->authorize('download', $resume);
+        $disk = collect(['private', 'public'])->first(fn (string $disk) => Storage::disk($disk)->exists($resume->file_path));
+        abort_unless($disk, 404, 'Resume file not found.');
+
+        return Storage::disk($disk)->download($resume->file_path);
+    }
+
+    private function fileSize(?string $path): string
+    {
+        if (! $path) {
+            return 'Unavailable';
         }
 
-        return Storage::disk('public')->download($resume->file_path);
+        foreach (['private', 'public'] as $disk) {
+            if (Storage::disk($disk)->exists($path)) {
+                return number_format(Storage::disk($disk)->size($path) / 1024, 1).' KB';
+            }
+        }
+
+        return 'Unavailable';
     }
 }

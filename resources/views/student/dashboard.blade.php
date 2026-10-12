@@ -545,7 +545,7 @@
 
 
                 <a
-                    href="{{ route('student.portfolio.index') }}"
+                    href="{{ route('student.profile.edit') }}#portfolio"
                     class="list-group-item list-group-item-action"
                 >
                     <i class="bi bi-folder me-2"></i>

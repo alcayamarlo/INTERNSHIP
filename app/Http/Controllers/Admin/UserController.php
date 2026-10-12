@@ -12,6 +12,7 @@ use App\Models\Institution;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\ActivityLogService;
+use App\Support\StudentIdFormat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +25,7 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        $query = User::query();
+        $query = User::with('student');
 
         if ($role = $request->get('role')) {
             $query->where('role', $role);
@@ -40,6 +41,7 @@ class UserController extends Controller
         return view('admin.users.index', [
             'users' => $query->latest()->paginate(15)->withQueryString(),
             'roles' => UserRole::cases(),
+            'studentIdPattern' => StudentIdFormat::pattern(),
         ]);
     }
 
@@ -170,11 +172,17 @@ class UserController extends Controller
 
     private function ensureRoleProfile(User $user, UserRole $role): void
     {
-        match ($role) {
-            UserRole::Student => Student::firstOrCreate(
+        if ($role === UserRole::Student) {
+            $student = Student::firstOrCreate(
                 ['user_id' => $user->id],
                 ['profile_completion' => 0],
-            ),
+            );
+            $student->calculateProfileCompletion();
+
+            return;
+        }
+
+        match ($role) {
             UserRole::Employer => Employer::firstOrCreate(
                 ['user_id' => $user->id],
                 [

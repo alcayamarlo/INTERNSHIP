@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Student;
 
 use App\Enums\PortfolioType;
+use App\Enums\PortfolioCategory;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Portfolio\StoreCertificateRequest;
 use App\Http\Requests\Portfolio\StorePortfolioRequest;
+use App\Http\Requests\Portfolio\UpdateCertificateRequest;
 use App\Http\Requests\Portfolio\UpdatePortfolioRequest;
 use App\Models\Certificate;
+use App\Models\DeploymentRequirement;
 use App\Models\Portfolio;
 use App\Models\Student;
 use App\Services\ActivityLogService;
@@ -36,6 +39,7 @@ class PortfolioController extends Controller
                 'institution_id' => null,
                 'profile_completion' => 0,
             ]);
+            $student->calculateProfileCompletion();
         }
 
         return $student;
@@ -43,43 +47,10 @@ class PortfolioController extends Controller
 
     public function index(Request $request)
     {
-        $student = $this->getStudentProfile();
-        $query = Portfolio::where('student_id', $student->id);
+        $query = $request->getQueryString();
+        $url = route('student.profile.edit').($query ? '?'.$query : '').'#portfolio';
 
-        if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('title', 'like', '%'.$request->search.'%')
-                    ->orWhere('description', 'like', '%'.$request->search.'%');
-            });
-        }
-
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
-        }
-
-        $sortBy = in_array($request->get('sort_by'), ['title', 'type', 'created_at'], true) ? $request->get('sort_by') : 'created_at';
-        $sortOrder = $request->get('sort_order') === 'asc' ? 'asc' : 'desc';
-        $query->orderBy($sortBy, $sortOrder);
-
-        $portfolios = $query->paginate(12);
-
-        return view('student.portfolio.index', [
-            'portfolios' => $portfolios,
-            'certificates' => $student->certificates()->latest()->get(),
-            'types' => PortfolioType::cases(),
-            'stats' => [
-                'total' => Portfolio::where('student_id', $student->id)->count(),
-                'certificates' => Portfolio::where('student_id', $student->id)->where('type', 'certificate')->count(),
-                'projects' => Portfolio::where('student_id', $student->id)->where('type', 'project')->count(),
-                'storage_usage' => $this->calculateStorageUsage($student),
-            ],
-            'filters' => [
-                'search' => $request->search ?? '',
-                'type' => $request->type ?? '',
-                'sort_by' => $sortBy,
-                'sort_order' => $sortOrder,
-            ],
-        ]);
+        return redirect()->to($url);
     }
 
     public function create()
@@ -104,8 +75,13 @@ class PortfolioController extends Controller
                     'student_id' => $student->id,
                     'title' => $validated['title'],
                     'type' => $validated['type'],
+                    'category' => $this->categoryForType($validated['type']),
                     'description' => $validated['description'] ?? null,
                     'file_path' => $path,
+                    'verification_status' => $this->categoryForType($validated['type']) === PortfolioCategory::DeploymentDocument
+                        ? 'submitted'
+                        : 'evidence_submitted',
+                    'uploaded_by_user_id' => Auth::id(),
                 ]);
 
                 $this->activityLog->log(Auth::user(), 'portfolio_upload', ['portfolio_id' => $portfolio->id]);
@@ -117,8 +93,63 @@ class PortfolioController extends Controller
             throw $exception;
         }
 
-        return redirect()->route('student.portfolio.index')
+        return redirect()->to(route('student.profile.edit').'#portfolio')
             ->with('success', 'Portfolio item uploaded successfully!');
+    }
+
+    public function storeDeploymentRequirement(Request $request, DeploymentRequirement $deploymentRequirement)
+    {
+        abort_unless(
+            $deploymentRequirement->is_active
+                && $deploymentRequirement->upload_source === DeploymentRequirement::SOURCE_STUDENT,
+            404
+        );
+
+        $request->validate([
+            'file' => FileUploadService::documentRules(),
+        ]);
+
+        $student = $this->getStudentProfile();
+        $existing = $student->deploymentDocuments()
+            ->where('deployment_requirement_id', $deploymentRequirement->id)
+            ->latest('updated_at')
+            ->first();
+        $oldPath = $existing?->file_path;
+        $path = $this->fileUpload->upload(
+            $request->file('file'),
+            'portfolios/'.$student->id.'/deployment',
+            'student_'.$student->id
+        );
+
+        try {
+            DB::transaction(function () use ($student, $deploymentRequirement, $existing, $path): void {
+                $portfolio = $existing ?? new Portfolio([
+                    'student_id' => $student->id,
+                    'type' => 'transcript',
+                    'category' => PortfolioCategory::DeploymentDocument,
+                    'deployment_requirement_id' => $deploymentRequirement->id,
+                ]);
+                $portfolio->fill([
+                    'title' => $deploymentRequirement->name,
+                    'description' => 'Deployment requirement document.',
+                    'file_path' => $path,
+                    'verification_status' => 'submitted',
+                    'review_notes' => null,
+                    'reviewed_at' => null,
+                    'reviewed_by_user_id' => null,
+                    'uploaded_by_user_id' => Auth::id(),
+                ])->save();
+            });
+        } catch (\Throwable $exception) {
+            $this->fileUpload->delete($path);
+            $student->calculateProfileCompletion();
+        }
+
+        $this->fileUpload->deleteIfUnreferenced($oldPath);
+        $student->calculateProfileCompletion();
+
+        return redirect()->to(route('student.profile.edit').'#portfolio')
+            ->with('success', $deploymentRequirement->name.' submitted successfully.');
     }
 
     public function bulkStore(StorePortfolioRequest $request)
@@ -155,8 +186,13 @@ class PortfolioController extends Controller
                         'student_id' => $student->id,
                         'title' => $item['title'],
                         'type' => $item['type'],
+                        'category' => $this->categoryForType($item['type']),
                         'description' => $item['description'] ?? null,
                         'file_path' => $path,
+                        'verification_status' => $this->categoryForType($item['type']) === PortfolioCategory::DeploymentDocument
+                            ? 'submitted'
+                            : 'evidence_submitted',
+                        'uploaded_by_user_id' => Auth::id(),
                     ]);
 
                     $created++;
@@ -170,7 +206,7 @@ class PortfolioController extends Controller
             throw $exception;
         }
 
-        return redirect()->route('student.portfolio.index')
+        return redirect()->to(route('student.profile.edit').'#portfolio')
             ->with('success', $created.' portfolio items uploaded successfully!');
     }
 
@@ -193,6 +229,8 @@ class PortfolioController extends Controller
                     'issuer' => $validated['issuer'] ?? null,
                     'issue_date' => $validated['issue_date'] ?? null,
                     'expiration_date' => $validated['expiration_date'] ?? null,
+                    'category' => PortfolioCategory::Certificate,
+                    'uploaded_by_user_id' => Auth::id(),
                     'verification_status' => 'evidence_submitted',
                     'file_path' => $path,
                 ]);
@@ -201,8 +239,10 @@ class PortfolioController extends Controller
                     'student_id' => $student->id,
                     'title' => $validated['title'],
                     'type' => 'certificate',
+                    'category' => PortfolioCategory::Certificate,
                     'description' => 'Issued by '.($validated['issuer'] ?? 'Unknown'),
                     'file_path' => $path,
+                    'uploaded_by_user_id' => Auth::id(),
                 ]);
 
                 $this->activityLog->log(Auth::user(), 'certificate_upload', ['student_id' => $student->id]);
@@ -212,8 +252,78 @@ class PortfolioController extends Controller
             throw $exception;
         }
 
-        return redirect()->route('student.portfolio.index')
+        return redirect()->to(route('student.profile.edit').'#portfolio')
             ->with('success', 'Certificate uploaded successfully!');
+    }
+
+    public function editCertificate(Certificate $certificate)
+    {
+        $this->authorize('update', $certificate);
+
+        return view('student.certificates.edit', compact('certificate'));
+    }
+
+    public function updateCertificate(UpdateCertificateRequest $request, Certificate $certificate)
+    {
+        $this->authorize('update', $certificate);
+
+        $validated = $request->validated();
+        $previousPath = $certificate->file_path;
+        $newPath = null;
+
+        if ($request->hasFile('file')) {
+            $newPath = $this->fileUpload->upload(
+                $request->file('file'),
+                'certificates/'.$certificate->student_id,
+                $certificate->student_id.'_cert'
+            );
+        }
+
+        try {
+            DB::transaction(function () use ($certificate, $validated, $newPath, $previousPath) {
+                $updates = collect($validated)->except('file')->all();
+                $updates['verification_status'] = 'evidence_submitted';
+                $updates['review_notes'] = null;
+                $updates['reviewed_at'] = null;
+                $updates['reviewed_by_user_id'] = null;
+                if ($newPath) {
+                    $updates['file_path'] = $newPath;
+                    $updates['uploaded_by_user_id'] = Auth::id();
+                }
+                $certificate->update($updates);
+
+                Portfolio::query()
+                    ->where('student_id', $certificate->student_id)
+                    ->where('file_path', $previousPath)
+                    ->where('category', PortfolioCategory::Certificate)
+                    ->update([
+                        'title' => $validated['title'],
+                        'description' => 'Issued by '.($validated['issuer'] ?? 'Unknown'),
+                        'verification_status' => 'evidence_submitted',
+                        'review_notes' => null,
+                        'reviewed_at' => null,
+                        'reviewed_by_user_id' => null,
+                        ...($newPath ? [
+                            'file_path' => $newPath,
+                            'uploaded_by_user_id' => Auth::id(),
+                        ] : []),
+                    ]);
+
+                $this->activityLog->log(Auth::user(), 'certificate_update', ['certificate_id' => $certificate->id]);
+            });
+        } catch (\Throwable $exception) {
+            if ($newPath) {
+                $this->fileUpload->delete($newPath);
+            }
+            throw $exception;
+        }
+
+        if ($newPath && $previousPath !== $newPath) {
+            $this->fileUpload->deleteIfUnreferenced($previousPath);
+        }
+
+        return redirect()->to(route('student.profile.edit').'#portfolio')
+            ->with('success', 'Certificate updated.');
     }
 
     public function show(Portfolio $portfolio)
@@ -252,8 +362,21 @@ class PortfolioController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($portfolio, $validated) {
-                $portfolio->update(collect($validated)->except('file')->all());
+            DB::transaction(function () use ($portfolio, $validated, $newPath) {
+                $updates = collect($validated)->except('file')->all();
+                $updates['category'] = $this->categoryForType($updates['type'] ?? $portfolio->type->value);
+
+                if ($newPath) {
+                    $category = $this->categoryForType($updates['type'] ?? $portfolio->type->value);
+                    $updates['verification_status'] = $category === PortfolioCategory::DeploymentDocument
+                        ? 'submitted'
+                        : 'evidence_submitted';
+                    $updates['review_notes'] = null;
+                    $updates['reviewed_at'] = null;
+                    $updates['reviewed_by_user_id'] = null;
+                }
+
+                $portfolio->update($updates);
 
                 $this->activityLog->log(Auth::user(), 'portfolio_update', ['portfolio_id' => $portfolio->id]);
             });
@@ -269,7 +392,7 @@ class PortfolioController extends Controller
             $this->fileUpload->deleteIfUnreferenced($previousPath);
         }
 
-        return redirect()->route('student.portfolio.index')
+        return redirect()->to(route('student.profile.edit').'#portfolio')
             ->with('success', 'Portfolio item updated successfully!');
     }
 
@@ -287,7 +410,7 @@ class PortfolioController extends Controller
 
         $this->fileUpload->deleteIfUnreferenced($path);
 
-        return redirect()->route('student.portfolio.index')
+        return redirect()->to(route('student.profile.edit').'#portfolio')
             ->with('success', 'Portfolio item deleted successfully!');
     }
 
@@ -304,19 +427,16 @@ class PortfolioController extends Controller
 
         $this->fileUpload->deleteIfUnreferenced($path);
 
-        return redirect()->route('student.portfolio.index')
+        return redirect()->to(route('student.profile.edit').'#portfolio')
             ->with('success', 'Certificate deleted successfully!');
     }
 
     public function download(Portfolio $portfolio)
     {
         $this->authorize('download', $portfolio);
+        $disk = $this->diskWithFile($portfolio->file_path);
 
-        if (! Storage::disk('public')->exists($portfolio->file_path)) {
-            abort(404, 'File not found.');
-        }
-
-        return Storage::disk('public')->download(
+        return Storage::disk($disk)->download(
             $portfolio->file_path,
             $portfolio->title.'.'.pathinfo($portfolio->file_path, PATHINFO_EXTENSION)
         );
@@ -325,10 +445,7 @@ class PortfolioController extends Controller
     public function preview(Portfolio $portfolio)
     {
         $this->authorize('preview', $portfolio);
-
-        if (! Storage::disk('public')->exists($portfolio->file_path)) {
-            abort(404, 'File not found.');
-        }
+        $disk = $this->diskWithFile($portfolio->file_path);
 
         $extension = pathinfo($portfolio->file_path, PATHINFO_EXTENSION);
         $mimeTypes = [
@@ -338,20 +455,37 @@ class PortfolioController extends Controller
             'png' => 'image/png',
         ];
 
-        return Storage::disk('public')->response($portfolio->file_path, null, [
+        abort_unless(isset($mimeTypes[strtolower($extension)]), 404, 'This file type cannot be previewed.');
+
+        return Storage::disk($disk)->response($portfolio->file_path, null, [
             'Content-Type' => $mimeTypes[strtolower($extension)] ?? 'application/octet-stream',
             'Content-Disposition' => 'inline; filename="'.$portfolio->title.'.'.$extension.'"',
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'private, no-store',
         ]);
     }
 
-    private function calculateStorageUsage($student): string
+    private function diskWithFile(?string $path): string
     {
-        $totalBytes = Portfolio::where('student_id', $student->id)
-            ->get()
-            ->sum(fn ($portfolio) => Storage::disk('public')->exists($portfolio->file_path)
-                ? Storage::disk('public')->size($portfolio->file_path)
-                : 0);
+        abort_unless($path, 404, 'File not found.');
 
-        return round($totalBytes / (1024 * 1024), 2).' MB';
+        foreach (['private', 'public'] as $disk) {
+            if (Storage::disk($disk)->exists($path)) {
+                return $disk;
+            }
+        }
+
+        abort(404, 'File not found.');
     }
+
+    private function categoryForType(string $type): PortfolioCategory
+    {
+        return match ($type) {
+            PortfolioType::Certificate->value, PortfolioType::Award->value => PortfolioCategory::Certificate,
+            PortfolioType::Resume->value => PortfolioCategory::Resume,
+            PortfolioType::Transcript->value => PortfolioCategory::DeploymentDocument,
+            default => PortfolioCategory::Project,
+        };
+    }
+
 }

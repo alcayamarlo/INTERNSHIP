@@ -97,7 +97,7 @@ it('retains a shared certificate file until both its certificate and portfolio r
             'issue_date' => now()->subDay()->toDateString(),
             'file' => UploadedFile::fake()->create('shared-certificate.pdf', 200, 'application/pdf'),
         ])
-        ->assertRedirect(route('student.portfolio.index'));
+        ->assertRedirect(route('student.profile.edit').'#portfolio');
 
     $certificate = Certificate::where('student_id', $student->id)->firstOrFail();
     $portfolio = Portfolio::where('student_id', $student->id)->firstOrFail();
@@ -107,13 +107,13 @@ it('retains a shared certificate file until both its certificate and portfolio r
         ->and(Storage::disk('private')->exists($sharedPath))->toBeTrue();
 
     $this->delete(route('student.certificates.destroy', $certificate))
-        ->assertRedirect(route('student.portfolio.index'));
+        ->assertRedirect(route('student.profile.edit').'#portfolio');
 
     expect($portfolio->fresh())->not->toBeNull()
         ->and(Storage::disk('private')->exists($sharedPath))->toBeTrue();
 
     $this->delete(route('student.portfolio.destroyPortfolio', $portfolio))
-        ->assertRedirect(route('student.portfolio.index'));
+        ->assertRedirect(route('student.profile.edit').'#portfolio');
 
     expect(Certificate::where('student_id', $student->id)->count())->toBe(0)
         ->and(Portfolio::where('student_id', $student->id)->count())->toBe(0)
@@ -133,7 +133,7 @@ it('keeps the certificate file when its generated portfolio copy is replaced', f
             'issue_date' => now()->subDay()->toDateString(),
             'file' => UploadedFile::fake()->create('reference.pdf', 200, 'application/pdf'),
         ])
-        ->assertRedirect(route('student.portfolio.index'));
+        ->assertRedirect(route('student.profile.edit').'#portfolio');
 
     $certificate = Certificate::where('student_id', $student->id)->firstOrFail();
     $portfolio = Portfolio::where('student_id', $student->id)->firstOrFail();
@@ -144,7 +144,7 @@ it('keeps the certificate file when its generated portfolio copy is replaced', f
         'type' => 'certificate',
         'description' => 'Updated copy.',
         'file' => UploadedFile::fake()->create('replacement.pdf', 200, 'application/pdf'),
-    ])->assertRedirect(route('student.portfolio.index'));
+    ])->assertRedirect(route('student.profile.edit').'#portfolio');
 
     expect($certificate->fresh()->file_path)->toBe($certificatePath)
         ->and($portfolio->fresh()->file_path)->not->toBe($certificatePath)
@@ -165,7 +165,7 @@ it('keeps the certificate file when its portfolio copy is deleted first', functi
             'issue_date' => now()->subDay()->toDateString(),
             'file' => UploadedFile::fake()->create('retained.pdf', 200, 'application/pdf'),
         ])
-        ->assertRedirect(route('student.portfolio.index'));
+        ->assertRedirect(route('student.profile.edit').'#portfolio');
 
     $certificate = Certificate::where('student_id', $student->id)->firstOrFail();
     $portfolio = Portfolio::where('student_id', $student->id)->firstOrFail();
@@ -173,7 +173,7 @@ it('keeps the certificate file when its portfolio copy is deleted first', functi
 
     $this->actingAs($studentUser)
         ->delete(route('student.portfolio.destroyPortfolio', $portfolio))
-        ->assertRedirect(route('student.portfolio.index'));
+        ->assertRedirect(route('student.profile.edit').'#portfolio');
 
     expect($certificate->fresh())->not->toBeNull()
         ->and(Storage::disk('private')->exists($sharedPath))->toBeTrue();

@@ -1,0 +1,44 @@
+.admin-academics-page {
+    --academic-label-size: 0.75rem;
+    --academic-control-size: 0.875rem;
+    --academic-hint-size: 0.8rem;
+    --academic-checkbox-size: 0.9rem;
+    --academic-subtitle-size: 0.875rem;
+    --academic-hint-color: rgba(226, 232, 240, 0.75);
+}
+
+.admin-academics-page .form-label {
+    font-size: var(--academic-label-size);
+    font-weight: 600;
+}
+
+.admin-academics-page .form-control,
+.admin-academics-page .form-select {
+    font-size: var(--academic-control-size);
+}
+
+.admin-academics-page .form-text {
+    color: var(--academic-hint-color);
+    font-size: var(--academic-hint-size);
+}
+
+.admin-academics-page .form-check-label {
+    color: inherit;
+    font-size: var(--academic-checkbox-size);
+}
+
+.admin-academics-page .academic-section-subtitle {
+    color: var(--academic-hint-color);
+    font-size: var(--academic-subtitle-size);
+}
+
+@media (max-width: 575.98px) {
+    .admin-academics-page .row > [class*="col-"] {
+        min-width: 0;
+    }
+
+    .admin-academics-page .form-control,
+    .admin-academics-page .form-select {
+        min-width: 0;
+    }
+}

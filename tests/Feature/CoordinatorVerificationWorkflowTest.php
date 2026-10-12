@@ -5,12 +5,15 @@ use App\Enums\ProficiencyLevel;
 use App\Enums\UserRole;
 use App\Models\Certificate;
 use App\Models\Coordinator;
+use App\Models\DeploymentRequirement;
 use App\Models\Institution;
 use App\Models\Portfolio;
 use App\Models\Student;
 use App\Models\StudentCompetency;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -85,7 +88,7 @@ it('shows pending evidence for coordinators and allows reviewing it', function (
     $this->actingAs($coordinator)
         ->get(route('coordinator.verification.index'))
         ->assertOk()
-        ->assertSee('Pending Verification Queue')
+        ->assertSee('Verification Queue')
         ->assertSee($competency->name)
         ->assertSee($certificate->title)
         ->assertSee($portfolio->title);
@@ -118,7 +121,9 @@ it('shows pending evidence for coordinators and allows reviewing it', function (
     $this->assertDatabaseHas('certificates', [
         'id' => $certificate->id,
         'verification_status' => 'rejected',
+        'reviewed_by_user_id' => $coordinator->id,
     ]);
+    expect($certificate->fresh()->reviewed_at)->not->toBeNull();
 
     $this->assertDatabaseHas('notifications', [
         'user_id' => $student->user_id,
@@ -143,4 +148,35 @@ it('shows pending evidence for coordinators and allows reviewing it', function (
         'type' => 'verification',
         'title' => 'Portfolio Evidence Verified',
     ]);
+});
+
+it('lets coordinators upload approved deployment documents only for students in their institution', function () {
+    Storage::fake('private');
+    $institution = Institution::create([
+        'name' => 'St Cecilia College Cebu',
+        'address' => 'Cebu',
+        'contact_email' => 'office@example.edu',
+    ]);
+    $coordinator = createCoordinatorForVerification($institution);
+    $student = createStudentForVerification($institution);
+
+    $response = $this->actingAs($coordinator)->post(
+        route('coordinator.students.deployment-documents.store', $student),
+        [
+            'deployment_requirement_id' => DeploymentRequirement::query()->where('code', 'signed-moa')->value('id'),
+            'file' => UploadedFile::fake()->create('agreement.pdf', 100, 'application/pdf'),
+        ]
+    );
+    $response->assertRedirect();
+
+    $document = Portfolio::query()->where('student_id', $student->id)->firstOrFail();
+    expect($document->category->value)->toBe('deployment_document')
+        ->and($document->verification_status)->toBe('approved')
+        ->and($document->deployment_requirement_id)->toBe(DeploymentRequirement::query()->where('code', 'signed-moa')->value('id'))
+        ->and($document->uploaded_by_user_id)->toBe($coordinator->id)
+        ->and(Storage::disk('private')->exists($document->file_path))->toBeTrue();
+
+    $this->actingAs($coordinator)
+        ->get(route('coordinator.verification.download', ['portfolio', $document->id]))
+        ->assertOk();
 });

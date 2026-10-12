@@ -372,7 +372,17 @@
                 <tbody>
                     @forelse($users as $user)
                         <tr>
-                            <td class="user-name-cell">{{ $user->name }}</td>
+                            <td class="user-name-cell">
+                                {{ $user->name }}
+                                @if($user->student)
+                                    <small class="d-block text-muted">
+                                        {{ $user->student->student_id_number ?: 'Student ID not provided' }}
+                                        @if($user->student->studentIdNeedsCorrection($studentIdPattern))
+                                            <span class="badge text-bg-warning">ID needs correction</span>
+                                        @endif
+                                    </small>
+                                @endif
+                            </td>
                             <td>{{ $user->email }}</td>
                             <td><span class="user-badge user-role-badge">{{ $user->role->label() }}</span></td>
                             <td>
@@ -384,6 +394,11 @@
                             </td>
                             <td>
                                 <div class="user-action-group">
+                                    @if($user->role === \App\Enums\UserRole::Student && $user->student)
+                                        <a class="user-action-btn edit" href="{{ route('admin.students.files', $user->student) }}" title="View student files" aria-label="View files for {{ $user->name }}">
+                                            <i class="bi bi-folder2-open" aria-hidden="true"></i>
+                                        </a>
+                                    @endif
                                     <button class="user-action-btn edit" data-bs-toggle="modal" data-bs-target="#editUser{{ $user->id }}" title="Edit user">
                                         <i class="bi bi-pencil"></i>
                                     </button>

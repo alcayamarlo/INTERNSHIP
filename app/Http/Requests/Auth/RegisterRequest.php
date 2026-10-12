@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Auth;
 
 use App\Enums\UserRole;
+use App\Models\Program;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -34,11 +35,25 @@ class RegisterRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:20'],
             'institution_id' => ['required', 'exists:institutions,id'],
             'company_name' => ['nullable'],
-            'program' => ['required', Rule::in([
-                'Bachelor of Science in Information Technology',
-                'Bachelor of Science in Hospitality Management',
-                'Bachelor of Science in Business Administration',
-            ])],
+            'program_id' => ['required_without:program', 'nullable', 'exists:programs,id'],
+            'program' => ['required_without:program_id', 'nullable', 'string', 'max:255'],
+        ];
+    }
+
+    public function after(): array
+    {
+        return [
+            function ($validator): void {
+                if ($this->filled('program') && ! $this->filled('program_id')
+                    && ! Program::query()->where('name', $this->input('program'))->orWhere('code', $this->input('program'))->exists()
+                    && ! in_array($this->input('program'), [
+                        'Bachelor of Science in Information Technology',
+                        'Bachelor of Science in Hospitality Management',
+                        'Bachelor of Science in Business Administration',
+                    ], true)) {
+                    $validator->errors()->add('program', 'Choose one of the programs offered by the school.');
+                }
+            },
         ];
     }
 

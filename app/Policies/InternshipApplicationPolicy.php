@@ -29,6 +29,7 @@ class InternshipApplicationPolicy
 
     public function downloadResume(User $user, InternshipApplication $application): bool
     {
-        return $this->updateStatus($user, $application);
+        return $this->updateStatus($user, $application)
+            && $application->status !== \App\Enums\ApplicationStatus::Withdrawn;
     }
 }

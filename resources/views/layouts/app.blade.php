@@ -94,6 +94,19 @@
             --sb-radius: 14px;
         }
 
+        .sb-user-avatar img,
+        .sb-profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .sb-user-avatar [hidden],
+        .sb-profile-avatar [hidden] {
+            display: none !important;
+        }
+
 
         /* =====================================================
            RESET
@@ -369,7 +382,8 @@
             align-items: center;
             justify-content: center;
 
-            border-radius: 10px;
+            overflow: hidden;
+            border-radius: 50%;
 
             background:
                 rgba(8,217,245,.10);
@@ -974,7 +988,8 @@
             align-items: center;
             justify-content: center;
 
-            border-radius: 10px;
+            overflow: hidden;
+            border-radius: 50%;
 
             background:
                 linear-gradient(
@@ -2180,9 +2195,12 @@
 
     $userName = $currentUser?->name ?? 'User';
 
-    $userInitial = strtoupper(
-        substr($userName, 0, 1)
-    );
+    $userInitial = collect(preg_split('/\s+/', trim($userName)))
+        ->filter()
+        ->map(fn ($part) => mb_substr($part, 0, 1))
+        ->take(2)
+        ->implode('');
+    $userInitial = strtoupper($userInitial ?: 'U');
 
     $profilePicture = match ($userRole) {
         UserRole::Student => $currentUser?->student?->profile_picture,
@@ -2191,9 +2209,7 @@
         default => null,
     };
 
-    $profilePictureUrl = $profilePicture
-        ? \Illuminate\Support\Facades\Storage::disk('public')->url($profilePicture)
-        : null;
+    $profilePictureUrl = \App\Support\PublicFileUrl::relative($profilePicture);
 
 @endphp
 
@@ -2237,7 +2253,7 @@
             </span>
 
             <span class="sb-brand-subtitle">
-                Internship Platform
+                St. Cecilia's College-Cebu, Inc.
             </span>
 
         </div>
@@ -2251,7 +2267,8 @@
 
         <div class="sb-user-avatar">
             @if($profilePictureUrl)
-                <img src="{{ $profilePictureUrl }}" alt="{{ $userName }}" class="w-100 h-100 rounded-circle object-fit-cover">
+                <img src="{{ $profilePictureUrl }}" alt="{{ $userName }}" onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+                <span hidden>{{ $userInitial }}</span>
             @else
                 {{ $userInitial }}
             @endif
@@ -2309,7 +2326,6 @@
 
             </a>
 
-
             <a
                 class="sb-nav-link {{ request()->routeIs('student.profile.*') ? 'active' : '' }}"
                 href="{{ route('student.profile.edit') }}"
@@ -2321,7 +2337,6 @@
 
             </a>
 
-
             <a
                 class="sb-nav-link {{ request()->routeIs('student.competencies.*') ? 'active' : '' }}"
                 href="{{ route('student.competencies.index') }}"
@@ -2330,18 +2345,6 @@
                 <i class="bi bi-award-fill"></i>
 
                 <span>Competencies</span>
-
-            </a>
-
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('student.portfolio.*') ? 'active' : '' }}"
-                href="{{ route('student.portfolio.index') }}"
-            >
-
-                <i class="bi bi-folder-fill"></i>
-
-                <span>Portfolio</span>
 
             </a>
 
@@ -2511,6 +2514,17 @@
 
             </a>
 
+            <a
+                class="sb-nav-link {{ request()->routeIs('admin.academics.*') ? 'active' : '' }}"
+                href="{{ route('admin.academics.index') }}"
+            >
+
+                <i class="bi bi-mortarboard-fill"></i>
+
+                <span>Academic settings</span>
+
+            </a>
+
 
             <a
                 class="sb-nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
@@ -2661,7 +2675,7 @@
             </strong>
 
             <span>
-                Skill Bridge Management Platform
+                St. Cecilia's College-Cebu, Inc.
             </span>
 
         </div>
@@ -2768,7 +2782,8 @@
 
                     <div class="sb-profile-avatar">
                         @if($profilePictureUrl)
-                            <img src="{{ $profilePictureUrl }}" alt="{{ $userName }}" class="w-100 h-100 rounded-circle object-fit-cover">
+                            <img src="{{ $profilePictureUrl }}" alt="{{ $userName }}" onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+                            <span hidden>{{ $userInitial }}</span>
                         @else
                             {{ $userInitial }}
                         @endif
@@ -3506,6 +3521,10 @@
             /*
              * SUCCESS
              */
+
+            const successMessage = @json(session('success'));
+            const errorMessage = @json(session('error'));
+            const statusMessage = @json(session('status'));
 
             if (successMessage) {
 

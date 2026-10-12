@@ -29,12 +29,11 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        $this->call(AcademicCatalogSeeder::class);
+
         $institution = Institution::create([
-            'name' => 'Metro State University',
-            'address' => '123 Education Ave, Manila',
-            'contact_email' => 'info@msu.edu.ph',
-            'contact_phone' => '+63 2 1234 5678',
-            'description' => 'Leading institution for technology and business programs.',
+            'name' => "St. Cecilia's College-Cebu, Inc.",
+            'address' => 'Cebu South National Highway, Ward II, Minglanilla, Cebu',
         ]);
 
         $admin = User::create([
@@ -88,8 +87,9 @@ class DatabaseSeeder extends Seeder
         $student = Student::create([
             'user_id' => $studentUser->id,
             'institution_id' => $institution->id,
-            'student_id_number' => 'MSU-2024-001',
-            'program' => 'BS Information Technology',
+            'student_id_number' => 'SCC-24-00000001',
+            'program_id' => \App\Models\Program::where('code', 'BSIT')->value('id'),
+            'program' => 'BS Information Technology (BSIT)',
             'year_level' => '4th Year',
             'career_objectives' => 'Seeking a software development internship to apply full-stack skills.',
             'address' => '789 Student St, Quezon City',

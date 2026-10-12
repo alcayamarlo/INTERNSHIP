@@ -12,7 +12,11 @@ uses(RefreshDatabase::class);
 
 it('rejects duplicate applications for the same internship and student', function () {
     $studentUser = User::factory()->create(['role' => UserRole::Student]);
-    $student = Student::create(['user_id' => $studentUser->id]);
+    $student = Student::create([
+        'user_id' => $studentUser->id,
+        'year_level' => '4th Year',
+        'major_subjects_passed' => true,
+    ]);
     $employerUser = User::factory()->create(['role' => UserRole::Employer]);
     $employer = Employer::create([
         'user_id' => $employerUser->id,

@@ -77,7 +77,7 @@
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-circle"></i> Save Changes
                         </button>
-                        <a href="{{ route('student.portfolio.index') }}" class="btn btn-outline-secondary">
+                        <a href="{{ route('student.profile.edit') }}#portfolio" class="btn btn-outline-secondary">
                             <i class="bi bi-x-circle"></i> Cancel
                         </a>
                     </div>

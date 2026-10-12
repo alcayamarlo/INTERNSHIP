@@ -42,7 +42,7 @@ it('allows a student to upload multiple portfolio files in one request', functio
                 ],
             ],
         ])
-        ->assertRedirect(route('student.portfolio.index'))
+        ->assertRedirect(route('student.profile.edit').'#portfolio')
         ->assertSessionHas('success', '2 portfolio items uploaded successfully!');
 
     expect(Portfolio::where('student_id', $user->student->id)->count())->toBe(2)

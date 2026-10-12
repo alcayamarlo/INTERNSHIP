@@ -41,6 +41,8 @@ it('registers a student, logs them in, and sends one verification email', functi
 		'email' => 'student.regression@example.com',
 		'role' => UserRole::Student->value,
 	]);
+	$student = Student::query()->where('user_id', auth()->id())->firstOrFail();
+	expect($student->profile_completion)->toBe($student->profileCompletionSummary()['percentage']);
 
 	Mail::assertSent(EmailVerificationCodeMail::class, 1);
 });

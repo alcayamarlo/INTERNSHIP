@@ -9,6 +9,7 @@ use App\Models\InternshipApplication;
 use App\Models\RecommendationFeedback;
 use App\Services\ApplicationService;
 use App\Services\CompetencyMatchingService;
+use App\Services\InternshipEligibility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -18,7 +19,8 @@ class InternshipController extends Controller
 {
     public function __construct(
         private CompetencyMatchingService $matchingService,
-        private ApplicationService $applicationService
+        private ApplicationService $applicationService,
+        private InternshipEligibility $eligibility
     ) {}
 
     public function index(Request $request)
@@ -63,8 +65,9 @@ class InternshipController extends Controller
         $recommendationFeedback = RecommendationFeedback::where('student_id', $student->id)
             ->where('internship_id', $internship->id)
             ->first();
+        $eligibilityReasons = $this->eligibility->reasons($student);
 
-        return view('student.internships.show', compact('internship', 'matchPercentage', 'hasApplied', 'recommendationFeedback'));
+        return view('student.internships.show', compact('internship', 'matchPercentage', 'hasApplied', 'recommendationFeedback', 'eligibilityReasons'));
     }
 
     public function storeRecommendationFeedback(Request $request, Internship $internship)

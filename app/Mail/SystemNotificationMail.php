@@ -33,7 +33,7 @@ class SystemNotificationMail extends Mailable
             view: 'emails.system-notification',
             with: [
                 'title' => $this->title,
-                'message' => $this->message,
+                'notificationMessage' => $this->message,
                 'data' => $this->data,
             ],
         );

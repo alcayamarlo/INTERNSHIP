@@ -1,404 +1,289 @@
 @extends('layouts.app')
 
-@section('title', $student->user->name)
+@section('title', 'Student Profile')
 
 @push('styles')
-<style>
-    .student-detail-shell {
-        padding-top: 8px;
-        color: #edf8ff;
-    }
-
-    .student-detail-back {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 1.3rem;
-        color: #77d3ff;
-        font-size: 1rem;
-        font-weight: 700;
-        text-decoration: none;
-    }
-
-    .student-detail-layout {
-        display: grid;
-        grid-template-columns: minmax(300px, 1.02fr) minmax(0, 1.55fr);
-        gap: 1.5rem;
-        align-items: start;
-    }
-
-    .student-detail-profile,
-    .student-detail-panel,
-    .student-detail-section {
-        border: 1px solid rgba(140, 167, 192, 0.18);
-        border-radius: 18px;
-        background: rgba(14, 31, 45, 0.84);
-        box-shadow: 0 10px 28px rgba(2, 9, 20, 0.18);
-    }
-
-    .student-detail-profile {
-        padding: 1.5rem 1.3rem 1.2rem;
-    }
-
-    .student-profile-avatar {
-        width: 110px;
-        height: 110px;
-        margin: 0 auto 1.2rem;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.95);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #0d1e2d;
-        font-size: 2.7rem;
-        overflow: hidden;
-    }
-
-    .student-profile-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .student-profile-name {
-        margin: 0;
-        color: #f4f9ff;
-        font-size: clamp(2.1rem, 1.8vw + 1rem, 3.4rem);
-        line-height: 1.08;
-        font-weight: 900;
-        letter-spacing: -0.06em;
-        text-align: center;
-    }
-
-    .student-profile-email {
-        margin: 0.5rem 0 0;
-        color: rgba(196, 214, 228, 0.8);
-        text-align: center;
-        font-size: 1rem;
-    }
-
-    .student-profile-institution {
-        margin: 0.5rem 0 0;
-        color: rgba(196, 214, 228, 0.75);
-        text-align: center;
-        font-size: 0.95rem;
-    }
-
-    .student-profile-progress-wrap {
-        margin-top: 1.4rem;
-    }
-
-    .student-profile-progress {
-        height: 7px;
-        background: rgba(148, 163, 184, 0.12);
-        border-radius: 999px;
-        overflow: hidden;
-    }
-
-    .student-profile-progress-bar {
-        height: 100%;
-        background: linear-gradient(90deg, #57d59d, #71e7b7);
-        border-radius: 999px;
-    }
-
-    .student-profile-progress-label {
-        display: block;
-        margin-top: 0.7rem;
-        color: rgba(196, 214, 228, 0.82);
-        font-size: 0.97rem;
-        font-weight: 500;
-        text-align: center;
-    }
-
-    .student-detail-panel {
-        overflow: hidden;
-    }
-
-    .student-section-header {
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-        padding: 1rem 1.2rem;
-        border-bottom: 1px solid rgba(140, 167, 192, 0.12);
-        color: #edf8ff;
-        background: rgba(12, 30, 43, 0.8);
-        font-size: 1.2rem;
-        font-weight: 800;
-    }
-
-    .student-section-body {
-        padding: 1.1rem 1.2rem 1rem;
-    }
-
-    .student-info-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 1.2rem 1.3rem;
-    }
-
-    .student-info-item {
-        min-width: 0;
-    }
-
-    .student-info-label {
-        display: block;
-        margin-bottom: 0.28rem;
-        color: rgba(196, 214, 228, 0.8);
-        font-size: 0.95rem;
-        font-weight: 700;
-    }
-
-    .student-info-value {
-        display: block;
-        color: #f0f8ff;
-        font-size: 1.08rem;
-        font-weight: 600;
-        line-height: 1.4;
-    }
-
-    .student-objectives {
-        margin-top: 1rem;
-        color: #eff8ff;
-        font-size: 1.08rem;
-        line-height: 1.5;
-    }
-
-    .student-detail-section {
-        margin-top: 1.4rem;
-        overflow: hidden;
-    }
-
-    .student-badge-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.7rem;
-        padding: 1rem 1.2rem;
-    }
-
-    .student-competency-badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 36px;
-        padding: 0.55rem 0.9rem;
-        border-radius: 8px;
-        background: rgba(96, 165, 228, 0.15);
-        border: 1px solid rgba(96, 165, 228, 0.22);
-        color: #dfeaf6;
-        font-size: 0.92rem;
-        font-weight: 700;
-    }
-
-    .student-competency-badge strong {
-        color: #f0f9ff;
-        font-weight: 800;
-    }
-
-    .student-table-wrap {
-        overflow: hidden;
-    }
-
-    .student-detail-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 0;
-    }
-
-    .student-detail-table thead th {
-        padding: 0.9rem 1rem;
-        background: rgba(9, 22, 35, 0.9);
-        color: rgba(180, 207, 225, 0.78);
-        border-bottom: 1px solid rgba(140, 167, 192, 0.12);
-        font-size: 0.75rem;
-        font-weight: 800;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-    }
-
-    .student-detail-table tbody td {
-        padding: 0.95rem 1rem;
-        color: rgba(216, 232, 243, 0.92);
-        border-bottom: 1px solid rgba(140, 167, 192, 0.08);
-        font-size: 0.98rem;
-        vertical-align: middle;
-    }
-
-    .student-detail-table tbody tr:last-child td {
-        border-bottom: 0;
-    }
-
-    .student-detail-table .badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 74px;
-        padding: 0.4rem 0.65rem;
-        border-radius: 999px;
-        font-size: 0.75rem;
-        font-weight: 700;
-    }
-
-    .student-detail-table .bg-success {
-        background: rgba(32, 201, 151, 0.18) !important;
-        color: #8fe6bf !important;
-    }
-
-    .student-detail-table .bg-primary {
-        background: rgba(73, 175, 232, 0.18) !important;
-        color: #afd8f5 !important;
-    }
-
-    .student-detail-table .bg-warning {
-        background: rgba(244, 202, 90, 0.18) !important;
-        color: #f7d98d !important;
-    }
-
-    @media (max-width: 991.98px) {
-        .student-detail-layout {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    @media (max-width: 767.98px) {
-        .student-info-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
+    <link rel="stylesheet" href="{{ asset('css/coordinator-student-profile.css') }}">
 @endpush
 
 @section('content')
-<div class="student-detail-shell">
-    <a href="{{ route('coordinator.students.index') }}" class="student-detail-back">
-        <i class="bi bi-arrow-left"></i> Back to Students
+<main class="student-profile-page">
+    <a class="profile-back-link" href="{{ route('coordinator.students.index') }}">
+        <span aria-hidden="true">←</span> Back to Students
     </a>
 
-    <div class="student-detail-layout">
-        <div class="student-detail-profile">
-            <div class="student-profile-avatar">
-                @if($student->profile_picture)
-                    <img src="{{ Storage::url($student->profile_picture) }}" alt="{{ $student->user->name }}">
+    <section class="profile-hero" aria-labelledby="student-profile-name">
+        <div class="profile-ring" style="--profile-progress: {{ $profileCompletion }}%; --profile-color: {{ $profileCompletion >= 50 ? '#34d399' : '#fbbf24' }};" role="img" aria-label="Profile {{ $profileCompletion }} percent complete">
+            <div class="profile-ring-inner">{{ $initials }}</div>
+        </div>
+
+        <div class="profile-hero-main">
+            <h1 id="student-profile-name">{{ $student->user->name }}</h1>
+            <p class="profile-program-line">
+                {{ $student->program ?: 'Program not set' }}<span aria-hidden="true"> · </span>{{ $student->year_level ?: 'Year level not set' }}
+            </p>
+            <p class="profile-institution">{{ $student->institution?->name ?? 'Institution not set' }}</p>
+            <div class="profile-chips">
+                <span class="profile-chip profile-chip-id">School ID {{ $student->student_id_number ?: 'Not provided' }}</span>
+                @if($studentIdNeedsCorrection)
+                    <span class="profile-chip profile-chip-warning">ID needs correction</span>
+                @endif
+                <span class="profile-chip">{{ $student->user->email }}</span>
+                <span class="profile-chip">{{ $student->user->phone ?: 'Phone not provided' }}</span>
+            </div>
+        </div>
+
+        <div class="profile-completion">
+            <strong>{{ $profileCompletion }}%</strong>
+            <span>Profile complete</span>
+        </div>
+    </section>
+
+    <section class="profile-stats" aria-label="Submission summary">
+        <article class="profile-stat-card">
+            <span class="profile-stat-label">Competencies</span>
+            <strong>{{ $competencies->count() }}</strong>
+        </article>
+        <article class="profile-stat-card">
+            <span class="profile-stat-label">Certificates</span>
+            <strong>{{ $certificates->count() }}</strong>
+        </article>
+        <article class="profile-stat-card">
+            <span class="profile-stat-label">Portfolio items</span>
+            <strong>{{ $portfolios->count() }}</strong>
+        </article>
+        <article class="profile-stat-card">
+            <span class="profile-stat-label">Verification progress</span>
+            <strong>{{ $verificationCounts['total'] ? $verificationCounts['verified'].'/'.$verificationCounts['total'].' verified' : '—' }}</strong>
+            @if ($verificationCounts['pending'] > 0)
+                <span class="profile-stat-caption">· {{ $verificationCounts['pending'] }} pending</span>
+            @endif
+        </article>
+    </section>
+
+    <section class="profile-card profile-review-controls">
+        <div class="profile-section-heading">
+            <div>
+                <h2>Academic progress and profile verification</h2>
+                <p class="profile-prose">Required internship hours: {{ $requiredInternshipHours ?? 'Not set for this program' }}</p>
+            </div>
+            @if($student->profile_verified_at)
+                <span class="profile-status profile-status-verified">Profile verified</span>
+            @else
+                <form method="POST" action="{{ route('coordinator.students.verify-profile', $student) }}">
+                    @csrf
+                    <button type="submit" class="btn btn-primary">Verify profile</button>
+                </form>
+            @endif
+        </div>
+        <div class="profile-hours-progress" role="img" aria-label="{{ $renderedInternshipHours }} of {{ $requiredInternshipHours ?? 0 }} internship hours rendered">
+            <div class="profile-hours-progress-track"><span style="width: {{ $internshipHoursProgress }}%"></span></div>
+            <p>{{ $renderedInternshipHours }} rendered{{ $requiredInternshipHours ? ' / '.$requiredInternshipHours.' required hours ('.$internshipHoursProgress.'%)' : ' hours' }}</p>
+        </div>
+        <form method="POST" action="{{ route('coordinator.students.academic-readiness.update', $student) }}" class="profile-readiness-form">
+            @csrf
+            @method('PUT')
+            <label>
+                <span>Rendered internship hours</span>
+                <input type="number" name="rendered_internship_hours" min="0" max="10000" step="1" value="{{ old('rendered_internship_hours', $renderedInternshipHours) }}" required>
+            </label>
+            <label class="profile-checkbox-label">
+                <input type="hidden" name="major_subjects_passed" value="0">
+                <input type="checkbox" name="major_subjects_passed" value="1" @checked(old('major_subjects_passed', $student->major_subjects_passed))>
+                Student has passed all major subjects
+            </label>
+            <button type="submit" class="btn btn-primary">Save academic progress</button>
+        </form>
+    </section>
+
+    @if($changeRequests->isNotEmpty())
+        <section class="profile-card">
+            <div class="profile-section-heading">
+                <h2>Profile change requests</h2>
+                <span class="profile-count">{{ $changeRequests->where('status', 'pending')->count() }} pending</span>
+            </div>
+            <div class="profile-change-requests">
+                @foreach($changeRequests as $changeRequest)
+                    <article class="profile-change-request">
+                        <div class="profile-change-request-heading">
+                            <div>
+                                <h3>{{ match($changeRequest->field) { 'student_id_number' => 'Student ID', 'program_id' => 'Program', 'year_level' => 'Year level', default => ucfirst(str_replace('_', ' ', $changeRequest->field)) } }}</h3>
+                                <p>Current: {{ $changeRequest->current_value_label }} <span aria-hidden="true">→</span> Requested: {{ $changeRequest->requested_value_label }}</p>
+                            </div>
+                            <span class="profile-status profile-status-{{ $changeRequest->status }}">{{ ucfirst($changeRequest->status) }}</span>
+                        </div>
+                        @if($changeRequest->student_note)
+                            <p class="profile-prose">{{ $changeRequest->student_note }}</p>
+                        @endif
+                        @if($changeRequest->coordinator_note)
+                            <p class="profile-activity-note">Coordinator note: {{ $changeRequest->coordinator_note }}</p>
+                        @endif
+                        @if($changeRequest->status === 'pending')
+                            <div class="profile-change-request-actions">
+                                <form method="POST" action="{{ route('coordinator.students.change-requests.review', [$student, $changeRequest]) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="decision" value="approved">
+                                    <button type="submit" class="btn btn-primary">Approve</button>
+                                </form>
+                                <form method="POST" action="{{ route('coordinator.students.change-requests.review', [$student, $changeRequest]) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="decision" value="rejected">
+                                    <label>
+                                        <span class="visually-hidden">Required rejection note</span>
+                                        <input type="text" name="coordinator_note" maxlength="2000" placeholder="Reason for rejection" required>
+                                    </label>
+                                    <button type="submit" class="btn btn-outline-secondary">Reject</button>
+                                </form>
+                            </div>
+                        @endif
+                    </article>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
+    <div class="profile-columns">
+        <aside class="profile-sidebar">
+            <section class="profile-card">
+                <h2>Student details</h2>
+                <dl class="profile-details">
+                    <div><dt>Program</dt><dd>{{ $student->program ?: 'Not set' }}</dd></div>
+                    <div><dt>Year level</dt><dd>{{ $student->year_level ?: 'Not set' }}</dd></div>
+                    <div>
+                        <dt>School ID</dt>
+                        <dd>
+                            {{ $student->student_id_number ?: 'Not provided' }}
+                            @if($studentIdNeedsCorrection)<span class="profile-chip profile-chip-warning">ID needs correction</span>@endif
+                        </dd>
+                    </div>
+                    <div><dt>Phone</dt><dd>{{ $student->user->phone ?: 'Not provided' }}</dd></div>
+                    <div><dt>Last active</dt><dd>{{ $student->user->last_login_at?->diffForHumans() ?? 'No activity recorded' }}</dd></div>
+                </dl>
+            </section>
+
+            <section class="profile-card">
+                <h2>Career objective</h2>
+                <p class="profile-prose">{{ $student->career_objectives ?: 'Not added yet.' }}</p>
+            </section>
+
+            <section class="profile-card">
+                <h2>Internship preference</h2>
+                <dl class="profile-details">
+                    <div><dt>Field</dt><dd>{{ $student->preferred_internship_field ?: 'Not specified' }}</dd></div>
+                    <div><dt>Work setup</dt><dd>{{ $student->preferred_work_setup ?: 'Not specified' }}</dd></div>
+                    <div><dt>Location</dt><dd>{{ $student->preferred_location ?: 'Not specified' }}</dd></div>
+                </dl>
+            </section>
+        </aside>
+
+        <div class="profile-submissions">
+            <section class="profile-card">
+                <div class="profile-section-heading">
+                    <h2>Competencies</h2>
+                    <span class="profile-count">{{ $competencies->count() }}</span>
+                </div>
+                @if ($competencies->isEmpty())
+                    <p class="profile-empty">No competencies added yet.</p>
                 @else
-                    <i class="bi bi-person"></i>
-                @endif
-            </div>
-
-            <h2 class="student-profile-name">{{ $student->user->name }}</h2>
-            <p class="student-profile-email">{{ $student->user->email }}</p>
-            <p class="student-profile-institution">{{ $student->institution?->name ?? 'No institution' }}</p>
-
-            <div class="student-profile-progress-wrap">
-                <div class="student-profile-progress">
-                    <div class="student-profile-progress-bar" style="width: {{ $student->profile_completion ?? 0 }}%"></div>
-                </div>
-                <span class="student-profile-progress-label">Profile {{ $student->profile_completion ?? 0 }}% complete</span>
-            </div>
-        </div>
-
-        <div class="student-detail-panel">
-            <div class="student-section-header">
-                <span>Profile Details</span>
-            </div>
-
-            <div class="student-section-body">
-                <div class="student-info-grid">
-                    <div class="student-info-item">
-                        <span class="student-info-label">Program:</span>
-                        <span class="student-info-value">{{ $student->program ?? '—' }}</span>
-                    </div>
-                    <div class="student-info-item">
-                        <span class="student-info-label">Year Level:</span>
-                        <span class="student-info-value">{{ $student->year_level ?? '—' }}</span>
-                    </div>
-                    <div class="student-info-item">
-                        <span class="student-info-label">Student ID:</span>
-                        <span class="student-info-value">{{ $student->student_id_number ?? '—' }}</span>
-                    </div>
-                    <div class="student-info-item">
-                        <span class="student-info-label">Phone:</span>
-                        <span class="student-info-value">{{ $student->user->phone ?? '—' }}</span>
-                    </div>
-                </div>
-
-                @if($student->career_objectives)
-                    <div class="student-objectives">
-                        <div class="student-info-label" style="margin-bottom: 0.35rem;">Career Objectives:</div>
-                        {{ $student->career_objectives }}
+                    <div class="profile-skill-grid">
+                        @foreach ($competencies as $competency)
+                            @php
+                                $filledSegments = match ($competency['level']) {
+                                    'beginner' => 1,
+                                    'intermediate' => 2,
+                                    default => 3,
+                                };
+                            @endphp
+                            <article class="profile-item-card">
+                                <div class="profile-item-heading">
+                                    <div>
+                                        <h3>{{ $competency['name'] }}</h3>
+                                        <p>{{ $competency['category'] }}</p>
+                                    </div>
+                                    <span class="profile-status profile-status-{{ $competency['status'] }}">{{ ucfirst($competency['status']) }}</span>
+                                </div>
+                                <div class="profile-level" aria-label="{{ $competency['level_label'] }} proficiency">
+                                    <div class="profile-level-segments" aria-hidden="true">
+                                        @for ($segment = 1; $segment <= 3; $segment++)
+                                            <span class="{{ $segment <= $filledSegments ? 'is-filled' : '' }}"></span>
+                                        @endfor
+                                    </div>
+                                    <div class="profile-level-labels"><span>Beginner</span><span>Intermediate</span><span>Advanced</span></div>
+                                </div>
+                            </article>
+                        @endforeach
                     </div>
                 @endif
-            </div>
+            </section>
+
+            <section class="profile-card">
+                <div class="profile-section-heading">
+                    <h2>Certificates</h2>
+                    <span class="profile-count">{{ $certificates->count() }}</span>
+                </div>
+                @if ($certificates->isEmpty())
+                    <p class="profile-empty">No certificates uploaded yet.</p>
+                @else
+                    <div class="profile-item-list">
+                        @foreach ($certificates as $certificate)
+                            <article class="profile-item-card profile-certificate-card">
+                                <div>
+                                    <h3>{{ $certificate['title'] }}</h3>
+                                    <p>{{ $certificate['issuer'] ?: 'Issuer not specified' }}</p>
+                                </div>
+                                <span class="profile-status profile-status-{{ $certificate['status'] }}">{{ ucfirst($certificate['status']) }}</span>
+                            </article>
+                        @endforeach
+                    </div>
+                @endif
+            </section>
+
+            <section class="profile-card">
+                <div class="profile-section-heading">
+                    <h2>Portfolio</h2>
+                    <span class="profile-count">{{ $portfolios->count() }}</span>
+                </div>
+                @if ($portfolios->isEmpty())
+                    <p class="profile-empty">No portfolio items yet.</p>
+                @else
+                    <div class="profile-item-list">
+                        @foreach ($portfolios as $portfolio)
+                            <article class="profile-item-card profile-certificate-card">
+                                <div>
+                                    <h3>{{ $portfolio['title'] }}</h3>
+                                    <p>{{ $portfolio['description'] ?: 'No description provided.' }}</p>
+                                </div>
+                                <span class="profile-status profile-status-{{ $portfolio['status'] }}">{{ ucfirst($portfolio['status']) }}</span>
+                            </article>
+                        @endforeach
+                    </div>
+                @endif
+            </section>
+
+            <section class="profile-card">
+                <h2>Recent activity</h2>
+                @if ($recentActivity->isEmpty())
+                    <p class="profile-empty">No recent activity recorded.</p>
+                @else
+                    <ol class="profile-timeline">
+                        @foreach ($recentActivity as $activity)
+                            <li class="{{ $activity['is_verification'] ? 'is-verification' : '' }}">
+                                <span class="profile-timeline-dot" aria-hidden="true"></span>
+                                <div>
+                                    <p><strong>{{ $activity['actor'] }}</strong> {{ $activity['action'] }} <strong>{{ $activity['item'] }}</strong></p>
+                                    @if ($activity['note'])
+                                        <p class="profile-activity-note">{{ $activity['note'] }}</p>
+                                    @endif
+                                    <time>{{ $activity['created_at'] }}</time>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ol>
+                @endif
+            </section>
         </div>
     </div>
-
-    <div class="student-detail-section" style="grid-column: 2 / 3;">
-        <div class="student-section-header">Competencies ({{ $student->competencies->count() }})</div>
-
-        <div class="student-badge-list">
-            @forelse($student->competencies as $comp)
-                <span class="student-competency-badge">
-                    <strong>{{ $comp->name }}</strong>
-                    &nbsp;— {{ $comp->proficiency_level->label() }}
-                    @if($comp->verification_status === 'verified')
-                        <span class="badge bg-success ms-2"><i class="bi bi-patch-check-fill"></i> Verified</span>
-                    @endif
-                </span>
-            @empty
-                <span class="student-info-value" style="padding: 0.5rem 0; color: rgba(196,214,228,0.8);">No competencies recorded.</span>
-            @endforelse
-        </div>
-    </div>
-
-    <div class="student-detail-section" style="grid-column: 2 / 3;">
-        <div class="student-section-header">Certificates ({{ $student->certificates->count() }})</div>
-
-        <div class="student-badge-list">
-            @forelse($student->certificates as $certificate)
-                <span class="student-competency-badge">
-                    <strong>{{ $certificate->title }}</strong>
-                    &nbsp;— {{ $certificate->issuer ?? 'Issuer not provided' }}
-                    @if($certificate->verification_status === 'verified')
-                        <span class="badge bg-success ms-2"><i class="bi bi-patch-check-fill"></i> Verified</span>
-                    @else
-                        <span class="badge bg-warning text-dark ms-2">{{ ucfirst(str_replace('_', ' ', $certificate->verification_status)) }}</span>
-                    @endif
-                </span>
-            @empty
-                <span class="student-info-value" style="padding: 0.5rem 0; color: rgba(196,214,228,0.8);">No certificates recorded.</span>
-            @endforelse
-        </div>
-    </div>
-
-    <div class="student-detail-section" style="grid-column: 2 / 3;">
-        <div class="student-section-header">Applications</div>
-
-        <div class="student-table-wrap">
-            <table class="student-detail-table">
-                <thead>
-                    <tr>
-                        <th>Internship</th>
-                        <th>Company</th>
-                        <th>Match</th>
-                        <th>Status</th>
-                        <th>Applied</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($student->applications as $app)
-                        <tr>
-                            <td>{{ $app->internship->title }}</td>
-                            <td>{{ $app->internship->employer->company_name }}</td>
-                            <td>{{ $app->match_percentage }}%</td>
-                            <td><span class="badge {{ $app->status->badgeClass() }}">{{ $app->status->label() }}</span></td>
-                            <td>{{ $app->applied_at?->format('M d, Y') }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="text-center text-muted py-3">No applications.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+</main>
 @endsection

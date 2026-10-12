@@ -61,8 +61,8 @@
                     <ul>
                         @foreach($application->student->portfolios as $p)
                             <li>{{ $p->title }} ({{ $p->type->label() }})
-                                <a href="{{ route('employer.applicants.portfolios.download', [$application, $p]) }}" class="btn btn-sm btn-outline-primary ms-1" aria-label="Download {{ $p->title }}">
-                                    <i class="bi bi-download"></i>
+                                <a href="{{ route('employer.applicants.portfolios.preview', [$application, $p], false) }}" class="btn btn-sm btn-outline-primary ms-1" aria-label="View {{ $p->title }}">
+                                    <i class="bi bi-eye"></i> View
                                 </a>
                             </li>
                         @endforeach
@@ -75,6 +75,9 @@
                             <li>{{ $c->title }} — {{ $c->issuer ?? 'N/A' }}
                                 @if($c->verification_status === 'verified')
                                     <span class="badge bg-success"><i class="bi bi-patch-check-fill"></i> Verified</span>
+                                    <a href="{{ route('employer.applicants.certificates.preview', [$application, $c], false) }}" class="btn btn-sm btn-outline-primary ms-1" aria-label="View {{ $c->title }}">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
                                 @endif
                             </li>
                         @endforeach
@@ -88,6 +91,7 @@
     <div class="col-lg-4">
         <div class="card mb-4">
             <div class="card-body d-grid gap-2">
+                <a href="{{ route('employer.applicants.resume.preview', $application, false) }}" class="btn btn-outline-primary"><i class="bi bi-eye"></i> View Resume</a>
                 <a href="{{ route('employer.applicants.resume', $application) }}" class="btn btn-outline-primary"><i class="bi bi-file-earmark-pdf"></i> Download Resume</a>
                 <a href="{{ route('messages.show', $application->student->user) }}" class="btn btn-outline-secondary"><i class="bi bi-chat"></i> Message Student</a>
             </div>

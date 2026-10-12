@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Coordinator extends Model
 {
@@ -26,23 +27,35 @@ class Coordinator extends Model
         return $this->belongsTo(Institution::class);
     }
 
+    public function verificationActivities(): HasMany
+    {
+        return $this->hasMany(VerificationActivity::class);
+    }
+
     public function scopedStudentsQuery(): Builder
     {
-        $query = Student::query();
-
         if ($this->institution_id === null) {
-            return $query->whereRaw('0 = 1');
+            return Student::query()->whereRaw('0 = 1');
         }
 
-        return $query->where('institution_id', $this->institution_id);
+        return Student::query()
+            ->where('institution_id', $this->institution_id)
+            ->where(function (Builder $query): void {
+                $query->whereDoesntHave('academicProgram')
+                    ->orWhereHas('academicProgram', fn (Builder $programQuery) => $programQuery
+                        ->whereNull('coordinator_id')
+                        ->orWhere('coordinator_id', $this->id));
+            });
     }
 
     public function canAccessStudent(Student $student): bool
     {
-        if ($this->institution_id === null) {
+        if ($this->institution_id === null || (int) $student->institution_id !== (int) $this->institution_id) {
             return false;
         }
 
-        return (int) $student->institution_id === (int) $this->institution_id;
+        $assignedCoordinatorId = $student->academicProgram?->coordinator_id;
+
+        return $assignedCoordinatorId === null || (int) $assignedCoordinatorId === (int) $this->id;
     }
 }

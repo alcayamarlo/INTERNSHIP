@@ -8,7 +8,7 @@
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #1f2937; background-color: #f8fafc; margin: 0; padding: 24px;">
     <div style="max-width: 640px; margin: 0 auto; background: #ffffff; border-radius: 12px; padding: 24px; border: 1px solid #e5e7eb;">
         <h2 style="margin-top: 0; color: #111827;">{{ $title }}</h2>
-        <p style="margin-bottom: 20px; font-size: 16px;">{{ $message }}</p>
+        <p style="margin-bottom: 20px; font-size: 16px;">{{ $notificationMessage }}</p>
 
         @if (!empty($data))
             <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">

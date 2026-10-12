@@ -43,7 +43,7 @@ it('records application status changes in a full history timeline', function () 
     $student = Student::create([
         'user_id' => $studentUser->id,
         'institution_id' => $institution->id,
-        'student_id_number' => '2025001',
+        'student_id_number' => 'SCC-25-00000001',
         'program' => 'BS Computer Science',
     ]);
 
@@ -125,7 +125,7 @@ it('requires an interview time when an employer marks an application as intervie
     $student = Student::create([
         'user_id' => $studentUser->id,
         'institution_id' => $institution->id,
-        'student_id_number' => '2025002',
+        'student_id_number' => 'SCC-25-00000002',
         'program' => 'BS Computer Science',
     ]);
 
@@ -183,7 +183,7 @@ it('sends an interview calendar invite when an employer schedules an interview',
     $student = Student::create([
         'user_id' => $studentUser->id,
         'institution_id' => $institution->id,
-        'student_id_number' => '2025003',
+        'student_id_number' => 'SCC-25-00000003',
         'program' => 'BS Computer Science',
     ]);
 

@@ -57,7 +57,7 @@ it('stores a real portfolio file and allows a coordinator to review it', functio
             'description' => 'Built a Laravel dashboard for student placements.',
             'file' => $file,
         ])
-        ->assertRedirect(route('student.portfolio.index'))
+        ->assertRedirect(route('student.profile.edit').'#portfolio')
         ->assertSessionHas('success', 'Portfolio item uploaded successfully!');
 
     $portfolio = Portfolio::query()->where('student_id', $student->id)->firstOrFail();
@@ -94,9 +94,12 @@ it('stores a real portfolio file and allows a coordinator to review it', functio
 
     $this->actingAs($studentUser)
         ->get(route('student.portfolio.index'))
+        ->assertRedirect(route('student.profile.edit').'#portfolio');
+
+    $this->get(route('student.profile.edit'))
         ->assertOk()
         ->assertSee('Verified Student Certificate')
-        ->assertSee('bi-patch-check-fill');
+        ->assertSee('status-verified');
 
     $this->get(route('student.competencies.index'))
         ->assertOk()

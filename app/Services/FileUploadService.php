@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Certificate;
 use App\Models\Portfolio;
+use App\Models\Resume;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -113,7 +114,8 @@ class FileUploadService
         }
 
         if (Certificate::where('file_path', $path)->exists()
-            || Portfolio::where('file_path', $path)->exists()) {
+            || Portfolio::where('file_path', $path)->exists()
+            || Resume::where('file_path', $path)->exists()) {
             return;
         }
 

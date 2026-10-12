@@ -104,6 +104,15 @@
                     <a href="{{ route('student.applications.index') }}" class="btn btn-outline-primary w-100 mt-3">View My Applications</a>
                 @elseif($internship->status !== 'open')
                     <div class="alert alert-secondary mb-0">This internship is no longer accepting applications.</div>
+                @elseif($eligibilityReasons !== [])
+                    <div class="alert alert-warning mb-0">
+                        <strong>You are not yet eligible to apply.</strong>
+                        <ul class="mb-0 mt-2">
+                            @foreach($eligibilityReasons as $reason)
+                                <li>{{ $reason }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
                 @else
                     <h5>Apply Now</h5>
                     <form method="POST" action="{{ route('student.internships.apply', $internship) }}">

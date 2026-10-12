@@ -14,11 +14,20 @@
         <div class="card">
             <div class="card-body text-center">
                 <div class="mb-3">
-                    @if($employer->logo)
-                        <img src="{{ Storage::url($employer->logo) }}" alt="{{ $employer->company_name }}" class="rounded" style="max-width: 150px; max-height: 150px; object-fit: contain;">
+                    @php
+                        $employerLogoUrl = \App\Support\PublicFileUrl::relative($employer->logo);
+                        $employerInitials = collect(preg_split('/\s+/', trim($employer->company_name)))
+                            ->filter()
+                            ->map(fn ($part) => mb_substr($part, 0, 1))
+                            ->take(2)
+                            ->implode('');
+                    @endphp
+                    @if($employerLogoUrl)
+                        <img src="{{ $employerLogoUrl }}" alt="{{ $employer->company_name }}" class="rounded" style="max-width: 150px; max-height: 150px; object-fit: contain;" onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+                        <div hidden class="bg-light rounded d-inline-flex align-items-center justify-content-center" style="width: 150px; height: 150px;">{{ strtoupper($employerInitials ?: 'C') }}</div>
                     @else
                         <div class="bg-light rounded d-inline-flex align-items-center justify-content-center" style="width: 150px; height: 150px;">
-                            <i class="bi bi-building fs-1 text-muted"></i>
+                            {{ strtoupper($employerInitials ?: 'C') }}
                         </div>
                     @endif
                 </div>

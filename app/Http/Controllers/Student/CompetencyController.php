@@ -10,6 +10,7 @@ use App\Http\Requests\Competency\UpdateCompetencyRequest;
 use App\Models\StudentCompetency;
 use App\Services\ActivityLogService;
 use App\Services\FileUploadService;
+use App\Services\StudentCompetencyOverviewService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -24,54 +25,15 @@ class CompetencyController extends Controller
     public function index(Request $request)
     {
         $student = Auth::user()->student;
-        $query = $student->competencies();
-
-        if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%'.$request->search.'%')
-                    ->orWhere('description', 'like', '%'.$request->search.'%');
-            });
-        }
-
-        if ($request->filled('category')) {
-            $query->where('category', $request->category);
-        }
-
-        if ($request->filled('level')) {
-            $query->where('proficiency_level', $request->level);
-        }
-
-        $sortBy = in_array($request->get('sort_by'), ['name', 'obtained_at', 'created_at', 'proficiency_level'], true) ? $request->get('sort_by') : 'created_at';
-        $sortOrder = $request->get('sort_order') === 'asc' ? 'asc' : 'desc';
-        $query->orderBy($sortBy, $sortOrder);
-
-        $competencies = $query->paginate(12);
-
-        $totalCompetencies = $student->competencies()->count();
-        $technicalSkills = $student->competencies()
-            ->whereIn('category', ['technical', 'skill', 'workshop', 'training'])
-            ->count();
-        $softSkills = $student->competencies()->where('category', 'soft')->count();
-        $certifications = $student->competencies()->where('category', 'certification')->count();
+        $overview = app(StudentCompetencyOverviewService::class)->forStudent(
+            $student,
+            $request->string('view')->toString() ?: 'verified',
+            $request->string('category')->toString() ?: null
+        );
 
         return view('student.competencies.index', [
-            'competencies' => $competencies,
-            'categories' => CompetencyCategory::cases(),
-            'levels' => ProficiencyLevel::cases(),
-            'stats' => [
-                'total' => $totalCompetencies,
-                'technical' => $technicalSkills,
-                'soft' => $softSkills,
-                'certifications' => $certifications,
-                'average_level' => $this->calculateAverageLevel($student),
-            ],
-            'filters' => [
-                'search' => $request->search ?? '',
-                'category' => $request->category ?? '',
-                'level' => $request->level ?? '',
-                'sort_by' => $sortBy,
-                'sort_order' => $sortOrder,
-            ],
+            'overview' => $overview,
+            'competencies' => $overview['skills'],
         ]);
     }
 

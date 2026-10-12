@@ -195,7 +195,7 @@
                         @else
                             <span class="badge bg-warning text-dark">{{ ucfirst(str_replace('_', ' ', $certificate->verification_status)) }}</span>
                         @endif
-                        <a href="{{ route('student.certificates.download', $certificate) }}" class="btn btn-sm btn-outline-primary" aria-label="Download {{ $certificate->title }}">
+                        <a href="{{ route('student.certificates.download', $certificate, false) }}" class="btn btn-sm btn-outline-primary" aria-label="Download {{ $certificate->title }}">
                             <i class="bi bi-download"></i>
                         </a>
                     </div>
@@ -238,7 +238,7 @@
                             <a href="{{ route('student.portfolio.edit', $item) }}" class="btn btn-outline-secondary" title="Edit">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <a href="{{ route('student.portfolio.download', $item) }}" class="btn btn-outline-success" title="Download">
+                            <a href="{{ route('student.portfolio.download', $item, false) }}" class="btn btn-outline-success" title="Download">
                                 <i class="bi bi-download"></i>
                             </a>
                             <form method="POST" action="{{ route('student.portfolio.destroyPortfolio', $item) }}" class="d-inline" onsubmit="return confirm('Delete this file?');">
@@ -262,7 +262,7 @@
 @else
     <div class="alert alert-info text-center py-5">
         <i class="bi bi-cloud-upload fs-1"></i>
-        <p class="mt-3 mb-0">No portfolio items yet. <a href="{{ route('student.portfolio.create') }}">Upload your first file →</a></p>
+        <p class="mt-3 mb-0">No portfolio items yet. <a href="{{ route('student.profile.edit') }}#portfolio">Upload your first file</a></p>
     </div>
 @endif
 </div>

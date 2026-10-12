@@ -8,6 +8,7 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\Coordinator;
 use App\Models\Employer;
 use App\Models\Institution;
+use App\Models\Program;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\ActivityLogService;
@@ -30,6 +31,7 @@ class RegisterController extends Controller
 
         return view('admin.users.auth.register', [
             'institution' => $institution,
+            'programs' => Program::orderBy('code')->get(),
             'roles' => [
                 UserRole::Student,
             ],
@@ -46,12 +48,30 @@ class RegisterController extends Controller
     public function register(RegisterRequest $request)
     {
         $validated = $request->validated();
+        $legacyProgramCodes = [
+            'Bachelor of Science in Information Technology' => 'BSIT',
+            'Bachelor of Science in Hospitality Management' => 'BSHM',
+            'Bachelor of Science in Business Administration' => 'BSBA',
+        ];
+        $program = isset($validated['program_id'])
+            ? Program::findOrFail($validated['program_id'])
+            : Program::query()
+                ->where(function ($query) use ($validated, $legacyProgramCodes) {
+                    $programInput = $validated['program'] ?? '';
+                    $query->where('name', $programInput)
+                        ->orWhere('code', $programInput);
+
+                    if (isset($legacyProgramCodes[$programInput])) {
+                        $query->orWhere('code', $legacyProgramCodes[$programInput]);
+                    }
+                })
+                ->first();
         $validated['institution_id'] = Institution::where(
             'name',
             "St. Cecilia's College-Cebu, Inc."
         )->value('id');
 
-        $user = DB::transaction(function () use ($validated) {
+        $user = DB::transaction(function () use ($validated, $program) {
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
@@ -62,12 +82,12 @@ class RegisterController extends Controller
 
             // Create role-specific profile
             match (UserRole::from($validated['role'])) {
-                UserRole::Student => Student::create([
+                UserRole::Student => tap(Student::create([
                     'user_id' => $user->id,
                     'institution_id' => $validated['institution_id'] ?? null,
-                    'program' => $validated['program'] ?? null,
-                    'profile_completion' => 20,
-                ]),
+                    'program_id' => $program?->id,
+                    'program' => $program?->display_name ?? ($validated['program'] ?? null),
+                ]), fn (Student $student) => $student->calculateProfileCompletion()),
                 UserRole::Employer => Employer::create([
                     'user_id' => $user->id,
                     'company_name' => $validated['company_name'],
@@ -82,7 +102,6 @@ class RegisterController extends Controller
 
             return $user;
         });
-
         $this->activityLog->log($user, 'register', ['role' => $user->role->value]);
 
         Auth::login($user);

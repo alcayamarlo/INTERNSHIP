@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="mb-4">
-    <a href="{{ route('student.portfolio.index') }}" class="btn btn-sm btn-outline-secondary mb-3">
+    <a href="{{ route('student.profile.edit') }}#portfolio" class="btn btn-sm btn-outline-secondary mb-3">
         <i class="bi bi-chevron-left"></i> Back to Portfolio
     </a>
 </div>
@@ -64,7 +64,7 @@
                         <h5 class="mb-3">Preview</h5>
                         <div class="border rounded p-3 bg-light" style="min-height: 300px; display: flex; align-items: center; justify-content: center;">
                             @if(in_array($extension, ['jpg', 'jpeg', 'png']))
-                                <img src="{{ route('student.portfolio.preview', $portfolio) }}" alt="{{ $portfolio->title }}" class="img-fluid" style="max-height: 400px;">
+                                <img src="{{ route('student.portfolio.preview', $portfolio, false) }}" alt="{{ $portfolio->title }}" class="img-fluid" style="max-height: 400px;" onerror="this.hidden=true;this.insertAdjacentHTML('afterend', '&lt;p&gt;Preview not available. The file could not be loaded.&lt;/p&gt;');">
                             @elseif($extension === 'pdf')
                                 <div class="text-center">
                                     <i class="bi bi-file-pdf fs-1 text-danger"></i>
@@ -77,10 +77,10 @@
 
                 <!-- Action Buttons -->
                 <div class="btn-group-vertical w-100" role="group">
-                    <a href="{{ route('student.portfolio.preview', $portfolio) }}" class="btn btn-outline-primary text-start" target="_blank">
+                    <a href="{{ route('student.portfolio.preview', $portfolio, false) }}" class="btn btn-outline-primary text-start" target="_blank">
                         <i class="bi bi-eye"></i> Open Preview in New Tab
                     </a>
-                    <a href="{{ route('student.portfolio.download', $portfolio) }}" class="btn btn-outline-success text-start">
+                    <a href="{{ route('student.portfolio.download', $portfolio, false) }}" class="btn btn-outline-success text-start">
                         <i class="bi bi-download"></i> Download File
                     </a>
                     <a href="{{ route('student.portfolio.edit', $portfolio) }}" class="btn btn-outline-secondary text-start">
@@ -89,7 +89,7 @@
                 </div>
 
                 <div class="mt-3">
-                    <a href="{{ route('student.portfolio.index') }}" class="btn btn-outline-secondary w-100">
+                    <a href="{{ route('student.profile.edit') }}#portfolio" class="btn btn-outline-secondary w-100">
                         <i class="bi bi-x-circle"></i> Back to Portfolio
                     </a>
                 </div>

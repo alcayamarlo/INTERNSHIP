@@ -16,7 +16,8 @@ class ApplicationService
     public function __construct(
         private CompetencyMatchingService $matchingService,
         private NotificationService $notificationService,
-        private ActivityLogService $activityLog
+        private ActivityLogService $activityLog,
+        private InternshipEligibility $eligibility
     ) {}
 
     /**
@@ -26,6 +27,11 @@ class ApplicationService
      */
     public function apply(Student $student, Internship $internship, User $applicant, ?string $coverLetter = null): InternshipApplication
     {
+        $eligibilityReasons = $this->eligibility->reasons($student);
+        if ($eligibilityReasons !== []) {
+            throw ValidationException::withMessages(['eligibility' => $eligibilityReasons]);
+        }
+
         if ($internship->status !== 'open') {
             throw ValidationException::withMessages([
                 'internship' => 'This internship is no longer accepting applications.',

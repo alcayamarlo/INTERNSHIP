@@ -2660,19 +2660,19 @@
 
 
                                 <select
-                                    class="form-select @error('program') is-invalid @enderror"
+                                    class="form-select @error('program_id') is-invalid @enderror"
                                     id="program"
-                                    name="program"
+                                    name="program_id"
                                     required
                                 >
                                     <option value="">Select your program</option>
-                                    <option value="Bachelor of Science in Information Technology" {{ old('program') === 'Bachelor of Science in Information Technology' ? 'selected' : '' }}>Bachelor of Science in Information Technology</option>
-                                    <option value="Bachelor of Science in Hospitality Management" {{ old('program') === 'Bachelor of Science in Hospitality Management' ? 'selected' : '' }}>Bachelor of Science in Hospitality Management</option>
-                                    <option value="Bachelor of Science in Business Administration" {{ old('program') === 'Bachelor of Science in Business Administration' ? 'selected' : '' }}>Bachelor of Science in Business Administration</option>
+                                    @foreach($programs as $program)
+                                        <option value="{{ $program->id }}" {{ (string) old('program_id') === (string) $program->id ? 'selected' : '' }}>{{ $program->display_name }}</option>
+                                    @endforeach
                                 </select>
 
 
-                                @error('program')
+                                @error('program_id')
 
                                     <div class="invalid-feedback">
                                         {{ $message }}

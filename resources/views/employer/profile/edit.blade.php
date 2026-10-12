@@ -223,10 +223,19 @@
         <div class="employer-profile-upload">
             <div class="upload-box">
                 <div class="upload-logo">
-                    @if($employer->logo)
-                        <img src="{{ Storage::url($employer->logo) }}" alt="{{ $employer->company_name }}" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px;">
+                    @php
+                        $employerLogoUrl = \App\Support\PublicFileUrl::relative($employer->logo);
+                        $employerInitials = collect(preg_split('/\s+/', trim($employer->company_name)))
+                            ->filter()
+                            ->map(fn ($part) => mb_substr($part, 0, 1))
+                            ->take(2)
+                            ->implode('');
+                    @endphp
+                    @if($employerLogoUrl)
+                        <img src="{{ $employerLogoUrl }}" alt="{{ $employer->company_name }}" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px;" onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+                        <span hidden>{{ strtoupper($employerInitials ?: 'C') }}</span>
                     @else
-                        <i class="bi bi-building"></i>
+                        {{ strtoupper($employerInitials ?: 'C') }}
                     @endif
                 </div>
 
