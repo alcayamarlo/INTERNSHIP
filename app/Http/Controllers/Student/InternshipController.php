@@ -7,6 +7,7 @@ use App\Http\Requests\Application\ApplyInternshipRequest;
 use App\Models\Internship;
 use App\Models\InternshipApplication;
 use App\Models\RecommendationFeedback;
+use App\Models\Resume;
 use App\Services\ApplicationService;
 use App\Services\CompetencyMatchingService;
 use App\Services\InternshipEligibility;
@@ -50,8 +51,12 @@ class InternshipController extends Controller
 
         $internships = $query->latest()->paginate(12)->withQueryString();
         $recommendations = $this->matchingService->getRecommendations($student, 3);
+        $appliedInternshipIds = InternshipApplication::withTrashed()
+            ->where('student_id', $student->id)
+            ->pluck('internship_id');
+        $resumes = $student->resumes()->latest()->get();
 
-        return view('student.internships.index', compact('internships', 'recommendations'));
+        return view('student.internships.index', compact('internships', 'recommendations', 'appliedInternshipIds', 'resumes'));
     }
 
     public function show(Internship $internship)
@@ -59,15 +64,16 @@ class InternshipController extends Controller
         $internship->load('employer', 'requirementsList');
         $student = Auth::user()->student;
         $matchPercentage = $this->matchingService->calculateMatch($student, $internship);
-        $hasApplied = InternshipApplication::where('internship_id', $internship->id)
+        $hasApplied = InternshipApplication::withTrashed()->where('internship_id', $internship->id)
             ->where('student_id', $student->id)
             ->exists();
         $recommendationFeedback = RecommendationFeedback::where('student_id', $student->id)
             ->where('internship_id', $internship->id)
             ->first();
         $eligibilityReasons = $this->eligibility->reasons($student);
+        $resumes = $student->resumes()->latest()->get();
 
-        return view('student.internships.show', compact('internship', 'matchPercentage', 'hasApplied', 'recommendationFeedback', 'eligibilityReasons'));
+        return view('student.internships.show', compact('internship', 'matchPercentage', 'hasApplied', 'recommendationFeedback', 'eligibilityReasons', 'resumes'));
     }
 
     public function storeRecommendationFeedback(Request $request, Internship $internship)
@@ -100,11 +106,30 @@ class InternshipController extends Controller
             $this->applicationService->apply(
                 Auth::user()->student,
                 $internship,
+                Resume::query()
+                    ->where('student_id', Auth::user()->student->id)
+                    ->findOrFail($request->validated('resume_id')),
                 Auth::user(),
                 $request->validated('cover_letter')
             );
         } catch (ValidationException $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => collect($e->errors())->flatten()->first(),
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+
             return back()->with('error', collect($e->errors())->flatten()->first());
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Application submitted successfully.',
+                'status' => \App\Enums\ApplicationStatus::Applied->value,
+                'applications_url' => route('student.applications.index'),
+            ]);
         }
 
         return redirect()->route('student.applications.index')
@@ -158,7 +183,7 @@ class InternshipController extends Controller
     public function updateApplication(ApplyInternshipRequest $request, InternshipApplication $application)
     {
         $this->authorize('view', $application);
-        abort_unless($application->status === \App\Enums\ApplicationStatus::Submitted, 422, 'Only submitted applications can be edited.');
+        abort_unless(in_array($application->status, [\App\Enums\ApplicationStatus::Applied, \App\Enums\ApplicationStatus::Submitted], true), 422, 'Only active applications can be edited.');
         $application->update(['cover_letter' => $request->validated('cover_letter')]);
         return redirect()->route('student.applications.show', $application)->with('success', 'Application updated successfully.');
     }
@@ -166,7 +191,7 @@ class InternshipController extends Controller
     public function destroyApplication(InternshipApplication $application)
     {
         $this->authorize('view', $application);
-        abort_unless($application->status === \App\Enums\ApplicationStatus::Submitted, 422, 'Only submitted applications can be deleted.');
+        abort_unless(in_array($application->status, [\App\Enums\ApplicationStatus::Applied, \App\Enums\ApplicationStatus::Submitted], true), 422, 'Only active applications can be deleted.');
         $application->delete();
         return redirect()->route('student.applications.index')->with('success', 'Application deleted successfully.');
     }

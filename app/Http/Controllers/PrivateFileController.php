@@ -160,10 +160,13 @@ class PrivateFileController extends Controller
     public function downloadApplicantResume(InternshipApplication $application)
     {
         $this->authorize('downloadResume', $application);
-        $resume = $application->student->resumes()->latest()->first();
+        $resumeQuery = $application->student->resumes();
+        $resume = $application->status->isActive()
+            ? $resumeQuery->withArchived()->latest()->first()
+            : $resumeQuery->latest()->first();
 
         abort_unless($resume && $resume->file_path, 404, 'Resume not found.');
-        $this->authorize('download', $resume);
+        $this->authorize('downloadForApplication', [$resume, $application]);
 
         return Storage::disk($this->diskWithFile($resume->file_path))->download($resume->file_path);
     }
@@ -171,9 +174,12 @@ class PrivateFileController extends Controller
     public function previewApplicantResume(InternshipApplication $application)
     {
         $this->authorize('view', $application);
-        $resume = $application->student->resumes()->latest()->first();
+        $resumeQuery = $application->student->resumes();
+        $resume = $application->status->isActive()
+            ? $resumeQuery->withArchived()->latest()->first()
+            : $resumeQuery->latest()->first();
         abort_unless($resume && $resume->file_path, 404, 'Resume not found.');
-        $this->authorize('view', $resume);
+        $this->authorize('viewForApplication', [$resume, $application]);
 
         return Storage::disk($this->diskWithFile($resume->file_path))->response($resume->file_path, null, [
             'Content-Type' => 'application/pdf',

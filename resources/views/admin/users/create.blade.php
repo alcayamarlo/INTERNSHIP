@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="h3 mb-1">Create User</h1>
-        <p class="text-muted mb-0">Create an employer or coordinator account</p>
+        <p class="text-muted mb-0">Create an employer, coordinator, or student account</p>
     </div>
     <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary">Back to Users</a>
 </div>
@@ -96,10 +96,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateFields() {
         const isEmployer = role.value === 'employer';
+        const needsInstitution = role.value === 'coordinator' || role.value === 'student';
         companyField.hidden = !isEmployer;
         institutionField.hidden = isEmployer;
         company.required = isEmployer;
-        institution.required = !isEmployer;
+        institution.required = needsInstitution;
     }
 
     role.addEventListener('change', updateFields);

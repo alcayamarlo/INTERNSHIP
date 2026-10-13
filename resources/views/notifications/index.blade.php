@@ -68,37 +68,63 @@
 
 @section('content')
 <div class="student-page-shell">
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
     <div>
         <h1 class="student-page-title">Notifications</h1>
         <p class="student-page-subtitle">Your recent alerts and updates</p>
     </div>
-    <form action="{{ route('notifications.read-all') }}" method="POST">
-        @csrf
-        <button type="submit" class="btn btn-outline-primary btn-sm"><i class="bi bi-check-all"></i> Mark All Read</button>
-    </form>
+    <div class="d-flex gap-2 align-items-center flex-wrap">
+        <div class="btn-group" role="group" aria-label="Notification views">
+            <a href="{{ route('notifications.index', ['view' => 'active']) }}" class="btn btn-sm {{ $view === 'active' ? 'btn-primary' : 'btn-outline-primary' }}">Active</a>
+            <a href="{{ route('notifications.index', ['view' => 'archived']) }}" class="btn btn-sm {{ $view === 'archived' ? 'btn-primary' : 'btn-outline-primary' }}">Archived</a>
+        </div>
+        <form action="{{ route('notifications.read-all') }}" method="POST" data-ajax-notification="read-all">
+            @csrf
+            <button type="submit" class="btn btn-outline-primary btn-sm"><i class="bi bi-check-all"></i> Mark All Read</button>
+        </form>
+        @if($view === 'archived')
+            <form action="{{ route('notifications.archive-all-read') }}" method="POST" data-ajax-notification="archive-all-read">
+                @csrf
+                <button type="submit" class="btn btn-outline-secondary btn-sm">Archive all read</button>
+            </form>
+        @endif
+    </div>
 </div>
 
 <div class="card">
     <div class="list-group list-group-flush">
         @forelse($notifications as $notification)
-            <div class="list-group-item {{ $notification->read_at ? '' : 'bg-light border-start border-primary border-3' }}">
-                <div class="d-flex justify-content-between align-items-start">
+            <div class="list-group-item {{ $notification->read_at ? '' : 'bg-light border-start border-primary border-3' }}" data-notification-item data-notification-id="{{ $notification->id }}">
+                <div class="d-flex justify-content-between align-items-start gap-3">
                     <div class="flex-grow-1">
-                        <div class="d-flex align-items-center gap-2 mb-1">
+                        <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
                             @if(!$notification->read_at)<span class="badge bg-primary">New</span>@endif
+                            @if($notification->archived_at)<span class="badge bg-secondary">Archived</span>@endif
                             <strong>{{ $notification->title }}</strong>
                             <span class="badge bg-secondary">{{ $notification->type }}</span>
                         </div>
                         <p class="mb-1">{{ $notification->message }}</p>
                         <small class="text-muted">{{ $notification->created_at->format('M d, Y h:i A') }} ({{ $notification->created_at->diffForHumans() }})</small>
                     </div>
-                    @if(!$notification->read_at)
-                        <form action="{{ route('notifications.read', $notification) }}" method="POST">
-                            @csrf
-                            <button type="submit" class="btn btn-sm btn-outline-primary">Mark Read</button>
-                        </form>
-                    @endif
+                    <div class="d-flex flex-column gap-2 align-items-end">
+                        @if(!$notification->read_at)
+                            <form action="{{ route('notifications.read', $notification) }}" method="POST" data-ajax-notification="read">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Mark Read</button>
+                            </form>
+                        @endif
+                        @if($notification->archived_at)
+                            <form action="{{ route('notifications.restore', $notification) }}" method="POST" data-ajax-notification="restore">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Restore</button>
+                            </form>
+                        @else
+                            <form action="{{ route('notifications.archive', $notification) }}" method="POST" data-ajax-notification="archive">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Archive</button>
+                            </form>
+                        @endif
+                    </div>
                 </div>
             </div>
         @empty

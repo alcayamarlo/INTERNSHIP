@@ -3966,27 +3966,12 @@ document.addEventListener(
                     program.value.trim();
 
 
-                if (
-                    value === ''
-                ) {
+                if (value === '') {
 
                     showError(
                         program,
                         'programError',
-                        'Please enter your program.'
-                    );
-
-                    valid =
-                        false;
-
-                } else if (
-                    value.length < 2
-                ) {
-
-                    showError(
-                        program,
-                        'programError',
-                        'Please enter a valid program.'
+                        'Please select your program.'
                     );
 
                     valid =

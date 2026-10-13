@@ -6,6 +6,7 @@ use App\Enums\ApplicationStatus;
 use App\Enums\PortfolioCategory;
 use App\Enums\UserRole;
 use App\Models\InternshipApplication;
+use App\Models\Resume;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +17,11 @@ class PortfolioFileAccess
     {
         $category = $this->category($file);
         $studentId = (int) $file->student_id;
+
+        if ($file instanceof Resume && $file->archived_at) {
+            return $user->isRole(UserRole::Student)
+                && (int) $user->student?->id === $studentId;
+        }
 
         if ($user->isRole(UserRole::Admin)) {
             return true;
@@ -44,6 +50,31 @@ class PortfolioFileAccess
         }
 
         return false;
+    }
+
+    public function viewForApplication(User $user, Resume $resume, InternshipApplication $application): bool
+    {
+        if (! $user->isRole(UserRole::Employer)
+            || (int) $application->student_id !== (int) $resume->student_id
+            || (int) $user->employer?->id !== (int) $application->internship?->employer_id) {
+            return false;
+        }
+
+        if (! $resume->archived_at) {
+            return $application->status !== ApplicationStatus::Withdrawn
+                && $this->view($user, $resume);
+        }
+
+        if (! $application->status->isActive()) {
+            return false;
+        }
+
+        $latestResume = Resume::withArchived()
+            ->where('student_id', $resume->student_id)
+            ->latest()
+            ->first();
+
+        return $latestResume?->is($resume) === true;
     }
 
     public function download(User $user, Model $file): bool

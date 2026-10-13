@@ -56,6 +56,6 @@ class NotificationService
 
     public function unreadCount(User $user): int
     {
-        return $user->appNotifications()->whereNull('read_at')->count();
+        return $user->appNotifications()->whereNull('read_at')->whereNull('archived_at')->count();
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Requests\Profile\EmployerProfileRequest;
 use App\Models\Employer;
 use App\Services\ActivityLogService;
 use App\Services\FileUploadService;
+use App\Support\PublicFileUrl;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -98,6 +99,14 @@ class ProfileController extends Controller
             'company_size' => $validated['company_size'] ?? null,
             'position' => $validated['position'] ?? null,
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Company profile updated successfully!',
+                'logo_url' => PublicFileUrl::relative($employer->fresh()->logo),
+            ]);
+        }
 
         return redirect()->route('employer.profile.edit')
             ->with('success', 'Company profile updated successfully!');

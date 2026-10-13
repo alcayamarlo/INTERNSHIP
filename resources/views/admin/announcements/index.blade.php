@@ -271,10 +271,9 @@
                         <label class="form-label">Target Role <span class="text-muted">(optional)</span></label>
                         <select class="form-select" name="target_role">
                             <option value="">All Users</option>
-                            <option value="student">Students</option>
-                            <option value="employer">Employers</option>
-                            <option value="coordinator">Coordinators</option>
-                            <option value="admin">Administrators</option>
+                            @foreach($roles as $role)
+                                <option value="{{ $role->value }}">{{ $role->pluralLabel() }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="mb-3">

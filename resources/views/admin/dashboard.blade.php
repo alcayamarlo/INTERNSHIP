@@ -697,9 +697,58 @@
 @push('scripts')
 <script>
     const analyticsUrl = "{{ route('analytics.charts') }}";
-    Chart.defaults.color = '#9fb6c9';
-    Chart.defaults.font.family = 'Inter, sans-serif';
-    Chart.defaults.font.size = 10;
+    const chartColors = {
+        red: '#e11d2e',
+        green: '#187443',
+        amber: '#8a5700',
+        danger: '#b42332',
+        blue: '#235e91',
+        purple: '#684c8d',
+        muted: '#7a5f63',
+    };
+    const refreshChartTheme = () => {
+        const theme = getComputedStyle(document.documentElement);
+        Object.assign(chartColors, {
+            red: theme.getPropertyValue('--sb-red').trim() || '#e11d2e',
+            green: theme.getPropertyValue('--sb-success-ink').trim() || '#187443',
+            amber: theme.getPropertyValue('--sb-warning-ink').trim() || '#8a5700',
+            danger: theme.getPropertyValue('--sb-danger-ink').trim() || '#b42332',
+            blue: theme.getPropertyValue('--sb-blue').trim() || '#235e91',
+            purple: theme.getPropertyValue('--sb-purple').trim() || '#684c8d',
+            muted: theme.getPropertyValue('--sb-muted').trim() || '#7a5f63',
+        });
+        Chart.defaults.color = chartColors.muted;
+        const gridColor = theme.getPropertyValue('--sb-ink').trim() || '#1a0b0d';
+
+        document.querySelectorAll('canvas').forEach(canvas => {
+            const chart = Chart.getChart(canvas);
+            if (!chart) return;
+
+            chart.options.color = chartColors.muted;
+            Object.values(chart.options.scales || {}).forEach(scale => {
+                scale.ticks.color = chartColors.muted;
+                scale.grid.color = gridColor;
+            });
+            chart.data.datasets.forEach(dataset => {
+                if (canvas.id === 'applicationsChart') {
+                    dataset.borderColor = chartColors.red;
+                    dataset.backgroundColor = 'rgba(225,29,46,.12)';
+                } else if (canvas.id === 'statusChart') {
+                    dataset.backgroundColor = [chartColors.red, chartColors.green, chartColors.amber, chartColors.danger, chartColors.blue, chartColors.purple];
+                } else {
+                    dataset.backgroundColor = chartColors.red;
+                }
+            });
+            chart.update('none');
+        });
+    };
+    refreshChartTheme();
+    new MutationObserver(refreshChartTheme).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+    });
+    Chart.defaults.font.family = 'Figtree, sans-serif';
+    Chart.defaults.font.size = 12;
 
     fetch(analyticsUrl)
         .then(r => r.json())
@@ -708,7 +757,7 @@
                 type: 'line',
                 data: {
                     labels: data.applications_per_month.map(i => i.month),
-                    datasets: [{ label: 'Applications', data: data.applications_per_month.map(i => i.total), borderColor: '#2563EB', backgroundColor: 'rgba(37,99,235,.1)', fill: true }]
+                    datasets: [{ label: 'Applications', data: data.applications_per_month.map(i => i.total), borderColor: chartColors.red, backgroundColor: 'rgba(225,29,46,.12)', fill: true }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
@@ -716,7 +765,7 @@
                 type: 'doughnut',
                 data: {
                     labels: data.placements.map(i => i.status),
-                    datasets: [{ data: data.placements.map(i => i.total), backgroundColor: ['#2563EB','#10B981','#f59e0b','#ef4444','#6366f1','#64748b'] }]
+                    datasets: [{ data: data.placements.map(i => i.total), backgroundColor: [chartColors.red, chartColors.green, chartColors.amber, chartColors.danger, chartColors.blue, chartColors.purple] }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, cutout: '62%' }
             });
@@ -724,7 +773,7 @@
                 type: 'bar',
                 data: {
                     labels: data.competency_levels.map(i => i.proficiency_level),
-                    datasets: [{ label: 'Count', data: data.competency_levels.map(i => i.total), backgroundColor: '#10B981' }]
+                    datasets: [{ label: 'Count', data: data.competency_levels.map(i => i.total), backgroundColor: chartColors.red }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
@@ -732,7 +781,7 @@
                 type: 'bar',
                 data: {
                     labels: data.top_skills.map(i => i.requirement_name),
-                    datasets: [{ label: 'Demand', data: data.top_skills.map(i => i.total), backgroundColor: '#2563EB' }]
+                    datasets: [{ label: 'Demand', data: data.top_skills.map(i => i.total), backgroundColor: chartColors.red }]
                 },
                 options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });

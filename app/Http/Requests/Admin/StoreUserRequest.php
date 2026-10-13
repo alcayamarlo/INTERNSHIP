@@ -20,12 +20,12 @@ class StoreUserRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::defaults()],
-            'role' => ['required', Rule::in([
-                UserRole::Employer->value,
-                UserRole::Coordinator->value,
-            ])],
+            'role' => ['required', Rule::in(array_map(
+                fn (UserRole $role) => $role->value,
+                UserRole::assignable()
+            ))],
             'phone' => ['nullable', 'string', 'max:20'],
-            'institution_id' => ['required_if:role,coordinator', 'nullable', 'exists:institutions,id'],
+            'institution_id' => ['required_if:role,coordinator,student', 'nullable', 'exists:institutions,id'],
             'company_name' => ['required_if:role,employer', 'nullable', 'string', 'max:255'],
         ];
     }

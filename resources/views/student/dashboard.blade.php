@@ -307,7 +307,18 @@
         Monitor your progress and explore internship opportunities
     </p>
 </div>
-<div class="student-dashboard-search"><i class="bi bi-search"></i><input class="form-control" type="search" placeholder="Search internships, skills, or applications..."></div>
+<form class="student-dashboard-search" action="{{ route('student.internships.index') }}" method="GET">
+    <label class="visually-hidden" for="dashboardInternshipSearch">Search internships</label>
+    <i class="bi bi-search" aria-hidden="true"></i>
+    <input
+        class="form-control"
+        id="dashboardInternshipSearch"
+        name="search"
+        type="search"
+        value="{{ request('search') }}"
+        placeholder="Search internships by title, description, or location..."
+    >
+</form>
 </div>
 
 

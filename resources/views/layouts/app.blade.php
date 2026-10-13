@@ -24,10 +24,9 @@
          GOOGLE FONT
     ========================================================== --}}
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-        rel="stylesheet"
-    >
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 
     {{-- =========================================================
@@ -2178,11 +2177,14 @@
 
 
     @stack('styles')
+    <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}">
+    <script defer src="{{ asset('js/skillbridge-ui.js') }}"></script>
+    @vite('resources/js/app.js')
 
 </head>
 
 
-<body>
+<body class="skillbridge-app sb-app">
 
 
 @php
@@ -2239,17 +2241,13 @@
 
     <div class="sb-brand">
 
-        <div class="sb-brand-icon">
-
-            <i class="bi bi-mortarboard-fill"></i>
-
-        </div>
+        <div class="sb-brand-icon" aria-hidden="true">S</div>
 
 
         <div class="sb-brand-text">
 
             <span class="sb-brand-title">
-                SKILL BRIDGE
+                SkillBridge
             </span>
 
             <span class="sb-brand-subtitle">
@@ -2370,6 +2368,14 @@
 
                 <span>My Applications</span>
 
+            </a>
+
+            <a
+                class="sb-nav-link {{ request()->routeIs('student.resume.*') ? 'active' : '' }}"
+                href="{{ route('student.resume.index') }}"
+            >
+                <i class="bi bi-file-earmark-person"></i>
+                <span>Resume</span>
             </a>
 
 
@@ -2549,6 +2555,13 @@
 
             </a>
 
+            <a
+                class="sb-nav-link {{ request()->routeIs('admin.skills.*', 'admin.skill-categories.*') ? 'active' : '' }}"
+                href="{{ route('admin.skills.index') }}"
+            >
+                <i class="bi bi-tags-fill"></i>
+                <span>Skills catalog</span>
+            </a>
 
             <a
                 class="sb-nav-link {{ request()->routeIs('admin.logs') ? 'active' : '' }}"
@@ -2718,41 +2731,50 @@
 
         <div class="sb-top-actions">
 
+            <button type="button" class="sb-theme-toggle" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false">
+                <i class="bi bi-moon-stars" aria-hidden="true"></i>
+            </button>
+
 
             {{-- NOTIFICATIONS --}}
 
-            <a
-                href="{{ route('notifications.index') }}"
-                class="sb-top-action"
-                title="Notifications"
-                aria-label="Notifications"
-            >
-
-                <i class="bi bi-bell"></i>
-
-
-                @php
-
-                    $unread = auth()
-                        ->user()
-                        ->appNotifications()
-                        ->whereNull('read_at')
-                        ->count();
-
-                @endphp
-
-
-                @if($unread > 0)
-
-                    <span class="sb-notification-badge">
-
-                        {{ $unread > 9 ? '9+' : $unread }}
-
-                    </span>
-
-                @endif
-
-            </a>
+            @php
+                $recentNotifications = $currentUser->appNotifications()->whereNull('archived_at')->latest()->take(5)->get();
+                $unread = $currentUser->appNotifications()->whereNull('read_at')->whereNull('archived_at')->count();
+            @endphp
+            <div class="dropdown">
+                <button type="button" class="sb-top-action" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications{{ $unread ? ', '.$unread.' unread' : '' }}">
+                    <i class="bi bi-bell" aria-hidden="true"></i>
+                    @if($unread > 0)
+                        <span class="sb-notification-badge" data-unread-badge>{{ $unread > 9 ? '9+' : $unread }}</span>
+                    @endif
+                </button>
+                <div class="dropdown-menu dropdown-menu-end sb-notification-menu">
+                    <div class="dropdown-header">Recent notifications</div>
+                    @forelse($recentNotifications as $notification)
+                        <div class="sb-notification-item {{ $notification->read_at ? '' : 'is-unread' }}" data-notification-item data-notification-id="{{ $notification->id }}">
+                            <strong>{{ $notification->title }}</strong>
+                            <span>{{ $notification->message }}</span>
+                            <time datetime="{{ $notification->created_at->toIso8601String() }}">{{ $notification->created_at->diffForHumans() }}</time>
+                            @if(!$notification->read_at)
+                                <form action="{{ route('notifications.read', $notification) }}" method="POST" class="mt-2" data-ajax-notification="read">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Mark read</button>
+                                </form>
+                            @endif
+                        </div>
+                    @empty
+                        <p class="px-3 py-2 mb-0 text-muted">You’re all caught up.</p>
+                    @endforelse
+                    @if($unread > 0)
+                        <form action="{{ route('notifications.read-all') }}" method="POST" class="px-2 py-2" data-ajax-notification="read-all">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-outline-primary w-100">Mark all as read</button>
+                        </form>
+                    @endif
+                    <a class="dropdown-item text-center" href="{{ route('notifications.index') }}">View all notifications</a>
+                </div>
+            </div>
 
 
             {{-- =================================================
@@ -2894,6 +2916,20 @@
 
                         </li>
 
+                    {{-- COORDINATOR PROFILE --}}
+
+                    @elseif(
+                        $currentUser &&
+                        $currentUser->isRole(UserRole::Coordinator)
+                    )
+
+                        <li>
+                            <a class="dropdown-item" href="{{ route('coordinator.profile.edit') }}">
+                                <i class="bi bi-person-badge me-2"></i>
+                                Coordinator Profile
+                            </a>
+                        </li>
+
                     @endif
 
 
@@ -2944,7 +2980,7 @@
          CONTENT
     ====================================================== --}}
 
-    <main class="sb-content">
+    <main class="sb-content" id="sbContent">
 
 
         {{-- =================================================

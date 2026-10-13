@@ -30,7 +30,7 @@
             <div class="tab-pane fade show active" id="portfolio" role="tabpanel" aria-labelledby="portfolio-tab">
                 <div class="card">
                     <div class="card-body">
-                        <form method="POST" action="{{ route('student.portfolio.store') }}" enctype="multipart/form-data">
+                        <form method="POST" action="{{ route('student.portfolio.store') }}" enctype="multipart/form-data" data-ajax-form data-ajax-reset="true">
                             @csrf
 
                             <div class="mb-3">
@@ -94,7 +94,7 @@
             <div class="tab-pane fade" id="certificate" role="tabpanel" aria-labelledby="certificate-tab">
                 <div class="card">
                     <div class="card-body">
-                        <form method="POST" action="{{ route('student.certificates.store') }}" enctype="multipart/form-data">
+                        <form method="POST" action="{{ route('student.certificates.store') }}" enctype="multipart/form-data" data-ajax-form data-ajax-reset="true">
                             @csrf
 
                             <div class="mb-3">

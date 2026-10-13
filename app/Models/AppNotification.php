@@ -16,6 +16,7 @@ class AppNotification extends Model
         'message',
         'data',
         'read_at',
+        'archived_at',
     ];
 
     protected function casts(): array
@@ -23,6 +24,7 @@ class AppNotification extends Model
         return [
             'data' => 'array',
             'read_at' => 'datetime',
+            'archived_at' => 'datetime',
         ];
     }
 
@@ -35,6 +37,20 @@ class AppNotification extends Model
     {
         if (! $this->read_at) {
             $this->update(['read_at' => now()]);
+        }
+    }
+
+    public function archive(): void
+    {
+        if (! $this->archived_at) {
+            $this->update(['archived_at' => now()]);
+        }
+    }
+
+    public function restore(): void
+    {
+        if ($this->archived_at) {
+            $this->update(['archived_at' => null]);
         }
     }
 }

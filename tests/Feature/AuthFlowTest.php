@@ -5,9 +5,13 @@ use App\Mail\EmailVerificationCodeMail;
 use App\Models\Coordinator;
 use App\Models\Employer;
 use App\Models\Institution;
+use App\Models\Program;
 use App\Models\Student;
 use App\Models\User;
+use Database\Seeders\AcademicCatalogSeeder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 
 it('shows a streamlined student-only registration form', function () {
 	$this->get('/register')
@@ -45,6 +49,63 @@ it('registers a student, logs them in, and sends one verification email', functi
 	expect($student->profile_completion)->toBe($student->profileCompletionSummary()['percentage']);
 
 	Mail::assertSent(EmailVerificationCodeMail::class, 1);
+});
+
+it('validates and saves every offered program during registration', function () {
+	Mail::fake();
+	$this->withoutMiddleware(ThrottleRequests::class);
+
+	$institution = Institution::create([
+		'name' => "St. Cecilia's College-Cebu, Inc.",
+		'address' => null,
+	]);
+	app(AcademicCatalogSeeder::class)->run();
+
+	$programs = Program::query()->orderBy('code')->get();
+	expect($programs)->not->toBeEmpty();
+
+	foreach ($programs as $index => $program) {
+		$email = "program-choice-{$index}@example.test";
+
+		$this->post('/register', [
+			'name' => 'Program Choice Student',
+			'email' => $email,
+			'password' => 'Password',
+			'password_confirmation' => 'Password',
+			'institution_id' => $institution->id,
+			'program_id' => $program->id,
+		])->assertRedirect('/email/verify')
+			->assertSessionHasNoErrors();
+
+		$studentUser = User::query()->where('email', $email)->firstOrFail();
+		$student = Student::query()->where('user_id', $studentUser->id)->firstOrFail();
+		expect($student->program_id)->toBe($program->id)
+			->and($student->program)->toBe($program->display_name);
+
+		Auth::logout();
+	}
+});
+
+it('rejects missing or unknown program selections during registration', function () {
+	$institution = Institution::create([
+		'name' => "St. Cecilia's College-Cebu, Inc.",
+		'address' => null,
+	]);
+	$payload = [
+		'name' => 'Invalid Program Student',
+		'email' => 'invalid-program@example.test',
+		'password' => 'Password',
+		'password_confirmation' => 'Password',
+		'institution_id' => $institution->id,
+	];
+
+	$this->post('/register', $payload)
+		->assertSessionHasErrors(['program', 'program_id']);
+
+	$this->post('/register', [...$payload, 'program_id' => 0])
+		->assertSessionHasErrors('program_id');
+
+	expect(User::query()->where('email', $payload['email'])->exists())->toBeFalse();
 });
 
 it('redirects unverified users to email verification', function () {
@@ -88,6 +149,9 @@ it('loads role-based dashboards for authenticated users', function () {
 	Coordinator::create(['user_id' => $coordinator->id, 'institution_id' => $institution->id]);
 
 	foreach ([[$student, '/student/dashboard'], [$employer, '/employer/dashboard'], [$coordinator, '/coordinator/dashboard']] as [$user, $path]) {
-		$this->actingAs($user)->get($path)->assertOk();
+		$this->actingAs($user)->get($path)
+			->assertOk()
+			->assertSee('type="module"', false)
+			->assertSee('assets/app-', false);
 	}
 });

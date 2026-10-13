@@ -9,7 +9,7 @@
 
 <div class="row g-4">
     <div class="col-lg-8">
-        <div class="card">
+        <div class="card" id="applicationCard">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <div>
@@ -102,8 +102,8 @@
                 @if($hasApplied)
                     <div class="alert alert-info mb-0"><i class="bi bi-check-circle"></i> You have already applied to this internship.</div>
                     <a href="{{ route('student.applications.index') }}" class="btn btn-outline-primary w-100 mt-3">View My Applications</a>
-                @elseif($internship->status !== 'open')
-                    <div class="alert alert-secondary mb-0">This internship is no longer accepting applications.</div>
+                @elseif(! $internship->isAcceptingApplications())
+                    <div class="alert alert-secondary mb-0">{{ $internship->expires_at && $internship->expires_at->isPast() ? 'This internship posting has expired and is no longer accepting applications.' : 'This internship is no longer accepting applications.' }}</div>
                 @elseif($eligibilityReasons !== [])
                     <div class="alert alert-warning mb-0">
                         <strong>You are not yet eligible to apply.</strong>
@@ -115,14 +115,29 @@
                     </div>
                 @else
                     <h5>Apply Now</h5>
-                    <form method="POST" action="{{ route('student.internships.apply', $internship) }}">
+                    @if($resumes->isEmpty())
+                        <p class="text-muted">Create a resume before applying. Archived resumes cannot be submitted.</p>
+                        <a href="{{ route('student.resume.index') }}" class="btn btn-outline-primary w-100">Manage My Resumes</a>
+                    @else
+                    <form method="POST" action="{{ route('student.internships.apply', $internship) }}" data-ajax-application>
                         @csrf
+                        <div class="mb-3">
+                            <label class="form-label" for="application-resume">Resume</label>
+                            <select class="form-select" id="application-resume" name="resume_id" required>
+                                <option value="">Choose a resume</option>
+                                @foreach($resumes as $resume)
+                                    <option value="{{ $resume->id }}">{{ $resume->category?->label() ?? 'Resume' }}{{ $resume->generated_at ? ' · '.$resume->generated_at->format('M Y') : '' }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         <div class="mb-3">
                             <label class="form-label">Cover Letter <span class="text-muted">(optional)</span></label>
                             <textarea class="form-control" name="cover_letter" rows="5" placeholder="Tell the employer why you're a great fit...">{{ old('cover_letter') }}</textarea>
                         </div>
                         <button type="submit" class="btn btn-primary w-100"><i class="bi bi-send"></i> Submit Application</button>
+                        <div data-application-feedback class="small mt-2" role="status" aria-live="polite"></div>
                     </form>
+                    @endif
                 @endif
             </div>
         </div>

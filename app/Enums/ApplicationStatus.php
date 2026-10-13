@@ -4,6 +4,7 @@ namespace App\Enums;
 
 enum ApplicationStatus: string
 {
+    case Applied = 'applied';
     case Submitted = 'submitted';
     case Reviewed = 'reviewed';
     case Interview = 'interview';
@@ -15,6 +16,7 @@ enum ApplicationStatus: string
     public function label(): string
     {
         return match ($this) {
+            self::Applied => 'Applied',
             self::Submitted => 'Submitted',
             self::Reviewed => 'Reviewed',
             self::Interview => 'Interview',
@@ -28,6 +30,7 @@ enum ApplicationStatus: string
     public function badgeClass(): string
     {
         return match ($this) {
+            self::Applied => 'bg-info',
             self::Submitted => 'bg-secondary',
             self::Reviewed => 'bg-info',
             self::Interview => 'bg-primary',
@@ -44,6 +47,7 @@ enum ApplicationStatus: string
     public function allowedNextStatuses(): array
     {
         return match ($this) {
+            self::Applied => [self::Reviewed, self::Interview, self::Rejected, self::Withdrawn],
             self::Submitted => [self::Reviewed, self::Rejected, self::Withdrawn],
             self::Reviewed => [self::Interview, self::Accepted, self::Rejected, self::Withdrawn],
             self::Interview => [self::Accepted, self::Rejected, self::Withdrawn],
@@ -55,5 +59,10 @@ enum ApplicationStatus: string
     public function canTransitionTo(self $status): bool
     {
         return in_array($status, $this->allowedNextStatuses(), true);
+    }
+
+    public function isActive(): bool
+    {
+        return in_array($this, [self::Applied, self::Submitted, self::Reviewed, self::Interview], true);
     }
 }

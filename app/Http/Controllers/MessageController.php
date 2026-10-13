@@ -8,7 +8,10 @@ use App\Models\Message;
 use App\Models\User;
 use App\Services\ActivityLogService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 
 class MessageController extends Controller
 {
@@ -51,21 +54,48 @@ class MessageController extends Controller
         return view('messages.show', [
             'contact' => $user,
             'messages' => $messages,
+            'submissionId' => (string) Str::uuid(),
         ]);
     }
 
     public function store(StoreMessageRequest $request, User $user)
     {
-        Message::create([
-            'sender_id' => Auth::id(),
-            'receiver_id' => $user->id,
-            'body' => $request->validated('body'),
-        ]);
+        $cacheKey = 'message-submission:'.Auth::id().':'.$request->validated('submission_id');
 
-        $this->activityLog->log(Auth::user(), 'message_send', ['receiver_id' => $user->id]);
+        if (! Cache::add($cacheKey, true, now()->addMinutes(10))) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'duplicate' => true,
+                    'submission_id' => (string) Str::uuid(),
+                ]);
+            }
+
+            return back()->with('success', 'Message already sent.');
+        }
+
+        try {
+            DB::transaction(function () use ($request, $user) {
+                Message::create([
+                    'sender_id' => Auth::id(),
+                    'receiver_id' => $user->id,
+                    'body' => $request->validated('body'),
+                ]);
+
+                $this->activityLog->log(Auth::user(), 'message_send', ['receiver_id' => $user->id]);
+            });
+        } catch (\Throwable $exception) {
+            Cache::forget($cacheKey);
+            throw $exception;
+        }
 
         if ($request->wantsJson()) {
-            return response()->json(['success' => true]);
+            return response()->json([
+                'success' => true,
+                'message' => $request->validated('body'),
+                'created_at' => now()->format('M d, h:i A'),
+                'submission_id' => (string) Str::uuid(),
+            ]);
         }
 
         return back()->with('success', 'Message sent.');
@@ -73,13 +103,13 @@ class MessageController extends Controller
 
     private function allowedContacts()
     {
-        $role = Auth::user()->role;
-
-        return match ($role) {
-            UserRole::Student => User::whereIn('role', [UserRole::Employer, UserRole::Coordinator])->get(),
-            UserRole::Employer => User::where('role', UserRole::Student)->get(),
-            UserRole::Coordinator => User::where('role', UserRole::Student)->get(),
-            default => collect(),
-        };
+        return User::query()
+            ->where('id', '!=', Auth::id())
+            ->when(
+                Auth::user()->isRole(UserRole::Student),
+                fn ($query) => $query->where('role', '!=', UserRole::Student->value)
+            )
+            ->orderBy('name')
+            ->get();
     }
 }

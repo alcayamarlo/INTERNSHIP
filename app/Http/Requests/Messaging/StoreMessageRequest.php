@@ -4,6 +4,7 @@ namespace App\Http\Requests\Messaging;
 
 use App\Enums\UserRole;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreMessageRequest extends FormRequest
@@ -11,14 +12,18 @@ class StoreMessageRequest extends FormRequest
     public function authorize(): bool
     {
         $recipient = $this->route('user');
+        $sender = $this->user();
 
-        return $recipient instanceof User && $this->canMessage($recipient);
+        return $recipient instanceof User
+            && $sender instanceof User
+            && $sender->can('message.send', $recipient);
     }
 
     public function rules(): array
     {
         return [
             'body' => ['required', 'string', 'max:5000'],
+            'submission_id' => ['required', 'uuid'],
         ];
     }
 
@@ -30,18 +35,18 @@ class StoreMessageRequest extends FormRequest
         ];
     }
 
-    private function canMessage(User $recipient): bool
+    protected function failedAuthorization(): void
     {
-        $user = $this->user();
+        $recipient = $this->route('user');
+        $sender = $this->user();
 
-        if (! $user) {
-            return false;
+        if ($recipient instanceof User
+            && $sender instanceof User
+            && $sender->isRole(UserRole::Student)
+            && $recipient->isRole(UserRole::Student)) {
+            throw new AuthorizationException('Students cannot message other students.');
         }
 
-        return match ($user->role) {
-            UserRole::Student => $recipient->isRole(UserRole::Employer, UserRole::Coordinator),
-            UserRole::Employer, UserRole::Coordinator => $recipient->isRole(UserRole::Student),
-            default => false,
-        };
+        parent::failedAuthorization();
     }
 }

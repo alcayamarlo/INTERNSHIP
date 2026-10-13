@@ -2,6 +2,7 @@
 
 use App\Enums\UserRole;
 use App\Models\Employer;
+use App\Models\Institution;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,6 +18,65 @@ function adminUserUpdateData(User $user, array $overrides = []): array
         'is_active' => $user->is_active,
     ], $overrides);
 }
+
+it('allows admins to create a student account with its student profile', function () {
+    $admin = User::factory()->create(['role' => UserRole::Admin]);
+    $institution = Institution::create(['name' => 'Test Institution', 'address' => 'Cebu City']);
+
+    $this->actingAs($admin)
+        ->get(route('admin.users.create'))
+        ->assertOk()
+        ->assertSee('value="student"', false)
+        ->assertDontSee('value="admin"', false)
+        ->assertSee('Student');
+
+    $this->post(route('admin.users.store'), [
+        'name' => 'Admin-created Student',
+        'email' => 'admin-created-student@example.test',
+        'password' => 'DistinctivePassword#2026',
+        'password_confirmation' => 'DistinctivePassword#2026',
+        'role' => UserRole::Student->value,
+        'institution_id' => $institution->id,
+    ])->assertRedirect(route('admin.users.index'))
+        ->assertSessionHasNoErrors();
+
+    $studentUser = User::where('email', 'admin-created-student@example.test')->firstOrFail();
+    $student = $studentUser->student;
+
+    expect($studentUser->role)->toBe(UserRole::Student)
+        ->and($student)->toBeInstanceOf(Student::class)
+        ->and($student->institution_id)->toBe($institution->id)
+        ->and($student->profile_completion)->toBe($student->profileCompletionSummary()['percentage']);
+});
+
+it('uses all roles in filters and announcements while keeping admin creation restricted', function () {
+    $admin = User::factory()->create(['role' => UserRole::Admin]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.users.index'))
+        ->assertOk()
+        ->assertSee('value="student"', false)
+        ->assertSee('value="admin"', false)
+        ->assertSee('value="employer"', false)
+        ->assertSee('value="coordinator"', false);
+
+    $this->get(route('admin.announcements.index'))
+        ->assertOk()
+        ->assertSee('value="student"', false)
+        ->assertSee('value="employer"', false)
+        ->assertSee('value="coordinator"', false)
+        ->assertSee('value="admin"', false);
+
+    $this->post(route('admin.users.store'), [
+        'name' => 'Attempted Administrator',
+        'email' => 'attempted-admin@example.test',
+        'password' => 'DistinctivePassword#2026',
+        'password_confirmation' => 'DistinctivePassword#2026',
+        'role' => UserRole::Admin->value,
+    ])->assertSessionHasErrors('role');
+
+    expect(User::where('email', 'attempted-admin@example.test')->exists())->toBeFalse();
+});
 
 it('creates the new role profile and preserves the previous profile when an admin changes a student to employer', function () {
     $admin = User::factory()->create(['role' => UserRole::Admin]);
