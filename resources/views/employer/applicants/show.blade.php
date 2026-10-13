@@ -106,16 +106,15 @@
     <div class="col-lg-4">
         <div class="card mb-4">
             <div class="card-body d-grid gap-2">
-                @if($application->student->resumes->isNotEmpty())
-                    @php($resume = $application->student->resumes->sortByDesc('generated_at')->first())
+                @if($applicationResume)
                     <button type="button" class="btn btn-outline-primary employer-file-preview"
                         data-preview-url="{{ route('employer.applicants.resume.preview', $application, false) }}"
                         data-download-url="{{ route('employer.applicants.resume', $application, false) }}"
                         data-file-name="Resume" data-file-category="Resume" data-file-issuer=""
-                        data-file-uploaded="{{ $resume->generated_at?->format('M d, Y') ?? 'Unknown' }}"
-                        data-file-status="Available" data-file-reviewer="{{ $resume->reviewerUser?->name ?? 'Not reviewed' }}"
-                        data-file-reviewed-at="{{ $resume->reviewed_at?->format('M d, Y') ?? 'Not reviewed' }}"
-                        data-file-size="{{ $resume->file_size_display }}" data-file-extension="pdf">
+                        data-file-uploaded="{{ $applicationResume->generated_at?->format('M d, Y') ?? 'Unknown' }}"
+                        data-file-status="Available" data-file-reviewer="{{ $applicationResume->reviewerUser?->name ?? 'Not reviewed' }}"
+                        data-file-reviewed-at="{{ $applicationResume->reviewed_at?->format('M d, Y') ?? 'Not reviewed' }}"
+                        data-file-size="{{ $applicationResume->file_size_display }}" data-file-extension="pdf">
                         <i class="bi bi-eye"></i> View resume
                     </button>
                     <a href="{{ route('employer.applicants.resume', $application, false) }}" class="btn btn-outline-primary"><i class="bi bi-file-earmark-pdf"></i> Download resume</a>

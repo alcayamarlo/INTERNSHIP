@@ -93,6 +93,10 @@ class PortfolioController extends Controller
             throw $exception;
         }
 
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Portfolio item uploaded successfully.']);
+        }
+
         return redirect()->to(route('student.profile.edit').'#portfolio')
             ->with('success', 'Portfolio item uploaded successfully!');
     }
@@ -143,10 +147,15 @@ class PortfolioController extends Controller
         } catch (\Throwable $exception) {
             $this->fileUpload->delete($path);
             $student->calculateProfileCompletion();
+            throw $exception;
         }
 
         $this->fileUpload->deleteIfUnreferenced($oldPath);
         $student->calculateProfileCompletion();
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => $deploymentRequirement->name.' submitted successfully.']);
+        }
 
         return redirect()->to(route('student.profile.edit').'#portfolio')
             ->with('success', $deploymentRequirement->name.' submitted successfully.');
@@ -159,6 +168,10 @@ class PortfolioController extends Controller
         $items = $request->input('items', []);
 
         if (! is_array($items) || empty($items)) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Please upload at least one portfolio item.'], 422);
+            }
+
             return back()->withErrors(['items' => 'Please upload at least one portfolio item.']);
         }
 
@@ -206,6 +219,10 @@ class PortfolioController extends Controller
             throw $exception;
         }
 
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => $created.' portfolio items uploaded successfully.']);
+        }
+
         return redirect()->to(route('student.profile.edit').'#portfolio')
             ->with('success', $created.' portfolio items uploaded successfully!');
     }
@@ -250,6 +267,10 @@ class PortfolioController extends Controller
         } catch (\Throwable $exception) {
             $this->fileUpload->delete($path);
             throw $exception;
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Certificate uploaded successfully.']);
         }
 
         return redirect()->to(route('student.profile.edit').'#portfolio')
@@ -322,6 +343,10 @@ class PortfolioController extends Controller
             $this->fileUpload->deleteIfUnreferenced($previousPath);
         }
 
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Certificate updated.']);
+        }
+
         return redirect()->to(route('student.profile.edit').'#portfolio')
             ->with('success', 'Certificate updated.');
     }
@@ -392,6 +417,10 @@ class PortfolioController extends Controller
             $this->fileUpload->deleteIfUnreferenced($previousPath);
         }
 
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Portfolio item updated successfully!']);
+        }
+
         return redirect()->to(route('student.profile.edit').'#portfolio')
             ->with('success', 'Portfolio item updated successfully!');
     }
@@ -410,6 +439,10 @@ class PortfolioController extends Controller
 
         $this->fileUpload->deleteIfUnreferenced($path);
 
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Portfolio item deleted successfully!']);
+        }
+
         return redirect()->to(route('student.profile.edit').'#portfolio')
             ->with('success', 'Portfolio item deleted successfully!');
     }
@@ -426,6 +459,10 @@ class PortfolioController extends Controller
         });
 
         $this->fileUpload->deleteIfUnreferenced($path);
+
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Certificate deleted successfully!']);
+        }
 
         return redirect()->to(route('student.profile.edit').'#portfolio')
             ->with('success', 'Certificate deleted successfully!');

@@ -12,7 +12,7 @@
     <div class="col-lg-8">
         <div class="card">
             <div class="card-body">
-                <form method="POST" action="{{ route('student.competencies.store') }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ route('student.competencies.store') }}" enctype="multipart/form-data" data-ajax-form data-ajax-reset="true">
                     @csrf
 
                     <div class="mb-3">

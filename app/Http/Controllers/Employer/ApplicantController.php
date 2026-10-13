@@ -48,6 +48,14 @@ class ApplicantController extends Controller
             'student.resumes.reviewerUser:id,name',
             'internship',
         ]);
+        $applicationResumeQuery = $application->student->resumes();
+        $applicationResume = $application->status->isActive()
+            ? $applicationResumeQuery->withArchived()->latest()->first()
+            : $applicationResumeQuery->latest()->first();
+        if ($applicationResume) {
+            $applicationResume->setAttribute('file_size_display', $this->fileSize($applicationResume->file_path));
+        }
+
         $student = $application->student;
         if ($application->status === ApplicationStatus::Withdrawn) {
             $student->setRelation('portfolios', collect());
@@ -77,7 +85,7 @@ class ApplicantController extends Controller
 
         $availableStatuses = $application->status->allowedNextStatuses();
 
-        return view('employer.applicants.show', compact('application', 'availableStatuses'));
+        return view('employer.applicants.show', compact('application', 'applicationResume', 'availableStatuses'));
     }
 
     public function updateStatus(UpdateApplicationStatusRequest $request, InternshipApplication $application)

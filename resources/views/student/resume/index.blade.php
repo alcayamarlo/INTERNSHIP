@@ -3,43 +3,62 @@
 @section('title', 'Resume')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
     <div>
         <h1 class="h3 mb-1">Resume Builder</h1>
         <p class="text-muted mb-0">Generate PDF resumes from your profile data</p>
     </div>
-    <form action="{{ route('student.resume.generate') }}" method="POST">
-        @csrf
-        <button type="submit" class="btn btn-primary"><i class="bi bi-file-earmark-pdf"></i> Generate New Resume</button>
-    </form>
+    @if($view === 'active')
+        <form action="{{ route('student.resume.generate') }}" method="POST">
+            @csrf
+            <button type="submit" class="btn btn-primary"><i class="bi bi-file-earmark-pdf"></i> Generate New Resume</button>
+        </form>
+    @endif
 </div>
 
-@if(session('download'))
-    <div class="alert alert-success">
-        Resume generated! <a href="{{ route('student.resume.download', session('download'), false) }}" class="alert-link">Download now</a>
-    </div>
-@endif
+<div class="d-flex gap-2 mb-3" role="group" aria-label="Resume views">
+    <a href="{{ route('student.resume.index', ['view' => 'active']) }}" class="btn btn-sm {{ $view === 'active' ? 'btn-primary' : 'btn-outline-primary' }}">Active</a>
+    <a href="{{ route('student.resume.index', ['view' => 'archived']) }}" class="btn btn-sm {{ $view === 'archived' ? 'btn-primary' : 'btn-outline-primary' }}">Archived</a>
+</div>
+
+<div id="resumeActionFeedback" class="alert d-none" role="status" aria-live="polite"></div>
 
 <div class="card">
-    <div class="card-header bg-white"><h5 class="mb-0">Generated Resumes</h5></div>
+    <div class="card-header"><h5 class="mb-0">{{ $view === 'archived' ? 'Archived Resumes' : 'Generated Resumes' }}</h5></div>
     <div class="table-responsive">
         <table class="table table-hover mb-0">
-            <thead class="table-light"><tr><th>Generated</th><th>Actions</th></tr></thead>
-            <tbody>
+            <thead><tr><th>Generated</th><th>Actions</th></tr></thead>
+            <tbody data-resume-list data-empty-message="{{ $view === 'archived' ? 'No archived resumes.' : 'No resumes generated yet. Click “Generate New Resume” to create one.' }}">
                 @forelse($resumes as $resume)
-                    <tr>
-                        <td>{{ $resume->generated_at?->format('M d, Y h:i A') ?? $resume->created_at->format('M d, Y h:i A') }}</td>
+                    <tr data-resume-row>
                         <td>
-                            <a href="{{ route('student.resume.view', $resume, false) }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-eye"></i> View PDF
-                            </a>
-                            <a href="{{ route('student.resume.download', $resume, false) }}" class="btn btn-sm btn-primary">
-                                <i class="bi bi-download"></i> Download PDF
-                            </a>
+                            {{ $resume->generated_at?->format('M d, Y h:i A') ?? $resume->created_at->format('M d, Y h:i A') }}
+                            @if($resume->archived_at)<small class="text-muted d-block">Archived {{ $resume->archived_at->diffForHumans() }}</small>@endif
+                        </td>
+                        <td class="d-flex gap-2 flex-wrap">
+                            @if(!$resume->archived_at)
+                                <a href="{{ route('student.resume.view', $resume, false) }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> View PDF
+                                </a>
+                                <a href="{{ route('student.resume.download', $resume, false) }}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-download"></i> Download PDF
+                                </a>
+                                <form action="{{ route('student.resume.archive', $resume, false) }}" method="POST"
+                                    data-ajax-resume="archive" data-active-applications="{{ $resume->active_application_count }}">
+                                    @csrf
+                                    <input type="hidden" name="confirmed_active_applications" value="0">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Archive</button>
+                                </form>
+                            @else
+                                <form action="{{ route('student.resume.restore', $resume->id, false) }}" method="POST" data-ajax-resume="restore">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Restore</button>
+                                </form>
+                            @endif
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="2" class="text-center text-muted py-4">No resumes generated yet. Click "Generate New Resume" to create one.</td></tr>
+                    <tr data-resume-empty><td colspan="2" class="text-center text-muted py-4">{{ $view === 'archived' ? 'No archived resumes.' : 'No resumes generated yet. Click “Generate New Resume” to create one.' }}</td></tr>
                 @endforelse
             </tbody>
         </table>

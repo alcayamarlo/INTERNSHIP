@@ -56,6 +56,10 @@ class CompetencyController extends Controller
             ->exists();
 
         if ($exists) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'You already have this competency. Please edit the existing one instead.'], 409);
+            }
+
             return back()->with('error', 'You already have this competency. Please edit the existing one instead.');
         }
 
@@ -76,6 +80,10 @@ class CompetencyController extends Controller
         } catch (\Throwable $exception) {
             $this->fileUpload->delete($path);
             throw $exception;
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Competency added successfully!']);
         }
 
         return redirect()->route('student.competencies.index')
@@ -113,6 +121,10 @@ class CompetencyController extends Controller
             ->exists();
 
         if ($duplicate) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'You already have another competency with this name and category.'], 409);
+            }
+
             return back()->with('error', 'You already have another competency with this name and category.');
         }
 
@@ -150,6 +162,10 @@ class CompetencyController extends Controller
 
         if ($newPath && $previousPath !== $newPath) {
             $this->fileUpload->delete($previousPath);
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Competency updated successfully!']);
         }
 
         return redirect()->route('student.competencies.index')

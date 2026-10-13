@@ -7,7 +7,7 @@
     <div class="card">
         <div class="card-header"><h1 class="h5 mb-0">Edit certificate</h1></div>
         <div class="card-body">
-            <form method="POST" action="{{ route('student.certificates.update', $certificate) }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ route('student.certificates.update', $certificate) }}" enctype="multipart/form-data" data-ajax-form>
                 @csrf
                 @method('PUT')
                 <div class="mb-3">

@@ -18,11 +18,9 @@
         @yield('title', 'Authentication') — SKILL BRIDGE
     </title>
 
-    {{-- Google Font --}}
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet"
-    >
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     {{-- Bootstrap --}}
     <link
@@ -892,15 +890,20 @@
     </style>
 
     @stack('styles')
+    <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}">
+    <script defer src="{{ asset('js/skillbridge-ui.js') }}"></script>
 
 </head>
 
 
-<body>
+<body class="skillbridge-guest">
 
 
     <div class="auth-shell">
 
+        <button type="button" class="sb-theme-toggle skillbridge-guest-theme-toggle" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false">
+            <i class="bi bi-moon-stars" aria-hidden="true"></i>
+        </button>
 
         {{-- =================================================
              LEFT BRANDING PANEL
@@ -915,16 +918,12 @@
 
                 <div class="auth-brand">
 
-                    <div class="auth-brand-icon">
-
-                        <i class="bi bi-mortarboard-fill"></i>
-
-                    </div>
+                    <div class="auth-brand-icon" aria-hidden="true">S</div>
 
                     <div class="auth-brand-name">
 
-                        SKILL
-                        <span>BRIDGE</span>
+                        SkillBridge
+                        <small>St. Cecilia's College</small>
 
                     </div>
 

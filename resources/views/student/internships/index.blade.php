@@ -6,12 +6,12 @@
 <style>
     .student-page-shell {
         padding: 6px 0 0;
-        color: #edf8ff;
+        color: var(--sb-ink);
     }
 
     .student-page-title {
         margin: 0 0 8px;
-        color: #f4f9ff;
+        color: var(--sb-ink);
         font-size: clamp(1.8rem, 1.2vw + 1.1rem, 2.5rem);
         font-weight: 800;
         letter-spacing: -0.05em;
@@ -19,7 +19,7 @@
 
     .student-page-subtitle {
         margin: 0;
-        color: rgba(186,209,228,.8);
+        color: var(--sb-muted);
         font-size: 0.95rem;
     }
 
@@ -27,58 +27,62 @@
     .student-page-shell .form-control,
     .student-page-shell .form-select,
     .student-page-shell .btn {
-        border-color: rgba(117,176,215,.18) !important;
-        background: rgba(16,31,45,.86) !important;
-        color: #edf8ff !important;
+        border-color: var(--sb-border);
+        color: var(--sb-ink);
     }
 
     .student-page-shell .card {
-        border-radius: 18px;
-        border: 1px solid rgba(148,163,184,.14);
-        box-shadow: 0 10px 22px rgba(2,9,20,.12);
-        overflow: hidden;
+        background: var(--sb-surface);
+        border-radius: 14px;
     }
 
     .student-page-shell .card:hover {
-        border-color: rgba(49,217,244,.36) !important;
+        border-color: var(--sb-border);
     }
 
     .student-page-shell .card-header {
-        background: rgba(13,30,44,.92) !important;
-        border-bottom: 1px solid rgba(117,176,215,.18);
+        background: var(--sb-surface-soft);
+        border-bottom: 1px solid var(--sb-border);
         padding: 1rem 1.1rem;
     }
 
     .student-page-shell .btn-primary {
-        border: 0;
-        background: linear-gradient(135deg, #6ab6d7, #4f9ed1) !important;
-        color: #eef9ff !important;
-        font-weight: 700;
-        box-shadow: 0 8px 20px rgba(37,194,255,.15);
+        background: var(--sb-brand);
+        color: #fff;
     }
 
     .student-page-shell .btn-outline-secondary {
-        border-color: rgba(117,176,215,.28);
-        color: #bed5e7 !important;
+        border-color: var(--sb-border);
+        color: var(--sb-ink);
     }
 
     .student-page-shell .border {
-        border-color: rgba(117,176,215,.28) !important;
+        border-color: var(--sb-border) !important;
     }
 
     .student-page-shell .bg-light {
-        background: rgba(238,244,248,.08) !important;
-        color: #edf8ff !important;
+        background: var(--sb-surface-soft) !important;
+        color: var(--sb-ink) !important;
     }
 
     .student-page-shell .text-primary {
-        color: #58d9ff !important;
+        color: var(--sb-brand-content) !important;
     }
 
     .student-page-shell .badge {
         border-radius: 999px;
         padding: 0.4rem 0.7rem;
-        font-weight: 700;
+        font-weight: 600;
+    }
+
+    .student-page-shell .card-footer {
+        background: var(--sb-surface);
+        border-top-color: var(--sb-border);
+    }
+
+    .student-page-shell .form-control,
+    .student-page-shell .form-select {
+        background-color: var(--sb-surface) !important;
     }
 </style>
 @endpush
@@ -155,8 +159,26 @@
                         </div>
                     @endif
                 </div>
-                <div class="card-footer bg-white">
-                    <a href="{{ route('student.internships.show', $internship) }}" class="btn btn-primary btn-sm w-100">View Details</a>
+                <div class="card-footer">
+                    <a href="{{ route('student.internships.show', $internship) }}" class="btn btn-outline-primary btn-sm w-100 mb-2">View Details</a>
+                    @if($appliedInternshipIds->contains($internship->id))
+                        <a href="{{ route('student.applications.index') }}" class="btn btn-success btn-sm w-100" aria-label="Already applied; view My Applications">Applied · View application</a>
+                    @elseif($resumes->isNotEmpty())
+                        <form method="POST" action="{{ route('student.internships.apply', $internship) }}" data-ajax-application>
+                            @csrf
+                            <label class="visually-hidden" for="resume-{{ $internship->id }}">Resume for {{ $internship->title }}</label>
+                            <select id="resume-{{ $internship->id }}" name="resume_id" class="form-select form-select-sm mb-2" required>
+                                <option value="">Choose a resume</option>
+                                @foreach($resumes as $resume)
+                                    <option value="{{ $resume->id }}">{{ $resume->category?->label() ?? 'Resume' }}{{ $resume->generated_at ? ' · '.$resume->generated_at->format('M Y') : '' }}</option>
+                                @endforeach
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-sm w-100">Apply</button>
+                            <div data-application-feedback class="small mt-2" role="status" aria-live="polite"></div>
+                        </form>
+                    @else
+                        <a href="{{ route('student.resume.index') }}" class="btn btn-outline-secondary btn-sm w-100">Create a resume to apply</a>
+                    @endif
                 </div>
             </div>
         </div>

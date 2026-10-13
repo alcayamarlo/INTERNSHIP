@@ -6,12 +6,12 @@
 <style>
     .student-page-shell {
         padding: 6px 0 0;
-        color: #edf8ff;
+        color: var(--sb-ink);
     }
 
     .student-page-title {
         margin: 0 0 8px;
-        color: #f4f9ff;
+        color: var(--sb-ink);
         font-size: clamp(1.8rem, 1.2vw + 1.1rem, 2.5rem);
         font-weight: 800;
         letter-spacing: -0.05em;
@@ -19,53 +19,38 @@
 
     .student-page-subtitle {
         margin: 0;
-        color: rgba(186,209,228,.8);
+        color: var(--sb-muted);
         font-size: 0.95rem;
     }
 
-    .student-page-shell .card,
-    .student-page-shell .form-control,
-    .student-page-shell .form-select,
-    .student-page-shell .btn {
-        border-color: rgba(117,176,215,.18) !important;
-        background: rgba(16,31,45,.86) !important;
-        color: #edf8ff !important;
-    }
-
     .student-page-shell .card {
-        border-radius: 18px;
-        border: 1px solid rgba(148,163,184,.14);
-        box-shadow: 0 10px 22px rgba(2,9,20,.12);
-        overflow: hidden;
-    }
-
-    .student-page-shell .card:hover {
-        border-color: rgba(49,217,244,.36) !important;
+        color: var(--sb-ink);
+        background: var(--sb-surface);
+        border-color: var(--sb-border);
+        border-radius: 14px;
     }
 
     .student-page-shell .card-header {
-        background: rgba(13,30,44,.92) !important;
-        border-bottom: 1px solid rgba(117,176,215,.18);
-        padding: 1rem 1.1rem;
+        background: var(--sb-surface-soft);
+        border-color: var(--sb-border);
     }
 
-    .student-page-shell .btn-primary {
-        border: 0;
-        background: linear-gradient(135deg, #6ab6d7, #4f9ed1) !important;
-        color: #eef9ff !important;
-        font-weight: 700;
-        box-shadow: 0 8px 20px rgba(37,194,255,.15);
+    .student-page-shell .form-control,
+    .student-page-shell .form-select {
+        color: var(--sb-ink);
+        background-color: var(--sb-surface);
+        border-color: var(--sb-border);
     }
 
     .student-page-shell .btn-outline-primary {
-        border-color: rgba(77,210,255,.5);
-        color: #7fe0ff !important;
+        color: var(--sb-brand-content);
+        border-color: var(--sb-brand);
     }
 
     .student-page-shell .table thead th {
-        background: rgba(12,28,40,.9);
-        color: rgba(220,235,246,.9);
-        border-color: rgba(117,176,215,.18);
+        background: var(--sb-surface-soft);
+        color: var(--sb-ink);
+        border-color: var(--sb-border);
         font-size: 0.72rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
@@ -74,18 +59,27 @@
     }
 
     .student-page-shell .table td {
-        color: rgba(216,232,243,.9);
-        border-color: rgba(117,176,215,.08);
+        color: var(--sb-ink);
+        border-color: var(--sb-border);
         padding: 0.8rem 0.9rem;
         font-size: 0.92rem;
     }
 
     .student-page-shell .table tbody tr {
-        transition: background .18s ease;
+        transition: background-color 120ms ease;
     }
 
     .student-page-shell .table tbody tr:hover {
-        background: rgba(31,191,255,.05);
+        background: var(--sb-hover-neutral);
+    }
+
+    .student-page-shell .table a {
+        color: var(--sb-brand-content);
+    }
+
+    .student-page-shell .card-footer {
+        background: var(--sb-surface);
+        border-color: var(--sb-border);
     }
 </style>
 @endpush
@@ -99,6 +93,16 @@
     </div>
     <a href="{{ route('student.internships.index') }}" class="btn btn-primary"><i class="bi bi-search"></i> Browse Internships</a>
 </div>
+
+@if(session('success'))
+    <div class="alert alert-success" role="status">{{ session('success') }}</div>
+@endif
+@if(session('error'))
+    <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
+@endif
+@if($errors->any())
+    <div class="alert alert-danger" role="alert">{{ $errors->first() }}</div>
+@endif
 
 <div class="card mb-4">
     <div class="card-body">
@@ -134,7 +138,7 @@
                         <td>{{ $app->interview_at?->format('M d, Y h:i A') ?? '—' }}</td>
                         <td class="text-nowrap">
                             <a href="{{ route('student.applications.show', $app) }}" class="btn btn-sm btn-outline-primary" title="View"><i class="bi bi-eye"></i></a>
-                            @if($app->status === \App\Enums\ApplicationStatus::Submitted)<a href="{{ route('student.applications.edit', $app) }}" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="bi bi-pencil"></i></a><form method="POST" action="{{ route('student.applications.destroy', $app) }}" class="d-inline" onsubmit="return confirm('Delete this application?');">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button></form>@endif
+                            @if(in_array($app->status, [\App\Enums\ApplicationStatus::Applied, \App\Enums\ApplicationStatus::Submitted], true))<a href="{{ route('student.applications.edit', $app) }}" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="bi bi-pencil"></i></a><form method="POST" action="{{ route('student.applications.destroy', $app) }}" class="d-inline" onsubmit="return confirm('Delete this application?');">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button></form>@endif
                         </td>
                     </tr>
                 @empty

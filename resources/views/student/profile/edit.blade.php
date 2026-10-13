@@ -196,7 +196,7 @@
                     @endif
                 </div>
                 <button type="button" class="avatar-action" id="uploadPhotoButton">Upload photo</button>
-                <form method="POST" action="{{ route('student.profile.update-picture') }}" enctype="multipart/form-data" class="visually-hidden">
+                <form method="POST" action="{{ route('student.profile.update-picture') }}" enctype="multipart/form-data" class="visually-hidden" id="profilePictureForm">
                     @csrf
                     <input type="file" name="profile_picture" id="profilePictureInput" accept="image/jpeg,image/jpg,image/png">
                 </form>
@@ -559,7 +559,7 @@
                         <?php endif; ?>
                     </div>
                     <?php if ($requirement->upload_source === 'student'): ?>
-                        <form class="deployment-requirement-upload" method="POST" enctype="multipart/form-data" action="{{ route('student.portfolio.deployment-requirements.store', $requirement) }}">
+                        <form class="deployment-requirement-upload" method="POST" enctype="multipart/form-data" action="{{ route('student.portfolio.deployment-requirements.store', $requirement) }}" data-ajax-form>
                             @csrf
                             <label class="visually-hidden" for="deployment-file-{{ $requirement->id }}">Upload {{ $requirement->name }}</label>
                             <input class="form-control" type="file" id="deployment-file-{{ $requirement->id }}" name="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
@@ -729,6 +729,7 @@
 (() => {
     const page = document.getElementById('studentProfilePage');
     const form = document.getElementById('profileForm');
+    const saveButton = document.querySelector('#profileSaveBar button[type="submit"]');
     const tabs = Array.from(page.querySelectorAll('[role="tab"]'));
     const panels = Array.from(page.querySelectorAll('[role="tabpanel"]'));
     const saveBar = document.getElementById('profileSaveBar');
@@ -904,6 +905,10 @@
 
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
+        const originalSaveLabel = saveButton.textContent;
+        saveButton.disabled = true;
+        saveButton.setAttribute('aria-busy', 'true');
+        saveButton.textContent = 'Saving…';
         clearErrors();
         try {
             const response = await fetch(form.action, {
@@ -951,13 +956,47 @@
             showToast('Profile saved');
         } catch (error) {
             showToast(error.message || 'Unable to save profile.');
+        } finally {
+            saveButton.disabled = false;
+            saveButton.removeAttribute('aria-busy');
+            saveButton.textContent = originalSaveLabel;
         }
     });
 
     const photoInput = document.getElementById('profilePictureInput');
     document.getElementById('uploadPhotoButton').addEventListener('click', () => photoInput.click());
     photoInput.addEventListener('change', () => {
-        if (photoInput.files.length) photoInput.form.submit();
+        if (!photoInput.files.length) return;
+        const photoForm = document.getElementById('profilePictureForm');
+        const uploadButton = document.getElementById('uploadPhotoButton');
+        const originalLabel = uploadButton.textContent;
+        uploadButton.disabled = true;
+        uploadButton.textContent = 'Uploading…';
+
+        fetch(photoForm.action, {
+            method: 'POST',
+            body: new FormData(photoForm),
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        }).then(async (response) => {
+            const payload = await response.json();
+            if (!response.ok) {
+                const firstError = payload.errors ? Object.values(payload.errors).flat()[0] : null;
+                throw new Error(firstError || payload.message || 'Unable to upload profile photo.');
+            }
+
+            const avatar = page.querySelector('.avatar');
+            const image = document.createElement('img');
+            image.src = payload.profile_picture_url;
+            image.alt = document.getElementById('profileDisplayName').textContent;
+            avatar.replaceChildren(image);
+            showToast(payload.message || 'Profile picture updated.');
+        }).catch((error) => {
+            showToast(error.message || 'Unable to upload profile photo.');
+        }).finally(() => {
+            uploadButton.disabled = false;
+            uploadButton.textContent = originalLabel;
+            photoInput.value = '';
+        });
     });
 
     const programSelect = document.getElementById('program_id');

@@ -12,7 +12,7 @@
     <div class="col-lg-8">
         <div class="card">
             <div class="card-body">
-                <form method="POST" action="{{ route('student.portfolio.update', $portfolio) }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ route('student.portfolio.update', $portfolio) }}" enctype="multipart/form-data" data-ajax-form>
                     @csrf
                     @method('PUT')
 
@@ -92,7 +92,7 @@
             </div>
             <div class="card-body">
                 <p class="text-muted mb-3">Deleting this portfolio item cannot be undone.</p>
-                <form method="POST" action="{{ route('student.portfolio.destroyPortfolio', $portfolio) }}" style="display:inline;" onsubmit="return confirm('Are you sure? This cannot be undone.');">
+                <form method="POST" action="{{ route('student.portfolio.destroyPortfolio', $portfolio) }}" style="display:inline;" onsubmit="return confirm('Are you sure? This cannot be undone.');" data-ajax-form>
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger">

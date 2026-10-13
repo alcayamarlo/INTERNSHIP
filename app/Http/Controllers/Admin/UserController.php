@@ -40,7 +40,8 @@ class UserController extends Controller
 
         return view('admin.users.index', [
             'users' => $query->latest()->paginate(15)->withQueryString(),
-            'roles' => UserRole::cases(),
+            'roles' => UserRole::all(),
+            'assignableRoles' => UserRole::assignable(),
             'studentIdPattern' => StudentIdFormat::pattern(),
         ]);
     }
@@ -49,7 +50,7 @@ class UserController extends Controller
     {
         return view('admin.users.create', [
             'institutions' => Institution::orderBy('name')->get(),
-            'roles' => [UserRole::Employer, UserRole::Coordinator],
+            'roles' => UserRole::assignable(),
         ]);
     }
 
@@ -72,11 +73,17 @@ class UserController extends Controller
                     'company_name' => $validated['company_name'],
                     'contact_person' => $validated['name'],
                 ]);
-            } else {
+            } elseif ($validated['role'] === UserRole::Coordinator->value) {
                 Coordinator::create([
                     'user_id' => $user->id,
                     'institution_id' => $validated['institution_id'],
                 ]);
+            } else {
+                $student = Student::create([
+                    'user_id' => $user->id,
+                    'institution_id' => $validated['institution_id'],
+                ]);
+                $student->calculateProfileCompletion();
             }
 
             $this->activityLog->log(Auth::user(), 'admin_create_user', ['user_id' => $user->id]);

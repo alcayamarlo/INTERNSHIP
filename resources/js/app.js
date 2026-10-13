@@ -1,1 +1,444 @@
 import './bootstrap';
+
+const root = document.documentElement;
+const themeStorageKey = 'skillbridge-theme';
+const themeToggles = () => document.querySelectorAll('[data-theme-toggle]');
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+const updateThemeToggleIcon = (toggle, isDark) => {
+    toggle.setAttribute('aria-pressed', String(isDark));
+    toggle.setAttribute('aria-label', `Switch to ${isDark ? 'light' : 'dark'} mode`);
+
+    const icon = toggle.querySelector('i');
+    if (icon) {
+        icon.className = isDark ? 'bi bi-sun' : 'bi bi-moon-stars';
+    }
+
+    const svgIcon = toggle.querySelector('[data-theme-icon]');
+    if (svgIcon) {
+        svgIcon.innerHTML = isDark
+            ? '<circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"></path>'
+            : '<path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"></path>';
+    }
+};
+
+const setTheme = (theme, persist = false) => {
+    root.dataset.theme = theme;
+    themeToggles().forEach((toggle) => {
+        updateThemeToggleIcon(toggle, theme === 'dark');
+    });
+    if (persist) {
+        try {
+            window.localStorage.setItem(themeStorageKey, theme);
+        } catch {
+            // The selected theme remains active for this page when storage is unavailable.
+        }
+    }
+};
+
+try {
+    const savedTheme = window.localStorage.getItem(themeStorageKey);
+    if (savedTheme === 'light' || savedTheme === 'dark') {
+        setTheme(savedTheme);
+    }
+} catch {
+    // Theme follows the system preference when storage is unavailable.
+}
+
+const syncThemeToggleState = () => {
+    const isDark = root.dataset.theme
+        ? root.dataset.theme === 'dark'
+        : prefersDark.matches;
+    themeToggles().forEach((toggle) => {
+        updateThemeToggleIcon(toggle, isDark);
+    });
+};
+syncThemeToggleState();
+prefersDark.addEventListener('change', () => {
+    if (!root.dataset.theme) syncThemeToggleState();
+});
+
+document.addEventListener('click', (event) => {
+    const toggle = event.target instanceof Element
+        ? event.target.closest('[data-theme-toggle]')
+        : null;
+    if (!toggle) return;
+    const currentTheme = root.dataset.theme || (prefersDark.matches ? 'dark' : 'light');
+    setTheme(currentTheme === 'dark' ? 'light' : 'dark', true);
+});
+
+document.addEventListener('submit', (event) => {
+    if (event.defaultPrevented || !(event.target instanceof HTMLFormElement)) return;
+    const form = event.target;
+    if (form.dataset.noLoading === 'true') return;
+    const button = event.submitter instanceof HTMLButtonElement
+        ? event.submitter
+        : form.querySelector('button[type="submit"], input[type="submit"]');
+    if (!button || button.disabled) return;
+
+    button.dataset.originalContent = button instanceof HTMLInputElement ? button.value : button.innerHTML;
+    button.setAttribute('aria-busy', 'true');
+    button.disabled = true;
+    if (button instanceof HTMLInputElement) {
+        button.value = 'Working…';
+    } else {
+        button.innerHTML = '<span class="sb-submit-spinner" aria-hidden="true"></span>Working…';
+    }
+});
+
+document.addEventListener('submit', async (event) => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement) || !form.hasAttribute('data-ajax-application')) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (!submitButton || submitButton.disabled) return;
+
+    const originalContent = submitButton.innerHTML;
+    const feedback = form.querySelector('[data-application-feedback]');
+    submitButton.disabled = true;
+    submitButton.setAttribute('aria-busy', 'true');
+    submitButton.innerHTML = '<span class="sb-submit-spinner" aria-hidden="true"></span>Submitting…';
+    if (feedback) {
+        feedback.className = 'small mt-2';
+        feedback.textContent = '';
+    }
+
+    try {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const payload = await response.json();
+        if (!response.ok) {
+            const firstError = payload.errors ? Object.values(payload.errors).flat()[0] : null;
+            throw new Error(firstError || payload.message || 'Unable to submit application.');
+        }
+
+        submitButton.textContent = 'Applied';
+        submitButton.classList.remove('btn-primary');
+        submitButton.classList.add('btn-success');
+        submitButton.disabled = true;
+        form.querySelectorAll('select, textarea').forEach((input) => {
+            input.disabled = true;
+        });
+        if (feedback) {
+            feedback.classList.add('text-success');
+            feedback.textContent = payload.message || 'Application submitted successfully.';
+            if (payload.applications_url) {
+                const link = document.createElement('a');
+                link.href = payload.applications_url;
+                link.textContent = ' View My Applications';
+                feedback.append(link);
+            }
+        }
+    } catch (error) {
+        if (feedback) {
+            feedback.classList.add('text-danger');
+            feedback.textContent = error.message || 'Unable to submit application.';
+        }
+    } finally {
+        submitButton.removeAttribute('aria-busy');
+        if (submitButton.textContent !== 'Applied') {
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalContent;
+        }
+    }
+}, true);
+
+document.addEventListener('submit', async (event) => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement) || !form.dataset.ajaxNotification) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (submitButton?.disabled) return;
+    if (submitButton) submitButton.disabled = true;
+
+    try {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.message || 'Unable to update notification.');
+
+        const unreadCount = Number(payload.unread_count || 0);
+        document.querySelectorAll('[data-unread-badge]').forEach((badge) => {
+            badge.textContent = unreadCount > 9 ? '9+' : String(unreadCount);
+            badge.hidden = unreadCount === 0;
+        });
+        document.querySelectorAll('.sb-top-action[aria-label^="Notifications"]').forEach((button) => {
+            button.setAttribute('aria-label', `Notifications${unreadCount ? `, ${unreadCount} unread` : ''}`);
+            if (unreadCount === 0) {
+                button.querySelector('.sb-notification-badge')?.remove();
+            } else if (!button.querySelector('.sb-notification-badge')) {
+                const badge = document.createElement('span');
+                badge.className = 'sb-notification-badge';
+                badge.dataset.unreadBadge = '';
+                badge.textContent = unreadCount > 9 ? '9+' : String(unreadCount);
+                button.append(badge);
+            }
+        });
+
+        const action = form.dataset.ajaxNotification;
+        const item = form.closest('[data-notification-item]');
+
+        if (action === 'read') {
+            item?.classList.remove('is-unread', 'bg-light', 'border-start', 'border-primary', 'border-3');
+            item?.querySelector('.badge.bg-primary')?.remove();
+            form.remove();
+            return;
+        }
+
+        if (action === 'archive' || action === 'restore') {
+            item?.remove();
+            return;
+        }
+
+        if (action === 'read-all') {
+            document.querySelectorAll('[data-notification-item]').forEach((notificationItem) => {
+                notificationItem.classList.remove('is-unread', 'bg-light', 'border-start', 'border-primary', 'border-3');
+                notificationItem.querySelector('.badge.bg-primary')?.remove();
+                notificationItem.querySelector('[data-ajax-notification="read"]')?.remove();
+            });
+            form.remove();
+            return;
+        }
+
+        if (action === 'archive-all-read') {
+            document.querySelectorAll('[data-notification-item]').forEach((notificationItem) => {
+                const unreadBadge = notificationItem.querySelector('.badge.bg-primary');
+                if (!unreadBadge) {
+                    notificationItem.remove();
+                }
+            });
+            form.remove();
+        }
+    } catch (error) {
+        window.alert(error.message || 'Unable to update notification.');
+    } finally {
+        if (submitButton?.isConnected) submitButton.disabled = false;
+    }
+}, true);
+
+document.addEventListener('submit', async (event) => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement) || !form.dataset.ajaxResume) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const submitButton = event.submitter instanceof HTMLButtonElement
+        ? event.submitter
+        : form.querySelector('button[type="submit"]');
+    if (submitButton?.disabled) return;
+
+    const originalContent = submitButton?.innerHTML;
+    const feedback = document.getElementById('resumeActionFeedback');
+    const actionName = form.dataset.ajaxResume;
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.setAttribute('aria-busy', 'true');
+        submitButton.innerHTML = '<span class="sb-submit-spinner" aria-hidden="true"></span>Working…';
+    }
+    if (feedback) {
+        feedback.className = 'alert d-none';
+        feedback.textContent = '';
+    }
+
+    const sendRequest = async () => {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const payload = await response.json();
+        return { response, payload };
+    };
+
+    try {
+        let { response, payload } = await sendRequest();
+
+        if (response.status === 409 && payload.confirmation_required) {
+            if (!window.confirm(payload.message)) {
+                if (feedback) {
+                    feedback.className = 'alert alert-secondary';
+                    feedback.textContent = 'Archive cancelled.';
+                }
+                return;
+            }
+
+            form.elements.namedItem('confirmed_active_applications').value = '1';
+            ({ response, payload } = await sendRequest());
+        }
+
+        if (!response.ok) {
+            throw new Error(payload.message || 'Unable to update this resume.');
+        }
+
+        if (feedback) {
+            feedback.className = 'alert alert-success';
+            feedback.textContent = payload.message || 'Resume updated.';
+        }
+
+        const row = form.closest('[data-resume-row]');
+        const list = form.closest('[data-resume-list]');
+        row?.remove();
+        if (list && !list.querySelector('[data-resume-row]')) {
+            const emptyRow = document.createElement('tr');
+            emptyRow.dataset.resumeEmpty = '';
+            const emptyCell = document.createElement('td');
+            emptyCell.colSpan = 2;
+            emptyCell.className = 'text-center text-muted py-4';
+            emptyCell.textContent = list.dataset.emptyMessage || 'No resumes found.';
+            emptyRow.append(emptyCell);
+            list.append(emptyRow);
+        }
+    } catch (error) {
+        if (feedback) {
+            feedback.className = 'alert alert-danger';
+            feedback.textContent = error.message || 'Unable to update this resume.';
+        }
+    } finally {
+        if (submitButton?.isConnected) {
+            submitButton.disabled = false;
+            submitButton.removeAttribute('aria-busy');
+            submitButton.innerHTML = originalContent;
+            submitButton.querySelectorAll('.sb-submit-spinner').forEach((spinner) => spinner.remove());
+        }
+    }
+}, true);
+
+document.addEventListener('submit', async (event) => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement) || !form.hasAttribute('data-ajax-form')) return;
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const submitButton = event.submitter instanceof HTMLButtonElement
+        ? event.submitter
+        : form.querySelector('button[type="submit"], input[type="submit"]');
+    if (submitButton?.disabled) return;
+    const originalContent = submitButton instanceof HTMLInputElement
+        ? submitButton.value
+        : submitButton?.innerHTML;
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.setAttribute('aria-busy', 'true');
+        if (submitButton instanceof HTMLInputElement) {
+            submitButton.value = 'Working…';
+        } else {
+            submitButton.innerHTML = '<span class="sb-submit-spinner" aria-hidden="true"></span>Working…';
+        }
+    }
+
+    let feedback = form.querySelector('[data-ajax-feedback]');
+    if (!feedback) {
+        feedback = document.createElement('div');
+        feedback.dataset.ajaxFeedback = '';
+        feedback.className = 'small mt-2';
+        feedback.setAttribute('role', 'status');
+        feedback.setAttribute('aria-live', 'polite');
+        form.append(feedback);
+    }
+    feedback.textContent = '';
+    feedback.classList.remove('text-danger', 'text-success');
+
+    try {
+        const response = await fetch(form.action, {
+            method: form.method || 'POST',
+            body: new FormData(form),
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const payload = await response.json();
+        if (!response.ok) {
+            const firstError = payload.errors ? Object.values(payload.errors).flat()[0] : null;
+            throw new Error(firstError || payload.message || 'Unable to complete this action.');
+        }
+
+        feedback.textContent = payload.message || 'Changes saved.';
+        feedback.classList.add('text-success');
+        if (form.dataset.ajaxReset === 'true') form.reset();
+    } catch (error) {
+        feedback.textContent = error.message || 'Unable to complete this action.';
+        feedback.classList.add('text-danger');
+    } finally {
+        if (submitButton?.isConnected) {
+            submitButton.disabled = false;
+            submitButton.removeAttribute('aria-busy');
+            if (submitButton instanceof HTMLInputElement) {
+                submitButton.value = originalContent || submitButton.value;
+            } else if (originalContent !== undefined) {
+                submitButton.innerHTML = originalContent;
+            }
+        }
+    }
+}, true);
+
+window.addEventListener('pageshow', () => {
+    document.querySelectorAll('[aria-busy="true"]').forEach((button) => {
+        button.disabled = false;
+        button.removeAttribute('aria-busy');
+        if (button instanceof HTMLInputElement) {
+            button.value = button.dataset.originalContent || button.value;
+        } else if (button.dataset.originalContent) {
+            button.innerHTML = button.dataset.originalContent;
+        }
+    });
+});
+
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const revealTargets = document.querySelectorAll('.skillbridge-public .public-hero, .skillbridge-public .public-section, .skillbridge-public .public-cta');
+if (!reducedMotion && 'IntersectionObserver' in window) {
+    const revealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.08 });
+
+    revealTargets.forEach((target) => {
+        target.classList.add('sb-reveal');
+        revealObserver.observe(target);
+    });
+} else {
+    revealTargets.forEach((target) => target.classList.add('is-visible'));
+}
+
+document.querySelectorAll('#sbContent table').forEach((table) => {
+    const headings = [...table.querySelectorAll('thead th')].map((heading) => heading.textContent.trim());
+    if (!headings.length) return;
+
+    table.classList.add('sb-responsive-table');
+    table.querySelectorAll('tbody tr').forEach((row) => {
+        row.querySelectorAll('td').forEach((cell, index) => {
+            if (cell.hasAttribute('colspan') || cell.dataset.label || !headings[index]) return;
+            cell.dataset.label = headings[index];
+        });
+    });
+});
+
+document.querySelectorAll('[data-count-up]').forEach((element) => {
+    const endValue = Number(element.dataset.countUp);
+    if (!Number.isFinite(endValue)) return;
+    if (reducedMotion) {
+        element.textContent = String(endValue);
+        return;
+    }
+
+    const start = performance.now();
+    const duration = 800;
+    const tick = (now) => {
+        const progress = Math.min(1, (now - start) / duration);
+        const eased = 1 - (1 - progress) ** 3;
+        element.textContent = String(Math.round(endValue * eased));
+        if (progress < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+});

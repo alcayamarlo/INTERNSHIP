@@ -18,7 +18,10 @@ class StoreAnnouncementRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],
-            'target_role' => ['nullable', Rule::in(['student', 'employer', 'coordinator', 'admin'])],
+            'target_role' => ['nullable', Rule::in(array_map(
+                fn (UserRole $role) => $role->value,
+                UserRole::all()
+            ))],
         ];
     }
 

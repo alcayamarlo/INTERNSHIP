@@ -272,7 +272,7 @@ it('allows every configured employer status transition and records each change i
         }
     }
 
-    expect($allowedTransitionCount)->toBe(11);
+    expect($allowedTransitionCount)->toBe(15);
 });
 
 it('rejects every employer status transition not present in the configured map', function () {

@@ -9,6 +9,7 @@ use App\Models\Institution;
 use App\Models\Internship;
 use App\Models\InternshipApplication;
 use App\Models\Program;
+use App\Models\Resume;
 use App\Models\Student;
 use App\Models\StudentChangeRequest;
 use App\Models\User;
@@ -226,11 +227,12 @@ it('enforces only the enabled application eligibility requirements', function ()
 
 it('blocks internship applications while the configured eligibility requirements are unmet', function () {
     $studentUser = User::factory()->create(['role' => UserRole::Student]);
-    Student::create([
+    $student = Student::create([
         'user_id' => $studentUser->id,
         'year_level' => '3rd Year',
         'major_subjects_passed' => false,
     ]);
+    $resume = Resume::create(['student_id' => $student->id, 'content' => []]);
     $employerUser = User::factory()->create(['role' => UserRole::Employer]);
     $employer = Employer::create([
         'user_id' => $employerUser->id,
@@ -247,7 +249,7 @@ it('blocks internship applications while the configured eligibility requirements
 
     $this->actingAs($studentUser)
         ->from(route('student.internships.show', $internship))
-        ->post(route('student.internships.apply', $internship), ['cover_letter' => 'Please consider my application.'])
+        ->post(route('student.internships.apply', $internship), ['resume_id' => $resume->id, 'cover_letter' => 'Please consider my application.'])
         ->assertRedirect(route('student.internships.show', $internship))
         ->assertSessionHas('error', 'You must be in 4th Year to apply.');
 

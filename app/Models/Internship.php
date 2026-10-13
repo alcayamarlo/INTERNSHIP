@@ -22,6 +22,7 @@ class Internship extends Model
         'work_setup',
         'location',
         'status',
+        'expires_at',
     ];
 
     protected function casts(): array
@@ -29,6 +30,7 @@ class Internship extends Model
         return [
             'work_setup' => WorkSetup::class,
             'allowance' => 'decimal:2',
+            'expires_at' => 'datetime',
         ];
     }
 
@@ -49,6 +51,15 @@ class Internship extends Model
 
     public function scopeOpen($query)
     {
-        return $query->where('status', 'open');
+        return $query->where('status', 'open')
+            ->where(function ($query) {
+                $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            });
+    }
+
+    public function isAcceptingApplications(): bool
+    {
+        return $this->status === 'open'
+            && ($this->expires_at === null || $this->expires_at->isFuture());
     }
 }

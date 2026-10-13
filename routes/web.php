@@ -80,7 +80,10 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/search', [SearchController::class, 'index'])->name('search');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+    Route::post('/notifications/{notification}/archive', [NotificationController::class, 'archive'])->name('notifications.archive');
+    Route::post('/notifications/{notification}/restore', [NotificationController::class, 'restore'])->name('notifications.restore');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+    Route::post('/notifications/archive-all-read', [NotificationController::class, 'archiveAllRead'])->name('notifications.archive-all-read');
     Route::get('/api/notifications/unread', [NotificationController::class, 'unreadJson'])->name('notifications.unread');
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
@@ -124,6 +127,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::delete('/certificates/{certificate}', [PortfolioController::class, 'destroyCertificate'])->name('certificates.destroy');
         Route::get('/resume', [ResumeController::class, 'index'])->name('resume.index');
         Route::post('/resume/generate', [ResumeController::class, 'generate'])->name('resume.generate');
+        Route::post('/resume/{resume}/archive', [ResumeController::class, 'archive'])->whereNumber('resume')->name('resume.archive');
+        Route::post('/resume/{resume}/restore', [ResumeController::class, 'restore'])->whereNumber('resume')->name('resume.restore');
         Route::get('/resume/{resume}/view', [ResumeController::class, 'view'])->name('resume.view');
         Route::get('/resume/{resume}/download', [ResumeController::class, 'download'])->name('resume.download');
         Route::get('/internships', [StudentInternshipController::class, 'index'])->name('internships.index');

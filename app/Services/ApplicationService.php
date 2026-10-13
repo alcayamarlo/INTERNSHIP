@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\ApplicationStatus;
 use App\Models\Internship;
 use App\Models\InternshipApplication;
+use App\Models\Resume;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Database\QueryException;
@@ -25,20 +26,28 @@ class ApplicationService
      *
      * @throws ValidationException
      */
-    public function apply(Student $student, Internship $internship, User $applicant, ?string $coverLetter = null): InternshipApplication
+    public function apply(Student $student, Internship $internship, Resume $resume, User $applicant, ?string $coverLetter = null): InternshipApplication
     {
         $eligibilityReasons = $this->eligibility->reasons($student);
         if ($eligibilityReasons !== []) {
             throw ValidationException::withMessages(['eligibility' => $eligibilityReasons]);
         }
 
-        if ($internship->status !== 'open') {
+        if (! $internship->isAcceptingApplications()) {
             throw ValidationException::withMessages([
-                'internship' => 'This internship is no longer accepting applications.',
+                'internship' => $internship->expires_at && $internship->expires_at->isPast()
+                    ? 'This internship posting has expired and is no longer accepting applications.'
+                    : 'This internship is no longer accepting applications.',
             ]);
         }
 
-        if (InternshipApplication::where('internship_id', $internship->id)
+        if ($resume->archived_at || (int) $resume->student_id !== (int) $student->id) {
+            throw ValidationException::withMessages([
+                'resume_id' => 'Choose one of your non-archived resumes.',
+            ]);
+        }
+
+        if (InternshipApplication::withTrashed()->where('internship_id', $internship->id)
             ->where('student_id', $student->id)
             ->exists()) {
             throw ValidationException::withMessages([
@@ -48,12 +57,13 @@ class ApplicationService
 
         $matchPercentage = $this->matchingService->calculateMatch($student, $internship);
 
-        return DB::transaction(function () use ($student, $internship, $applicant, $coverLetter, $matchPercentage) {
+        return DB::transaction(function () use ($student, $internship, $resume, $applicant, $coverLetter, $matchPercentage) {
             try {
                 $application = InternshipApplication::create([
                     'internship_id' => $internship->id,
                     'student_id' => $student->id,
-                    'status' => ApplicationStatus::Submitted,
+                    'resume_id' => $resume->id,
+                    'status' => ApplicationStatus::Applied,
                     'cover_letter' => $coverLetter,
                     'match_percentage' => $matchPercentage,
                     'applied_at' => now(),

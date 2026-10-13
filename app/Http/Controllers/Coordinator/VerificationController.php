@@ -35,7 +35,7 @@ class VerificationController extends Controller
         private FileUploadService $fileUpload
     ) {}
 
-    public function uploadDeploymentDocument(Request $request, Student $student): RedirectResponse
+    public function uploadDeploymentDocument(Request $request, Student $student): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $this->authorizeStudent($student);
         $validated = $request->validate([
@@ -103,6 +103,13 @@ class VerificationController extends Controller
             ['portfolio_id' => $file->id, 'status' => 'approved']
         );
         $student->calculateProfileCompletion();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Deployment document uploaded.',
+            ]);
+        }
 
         return back()->with('success', 'Deployment document uploaded.');
     }

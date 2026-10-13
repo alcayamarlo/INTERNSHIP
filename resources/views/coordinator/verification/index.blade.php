@@ -155,6 +155,7 @@
                 <label class="form-label mt-2" for="deploymentDocumentFile">File</label>
                 <input class="form-control" id="deploymentDocumentFile" type="file" name="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
                 <button class="btn btn-primary mt-2" type="submit">Upload document</button>
+                <p class="small mt-2 mb-0" id="deploymentDocumentFeedback" role="status" aria-live="polite"></p>
             </form>
         </section>
         <section class="drawer-section">

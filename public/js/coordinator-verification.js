@@ -524,6 +524,43 @@
         render();
     });
 
+    const deploymentUploadForm = document.getElementById('deploymentDocumentUploadForm');
+    deploymentUploadForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const button = deploymentUploadForm.querySelector('button[type="submit"]');
+        const feedback = document.getElementById('deploymentDocumentFeedback');
+        const originalLabel = button.textContent;
+        button.disabled = true;
+        button.textContent = 'Uploading…';
+        feedback.textContent = '';
+        feedback.className = 'small mt-2 mb-0';
+
+        try {
+            const response = await fetch(deploymentUploadForm.action, {
+                method: 'POST',
+                body: new FormData(deploymentUploadForm),
+                credentials: 'same-origin',
+                headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            const payload = await response.json();
+            if (!response.ok) {
+                const firstError = payload.errors ? Object.values(payload.errors).flat()[0] : null;
+                throw new Error(firstError || payload.message || 'Unable to upload deployment document.');
+            }
+
+            deploymentUploadForm.reset();
+            feedback.textContent = payload.message || 'Deployment document uploaded.';
+            feedback.classList.add('text-success');
+            await refreshDrawer();
+        } catch (error) {
+            feedback.textContent = error.message || 'Unable to upload deployment document.';
+            feedback.classList.add('text-danger');
+        } finally {
+            button.disabled = false;
+            button.textContent = originalLabel;
+        }
+    });
+
     document.getElementById('programFilter').addEventListener('change', (event) => {
         state.program = event.target.value;
         render();

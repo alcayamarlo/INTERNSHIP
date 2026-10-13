@@ -14,6 +14,7 @@ class InternshipApplication extends Model
     protected $fillable = [
         'internship_id',
         'student_id',
+        'resume_id',
         'status',
         'cover_letter',
         'match_percentage',
@@ -39,6 +40,11 @@ class InternshipApplication extends Model
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
+    }
+
+    public function resume(): BelongsTo
+    {
+        return $this->belongsTo(Resume::class);
     }
 
     public function statusHistory(): HasMany

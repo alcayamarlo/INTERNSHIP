@@ -42,7 +42,7 @@ class DashboardController extends Controller
 
         $applicationStats = [
             'total' => $allApplications->count(),
-            'submitted' => $allApplications->where('status', ApplicationStatus::Submitted)->count(),
+            'submitted' => $allApplications->whereIn('status', [ApplicationStatus::Applied, ApplicationStatus::Submitted])->count(),
             'reviewed' => $allApplications->where('status', ApplicationStatus::Reviewed)->count(),
             'interview' => $allApplications->where('status', ApplicationStatus::Interview)->count(),
             'accepted' => $allApplications->where('status', ApplicationStatus::Accepted)->count(),

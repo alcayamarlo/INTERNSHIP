@@ -160,14 +160,16 @@ it('lets coordinators upload approved deployment documents only for students in 
     $coordinator = createCoordinatorForVerification($institution);
     $student = createStudentForVerification($institution);
 
-    $response = $this->actingAs($coordinator)->post(
+    $response = $this->actingAs($coordinator)->postJson(
         route('coordinator.students.deployment-documents.store', $student),
         [
             'deployment_requirement_id' => DeploymentRequirement::query()->where('code', 'signed-moa')->value('id'),
             'file' => UploadedFile::fake()->create('agreement.pdf', 100, 'application/pdf'),
         ]
     );
-    $response->assertRedirect();
+    $response->assertOk()
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('message', 'Deployment document uploaded.');
 
     $document = Portfolio::query()->where('student_id', $student->id)->firstOrFail();
     expect($document->category->value)->toBe('deployment_document')

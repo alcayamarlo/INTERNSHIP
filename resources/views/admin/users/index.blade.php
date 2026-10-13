@@ -344,9 +344,7 @@
                     <select class="form-select" name="role">
                         <option value="">All Roles</option>
                         @foreach($roles as $role)
-                            @if($role !== \App\Enums\UserRole::Admin && $role !== \App\Enums\UserRole::Student)
                             <option value="{{ $role->value }}" {{ request('role') === $role->value ? 'selected' : '' }}>{{ $role->label() }}</option>
-                            @endif
                         @endforeach
                     </select>
                 </div>
@@ -435,11 +433,12 @@
                                             <div class="mb-3">
                                                 <label class="form-label">Role</label>
                                                 <select class="form-select" name="role" required>
-                                                    @foreach($roles as $role)
-                                                        @if($role !== \App\Enums\UserRole::Admin && $role !== \App\Enums\UserRole::Student)
+                                                    @foreach($assignableRoles as $role)
                                                         <option value="{{ $role->value }}" {{ $user->role === $role ? 'selected' : '' }}>{{ $role->label() }}</option>
-                                                        @endif
                                                     @endforeach
+                                                    @if($user->role === \App\Enums\UserRole::Admin)
+                                                        <option value="{{ $user->role->value }}" selected>{{ $user->role->label() }}</option>
+                                                    @endif
                                                 </select>
                                             </div>
                                             <div class="mb-3">

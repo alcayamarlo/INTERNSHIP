@@ -65,7 +65,10 @@ it('lists students for the coordinator institution', function () {
     $this->actingAs($coordinator)
         ->get(route('coordinator.students.index'))
         ->assertOk()
-        ->assertSee($visibleStudent->user->name)
+        ->assertSee(json_encode(
+            $visibleStudent->user->name,
+            JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT
+        ), false)
         ->assertDontSee('Other University');
 });
 

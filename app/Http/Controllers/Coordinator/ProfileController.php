@@ -9,6 +9,7 @@ use App\Services\ActivityLogService;
 use App\Services\FileUploadService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Support\PublicFileUrl;
 
 class ProfileController extends Controller
 {
@@ -85,6 +86,14 @@ class ProfileController extends Controller
         session()->put('coordinator_info', [
             'position' => $validated['position'] ?? null,
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile updated successfully!',
+                'profile_picture_url' => PublicFileUrl::relative($coordinator->fresh()->profile_picture),
+            ]);
+        }
 
         return redirect()->route('coordinator.profile.edit')
             ->with('success', 'Profile updated successfully!');

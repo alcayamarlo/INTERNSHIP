@@ -12,6 +12,7 @@ use App\Services\AcademicCalendar;
 use Carbon\CarbonImmutable;
 use Database\Seeders\AcademicCatalogSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\RateLimiter;
 
 uses(RefreshDatabase::class);
 
@@ -821,4 +822,60 @@ it('links registered students to the selected catalog program, including legacy 
 
     expect($student->program_id)->toBe(Program::where('code', 'BSIT')->value('id'))
         ->and($student->program)->toBe('BS Information Technology (BSIT)');
+});
+
+it('preserves and saves every program offered on student registration', function () {
+    app(AcademicCatalogSeeder::class)->run();
+    $institution = Institution::create(['name' => "St. Cecilia's College-Cebu, Inc."]);
+    \Illuminate\Support\Facades\Mail::fake();
+
+    $programs = Program::orderBy('code')->get();
+    $registrationPage = $this->get(route('register'))->assertOk();
+
+    foreach ($programs as $program) {
+        $registrationPage->assertSee(
+            'value="'.$program->id.'"',
+            false
+        )->assertSee($program->display_name);
+
+        expect(\Illuminate\Support\Facades\Validator::make(
+            ['program_id' => $program->id],
+            ['program_id' => ['required', 'exists:programs,id']]
+        )->passes())->toBeTrue();
+    }
+
+    $this->from(route('register'))
+        ->post(route('register.store'), [
+            'name' => '',
+            'email' => 'invalid-registration@example.test',
+            'password' => 'DistinctivePassword#2026',
+            'password_confirmation' => 'DistinctivePassword#2026',
+            'institution_id' => $institution->id,
+            'program_id' => $programs->first()->id,
+        ])
+        ->assertRedirect(route('register'))
+        ->assertSessionHasErrors('name');
+
+    $this->get(route('register'))
+        ->assertSee('value="'.$programs->first()->id.'" selected', false);
+
+    foreach ($programs as $program) {
+        RateLimiter::clear(md5('register127.0.0.1'));
+        $email = 'program-registration-'.$program->id.'@example.test';
+        $this->post(route('register.store'), [
+            'name' => 'Catalog Registration Student',
+            'email' => $email,
+            'password' => 'DistinctivePassword#2026',
+            'password_confirmation' => 'DistinctivePassword#2026',
+            'institution_id' => $institution->id,
+            'program_id' => $program->id,
+        ])->assertRedirect(route('verification.notice'));
+
+        $student = Student::whereHas('user', fn ($query) => $query->where('email', $email))->firstOrFail();
+
+        expect($student->program_id)->toBe($program->id)
+            ->and($student->program)->toBe($program->display_name);
+
+        \Illuminate\Support\Facades\Auth::logout();
+    }
 });

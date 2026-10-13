@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Announcement\StoreAnnouncementRequest;
 use App\Models\Announcement;
@@ -22,6 +23,7 @@ class AnnouncementController extends Controller
     {
         return view('admin.announcements.index', [
             'announcements' => Announcement::with('author')->latest()->paginate(10),
+            'roles' => UserRole::all(),
         ]);
     }
 

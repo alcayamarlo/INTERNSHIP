@@ -18,6 +18,7 @@ use App\Services\FileUploadService;
 use App\Services\ResumeBuilderService;
 use App\Services\AcademicCalendar;
 use App\Support\StudentIdFormat;
+use App\Support\PublicFileUrl;
 use App\View\Presenters\PortfolioItemPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -308,6 +309,15 @@ class ProfileController extends Controller
 
         if ($previousPicture) {
             $this->fileUpload->delete($previousPicture);
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile picture updated successfully.',
+                'profile_picture_url' => PublicFileUrl::relative($newPicture),
+                'profile_completion' => $student->fresh()->profile_completion,
+            ]);
         }
 
         return back()->with('success', 'Profile picture updated successfully.');

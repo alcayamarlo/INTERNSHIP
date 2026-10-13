@@ -231,23 +231,20 @@
                             ->take(2)
                             ->implode('');
                     @endphp
-                    @if($employerLogoUrl)
-                        <img src="{{ $employerLogoUrl }}" alt="{{ $employer->company_name }}" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px;" onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
-                        <span hidden>{{ strtoupper($employerInitials ?: 'C') }}</span>
-                    @else
-                        {{ strtoupper($employerInitials ?: 'C') }}
-                    @endif
+                    <img data-company-logo src="{{ $employerLogoUrl ?? '' }}" alt="{{ $employer->company_name }}" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 12px;" @if(!$employerLogoUrl) hidden @endif onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+                    <span data-company-initials @if($employerLogoUrl) hidden @endif>{{ strtoupper($employerInitials ?: 'C') }}</span>
                 </div>
 
                 <form method="POST" action="{{ route('employer.profile.update') }}" enctype="multipart/form-data" id="logoForm" class="d-none">
                     @csrf
                     @method('PUT')
-                    <input type="file" name="company_logo" id="logoInput" accept="image/jpeg,image/jpg,image/png" onchange="document.getElementById('logoForm').submit();">
+                    <input type="file" name="company_logo" id="logoInput" accept="image/jpeg,image/jpg,image/png">
                 </form>
 
-                <button type="button" class="upload-btn" onclick="document.getElementById('logoInput').click();">
+                <button type="button" class="upload-btn" id="uploadCompanyLogo">
                     <i class="bi bi-cloud-upload"></i> {{ $employer->logo ? 'Change Logo' : 'Upload Logo' }}
                 </button>
+                <div data-employer-feedback class="small mt-2" role="status" aria-live="polite"></div>
             </div>
         </div>
 
@@ -258,7 +255,7 @@
             </div>
 
             <div class="profile-panel-body">
-                <form method="POST" action="{{ route('employer.profile.update') }}" enctype="multipart/form-data">
+                <form method="POST" action="{{ route('employer.profile.update') }}" enctype="multipart/form-data" data-ajax-form id="employerProfileForm">
                     @csrf
                     @method('PUT')
 
@@ -315,3 +312,57 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+(() => {
+    const form = document.getElementById('employerProfileForm');
+    const uploadForm = document.getElementById('logoForm');
+    const input = document.getElementById('logoInput');
+    const button = document.getElementById('uploadCompanyLogo');
+    const feedback = document.querySelector('[data-employer-feedback]');
+
+    button.addEventListener('click', () => input.click());
+    input.addEventListener('change', async () => {
+        if (!input.files.length) return;
+
+        const originalLabel = button.textContent;
+        const data = new FormData(form);
+        data.set('_token', uploadForm.elements.namedItem('_token').value);
+        data.set('_method', 'PUT');
+        data.set('company_logo', input.files[0]);
+        button.disabled = true;
+        button.textContent = 'Uploading…';
+        feedback.textContent = '';
+        feedback.className = 'small mt-2';
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: data,
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const payload = await response.json();
+            if (!response.ok) {
+                const firstError = payload.errors ? Object.values(payload.errors).flat()[0] : null;
+                throw new Error(firstError || payload.message || 'Unable to upload company logo.');
+            }
+
+            const image = document.querySelector('[data-company-logo]');
+            image.src = payload.logo_url;
+            image.hidden = false;
+            document.querySelector('[data-company-initials]').hidden = true;
+            feedback.textContent = payload.message;
+            feedback.classList.add('text-success');
+        } catch (error) {
+            feedback.textContent = error.message || 'Unable to upload company logo.';
+            feedback.classList.add('text-danger');
+        } finally {
+            input.value = '';
+            button.disabled = false;
+            button.textContent = originalLabel;
+        }
+    });
+})();
+</script>
+@endpush
