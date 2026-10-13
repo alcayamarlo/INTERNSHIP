@@ -150,6 +150,23 @@ class ApplicantController extends Controller
             ));
         }
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Application status updated.',
+                'status' => $application->status->value,
+                'status_label' => $application->status->label(),
+                'status_badge_class' => $application->status->badgeClass(),
+                'available_statuses' => array_map(
+                    fn (ApplicationStatus $availableStatus) => [
+                        'value' => $availableStatus->value,
+                        'label' => $availableStatus->label(),
+                    ],
+                    $application->status->allowedNextStatuses()
+                ),
+            ]);
+        }
+
         return back()->with('success', 'Application status updated.');
     }
 

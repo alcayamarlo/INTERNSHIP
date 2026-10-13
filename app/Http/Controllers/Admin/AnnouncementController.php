@@ -23,7 +23,7 @@ class AnnouncementController extends Controller
     {
         return view('admin.announcements.index', [
             'announcements' => Announcement::with('author')->latest()->paginate(10),
-            'roles' => UserRole::all(),
+            'roles' => UserRole::assignable(),
         ]);
     }
 
@@ -32,15 +32,17 @@ class AnnouncementController extends Controller
         $validated = $request->validated();
 
         [$announcement, $recipientIds] = DB::transaction(function () use ($validated) {
+            $targetRole = $validated['target_role'] === 'all' ? null : $validated['target_role'];
             $announcement = Announcement::create([
                 ...$validated,
+                'target_role' => $targetRole,
                 'user_id' => Auth::id(),
                 'published_at' => now(),
             ]);
 
             $usersQuery = User::query();
-            if (! empty($validated['target_role'])) {
-                $usersQuery->where('role', $validated['target_role']);
+            if ($targetRole !== null) {
+                $usersQuery->where('role', $targetRole);
             }
 
             $recipientIds = $usersQuery->pluck('id');

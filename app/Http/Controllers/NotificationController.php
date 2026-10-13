@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRole;
+use App\Models\Announcement;
 use App\Models\AppNotification;
+use App\Models\InternshipApplication;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class NotificationController extends Controller
 {
@@ -21,6 +26,44 @@ class NotificationController extends Controller
             'notifications' => $notifications,
             'view' => $view,
         ]);
+    }
+
+    public function show(AppNotification $notification)
+    {
+        $this->authorize('view', $notification);
+        $notification->markAsRead();
+
+        $data = $notification->data ?? [];
+        $announcement = isset($data['announcement_id']) && is_numeric($data['announcement_id'])
+            ? Announcement::find($data['announcement_id'])
+            : null;
+        $relatedUrl = null;
+
+        if (isset($data['application_id']) && is_numeric($data['application_id'])) {
+            $application = InternshipApplication::query()
+                ->with(['student', 'internship.employer'])
+                ->find($data['application_id']);
+
+            if ($application && Auth::user()->isRole(UserRole::Student)
+                && $application->student?->user_id === Auth::id()) {
+                $relatedUrl = route('student.applications.show', $application);
+            } elseif ($application && Auth::user()->isRole(UserRole::Employer)
+                && $application->internship?->employer?->user_id === Auth::id()) {
+                $relatedUrl = route('employer.applicants.show', $application);
+            }
+        }
+
+        if (! $relatedUrl) {
+            $contactId = $data['contact_id'] ?? $data['sender_id'] ?? null;
+            if (is_numeric($contactId)) {
+                $contact = User::find($contactId);
+                if ($contact && Gate::allows('message.send', $contact)) {
+                    $relatedUrl = route('messages.show', $contact);
+                }
+            }
+        }
+
+        return view('notifications.show', compact('notification', 'announcement', 'relatedUrl'));
     }
 
     public function markRead(AppNotification $notification)

@@ -10,7 +10,7 @@
 
 <div class="card">
     <div class="card-body">
-        <form method="POST" action="{{ $skill->exists ? route('admin.skills.update', $skill) : route('admin.skills.store') }}">
+        <form method="POST" action="{{ $skill->exists ? route('employer.skills.update', $skill) : route('employer.skills.store') }}">
             @csrf
             @if($skill->exists) @method('PUT') @endif
 
@@ -42,7 +42,7 @@
             </div>
 
             <button type="submit" class="btn btn-primary" @disabled($categories->isEmpty())>Save Skill</button>
-            <a href="{{ route('admin.skills.index') }}" class="btn btn-outline-secondary">Cancel</a>
+            <a href="{{ route('employer.skills.index') }}" class="btn btn-outline-secondary">Cancel</a>
         </form>
     </div>
 </div>

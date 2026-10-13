@@ -3,9 +3,9 @@
 use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncementController;
 use App\Http\Controllers\Admin\AcademicCatalogController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
 use App\Http\Controllers\Admin\SystemController as AdminSystemController;
 use App\Http\Controllers\Admin\SkillCategoryController as AdminSkillCategoryController;
-use App\Http\Controllers\Admin\SkillController as AdminSkillController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -21,6 +21,7 @@ use App\Http\Controllers\Employer\ApplicantController;
 use App\Http\Controllers\Employer\DashboardController as EmployerDashboardController;
 use App\Http\Controllers\Employer\InternshipController as EmployerInternshipController;
 use App\Http\Controllers\Employer\ProfileController as EmployerProfileController;
+use App\Http\Controllers\Employer\SkillController as EmployerSkillController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileCompletionController;
@@ -79,6 +80,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::middleware('verified')->group(function () {
     Route::get('/search', [SearchController::class, 'index'])->name('search');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
     Route::post('/notifications/{notification}/archive', [NotificationController::class, 'archive'])->name('notifications.archive');
     Route::post('/notifications/{notification}/restore', [NotificationController::class, 'restore'])->name('notifications.restore');
@@ -148,6 +150,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::put('/profile', [\App\Http\Controllers\Employer\ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/company-logo', [\App\Http\Controllers\Employer\ProfileController::class, 'deleteCompanyLogo'])->name('profile.delete-logo');
         Route::resource('internships', EmployerInternshipController::class)->except(['show']);
+        Route::resource('skills', EmployerSkillController::class)->except(['show']);
         Route::post('/internships/{internship}/close', [EmployerInternshipController::class, 'close'])->name('internships.close');
         Route::get('/applicants', [ApplicantController::class, 'index'])->name('applicants.index');
         Route::get('/applicants/{application}', [ApplicantController::class, 'show'])->name('applicants.show');
@@ -189,6 +192,8 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/profile', [AdminProfileController::class, 'edit'])->name('profile.edit');
+        Route::post('/profile-picture', [AdminProfileController::class, 'updatePicture'])->name('profile.update-picture');
         Route::get('/academics', [AcademicCatalogController::class, 'index'])->name('academics.index');
         Route::get('/academics/settings', fn () => redirect()->route('admin.academics.index'))
             ->name('academics.settings');
@@ -218,7 +223,6 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
         Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
         Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
-        Route::resource('skills', AdminSkillController::class)->except(['show']);
         Route::resource('skill-categories', AdminSkillCategoryController::class)
             ->except(['show'])
             ->parameters(['skill-categories' => 'skill_category']);

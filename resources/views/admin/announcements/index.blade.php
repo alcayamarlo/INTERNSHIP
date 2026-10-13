@@ -268,13 +268,15 @@
                         <input type="text" class="form-control @error('title') is-invalid @enderror" name="title" value="{{ old('title') }}" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Target Role <span class="text-muted">(optional)</span></label>
-                        <select class="form-select" name="target_role">
-                            <option value="">All Users</option>
+                        <label class="form-label" for="announcementTargetRole">Target Role</label>
+                        <select class="form-select @error('target_role') is-invalid @enderror" id="announcementTargetRole" name="target_role" required>
+                            <option value="" disabled {{ old('target_role') ? '' : 'selected' }}>Select an audience</option>
+                            <option value="all" {{ old('target_role') === 'all' ? 'selected' : '' }}>All Users</option>
                             @foreach($roles as $role)
-                                <option value="{{ $role->value }}">{{ $role->pluralLabel() }}</option>
+                                <option value="{{ $role->value }}" {{ old('target_role') === $role->value ? 'selected' : '' }}>{{ $role->pluralLabel() }}</option>
                             @endforeach
                         </select>
+                        @error('target_role')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Content</label>

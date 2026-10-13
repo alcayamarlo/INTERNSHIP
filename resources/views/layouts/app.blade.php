@@ -2208,6 +2208,7 @@
         UserRole::Student => $currentUser?->student?->profile_picture,
         UserRole::Coordinator => $currentUser?->coordinator?->profile_picture,
         UserRole::Employer => $currentUser?->employer?->logo,
+        UserRole::Admin => $currentUser?->avatar,
         default => null,
     };
 
@@ -2424,6 +2425,13 @@
 
             </a>
 
+            <a
+                class="sb-nav-link {{ request()->routeIs('employer.skills.*') ? 'active' : '' }}"
+                href="{{ route('employer.skills.index') }}"
+            >
+                <i class="bi bi-tags-fill"></i>
+                <span>Skills Catalog</span>
+            </a>
 
             <a
                 class="sb-nav-link {{ request()->routeIs('employer.applicants.*') ? 'active' : '' }}"
@@ -2556,11 +2564,11 @@
             </a>
 
             <a
-                class="sb-nav-link {{ request()->routeIs('admin.skills.*', 'admin.skill-categories.*') ? 'active' : '' }}"
-                href="{{ route('admin.skills.index') }}"
+                class="sb-nav-link {{ request()->routeIs('admin.skill-categories.*') ? 'active' : '' }}"
+                href="{{ route('admin.skill-categories.index') }}"
             >
                 <i class="bi bi-tags-fill"></i>
-                <span>Skills catalog</span>
+                <span>Skill Categories</span>
             </a>
 
             <a
@@ -2753,9 +2761,11 @@
                     <div class="dropdown-header">Recent notifications</div>
                     @forelse($recentNotifications as $notification)
                         <div class="sb-notification-item {{ $notification->read_at ? '' : 'is-unread' }}" data-notification-item data-notification-id="{{ $notification->id }}">
-                            <strong>{{ $notification->title }}</strong>
-                            <span>{{ $notification->message }}</span>
-                            <time datetime="{{ $notification->created_at->toIso8601String() }}">{{ $notification->created_at->diffForHumans() }}</time>
+                            <a class="notification-open-link" href="{{ route('notifications.show', $notification) }}" data-notification-open data-read-url="{{ route('notifications.read', $notification) }}">
+                                <strong>{{ $notification->title }}</strong>
+                                <span>{{ $notification->message }}</span>
+                                <time datetime="{{ $notification->created_at->toIso8601String() }}">{{ $notification->created_at->diffForHumans() }}</time>
+                            </a>
                             @if(!$notification->read_at)
                                 <form action="{{ route('notifications.read', $notification) }}" method="POST" class="mt-2" data-ajax-notification="read">
                                     @csrf
@@ -2927,6 +2937,18 @@
                             <a class="dropdown-item" href="{{ route('coordinator.profile.edit') }}">
                                 <i class="bi bi-person-badge me-2"></i>
                                 Coordinator Profile
+                            </a>
+                        </li>
+
+                    @elseif(
+                        $currentUser &&
+                        $currentUser->isRole(UserRole::Admin)
+                    )
+
+                        <li>
+                            <a class="dropdown-item" href="{{ route('admin.profile.edit') }}">
+                                <i class="bi bi-person me-2"></i>
+                                My Profile
                             </a>
                         </li>
 

@@ -8,7 +8,7 @@
         <h1 class="h3 mb-1">Skill Catalog</h1>
         <p class="text-muted mb-0">Manage skills available for internship requirements.</p>
     </div>
-    <a href="{{ route('admin.skills.create') }}" class="btn btn-primary">Add Skill</a>
+    <a href="{{ route('employer.skills.create') }}" class="btn btn-primary">Add Skill</a>
 </div>
 
 <div class="alert alert-info">
@@ -30,8 +30,8 @@
                         <td>{{ $skill->skillCategory->name }}</td>
                         <td>{{ $skill->internship_requirements_count }}</td>
                         <td class="text-nowrap">
-                            <a href="{{ route('admin.skills.edit', $skill) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                            <form action="{{ route('admin.skills.destroy', $skill) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this unused skill?')">
+                            <a href="{{ route('employer.skills.edit', $skill) }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <form action="{{ route('employer.skills.destroy', $skill) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this unused skill?')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-outline-danger" @disabled($skill->internship_requirements_count > 0)>Delete</button>

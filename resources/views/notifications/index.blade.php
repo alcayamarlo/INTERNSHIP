@@ -96,7 +96,10 @@
         @forelse($notifications as $notification)
             <div class="list-group-item {{ $notification->read_at ? '' : 'bg-light border-start border-primary border-3' }}" data-notification-item data-notification-id="{{ $notification->id }}">
                 <div class="d-flex justify-content-between align-items-start gap-3">
-                    <div class="flex-grow-1">
+                    <a class="flex-grow-1 text-reset text-decoration-none notification-open-link"
+                       href="{{ route('notifications.show', $notification) }}"
+                       data-notification-open
+                       data-read-url="{{ route('notifications.read', $notification) }}">
                         <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
                             @if(!$notification->read_at)<span class="badge bg-primary">New</span>@endif
                             @if($notification->archived_at)<span class="badge bg-secondary">Archived</span>@endif
@@ -105,7 +108,7 @@
                         </div>
                         <p class="mb-1">{{ $notification->message }}</p>
                         <small class="text-muted">{{ $notification->created_at->format('M d, Y h:i A') }} ({{ $notification->created_at->diffForHumans() }})</small>
-                    </div>
+                    </a>
                     <div class="d-flex flex-column gap-2 align-items-end">
                         @if(!$notification->read_at)
                             <form action="{{ route('notifications.read', $notification) }}" method="POST" data-ajax-notification="read">

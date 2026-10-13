@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Profile;
 
+use App\Services\FileUploadService;
 use Illuminate\Foundation\Http\FormRequest;
 
 class EmployerProfileRequest extends FormRequest
@@ -16,7 +17,7 @@ class EmployerProfileRequest extends FormRequest
         return [
             // Company Information
             'company_name' => ['required', 'string', 'max:255'],
-            'company_logo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:2048'],
+            'company_logo' => FileUploadService::imageRules(),
             'description' => ['nullable', 'string', 'max:2000'],
             'industry' => ['required', 'string', 'max:100'],
             'company_size' => ['nullable', 'string', 'in:1-10,11-50,51-200,201-500,500+'],

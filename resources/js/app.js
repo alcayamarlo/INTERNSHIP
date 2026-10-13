@@ -86,6 +86,59 @@ document.addEventListener('submit', (event) => {
     }
 });
 
+const updateUnreadNotificationBadge = (value) => {
+    const unreadCount = Math.max(0, Number(value) || 0);
+    document.querySelectorAll('[data-unread-badge]').forEach((badge) => {
+        badge.textContent = unreadCount > 9 ? '9+' : String(unreadCount);
+        badge.hidden = unreadCount === 0;
+    });
+    document.querySelectorAll('.sb-top-action[aria-label^="Notifications"]').forEach((button) => {
+        button.setAttribute('aria-label', `Notifications${unreadCount ? `, ${unreadCount} unread` : ''}`);
+        if (unreadCount === 0) {
+            button.querySelector('.sb-notification-badge')?.remove();
+        } else if (!button.querySelector('.sb-notification-badge')) {
+            const badge = document.createElement('span');
+            badge.className = 'sb-notification-badge';
+            badge.dataset.unreadBadge = '';
+            badge.textContent = unreadCount > 9 ? '9+' : String(unreadCount);
+            button.append(badge);
+        }
+    });
+};
+
+document.addEventListener('click', async (event) => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+    const link = event.target instanceof Element
+        ? event.target.closest('a[data-notification-open]')
+        : null;
+    if (!link || link.target === '_blank') return;
+
+    event.preventDefault();
+    if (link.dataset.markingRead === 'true') return;
+    link.dataset.markingRead = 'true';
+
+    try {
+        const response = await fetch(link.dataset.readUrl, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.message || 'Unable to open notification.');
+
+        link.closest('[data-notification-item]')?.classList.remove('is-unread', 'bg-light', 'border-start', 'border-primary', 'border-3');
+        updateUnreadNotificationBadge(payload.unread_count);
+        window.location.assign(link.href);
+    } catch (error) {
+        delete link.dataset.markingRead;
+        window.alert(error.message || 'Unable to open notification.');
+    }
+}, true);
+
 document.addEventListener('submit', async (event) => {
     const form = event.target;
     if (!(form instanceof HTMLFormElement) || !form.hasAttribute('data-ajax-application')) return;
@@ -167,23 +220,7 @@ document.addEventListener('submit', async (event) => {
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.message || 'Unable to update notification.');
 
-        const unreadCount = Number(payload.unread_count || 0);
-        document.querySelectorAll('[data-unread-badge]').forEach((badge) => {
-            badge.textContent = unreadCount > 9 ? '9+' : String(unreadCount);
-            badge.hidden = unreadCount === 0;
-        });
-        document.querySelectorAll('.sb-top-action[aria-label^="Notifications"]').forEach((button) => {
-            button.setAttribute('aria-label', `Notifications${unreadCount ? `, ${unreadCount} unread` : ''}`);
-            if (unreadCount === 0) {
-                button.querySelector('.sb-notification-badge')?.remove();
-            } else if (!button.querySelector('.sb-notification-badge')) {
-                const badge = document.createElement('span');
-                badge.className = 'sb-notification-badge';
-                badge.dataset.unreadBadge = '';
-                badge.textContent = unreadCount > 9 ? '9+' : String(unreadCount);
-                button.append(badge);
-            }
-        });
+        updateUnreadNotificationBadge(payload.unread_count);
 
         const action = form.dataset.ajaxNotification;
         const item = form.closest('[data-notification-item]');
@@ -362,6 +399,25 @@ document.addEventListener('submit', async (event) => {
 
         feedback.textContent = payload.message || 'Changes saved.';
         feedback.classList.add('text-success');
+        if (form.hasAttribute('data-application-status-form')) {
+            const statusBadge = document.querySelector('[data-application-status]');
+            if (statusBadge && payload.status_label && payload.status_badge_class) {
+                statusBadge.textContent = payload.status_label;
+                statusBadge.className = `badge ${payload.status_badge_class} fs-6`;
+            }
+
+            const statusSelect = form.querySelector('[name="status"]');
+            if (statusSelect && Array.isArray(payload.available_statuses)) {
+                statusSelect.replaceChildren(...payload.available_statuses.map(({ value, label }) => new Option(label, value)));
+                if (payload.available_statuses.length === 0) {
+                    form.hidden = true;
+                    const finalStatusMessage = document.createElement('p');
+                    finalStatusMessage.className = 'text-muted mb-0';
+                    finalStatusMessage.textContent = 'No further status changes are available.';
+                    form.insertAdjacentElement('afterend', finalStatusMessage);
+                }
+            }
+        }
         if (form.dataset.ajaxReset === 'true') form.reset();
     } catch (error) {
         feedback.textContent = error.message || 'Unable to complete this action.';

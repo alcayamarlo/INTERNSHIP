@@ -18,10 +18,10 @@ class StoreAnnouncementRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string'],
-            'target_role' => ['nullable', Rule::in(array_map(
+            'target_role' => ['required', Rule::in(['all', ...array_map(
                 fn (UserRole $role) => $role->value,
-                UserRole::all()
-            ))],
+                UserRole::assignable()
+            )])],
         ];
     }
 
@@ -30,6 +30,8 @@ class StoreAnnouncementRequest extends FormRequest
         return [
             'title.required' => 'Announcement title is required.',
             'content.required' => 'Announcement content is required.',
+            'target_role.required' => 'Please select an announcement audience.',
+            'target_role.in' => 'Please select a valid announcement audience.',
         ];
     }
 }

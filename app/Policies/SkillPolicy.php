@@ -10,26 +10,26 @@ class SkillPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->isRole(UserRole::Admin);
+        return $user->isRole(UserRole::Employer);
     }
 
     public function view(User $user, Skill $skill): bool
     {
-        return $user->isRole(UserRole::Admin);
+        return $user->isRole(UserRole::Employer);
     }
 
     public function create(User $user): bool
     {
-        return $user->isRole(UserRole::Admin);
+        return $user->isRole(UserRole::Employer);
     }
 
     public function update(User $user, Skill $skill): bool
     {
-        return $user->isRole(UserRole::Admin);
+        return $user->isRole(UserRole::Employer);
     }
 
     public function delete(User $user, Skill $skill): bool
     {
-        return $user->isRole(UserRole::Admin);
+        return $user->isRole(UserRole::Employer);
     }
 }

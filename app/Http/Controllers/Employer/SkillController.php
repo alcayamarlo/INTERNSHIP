@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Employer;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreSkillRequest;
@@ -15,7 +15,7 @@ class SkillController extends Controller
     {
         $this->authorize('viewAny', Skill::class);
 
-        return view('admin.skills.index', [
+        return view('employer.skills.index', [
             'skills' => Skill::with('skillCategory')
                 ->withCount('internshipRequirements')
                 ->orderBy('name')
@@ -27,7 +27,7 @@ class SkillController extends Controller
     {
         $this->authorize('create', Skill::class);
 
-        return view('admin.skills.form', [
+        return view('employer.skills.form', [
             'skill' => new Skill,
             'categories' => SkillCategory::orderBy('name')->get(),
         ]);
@@ -37,14 +37,14 @@ class SkillController extends Controller
     {
         Skill::create($request->validated());
 
-        return redirect()->route('admin.skills.index')->with('success', 'Skill created.');
+        return redirect()->route('employer.skills.index')->with('success', 'Skill created.');
     }
 
     public function edit(Skill $skill)
     {
         $this->authorize('update', $skill);
 
-        return view('admin.skills.form', [
+        return view('employer.skills.form', [
             'skill' => $skill,
             'categories' => SkillCategory::orderBy('name')->get(),
         ]);
@@ -54,7 +54,7 @@ class SkillController extends Controller
     {
         $skill->update($request->validated());
 
-        return redirect()->route('admin.skills.index')->with('success', 'Skill updated.');
+        return redirect()->route('employer.skills.index')->with('success', 'Skill updated.');
     }
 
     public function destroy(Skill $skill)
@@ -79,6 +79,6 @@ class SkillController extends Controller
             ]);
         }
 
-        return redirect()->route('admin.skills.index')->with('success', 'Skill deleted.');
+        return redirect()->route('employer.skills.index')->with('success', 'Skill deleted.');
     }
 }

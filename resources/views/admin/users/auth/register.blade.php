@@ -147,6 +147,32 @@
         100%;
 }
 
+.skillbridge-guest .auth-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    margin-bottom: 14px;
+    padding: 8px 14px;
+    border: 1px solid var(--sb-border);
+    border-radius: 999px;
+    background: var(--sb-brand-soft);
+    color: var(--sb-brand-content);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.skillbridge-guest .auth-back-link:hover {
+    border-color: var(--sb-brand);
+    background: var(--sb-brand);
+    color: #fff;
+}
+
+.skillbridge-guest .auth-back-link:focus-visible {
+    outline: 3px solid var(--sb-brand-ring);
+    outline-offset: 2px;
+}
+
 
 /* =========================================================
    TOP BRAND
@@ -2051,6 +2077,10 @@
 
     <div class="register-content">
 
+        <a class="auth-back-link" href="{{ route('home') }}">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            Back to Home
+        </a>
 
         {{-- =====================================================
              TOP

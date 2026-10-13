@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Profile;
 
+use App\Services\FileUploadService;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CoordinatorProfileRequest extends FormRequest
@@ -25,7 +26,7 @@ class CoordinatorProfileRequest extends FormRequest
             'phone' => ['required', 'regex:/^(\+?\d{1,3}[-.\s]?)?\d{7,14}$/'],
 
             // Profile Picture
-            'profile_picture' => ['nullable', 'image', 'mimes:jpeg,jpg,png', 'max:2048'],
+            'profile_picture' => FileUploadService::imageRules(),
         ];
     }
 

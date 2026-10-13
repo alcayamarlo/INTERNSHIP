@@ -46,6 +46,27 @@ it('renders a submission key and disables the send button while submitting', fun
         ->assertSee('sendButton.disabled = true', false);
 });
 
+it('renders Enter-to-send behavior for every messaging role', function () {
+    $users = [];
+    foreach (UserRole::all() as $role) {
+        $users[$role->value] = User::factory()->create(['role' => $role]);
+    }
+
+    foreach ($users as $sender) {
+        $recipient = $sender->isRole(UserRole::Student)
+            ? $users[UserRole::Coordinator->value]
+            : $users[UserRole::Student->value];
+
+        $this->actingAs($sender)
+            ->get(route('messages.show', $recipient))
+            ->assertOk()
+            ->assertSee("event.key !== 'Enter' || event.shiftKey || event.isComposing", false)
+            ->assertSee('messageForm.requestSubmit()', false)
+            ->assertSee('data-no-loading="true"', false)
+            ->assertSee('spinner-border spinner-border-sm', false);
+    }
+});
+
 it('sends a message asynchronously and rotates the retry token', function () {
     $sender = User::factory()->create(['role' => UserRole::Student]);
     $recipient = User::factory()->create(['role' => UserRole::Coordinator]);

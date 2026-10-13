@@ -15,6 +15,7 @@ use App\Models\StudentCompetency;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use App\Models\AppNotification;
 
 uses(RefreshDatabase::class);
 
@@ -323,6 +324,61 @@ it('shows only allowed next statuses in the employer dropdown', function () {
             $response->assertSee('No further status changes are available.');
         }
     }
+});
+
+it('updates hire and reject decisions asynchronously and notifies students', function () {
+    config(['queue.default' => 'sync', 'mail.default' => 'log']);
+
+    [$employerUser, $hireApplication] = createApplicationStatusTransitionFixture(ApplicationStatus::Reviewed);
+    $studentUser = $hireApplication->student->user;
+
+    $this->actingAs($employerUser)
+        ->get(route('employer.applicants.show', $hireApplication))
+        ->assertOk()
+        ->assertSee('data-ajax-form data-application-status-form', false);
+
+    $this->actingAs($employerUser)
+        ->putJson(route('employer.applicants.status', $hireApplication), [
+            'status' => ApplicationStatus::Accepted->value,
+        ])
+        ->assertOk()
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('status', ApplicationStatus::Accepted->value)
+        ->assertJsonPath('status_label', ApplicationStatus::Accepted->label())
+        ->assertJsonPath('available_statuses.0.value', ApplicationStatus::Completed->value);
+
+    expect($hireApplication->fresh()->status)->toBe(ApplicationStatus::Accepted);
+    $this->assertDatabaseHas('notifications', [
+        'user_id' => $studentUser->id,
+        'type' => 'application_update',
+    ]);
+
+    $this->actingAs($studentUser)
+        ->get(route('student.applications.index'))
+        ->assertOk()
+        ->assertSee(ApplicationStatus::Accepted->label());
+
+    [$otherEmployerUser, $rejectApplication] = createApplicationStatusTransitionFixture(ApplicationStatus::Applied);
+    $rejectedStudent = $rejectApplication->student->user;
+
+    $this->actingAs($otherEmployerUser)
+        ->putJson(route('employer.applicants.status', $rejectApplication), [
+            'status' => ApplicationStatus::Rejected->value,
+        ])
+        ->assertOk()
+        ->assertJsonPath('status', ApplicationStatus::Rejected->value)
+        ->assertJsonPath('available_statuses', []);
+
+    expect($rejectApplication->fresh()->status)->toBe(ApplicationStatus::Rejected);
+    $this->assertDatabaseHas('notifications', [
+        'user_id' => $rejectedStudent->id,
+        'type' => 'application_update',
+    ]);
+
+    $this->actingAs($rejectedStudent)
+        ->get(route('student.applications.index'))
+        ->assertOk()
+        ->assertSee(ApplicationStatus::Rejected->label());
 });
 
 it('does not allow another employer to change the application status', function () {

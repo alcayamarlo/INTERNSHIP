@@ -190,6 +190,18 @@
 
     const messageForm = document.querySelector('.messenger-form');
     if (messageForm) {
+        const input = messageForm.querySelector('.messenger-input');
+        const sendButton = messageForm.querySelector('.messenger-send');
+
+        input.addEventListener('keydown', event => {
+            if (event.key !== 'Enter' || event.shiftKey || event.isComposing) return;
+
+            event.preventDefault();
+            if (input.value.trim() && !sendButton.disabled && messageForm.dataset.submitting !== 'true') {
+                messageForm.requestSubmit();
+            }
+        });
+
         messageForm.addEventListener('submit', async event => {
             event.preventDefault();
             if (messageForm.dataset.submitting === 'true') {
@@ -197,8 +209,6 @@
             }
 
             messageForm.dataset.submitting = 'true';
-            const sendButton = messageForm.querySelector('.messenger-send');
-            const input = messageForm.querySelector('.messenger-input');
             const feedback = messageForm.querySelector('.messenger-feedback');
             const originalButton = sendButton.innerHTML;
             const body = input.value.trim();

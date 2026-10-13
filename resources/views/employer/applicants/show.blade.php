@@ -17,7 +17,7 @@
                         <p class="text-muted mb-0">{{ $application->student->user->email }}</p>
                         @if($application->student->program)<p class="small">{{ $application->student->program }} — {{ $application->student->year_level }}</p>@endif
                     </div>
-                    <span class="badge {{ $application->status->badgeClass() }} fs-6">{{ $application->status->label() }}</span>
+                    <span class="badge {{ $application->status->badgeClass() }} fs-6" data-application-status>{{ $application->status->label() }}</span>
                 </div>
                 <hr>
                 <p><strong>Applied for:</strong> {{ $application->internship->title }}</p>
@@ -127,7 +127,7 @@
             <div class="card-header bg-white"><h5 class="mb-0">Update Status</h5></div>
             <div class="card-body">
                 @if($availableStatuses !== [])
-                <form method="POST" action="{{ route('employer.applicants.status', $application) }}">
+                <form method="POST" action="{{ route('employer.applicants.status', $application) }}" data-ajax-form data-application-status-form>
                     @csrf @method('PUT')
                     <div class="mb-3">
                         <label class="form-label">Status</label>

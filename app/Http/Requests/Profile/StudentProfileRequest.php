@@ -4,6 +4,7 @@ namespace App\Http\Requests\Profile;
 
 use App\Models\AcademicSetting;
 use App\Models\Program;
+use App\Services\FileUploadService;
 use App\Services\AcademicCalendar;
 use App\Support\StudentIdFormat;
 use Illuminate\Foundation\Http\FormRequest;
@@ -90,7 +91,7 @@ class StudentProfileRequest extends FormRequest
             'preferred_location' => ['nullable', 'string', 'max:255'],
 
             // Profile Picture
-            'profile_picture' => ['nullable', 'image', 'mimes:jpeg,jpg,png', 'max:2048'],
+            'profile_picture' => FileUploadService::imageRules(),
         ];
     }
 

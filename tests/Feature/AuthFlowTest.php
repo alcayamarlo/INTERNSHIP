@@ -16,8 +16,17 @@ use Illuminate\Routing\Middleware\ThrottleRequests;
 it('shows a streamlined student-only registration form', function () {
 	$this->get('/register')
 		->assertOk()
+		->assertSee('href="'.route('home').'"', false)
+		->assertSee('Back to Home')
 		->assertDontSee('Internship Profile')
 		->assertDontSee('Choose your role in Skill Bridge');
+});
+
+it('shows a back-to-home link on the login page', function () {
+	$this->get('/login')
+		->assertOk()
+		->assertSee('href="'.route('home').'"', false)
+		->assertSee('Back to Home');
 });
 
 it('registers a student, logs them in, and sends one verification email', function () {

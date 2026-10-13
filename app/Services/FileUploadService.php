@@ -88,8 +88,13 @@ class FileUploadService
     private function storeFile(UploadedFile $file, string $directory, string $prefix, string $extension, string $disk): string
     {
         $filename = trim($prefix, '_').'_'.now()->timestamp.'_'.Str::random(8).'.'.$extension;
+        $path = $file->storeAs(trim($directory, '/'), $filename, $disk);
 
-        return $file->storeAs(trim($directory, '/'), $filename, $disk);
+        if (! $path) {
+            throw new \RuntimeException("Failed to store uploaded file on the [$disk] disk.");
+        }
+
+        return $path;
     }
 
     public function delete(?string $path, ?string $disk = null): void

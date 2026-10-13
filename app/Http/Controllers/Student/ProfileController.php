@@ -292,7 +292,7 @@ class ProfileController extends Controller
 
     public function updatePicture(\Illuminate\Http\Request $request)
     {
-        $request->validate(['profile_picture' => ['required', 'image', 'mimes:jpeg,jpg,png', 'max:2048']]);
+        $request->validate(['profile_picture' => FileUploadService::imageRules(true)]);
         $student = Auth::user()->student()->firstOrFail();
         $previousPicture = $student->profile_picture;
         $newPicture = $this->fileUpload->uploadImage($request->file('profile_picture'), 'profiles/students', (string) $student->id);

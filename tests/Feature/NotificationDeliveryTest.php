@@ -106,6 +106,7 @@ it('delivers announcements to each selected user role and to all users', functio
     $this->post(route('admin.announcements.store'), [
         'title' => $allUsersTitle,
         'content' => 'This notification is for all roles.',
+        'target_role' => 'all',
     ])->assertRedirect(route('admin.announcements.index'));
 
     foreach ([$admin, ...array_values($recipients)] as $recipient) {
@@ -131,22 +132,93 @@ it('delivers announcements to each selected user role and to all users', functio
     }
 });
 
+it('requires an announcement audience and rejects administrator as a target', function () {
+    $admin = User::factory()->create(['role' => UserRole::Admin]);
+    $announcement = [
+        'title' => 'Audience validation',
+        'content' => 'Choose an allowed audience.',
+    ];
+
+    $this->actingAs($admin)
+        ->from(route('admin.announcements.index'))
+        ->post(route('admin.announcements.store'), $announcement)
+        ->assertRedirect(route('admin.announcements.index'))
+        ->assertSessionHasErrors(['target_role']);
+
+    $this->post(route('admin.announcements.store'), [
+        ...$announcement,
+        'target_role' => UserRole::Admin->value,
+    ])->assertRedirect(route('admin.announcements.index'))
+        ->assertSessionHasErrors(['target_role']);
+
+    $this->assertDatabaseMissing('announcements', ['title' => 'Audience validation']);
+});
+
 it('marks notifications read asynchronously and returns the unread count', function () {
+    foreach (UserRole::all() as $role) {
+        $user = User::factory()->create(['role' => $role]);
+        $notification = AppNotification::create([
+            'user_id' => $user->id,
+            'type' => 'application_update',
+            'title' => 'Application updated',
+            'message' => 'Your application was reviewed.',
+        ]);
+
+        $this->actingAs($user)
+            ->postJson(route('notifications.read', $notification))
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('unread_count', 0);
+
+        $this->assertNotNull($notification->fresh()->read_at);
+    }
+});
+
+it('opens a notification detail page and marks it read for every role', function () {
+    foreach (UserRole::all() as $role) {
+        $user = User::factory()->create(['role' => $role]);
+        $notification = AppNotification::create([
+            'user_id' => $user->id,
+            'type' => 'announcement',
+            'title' => 'Important update',
+            'message' => 'Full notification content for '.$role->value.'.',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('notifications.index'))
+            ->assertOk()
+            ->assertSee('data-notification-open', false)
+            ->assertSee(route('notifications.show', $notification), false);
+
+        $this->get(route('notifications.show', $notification))
+            ->assertOk()
+            ->assertSee('Important update')
+            ->assertSee('Full notification content for '.$role->value.'.');
+
+        $this->assertNotNull($notification->fresh()->read_at);
+    }
+});
+
+it('shows the full published announcement from its notification', function () {
     $user = User::factory()->create(['role' => UserRole::Student]);
+    $announcement = \App\Models\Announcement::create([
+        'user_id' => User::factory()->create(['role' => UserRole::Admin])->id,
+        'title' => 'Long announcement',
+        'content' => str_repeat('Full published announcement. ', 8),
+        'published_at' => now(),
+    ]);
     $notification = AppNotification::create([
         'user_id' => $user->id,
-        'type' => 'application_update',
-        'title' => 'Application updated',
-        'message' => 'Your application was reviewed.',
+        'type' => 'announcement',
+        'title' => $announcement->title,
+        'message' => \Illuminate\Support\Str::limit($announcement->content, 120),
+        'data' => ['announcement_id' => $announcement->id],
     ]);
 
     $this->actingAs($user)
-        ->postJson(route('notifications.read', $notification))
+        ->get(route('notifications.show', $notification))
         ->assertOk()
-        ->assertJsonPath('success', true)
-        ->assertJsonPath('unread_count', 0);
-
-    $this->assertNotNull($notification->fresh()->read_at);
+        ->assertSee($announcement->content);
 });
 
 it('archives read notifications and excludes archived items from unread counts', function () {
