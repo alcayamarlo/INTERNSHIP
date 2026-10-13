@@ -49,7 +49,7 @@ it('allows admins to create a student account with its student profile', functio
         ->and($student->profile_completion)->toBe($student->profileCompletionSummary()['percentage']);
 });
 
-it('uses all roles in filters and announcements while keeping admin creation restricted', function () {
+it('uses all roles in user filters, limits announcement audiences, and keeps admin creation restricted', function () {
     $admin = User::factory()->create(['role' => UserRole::Admin]);
 
     $this->actingAs($admin)
@@ -65,7 +65,8 @@ it('uses all roles in filters and announcements while keeping admin creation res
         ->assertSee('value="student"', false)
         ->assertSee('value="employer"', false)
         ->assertSee('value="coordinator"', false)
-        ->assertSee('value="admin"', false);
+        ->assertDontSee('value="admin"', false)
+        ->assertSee('value="all"', false);
 
     $this->post(route('admin.users.store'), [
         'name' => 'Attempted Administrator',
