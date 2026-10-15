@@ -2750,7 +2750,7 @@
                 $recentNotifications = $currentUser->appNotifications()->whereNull('archived_at')->latest()->take(5)->get();
                 $unread = $currentUser->appNotifications()->whereNull('read_at')->whereNull('archived_at')->count();
             @endphp
-            <div class="dropdown">
+            <div class="dropdown sb-notification-dropdown">
                 <button type="button" class="sb-top-action" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications{{ $unread ? ', '.$unread.' unread' : '' }}">
                     <i class="bi bi-bell" aria-hidden="true"></i>
                     @if($unread > 0)
