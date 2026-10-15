@@ -1511,28 +1511,6 @@ body.skillbridge-guest .skillbridge-guest-theme-toggle:hover {
     pointer-events: none;
 }
 
-.sb-mouse-glow {
-    position: fixed;
-    z-index: 0;
-    width: 300px;
-    height: 300px;
-    border-radius: 50%;
-    opacity: .08;
-    background: radial-gradient(circle, rgba(225, 29, 46, .5), transparent 68%);
-    pointer-events: none;
-    transform: translate3d(-50%, -50%, 0);
-    will-change: transform;
-}
-
-.sb-film-grain {
-    position: fixed;
-    inset: 0;
-    z-index: 9998;
-    opacity: .025;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.3'/%3E%3C/svg%3E");
-    pointer-events: none;
-}
-
 .sb-reveal {
     opacity: 0;
     transform: translateY(14px);
@@ -1554,17 +1532,6 @@ body.skillbridge-guest .skillbridge-guest-theme-toggle:hover {
     border-radius: 50%;
     vertical-align: -.15em;
     animation: sb-spin 700ms linear infinite;
-}
-
-.sb-card-spotlight {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    border-radius: inherit;
-    opacity: 0;
-    background: radial-gradient(260px circle at var(--sb-spot-x, 50%) var(--sb-spot-y, 50%), color-mix(in srgb, var(--sb-ink) 4%, transparent), transparent 72%);
-    pointer-events: none;
-    transition: opacity var(--sb-motion-base) var(--sb-ease);
 }
 
 body.skillbridge-app :is(.student-dashboard-shell, .coordinator-dashboard-shell, .employer-dashboard-shell, .admin-dashboard-shell) {
@@ -1996,19 +1963,6 @@ body.skillbridge-app :is(.student-dashboard-shell, .coordinator-dashboard-shell,
     }
 }
 
-.sb-has-spotlight {
-    isolation: isolate;
-}
-
-.sb-has-spotlight:hover > .sb-card-spotlight {
-    opacity: 1;
-}
-
-.sb-has-spotlight > :not(.sb-card-spotlight) {
-    position: relative;
-    z-index: 1;
-}
-
 @keyframes sb-spin {
     to { transform: rotate(360deg); }
 }
@@ -2026,11 +1980,6 @@ body.skillbridge-app :is(.student-dashboard-shell, .coordinator-dashboard-shell,
     .sb-reveal {
         opacity: 1;
         transform: none;
-    }
-
-    .sb-mouse-glow,
-    .sb-film-grain {
-        display: none;
     }
 }
 
@@ -2897,4 +2846,63 @@ body.skillbridge-app #sbContent #competenciesOverview :is(
     border-color: var(--sb-border);
     background-color: var(--sb-hover-neutral);
     box-shadow: var(--sb-shadow);
+}
+
+body.skillbridge-app :is(.sb-top-action, .sb-theme-toggle) {
+    display: inline-flex;
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+    flex: 0 0 40px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--sb-border);
+    border-radius: 12px;
+    color: var(--sb-muted);
+    background: var(--sb-surface);
+    box-shadow: none;
+    line-height: 1;
+    transform: none;
+    transition: color var(--sb-motion-fast) var(--sb-ease), background-color var(--sb-motion-fast) var(--sb-ease), border-color var(--sb-motion-fast) var(--sb-ease);
+}
+
+body.skillbridge-app :is(.sb-top-action, .sb-theme-toggle) > i {
+    display: inline-flex;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    line-height: 1;
+}
+
+body.skillbridge-app .sb-top-actions :is(.sb-top-action, .sb-theme-toggle):hover {
+    color: var(--sb-ink) !important;
+    border-color: var(--sb-border) !important;
+    background-color: var(--sb-hover-neutral) !important;
+    box-shadow: none;
+    transform: none;
+}
+
+body.skillbridge-app .sb-top-actions :is(.sb-top-action, .sb-theme-toggle):active {
+    transform: none;
+}
+
+body.skillbridge-app :is(.sb-top-action, .sb-theme-toggle):focus-visible {
+    color: var(--sb-muted);
+    border-color: var(--sb-border);
+    background: var(--sb-surface);
+    outline: 2px solid var(--sb-red);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 4px var(--sb-red-ring);
+}
+
+body.skillbridge-app .sb-theme-toggle[aria-pressed="true"] {
+    color: var(--sb-brand-content);
+    border-color: var(--sb-red);
+    background: var(--sb-red-soft);
+    box-shadow: inset 0 0 0 1px var(--sb-red);
 }

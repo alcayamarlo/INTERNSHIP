@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
@@ -19,12 +18,9 @@ class LoginController extends Controller
         return view('admin.users.auth.login');
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+        $credentials = $request->validated();
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
@@ -45,7 +41,7 @@ class LoginController extends Controller
 
             $this->activityLog->log($user, 'login');
 
-            return redirect()->intended(route($user->dashboardRoute()));
+            return redirect()->route($user->dashboardRoute());
         }
 
         return back()->withErrors([

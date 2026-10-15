@@ -88,28 +88,6 @@
         window.addEventListener('resize', updateProgress, { passive: true });
         updateProgress();
 
-        const grain = document.createElement('div');
-        grain.className = 'sb-film-grain';
-        grain.setAttribute('aria-hidden', 'true');
-        document.body.append(grain);
-
-        if (!reduceMotion && window.matchMedia('(pointer: fine)').matches) {
-            const glow = document.createElement('div');
-            glow.className = 'sb-mouse-glow';
-            glow.setAttribute('aria-hidden', 'true');
-            document.body.append(glow);
-
-            let glowFrame = 0;
-            document.addEventListener('pointermove', (event) => {
-                if (glowFrame) return;
-                glowFrame = window.requestAnimationFrame(() => {
-                    glowFrame = 0;
-                    glow.style.left = `${event.clientX}px`;
-                    glow.style.top = `${event.clientY}px`;
-                });
-            }, { passive: true });
-        }
-
         if (!reduceMotion && 'IntersectionObserver' in window) {
             const revealTargets = document.querySelectorAll(
                 '.skillbridge-public section, .skillbridge-app #sbContent .card, .skillbridge-app #sbContent [data-reveal], .skillbridge-guest .login-card, .skillbridge-guest .register-page'
@@ -127,22 +105,6 @@
                 revealObserver.observe(target);
             });
         }
-
-        document.querySelectorAll(
-            '.skillbridge-public .public-step-card, .skillbridge-public .public-role-card, .skillbridge-public .public-faq-item, .skillbridge-app #sbContent .card'
-        ).forEach((card) => {
-            if (getComputedStyle(card).position === 'static') card.style.position = 'relative';
-            const spotlight = document.createElement('span');
-            spotlight.className = 'sb-card-spotlight';
-            spotlight.setAttribute('aria-hidden', 'true');
-            card.prepend(spotlight);
-            card.classList.add('sb-has-spotlight');
-            card.addEventListener('pointermove', (event) => {
-                const bounds = card.getBoundingClientRect();
-                card.style.setProperty('--sb-spot-x', `${event.clientX - bounds.left}px`);
-                card.style.setProperty('--sb-spot-y', `${event.clientY - bounds.top}px`);
-            }, { passive: true });
-        });
 
         document.addEventListener('submit', (event) => {
             if (event.defaultPrevented || !(event.target instanceof HTMLFormElement)) return;
