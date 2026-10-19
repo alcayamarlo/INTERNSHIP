@@ -49,6 +49,40 @@
             syncThemeButtons();
         });
 
+        // App sidebar: collapse to an icon rail (desktop/tablet) and close the drawer with Escape.
+        const rootElement = document.documentElement;
+        const collapseButton = document.querySelector('[data-sidebar-collapse]');
+        const syncSidebar = () => {
+            const collapsed = rootElement.classList.contains('sb-collapsed');
+            document.querySelectorAll('.sb-nav-link').forEach((link) => {
+                const text = link.querySelector('span:not(.sb-nav-badge)');
+                if (collapsed && text) {
+                    link.setAttribute('title', text.textContent.trim());
+                } else {
+                    link.removeAttribute('title');
+                }
+            });
+            if (collapseButton) {
+                collapseButton.setAttribute('aria-pressed', String(collapsed));
+                collapseButton.setAttribute('aria-label', collapsed ? 'Expand navigation' : 'Collapse navigation');
+            }
+        };
+        syncSidebar();
+        collapseButton?.addEventListener('click', () => {
+            const collapsed = rootElement.classList.toggle('sb-collapsed');
+            try {
+                window.localStorage.setItem('skillbridge-sidebar', collapsed ? 'collapsed' : 'expanded');
+            } catch {
+                // The choice applies until the page is closed.
+            }
+            syncSidebar();
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && document.getElementById('sidebar')?.classList.contains('show')) {
+                window.closeSidebar?.();
+            }
+        });
+
         const publicNavigation = document.getElementById('publicNavigation');
         const publicNavigationToggle = document.querySelector('[data-public-nav-toggle]');
         if (publicNavigation && publicNavigationToggle) {
@@ -90,7 +124,7 @@
 
         if (!reduceMotion && 'IntersectionObserver' in window) {
             const revealTargets = document.querySelectorAll(
-                '.skillbridge-public section, .skillbridge-app #sbContent .card, .skillbridge-app #sbContent [data-reveal]'
+                '.skillbridge-public section'
             );
             const revealObserver = new IntersectionObserver((entries, observer) => {
                 entries.forEach((entry) => {
