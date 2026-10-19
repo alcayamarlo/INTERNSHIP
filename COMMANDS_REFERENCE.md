@@ -77,8 +77,8 @@ npm run dev
 # Build assets for production
 npm run build
 
-# Watch assets for changes
-npm run watch
+# Run Vite in development/watch mode
+npm run dev
 ```
 
 ---
@@ -271,38 +271,44 @@ php artisan optimize
 
 ### Pre-Deployment Checklist
 ```bash
-# 1. Install dependencies
-composer install --no-dev
+# 1. Configure the production environment first:
+#    APP_ENV=production, APP_DEBUG=false, a persistent APP_KEY,
+#    and valid production database/mail settings.
 
-# 2. Build assets
+# 2. Install dependencies and build assets.
+#    public/build is git-ignored; deploy the generated directory with the app.
+composer install --no-dev --optimize-autoloader
+npm ci
 npm run build
 
-# 3. Cache config
-php artisan config:cache
-
-# 4. Cache routes
-php artisan route:cache
-
-# 5. Create storage link
+# 3. Remove stale cached settings, prepare storage, and apply migrations
+php artisan optimize:clear
 php artisan storage:link
-
-# 6. Run migrations (on production server)
 php artisan migrate --force
 
-# 7. Verify
+# 4. Rebuild Laravel caches after environment values are set
+php artisan optimize
+
+# 5. Verify and restart long-running queue workers
 php artisan about
+php artisan queue:restart
 ```
 
 ### Environment Setup
 ```bash
-# In .env:
+# Set these in the server environment or its protected .env file.
 APP_ENV=production
 APP_DEBUG=false
-APP_KEY=base64:...
 
-CACHE_DRIVER=redis
-SESSION_DRIVER=redis
-QUEUE_CONNECTION=redis
+# Generate APP_KEY once on a new installation, then keep the same key
+# for every deployment. Never replace it on an existing installation.
+php artisan key:generate
+
+# Defaults are database-backed; use Redis only if Redis is provisioned
+# and its connection is configured.
+CACHE_STORE=database
+SESSION_DRIVER=database
+QUEUE_CONNECTION=database
 ```
 
 ---
@@ -545,7 +551,7 @@ php artisan serve
 php artisan serve
 
 # 2. In another terminal, watch assets
-npm run watch
+npm run dev
 
 # 3. Open tinker for testing
 php artisan tinker
@@ -574,11 +580,12 @@ npm run build
 # 4. Optimize
 php artisan optimize
 
-# 5. Deploy code
+# 5. Deploy code and the generated public/build directory.
+#    If building on the server, run npm ci and npm run build there.
 git push production main
 
-# 6. Run migrations on server
-ssh production php artisan migrate --force
+# 6. On the server, from the application root, refresh migrations and caches
+ssh production "cd /path/to/app && php artisan optimize:clear && php artisan migrate --force && php artisan optimize && php artisan queue:restart"
 ```
 
 ---

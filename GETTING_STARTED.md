@@ -116,11 +116,15 @@ Avoid pointing test configuration at any database with data you need.
 
 - **Database connection error:** confirm the MySQL service is running and the
   `.env` database values are correct; then run `php artisan config:clear`.
+- **Missing application encryption key:** on a new installation only, run
+  `php artisan key:generate`. Preserve the generated key for all later
+  deployments; do not regenerate it for an existing installation.
 - **No email arrives:** check the configured mail transport. With the default
   `log` mailer, inspect `storage/logs/laravel.log`.
 - **Queued notification is pending:** start `php artisan queue:work` and check
   the configured queue backend.
-- **Frontend assets are missing:** run `npm install` and `npm run build`.
+- **Frontend assets are missing:** run `npm ci` and `npm run build`. Ensure
+  `public/build` is included in the deployed release; it is git-ignored.
 - **Private file not found:** confirm the database reference points to an
   existing file on the private disk. Legacy migration can be checked with
   `php artisan files:secure-existing`; this command reports missing

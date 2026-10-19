@@ -111,3 +111,10 @@ database and private storage before deployment. Keep uploaded resumes,
 certificates, and portfolios on the private disk and serve them through the
 authorized application routes. Do not publish `.env`, credentials, or private
 backups.
+
+Generate `APP_KEY` once for a new installation and preserve it across
+deployments; changing it can invalidate encrypted data and sessions. Build
+frontend assets with `npm ci` and `npm run build` as part of deployment:
+`public/build` is git-ignored, so make sure the generated directory is included
+in the release. See [COMMANDS_REFERENCE.md](COMMANDS_REFERENCE.md#-production-deployment)
+for the deployment checklist.
