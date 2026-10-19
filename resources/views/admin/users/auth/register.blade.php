@@ -2,3982 +2,394 @@
 
 @section('title', 'Create Account')
 @section('subtitle', 'Join Skill Bridge today')
-
-@push('styles')
-
-<style>
-
-/* =========================================================
-   SKILL BRIDGE REGISTRATION
-   IMPORTANT:
-   This page controls ONLY the registration/right side.
-   The left branding panel remains fixed.
-   ========================================================= */
-
-:root {
-    --sb-cyan: #08d9f5;
-    --sb-cyan-dark: #0891b2;
-
-    --sb-bg: #071526;
-    --sb-panel: #081a2e;
-    --sb-card: #0b2036;
-
-    --sb-border: rgba(8, 217, 245, 0.12);
-
-    --sb-text: #f8fafc;
-    --sb-text-soft: #d8e3ef;
-    --sb-muted: #8da4bd;
-
-    --sb-danger: #fb7185;
-    --sb-success: #4ade80;
-    --sb-warning: #fbbf24;
-}
-
-
-/* =========================================================
-   RESET
-   ========================================================= */
-
-.register-page,
-.register-page *,
-.register-page *::before,
-.register-page *::after {
-    box-sizing: border-box;
-}
-
-#account-type > .section-title:first-child,
-#account-type > .role-grid,
-#account-type > #roleError,
-#account-type > #role,
-#account-type > select[name="role_backend"] {
-    display: none !important;
-}
-
-
-/* =========================================================
-   RIGHT SIDE REGISTRATION PANEL
-   ========================================================= */
-
-.register-page {
-
-    position: fixed;
-
-    top: 0;
-    right: 0;
-    bottom: 0;
-
-    width: 50vw;
-
-    height: 100vh;
-
-    min-width: 0;
-
-    overflow-x: hidden;
-    overflow-y: auto;
-
-    padding:
-        28px
-        clamp(28px, 5vw, 70px)
-        40px;
-
-    background:
-        linear-gradient(
-            180deg,
-            #071426 0%,
-            #08182b 100%
-        );
-
-    border-left:
-        1px solid
-        rgba(8, 217, 245, 0.10);
-
-    scrollbar-width: thin;
-
-    scrollbar-color:
-        rgba(8, 217, 245, .55)
-        transparent;
-
-    z-index: 20;
-}
-
-
-/* Chrome / Edge scrollbar */
-
-.register-page::-webkit-scrollbar {
-    width: 6px;
-}
-
-.register-page::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.register-page::-webkit-scrollbar-thumb {
-
-    background:
-        rgba(8, 217, 245, .45);
-
-    border-radius: 20px;
-}
-
-.register-page::-webkit-scrollbar-thumb:hover {
-
-    background:
-        rgba(8, 217, 245, .75);
-}
-
-
-/* =========================================================
-   MAIN CONTENT WIDTH
-   ========================================================= */
-
-.register-content {
-
-    width: 100%;
-
-    /*
-     * Keeps the form from becoming too wide
-     * on large screens.
-     */
-    max-width: 680px;
-
-    margin:
-        0 auto;
-
-    min-height:
-        100%;
-}
-
-.skillbridge-guest .auth-back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 42px;
-    margin-bottom: 14px;
-    padding: 8px 14px;
-    border: 1px solid var(--sb-border);
-    border-radius: 999px;
-    background: var(--sb-brand-soft);
-    color: var(--sb-brand-content);
-    font-weight: 700;
-    text-decoration: none;
-}
-
-.skillbridge-guest .auth-back-link:hover {
-    border-color: var(--sb-brand);
-    background: var(--sb-brand);
-    color: #fff;
-}
-
-.skillbridge-guest .auth-back-link:focus-visible {
-    outline: 3px solid var(--sb-brand-ring);
-    outline-offset: 2px;
-}
-
-
-/* =========================================================
-   TOP BRAND
-   ========================================================= */
-
-.register-top {
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        space-between;
-
-    margin-bottom:
-        22px;
-}
-
-
-.register-brand {
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        9px;
-
-    color:
-        #f8fafc !important;
-
-    -webkit-text-fill-color:
-        #f8fafc !important;
-
-    color-scheme:
-        dark;
-
-    caret-color:
-        var(--sb-cyan);
-
-    font-size:
-        12px;
-
-    font-weight:
-        800;
-
-    letter-spacing:
-        .03em;
-}
-
-
-.register-brand-icon {
-
-    width:
-        34px;
-
-    height:
-        34px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    border-radius:
-        9px;
-
-    background:
-        linear-gradient(
-            135deg,
-            var(--sb-cyan),
-            #0891b2
-        );
-
-    color:
-        #032333;
-
-    font-size:
-        15px;
-}
-
-
-.register-secure {
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        5px;
-
-    color:
-        var(--sb-muted);
-
-    font-size:
-        9px;
-
-    font-weight:
-        600;
-}
-
-
-.register-secure i {
-    color:
-        var(--sb-success);
-}
-
-
-/* =========================================================
-   HERO
-   ========================================================= */
-
-.register-hero {
-
-    margin-bottom:
-        20px;
-}
-
-
-.register-badge {
-
-    display:
-        inline-flex;
-
-    align-items:
-        center;
-
-    gap:
-        6px;
-
-    margin-bottom:
-        9px;
-
-    padding:
-        6px 10px;
-
-    border:
-        1px solid
-        rgba(8,217,245,.16);
-
-    border-radius:
-        30px;
-
-    background:
-        rgba(8,217,245,.05);
-
-    color:
-        var(--sb-cyan);
-
-    font-size:
-        8px;
-
-    font-weight:
-        800;
-
-    text-transform:
-        uppercase;
-
-    letter-spacing:
-        .08em;
-}
-
-
-.register-hero h1 {
-
-    margin:
-        0 0 7px;
-
-    color:
-        var(--sb-text);
-
-    font-size:
-        clamp(25px, 2.2vw, 32px);
-
-    font-weight:
-        850;
-
-    line-height:
-        1.1;
-
-    letter-spacing:
-        -.035em;
-}
-
-
-.register-hero h1 span {
-    color:
-        var(--sb-cyan);
-}
-
-
-.register-hero p {
-
-    max-width:
-        590px;
-
-    margin:
-        0;
-
-    color:
-        var(--sb-muted);
-
-    font-size:
-        11px;
-
-    line-height:
-        1.6;
-}
-
-
-/* =========================================================
-   PROGRESS BAR
-   ========================================================= */
-
-.register-progress {
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    margin-bottom:
-        18px;
-
-    padding:
-        10px 13px;
-
-    border:
-        1px solid
-        var(--sb-border);
-
-    border-radius:
-        10px;
-
-    background:
-        rgba(12,32,54,.55);
-}
-
-
-.progress-step {
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        6px;
-
-    color:
-        var(--sb-muted);
-
-    font-size:
-        8px;
-
-    font-weight:
-        700;
-
-    white-space:
-        nowrap;
-}
-
-
-.progress-number {
-
-    width:
-        22px;
-
-    height:
-        22px;
-
-    flex-shrink:
-        0;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    border:
-        1px solid
-        rgba(148,163,184,.18);
-
-    border-radius:
-        50%;
-
-    font-size:
-        8px;
-}
-
-
-.progress-step.active {
-    color:
-        var(--sb-text);
-}
-
-
-.progress-step.active .progress-number {
-
-    border-color:
-        var(--sb-cyan);
-
-    background:
-        rgba(8,217,245,.08);
-
-    color:
-        var(--sb-cyan);
-}
-
-
-.progress-line {
-
-    flex:
-        1;
-
-    height:
-        1px;
-
-    margin:
-        0 9px;
-
-    background:
-        rgba(148,163,184,.14);
-}
-
-
-/* =========================================================
-   FORM CARD
-   ========================================================= */
-
-.register-card {
-
-    position:
-        relative;
-
-    padding:
-        22px;
-
-    border:
-        1px solid
-        var(--sb-border);
-
-    border-radius:
-        15px;
-
-    background:
-        linear-gradient(
-            145deg,
-            rgba(12,32,54,.96),
-            rgba(7,21,38,.96)
-        );
-
-    box-shadow:
-        0 18px 50px
-        rgba(0,0,0,.18);
-}
-
-
-.register-card::before {
-
-    content:
-        "";
-
-    position:
-        absolute;
-
-    left:
-        0;
-
-    right:
-        0;
-
-    top:
-        0;
-
-    height:
-        2px;
-
-    background:
-        linear-gradient(
-            90deg,
-            transparent,
-            var(--sb-cyan),
-            transparent
-        );
-}
-
-
-/* =========================================================
-   FORM SECTION
-   ========================================================= */
-
-.form-section {
-
-    margin-bottom:
-        20px;
-}
-
-
-.form-section:last-child {
-    margin-bottom:
-        0;
-}
-
-
-.section-title {
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        9px;
-
-    margin:
-        0 0 12px;
-
-    padding-bottom:
-        8px;
-
-    border-bottom:
-        1px solid
-        rgba(148,163,184,.10);
-}
-
-
-.section-icon {
-
-    width:
-        30px;
-
-    height:
-        30px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    border-radius:
-        8px;
-
-    background:
-        rgba(8,217,245,.07);
-
-    border:
-        1px solid
-        rgba(8,217,245,.13);
-
-    color:
-        var(--sb-cyan);
-
-    font-size:
-        12px;
-}
-
-
-.section-title h3 {
-
-    margin:
-        0;
-
-    color:
-        var(--sb-text);
-
-    font-size:
-        11px;
-
-    font-weight:
-        800;
-}
-
-
-.section-title p {
-
-    margin:
-        2px 0 0;
-
-    color:
-        var(--sb-muted);
-
-    font-size:
-        8px;
-}
-
-
-/* =========================================================
-   GRID
-   ========================================================= */
-
-.form-grid {
-
-    display:
-        grid;
-
-    grid-template-columns:
-        repeat(2, minmax(0, 1fr));
-
-    gap:
-        12px;
-}
-
-
-.form-group {
-
-    min-width:
-        0;
-}
-
-
-.form-group.full {
-    grid-column:
-        1 / -1;
-}
-
-
-/* =========================================================
-   LABEL
-   ========================================================= */
-
-.form-label {
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        5px;
-
-    margin-bottom:
-        6px;
-
-    color:
-        var(--sb-text-soft);
-
-    font-size:
-        8px;
-
-    font-weight:
-        750;
-
-    text-transform:
-        uppercase;
-
-    letter-spacing:
-        .04em;
-}
-
-
-.form-label i {
-
-    color:
-        var(--sb-cyan);
-
-    font-size:
-        9px;
-}
-
-
-.required {
-    color:
-        var(--sb-danger);
-}
-
-
-/* =========================================================
-   INPUT
-   ========================================================= */
-
-.form-control,
-.form-select {
-
-    width:
-        100%;
-
-    height:
-        41px;
-
-    padding:
-        0 11px;
-
-    border:
-        1px solid
-        rgba(8, 217, 245, 0.90);
-
-    border-radius:
-        10px;
-
-    outline:
-        none;
-
-    background:
-        rgba(9, 27, 39, 0.92);
-
-    color:
-        var(--sb-text);
-
-    font-family:
-        inherit;
-
-    font-size:
-        10px;
-
-    transition:
-        0.2s ease;
-}
-
-
-.form-control::placeholder {
-    color:
-        rgba(166, 182, 201, 0.72);
-}
-
-
-.form-control:-webkit-autofill,
-.form-control:-webkit-autofill:hover,
-.form-control:-webkit-autofill:focus,
-.form-control:-webkit-autofill:active,
-.form-select:-webkit-autofill,
-.form-select:-webkit-autofill:hover,
-.form-select:-webkit-autofill:focus,
-.form-select:-webkit-autofill:active {
-    -webkit-box-shadow:
-        0 0 0 1000px rgba(4,17,31,.72) inset;
-
-    -webkit-text-fill-color:
-        #f8fafc !important;
-
-    color:
-        #f8fafc !important;
-}
-
-
-.form-control:hover,
-.form-select:hover {
-
-    border-color:
-        rgba(8, 217, 245, 1);
-}
-
-
-.form-control:focus,
-.form-select:focus {
-
-    border-color:
-        var(--sb-cyan);
-
-    background:
-        rgba(8, 24, 36, 0.97);
-
-    box-shadow:
-        0 0 0 3px
-        rgba(8, 217, 245, 0.12);
-
-    color:
-        var(--sb-text);
-}
-
-
-.form-select {
-    cursor:
-        pointer;
-}
-
-
-.form-select option {
-
-    background:
-        #0b2036;
-
-    color:
-        #f8fafc;
-}
-
-
-/* =========================================================
-   INVALID
-   ========================================================= */
-
-.form-control.is-invalid,
-.form-select.is-invalid {
-
-    border-color:
-        var(--sb-danger) !important;
-
-    box-shadow:
-        0 0 0 3px
-        rgba(251,113,133,.06) !important;
-}
-
-
-.invalid-feedback {
-
-    display:
-        block;
-
-    margin-top:
-        4px;
-
-    color:
-        var(--sb-danger);
-
-    font-size:
-        8px;
-
-    line-height:
-        1.4;
-}
-
-
-.js-error {
-    display:
-        none;
-}
-
-
-.js-error.show {
-    display:
-        block;
-}
-
-
-/* =========================================================
-   ROLE CARDS
-   ========================================================= */
-
-.role-grid {
-
-    display:
-        grid;
-
-    grid-template-columns:
-        repeat(3, minmax(0,1fr));
-
-    gap:
-        9px;
-
-    margin-bottom:
-        11px;
-}
-
-
-.role-card {
-
-    position:
-        relative;
-}
-
-
-.role-card input {
-
-    position:
-        absolute;
-
-    opacity:
-        0;
-
-    pointer-events:
-        none;
-}
-
-
-.role-card label {
-
-    min-height:
-        70px;
-
-    display:
-        flex;
-
-    flex-direction:
-        column;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    gap:
-        4px;
-
-    padding:
-        8px;
-
-    border:
-        1px solid
-        rgba(148,163,184,.13);
-
-    border-radius:
-        9px;
-
-    background:
-        rgba(4,17,31,.5);
-
-    color:
-        var(--sb-muted);
-
-    text-align:
-        center;
-
-    cursor:
-        pointer;
-
-    transition:
-        .2s ease;
-}
-
-
-.role-card label i {
-
-    color:
-        #7890a8;
-
-    font-size:
-        15px;
-}
-
-
-.role-card label strong {
-
-    color:
-        var(--sb-text-soft);
-
-    font-size:
-        9px;
-
-    font-weight:
-        800;
-}
-
-
-.role-card label small {
-
-    color:
-        var(--sb-muted);
-
-    font-size:
-        7px;
-}
-
-
-.role-card label:hover {
-
-    border-color:
-        rgba(8,217,245,.35);
-
-    transform:
-        translateY(-1px);
-}
-
-
-.role-card input:checked + label {
-
-    border-color:
-        var(--sb-cyan);
-
-    background:
-        rgba(8,217,245,.07);
-
-    box-shadow:
-        0 0 0 1px
-        rgba(8,217,245,.04);
-}
-
-
-.role-card input:checked + label i,
-.role-card input:checked + label strong {
-
-    color:
-        var(--sb-cyan);
-}
-
-
-/* =========================================================
-   ROLE SPECIFIC FIELDS
-   ========================================================= */
-
-.role-field {
-    display:
-        none;
-}
-
-
-.role-field.show {
-    display:
-        block;
-}
-
-
-/* =========================================================
-   PASSWORD
-   ========================================================= */
-
-.password-wrapper {
-    position:
-        relative;
-}
-
-
-.password-wrapper .form-control {
-    padding-right:
-        40px;
-}
-
-
-.password-toggle {
-
-    position:
-        absolute;
-
-    top:
-        50%;
-
-    right:
-        4px;
-
-    transform:
-        translateY(-50%);
-
-    width:
-        32px;
-
-    height:
-        32px;
-
-    border:
-        none;
-
-    border-radius:
-        6px;
-
-    background:
-        transparent;
-
-    color:
-        var(--sb-muted);
-
-    cursor:
-        pointer;
-}
-
-
-.password-toggle:hover {
-
-    color:
-        var(--sb-cyan);
-
-    background:
-        rgba(8,217,245,.05);
-}
-
-
-/* =========================================================
-   PASSWORD STRENGTH
-   ========================================================= */
-
-.password-strength {
-    display:
-        none;
-
-    height:
-        3px;
-
-    margin-top:
-        6px;
-
-    overflow:
-        hidden;
-
-    border-radius:
-        20px;
-
-    background:
-        rgba(255,255,255,.08);
-}
-
-
-.password-strength.show {
-    display:
-        block;
-}
-
-
-.password-strength-bar {
-
-    height:
-        100%;
-
-    width:
-        0;
-
-    border-radius:
-        20px;
-
-    transition:
-        .25s ease;
-}
-
-
-.password-strength-bar.weak {
-
-    width:
-        30%;
-
-    background:
-        #ef4444;
-}
-
-
-.password-strength-bar.medium {
-
-    width:
-        65%;
-
-    background:
-        #f59e0b;
-}
-
-
-.password-strength-bar.strong {
-
-    width:
-        100%;
-
-    background:
-        #22c55e;
-}
-
-
-.password-strength-text {
-
-    margin-top:
-        4px;
-
-    color:
-        var(--sb-muted);
-
-    font-size:
-        7px;
-}
-
-
-/* =========================================================
-   PASSWORD RULES
-   ========================================================= */
-
-.password-rules {
-
-    display:
-        flex;
-
-    flex-wrap:
-        wrap;
-
-    gap:
-        4px 10px;
-
-    margin-top:
-        5px;
-}
-
-
-.password-rule {
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        3px;
-
-    color:
-        #63778d;
-
-    font-size:
-        7px;
-}
-
-
-.password-rule.valid {
-    color:
-        var(--sb-success);
-}
-
-
-/* =========================================================
-   TERMS
-   ========================================================= */
-
-.terms-wrapper {
-
-    margin-top:
-        12px;
-
-    padding:
-        10px;
-
-    border:
-        1px solid
-        rgba(148,163,184,.11);
-
-    border-radius:
-        8px;
-
-    background:
-        rgba(4,17,31,.4);
-}
-
-
-.terms-wrapper.invalid {
-
-    border-color:
-        rgba(251,113,133,.7);
-}
-
-
-.terms-label {
-
-    display:
-        flex;
-
-    align-items:
-        flex-start;
-
-    gap:
-        7px;
-
-    color:
-        var(--sb-muted);
-
-    font-size:
-        7px;
-
-    line-height:
-        1.5;
-
-    cursor:
-        pointer;
-}
-
-
-.terms-label input {
-
-    width:
-        14px;
-
-    height:
-        14px;
-
-    margin:
-        1px 0 0;
-
-    flex-shrink:
-        0;
-
-    accent-color:
-        var(--sb-cyan);
-}
-
-
-.terms-label a {
-
-    color:
-        var(--sb-cyan);
-
-    text-decoration:
-        none;
-}
-
-
-.terms-label a:hover {
-    text-decoration:
-        underline;
-}
-
-
-.terms-error {
-
-    display:
-        none;
-
-    margin:
-        4px 0 0 21px;
-
-    color:
-        var(--sb-danger);
-
-    font-size:
-        7px;
-}
-
-
-.terms-error.show {
-    display:
-        block;
-}
-
-
-/* =========================================================
-   SUBMIT
-   ========================================================= */
-
-.btn-register {
-
-    width:
-        100%;
-
-    height:
-        43px;
-
-    margin-top:
-        12px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    gap:
-        7px;
-
-    border:
-        none;
-
-    border-radius:
-        8px;
-
-    background:
-        linear-gradient(
-            135deg,
-            var(--sb-cyan),
-            var(--sb-cyan-dark)
-        );
-
-    color:
-        #03212e;
-
-    font-family:
-        inherit;
-
-    font-size:
-        10px;
-
-    font-weight:
-        850;
-
-    cursor:
-        pointer;
-
-    transition:
-        .2s ease;
-}
-
-
-.btn-register:hover:not(:disabled) {
-
-    transform:
-        translateY(-1px);
-
-    box-shadow:
-        0 9px 24px
-        rgba(8,217,245,.16);
-}
-
-
-.btn-register:disabled {
-
-    opacity:
-        .65;
-
-    cursor:
-        not-allowed;
-}
-
-
-/* =========================================================
-   LOGIN
-   ========================================================= */
-
-.auth-footer {
-
-    margin-top:
-        10px;
-
-    padding-bottom:
-        2px;
-
-    text-align:
-        center;
-
-    color:
-        var(--sb-muted);
-
-    font-size:
-        8px;
-}
-
-
-.auth-footer a {
-
-    color:
-        var(--sb-cyan);
-
-    font-weight:
-        750;
-
-    text-decoration:
-        none;
-}
-
-
-.auth-footer a:hover {
-    text-decoration:
-        underline;
-}
-
-
-/* =========================================================
-   BOTTOM FEATURES
-   ========================================================= */
-
-.register-features {
-
-    display:
-        grid;
-
-    grid-template-columns:
-        repeat(3,1fr);
-
-    gap:
-        8px;
-
-    margin-top:
-        10px;
-}
-
-
-.feature-item {
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    gap:
-        6px;
-
-    padding:
-        8px;
-
-    border:
-        1px solid
-        rgba(148,163,184,.08);
-
-    border-radius:
-        8px;
-
-    background:
-        rgba(8,24,42,.35);
-}
-
-
-.feature-item i {
-
-    color:
-        var(--sb-cyan);
-
-    font-size:
-        11px;
-}
-
-
-.feature-item strong {
-
-    display:
-        block;
-
-    color:
-        var(--sb-text-soft);
-
-    font-size:
-        7px;
-}
-
-
-.feature-item span {
-
-    display:
-        block;
-
-    margin-top:
-        1px;
-
-    color:
-        var(--sb-muted);
-
-    font-size:
-        6px;
-}
-
-
-/* =========================================================
-   LARGE SCREEN
-   ========================================================= */
-
-@media (min-width: 1500px) {
-
-    .register-page {
-
-        padding-left:
-            70px;
-
-        padding-right:
-            70px;
-    }
-
-}
-
-
-/* =========================================================
-   LAPTOP
-   ========================================================= */
-
-@media (max-width: 1100px) {
-
-    .register-page {
-
-        padding:
-            24px 30px 35px;
-    }
-
-}
-
-
-/* =========================================================
-   TABLET
-   ========================================================= */
-
-@media (max-width: 850px) {
-
-    .register-page {
-
-        width:
-            100vw;
-
-        left:
-            0;
-
-        right:
-            0;
-
-        padding:
-            22px 25px 35px;
-    }
-
-
-    .register-content {
-
-        max-width:
-            650px;
-    }
-
-}
-
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media (max-width: 600px) {
-
-    .register-page {
-
-        padding:
-            18px 15px 30px;
-    }
-
-
-    .register-card {
-
-        padding:
-            17px;
-    }
-
-
-    .form-grid {
-
-        grid-template-columns:
-            1fr;
-    }
-
-
-    .form-group.full {
-
-        grid-column:
-            auto;
-    }
-
-
-    .role-grid {
-
-        grid-template-columns:
-            1fr;
-    }
-
-
-    .role-card label {
-
-        min-height:
-            55px;
-
-        flex-direction:
-            row;
-
-        justify-content:
-            flex-start;
-
-        text-align:
-            left;
-
-        padding:
-            10px;
-    }
-
-
-    .register-features {
-
-        grid-template-columns:
-            1fr;
-    }
-
-
-    .register-secure {
-
-        display:
-            none;
-    }
-
-}
-
-
-/* =========================================================
-   SMALL MOBILE
-   ========================================================= */
-
-@media (max-width: 400px) {
-
-    .register-page {
-
-        padding:
-            15px 10px 25px;
-    }
-
-
-    .register-card {
-
-        padding:
-            14px;
-    }
-
-
-    .register-hero h1 {
-
-        font-size:
-            23px;
-    }
-
-
-    .progress-step span {
-
-        display:
-            none;
-    }
-
-
-    .form-control,
-    .form-select {
-
-        height:
-            40px;
-    }
-
-}
-
-
-/* =========================================================
-   VISUAL POLISH PASS
-   ========================================================= */
-
-.register-page {
-    background:
-        radial-gradient(circle at 85% 8%, rgba(8,217,245,.09), transparent 28%),
-        linear-gradient(rgba(100,170,205,.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(100,170,205,.035) 1px, transparent 1px),
-        linear-gradient(180deg, #071426 0%, #081a2d 100%);
-
-    background-size: auto, 34px 34px, 34px 34px, auto;
-}
-
-
-.register-content {
-    max-width: 700px;
-}
-
-
-.register-top {
-    margin-bottom: 30px;
-}
-
-
-.register-brand {
-    color: #f8fafc !important;
-    font-size: 14px;
-    letter-spacing: .05em;
-}
-
-
-.register-brand-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(8,217,245,.2);
-}
-
-
-.register-hero {
-    margin-bottom: 24px;
-}
-
-
-.register-badge {
-    padding: 7px 12px;
-    border-color: rgba(8,217,245,.25);
-    background: rgba(8,217,245,.08);
-    box-shadow: 0 0 22px rgba(8,217,245,.06);
-}
-
-
-.register-hero h1 {
-    max-width: 620px;
-    font-size: clamp(30px, 3vw, 43px);
-    line-height: 1.04;
-    letter-spacing: -.045em;
-}
-
-
-.register-hero p {
-    max-width: 620px;
-    color: rgba(172,199,219,.82);
-    font-size: 12px;
-}
-
-
-.register-progress {
-    min-height: 58px;
-    margin-bottom: 20px;
-    padding: 11px 15px;
-    border-color: rgba(117,176,215,.2);
-    border-radius: 13px;
-    background: rgba(10,31,50,.72);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
-}
-
-
-.progress-step {
-    font-size: 9px;
-}
-
-
-.progress-number {
-    width: 25px;
-    height: 25px;
-    border-color: rgba(117,176,215,.26);
-}
-
-
-.progress-step.active .progress-number {
-    box-shadow: 0 0 0 4px rgba(8,217,245,.07), 0 0 15px rgba(8,217,245,.18);
-}
-
-
-.progress-line {
-    background: linear-gradient(90deg, rgba(8,217,245,.28), rgba(148,163,184,.12));
-}
-
-
-.register-card {
-    padding: 26px;
-    border-color: rgba(117,176,215,.22);
-    border-radius: 18px;
-    background: linear-gradient(145deg, rgba(13,38,61,.96), rgba(7,21,38,.98));
-    box-shadow: 0 22px 60px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.025);
-}
-
-
-.register-card::before {
-    height: 3px;
-    box-shadow: 0 0 20px rgba(8,217,245,.32);
-}
-
-
-.form-section {
-    margin-bottom: 25px;
-}
-
-
-.section-title {
-    gap: 11px;
-    margin-bottom: 16px;
-    padding-bottom: 11px;
-    border-bottom-color: rgba(117,176,215,.15);
-}
-
-
-.section-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
-    background: linear-gradient(145deg, rgba(8,217,245,.16), rgba(8,217,245,.04));
-    border-color: rgba(8,217,245,.24);
-    box-shadow: 0 6px 18px rgba(8,217,245,.08);
-}
-
-
-.section-title h3 {
-    font-size: 12px;
-    letter-spacing: .01em;
-}
-
-
-.section-title p {
-    font-size: 9px;
-}
-
-
-.form-grid {
-    gap: 15px;
-}
-
-
-.form-label {
-    margin-bottom: 7px;
-    color: #dcebf5;
-    font-size: 8px;
-    letter-spacing: .08em;
-}
-
-
-.form-control,
-.form-select {
-    height: 45px;
-    padding: 0 13px;
-    border-color: rgba(117,176,215,.2);
-    border-radius: 10px;
-    background: rgba(3,17,31,.68);
-    font-size: 11px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.018);
-}
-
-
-.form-control:hover,
-.form-select:hover {
-    border-color: rgba(8,217,245,.42);
-}
-
-
-.form-control:focus,
-.form-select:focus {
-    border-color: var(--sb-cyan);
-    background: rgba(3,17,31,.88);
-    box-shadow: 0 0 0 4px rgba(8,217,245,.08), 0 8px 22px rgba(1,10,20,.14);
-}
-
-
-.terms-wrapper {
-    margin-top: 16px;
-    padding: 13px;
-    border-color: rgba(117,176,215,.17);
-    border-radius: 10px;
-    background: rgba(3,17,31,.46);
-}
-
-
-.terms-label {
-    color: rgba(184,209,225,.78);
-    font-size: 8px;
-}
-
-
-.btn-register {
-    height: 48px;
-    margin-top: 16px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #1cdef5, #08b9d6);
-    font-size: 11px;
-    box-shadow: 0 12px 28px rgba(8,217,245,.16);
-}
-
-
-.btn-register:hover:not(:disabled) {
-    box-shadow: 0 14px 30px rgba(8,217,245,.28);
-}
-
-
-.register-features {
-    gap: 10px;
-    margin-top: 14px;
-}
-
-
-.feature-item {
-    min-height: 48px;
-    padding: 9px 10px;
-    border-color: rgba(117,176,215,.12);
-    border-radius: 10px;
-    background: rgba(8,27,46,.48);
-}
-
-
-@media (max-width: 600px) {
-    .register-card {
-        padding: 20px 16px;
-    }
-
-    .register-hero h1 {
-        font-size: 30px;
-    }
-}
-
-
-/* Keep entered values readable on the dark registration surface. */
-.register-page input.form-control,
-.register-page select.form-select,
-.register-page textarea.form-control {
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-    caret-color: var(--sb-cyan) !important;
-}
-
-
-.register-page input.form-control:focus,
-.register-page select.form-select:focus,
-.register-page textarea.form-control:focus {
-    color: #ffffff !important;
-    -webkit-text-fill-color: #ffffff !important;
-}
-
-
-.register-page input.form-control:-webkit-autofill,
-.register-page input.form-control:-webkit-autofill:hover,
-.register-page input.form-control:-webkit-autofill:focus,
-.register-page input.form-control:-webkit-autofill:active,
-.register-page select.form-select:-webkit-autofill,
-.register-page select.form-select:-webkit-autofill:hover,
-.register-page select.form-select:-webkit-autofill:focus,
-.register-page select.form-select:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 1000px rgba(4,17,31,.72) inset !important;
-    -webkit-text-fill-color: #ffffff !important;
-    color: #ffffff !important;
-}
-
-</style>
-
-<style>
-html:has(body.skillbridge-guest .register-page) {
-    height: 100%;
-    overflow: hidden;
-}
-
-body.skillbridge-guest:has(.register-page) {
-    height: 100vh;
-    height: 100dvh;
-    min-height: 0;
-    overflow: hidden;
-}
-
-body.skillbridge-guest:has(.register-page) .auth-shell {
-    display: flex;
-    flex-wrap: nowrap;
-    width: 100%;
-    height: 100vh;
-    height: 100dvh;
-    min-height: 0;
-    overflow: hidden;
-}
-
-body.skillbridge-guest:has(.register-page) .auth-left {
-    flex: 0 0 58.3333%;
-    width: 58.3333%;
-    height: 100%;
-    min-height: 0;
-    background: #301016;
-}
-
-body.skillbridge-guest:has(.register-page) .auth-left::before {
-    inset: 0;
-    width: auto;
-    height: auto;
-    opacity: 1;
-    border-radius: 0;
-    background: url('{{ asset("images/login-campus.png") }}') center 48% / cover no-repeat;
-}
-
-body.skillbridge-guest:has(.register-page) .auth-left::after {
-    inset: 0;
-    width: auto;
-    height: auto;
-    opacity: 1;
-    border-radius: 0;
-    background: linear-gradient(145deg, rgba(35, 8, 13, .78), rgba(116, 12, 29, .58) 55%, rgba(29, 13, 18, .78));
-}
-
-body.skillbridge-guest:has(.register-page) .auth-left h1 span {
-    color: #ffb8bf;
-}
-
-body.skillbridge-guest:has(.register-page) .auth-right {
-    flex: 0 0 41.6667%;
-    width: 41.6667%;
-    height: 100%;
-    min-height: 0;
-    overflow: hidden;
-    background:
-        radial-gradient(ellipse at 88% 12%, rgba(220, 38, 38, .07), transparent 38%),
-        linear-gradient(145deg, #f8fafc 0%, #fff 58%, #fffafa 100%);
-}
-
-body.skillbridge-guest:has(.register-page) .register-page {
-    position: relative;
-    isolation: isolate;
-    background:
-        linear-gradient(135deg, #f8fafc 0%, #fff 52%, rgba(254, 242, 242, .7) 100%);
-}
-
-body.skillbridge-guest:has(.register-page) .register-content :is(input, select, button) {
-    font-family: "Figtree", "Segoe UI", system-ui, sans-serif;
-}
-
-body.skillbridge-guest:has(.register-page) .register-page {
-    position: relative;
-    inset: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1 1 auto;
-    width: 100%;
-    height: 100vh;
-    height: 100dvh;
-    min-height: 0;
-    overflow: hidden;
-    padding: clamp(12px, 2vh, 24px) clamp(20px, 3vw, 48px);
-    border: 0;
-    font-family: "Figtree", "Segoe UI", system-ui, sans-serif;
-    background:
-        radial-gradient(ellipse at 88% 12%, rgba(220, 38, 38, .07), transparent 38%),
-        linear-gradient(145deg, #f8fafc 0%, #fff 58%, #fffafa 100%);
-}
-
-body.skillbridge-guest:has(.register-page) .register-content {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    max-width: 480px;
-    min-height: 0;
-    margin: 0 auto;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-    backdrop-filter: none;
-}
-
-body.skillbridge-guest:has(.register-page) .register-content :is(input, select, button) {
-    font-family: inherit;
-}
-
-body.skillbridge-guest:has(.register-page) .register-hero h1 {
-    font-family: "Bricolage Grotesque", "Figtree", "Segoe UI", sans-serif;
-    font-size: clamp(28px, 2.5vw, 36px);
-    font-weight: 700;
-    letter-spacing: -.04em;
-    line-height: 1.12;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-label {
-    align-items: center;
-    line-height: 1.2;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-control,
-body.skillbridge-guest:has(.register-page) .register-card .form-select {
-    line-height: 1.4;
-}
-
-body.skillbridge-guest:has(.register-page) .register-top {
-    margin-bottom: clamp(12px, 2vh, 20px);
-}
-
-body.skillbridge-guest:has(.register-page) .register-brand {
-    display: none;
-}
-
-body.skillbridge-guest:has(.register-page) .register-top .auth-back-link {
-    margin: 0;
-}
-
-body.skillbridge-guest:has(.register-page) .register-secure {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    min-height: 40px;
-    padding: 0 12px;
-    border: 1px solid var(--sb-border);
-    border-radius: 999px;
-    background: var(--sb-surface);
-    color: var(--sb-muted);
-    font-size: 12px;
-}
-
-body.skillbridge-guest:has(.register-page) .register-secure i {
-    color: var(--sb-success-ink);
-}
-
-body.skillbridge-guest:has(.register-page) .register-hero {
-    margin-bottom: 10px;
-}
-
-body.skillbridge-guest:has(.register-page) .register-badge,
-body.skillbridge-guest:has(.register-page) .register-progress,
-body.skillbridge-guest:has(.register-page) .register-features {
-    display: none;
-}
-
-body.skillbridge-guest:has(.register-page) .register-hero h1 {
-    margin-bottom: 4px;
-    color: var(--sb-ink);
-    font-size: clamp(27px, 2.7vw, 36px);
-    line-height: 1.08;
-}
-
-body.skillbridge-guest:has(.register-page) .register-hero h1 span {
-    color: var(--sb-brand-content);
-}
-
-body.skillbridge-guest:has(.register-page) .register-hero p {
-    margin: 0;
-    color: var(--sb-muted);
-    font-size: 13px;
-    line-height: 1.45;
-}
-
-body.skillbridge-guest:has(.register-page) .register-account-type {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 34px;
-    margin-bottom: 10px;
-    padding: 6px 10px;
-    border: 1px solid var(--sb-border);
-    border-radius: 9px;
-    background: var(--sb-red-soft);
-    color: var(--sb-brand-content);
-    font-size: 12px;
-    font-weight: 700;
-}
-
-body.skillbridge-guest:has(.register-page) .register-account-type-note {
-    margin-left: auto;
-    color: var(--sb-muted);
-    font-size: 11px;
-    font-weight: 500;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card {
-    padding: clamp(14px, 2vh, 20px);
-    border-color: var(--sb-border);
-    border-radius: 16px;
-    background: var(--sb-surface);
-    box-shadow: var(--sb-shadow);
-}
-
-body.skillbridge-guest:has(.register-page) .register-card::before {
-    background: linear-gradient(90deg, transparent, var(--sb-brand), transparent);
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .section-title {
-    display: none;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-section {
-    margin: 0;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 9px 12px;
-}
-
-body.skillbridge-guest:has(.register-page) #account-type .form-group.full {
-    grid-column: auto;
-}
-
-body.skillbridge-guest:has(.register-page) #account-type .form-group:has(#phone) {
-    display: none;
-}
-
-body.skillbridge-guest:has(.register-page) #account-type .form-group:has(#name) {
-    order: 1;
-}
-
-body.skillbridge-guest:has(.register-page) #account-type .form-group:has(#email) {
-    order: 2;
-}
-
-body.skillbridge-guest:has(.register-page) #roleDetails > .section-title {
-    display: none;
-}
-
-body.skillbridge-guest:has(.register-page) #roleDetails .role-field:has(#institution_id) {
-    display: none;
-}
-
-body.skillbridge-guest:has(.register-page) #roleDetails .role-field:has(#program) {
-    display: block;
-    grid-column: 1 / -1;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-label {
-    gap: 6px;
-    margin-bottom: 4px;
-    color: var(--sb-ink);
-    font-size: 11px;
-    letter-spacing: .02em;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-label i {
-    color: var(--sb-brand);
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-control,
-body.skillbridge-guest:has(.register-page) .register-card .form-select {
-    height: 42px;
-    padding: 0 11px;
-    border-color: var(--sb-border);
-    border-radius: 9px;
-    background-color: var(--sb-surface-raised);
-    color: var(--sb-ink) !important;
-    -webkit-text-fill-color: var(--sb-ink) !important;
-    font-size: 14px;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-control::placeholder {
-    color: var(--sb-muted);
-    -webkit-text-fill-color: var(--sb-muted);
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-control:focus,
-body.skillbridge-guest:has(.register-page) .register-card .form-select:focus {
-    border-color: var(--sb-brand);
-    background-color: var(--sb-surface);
-    box-shadow: 0 0 0 3px var(--sb-brand-ring);
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-control.is-invalid,
-body.skillbridge-guest:has(.register-page) .register-card .form-select.is-invalid {
-    border-color: var(--sb-danger-ink) !important;
-    box-shadow: 0 0 0 3px var(--sb-danger-bg) !important;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .invalid-feedback {
-    margin-top: 3px;
-    color: var(--sb-danger-ink);
-    font-size: 11px;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .password-wrapper .form-control {
-    padding-right: 44px;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .password-toggle {
-    width: 36px;
-    height: 36px;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card :is(.password-strength, .password-strength-text, .password-rules) {
-    display: none;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .terms-wrapper {
-    margin-top: 10px;
-    padding: 8px 10px;
-    border-color: var(--sb-border);
-    background: var(--sb-surface-raised);
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .terms-label {
-    align-items: flex-start;
-    gap: 8px;
-    color: var(--sb-muted);
-    font-size: 11px;
-    line-height: 1.45;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .terms-label input {
-    width: 17px;
-    height: 17px;
-    margin-top: 1px;
-    accent-color: var(--sb-brand);
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .terms-label a,
-body.skillbridge-guest:has(.register-page) .register-card .auth-footer a {
-    color: var(--sb-brand-content);
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .terms-error {
-    color: var(--sb-danger-ink);
-    font-size: 11px;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .btn-register {
-    min-height: 46px;
-    height: auto;
-    margin-top: 9px;
-    border-radius: 9px;
-    background: linear-gradient(110deg, var(--sb-brand), var(--sb-brand-deep));
-    color: #fff;
-    font-size: 14px;
-    transition: transform var(--sb-motion-fast) var(--sb-ease), box-shadow var(--sb-motion-fast) var(--sb-ease), background-color var(--sb-motion-fast) var(--sb-ease);
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .btn-register:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(155, 15, 30, .2);
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .auth-footer {
-    margin-top: 8px;
-    padding: 0;
-    color: var(--sb-muted);
-    font-size: 12px;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card :is(.auth-back-link, .password-toggle, .terms-label a, .auth-footer a, .btn-register, input, select):focus-visible {
-    outline: 3px solid var(--sb-brand-ring);
-    outline-offset: 2px;
-}
-
-@media (max-height: 720px) and (min-width: 851px) {
-    body.skillbridge-guest:has(.register-page) .register-page {
-        padding-top: 10px;
-        padding-bottom: 10px;
-    }
-
-    body.skillbridge-guest:has(.register-page) .register-top,
-    body.skillbridge-guest:has(.register-page) .register-hero {
-        margin-bottom: 8px;
-    }
-
-    body.skillbridge-guest:has(.register-page) .register-hero p {
-        display: none;
-    }
-
-    body.skillbridge-guest:has(.register-page) .register-card {
-        padding: 12px 15px;
-    }
-
-    body.skillbridge-guest:has(.register-page) .register-card .form-grid {
-        gap: 6px 10px;
-    }
-
-    body.skillbridge-guest:has(.register-page) .register-card .form-control,
-    body.skillbridge-guest:has(.register-page) .register-card .form-select {
-        height: 38px;
-    }
-
-    body.skillbridge-guest:has(.register-page) .register-card .terms-wrapper {
-        margin-top: 7px;
-        padding: 6px 8px;
-    }
-
-    body.skillbridge-guest:has(.register-page) .register-card .btn-register {
-        min-height: 40px;
-        margin-top: 6px;
-    }
-
-    body.skillbridge-guest:has(.register-page) .register-card .auth-footer {
-        margin-top: 5px;
-    }
-}
-
-@media (max-height: 560px) and (min-width: 851px) {
-    body.skillbridge-guest:has(.register-page) .auth-left-footer,
-    body.skillbridge-guest:has(.register-page) .auth-features {
-        display: none;
-    }
-
-    body.skillbridge-guest:has(.register-page) .auth-brand {
-        margin-bottom: 18px;
-    }
-
-    body.skillbridge-guest:has(.register-page) .auth-left h1 {
-        font-size: 34px;
-    }
-}
-
-@media (max-width: 850px) {
-    html:has(body.skillbridge-guest .register-page) {
-        height: auto;
-        overflow: auto;
-    }
-
-    body.skillbridge-guest:has(.register-page) {
-        height: auto;
-        min-height: 100vh;
-        min-height: 100dvh;
-        overflow: auto;
-    }
-
-    body.skillbridge-guest:has(.register-page) .auth-shell {
-        display: block;
-        height: auto;
-        min-height: 100vh;
-        min-height: 100dvh;
-        overflow: visible;
-    }
-
-    body.skillbridge-guest:has(.register-page) .auth-left {
-        display: none;
-    }
-
-    body.skillbridge-guest:has(.register-page) .auth-right {
-        width: 100%;
-        height: auto;
-        min-height: 100vh;
-        min-height: 100dvh;
-        overflow: visible;
-    }
-
-    body.skillbridge-guest:has(.register-page) .register-page {
-        position: relative;
-        inset: auto;
-        flex: 1 1 auto;
-        width: 100%;
-        height: auto;
-        min-height: 100vh;
-        min-height: 100dvh;
-        overflow: visible;
-        padding: 20px clamp(16px, 5vw, 32px) 28px;
-    }
-}
-
-@media (max-width: 520px) {
-    body.skillbridge-guest:has(.register-page) .register-card .form-grid {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    body.skillbridge-guest:has(.register-page) #roleDetails .role-field:has(#program) {
-        grid-column: auto;
-    }
-}
-
-body.skillbridge-guest:has(.register-page) .register-top {
-    gap: 12px;
-    margin-bottom: 28px;
-}
-
-body.skillbridge-guest:has(.register-page) .register-top .auth-back-link {
-    border-color: #e5e7eb;
-    background: #fff;
-    color: #4b5563;
-    font-weight: 600;
-    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
-}
-
-body.skillbridge-guest:has(.register-page) .register-top .auth-back-link:hover {
-    border-color: #d1d5db;
-    background: #f9fafb;
-    color: #111827;
-}
-
-body.skillbridge-guest:has(.register-page) .register-secure {
-    gap: 6px;
-    padding: 8px 10px;
-    border-color: #e5e7eb;
-    background: #fff;
-    color: #6b7280;
-    white-space: nowrap;
-}
-
-body.skillbridge-guest:has(.register-page) .register-secure i {
-    color: #6b7280;
-}
-
-body.skillbridge-guest:has(.register-page) .register-hero {
-    margin-bottom: 24px;
-}
-
-body.skillbridge-guest:has(.register-page) .register-form-mark {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    margin-bottom: 10px;
-    border-radius: 8px;
-    background: #f3f4f6;
-    color: #6b7280;
-    font-size: 15px;
-}
-
-body.skillbridge-guest:has(.register-page) .register-hero h1 {
-    margin-bottom: 6px;
-    color: #0f172a;
-    font-family: "Bricolage Grotesque", "Figtree", "Segoe UI", sans-serif;
-    font-size: clamp(28px, 2.5vw, 34px);
-    font-weight: 700;
-    letter-spacing: -.04em;
-    line-height: 1.08;
-}
-
-body.skillbridge-guest:has(.register-page) .register-hero h1 span {
-    color: inherit;
-}
-
-body.skillbridge-guest:has(.register-page) .register-hero p {
-    color: #6b7280;
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card {
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card::before {
-    display: none;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-grid {
-    column-gap: 16px;
-    row-gap: 16px;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-label {
-    gap: 7px;
-    margin-bottom: 8px;
-    color: #374151;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .04em;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-label i {
-    color: #6b7280;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .required {
-    color: #6b7280;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-control,
-body.skillbridge-guest:has(.register-page) .register-card .form-select {
-    height: 48px;
-    padding: 0 14px;
-    border-color: #e5e7eb;
-    border-radius: 12px;
-    background-color: #f9fafb;
-    color: #0f172a !important;
-    -webkit-text-fill-color: #0f172a !important;
-    font-family: "Figtree", "Segoe UI", system-ui, sans-serif;
-    font-size: 14px;
-    transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-control::placeholder {
-    color: #6b7280;
-    -webkit-text-fill-color: #6b7280;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-control:hover,
-body.skillbridge-guest:has(.register-page) .register-card .form-select:hover {
-    border-color: #d1d5db;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-control:focus,
-body.skillbridge-guest:has(.register-page) .register-card .form-select:focus {
-    border-color: #9ca3af;
-    background-color: #fff;
-    box-shadow: 0 0 0 3px rgba(107, 114, 128, .14);
-}
-
-body.skillbridge-guest:has(.register-page) .register-card input.form-control:-webkit-autofill,
-body.skillbridge-guest:has(.register-page) .register-card input.form-control:-webkit-autofill:hover,
-body.skillbridge-guest:has(.register-page) .register-card input.form-control:-webkit-autofill:focus,
-body.skillbridge-guest:has(.register-page) .register-card select.form-select:-webkit-autofill {
-    -webkit-box-shadow: 0 0 0 1000px #f9fafb inset !important;
-    -webkit-text-fill-color: #0f172a !important;
-    color: #0f172a !important;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .terms-wrapper {
-    margin-top: 18px;
-    padding: 12px 14px;
-    border-color: #e2e8f0;
-    border-radius: 12px;
-    background: #f8fafc;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .terms-label {
-    gap: 10px;
-    color: #475569;
-    font-size: 12px;
-    line-height: 1.55;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .terms-label a {
-    color: #4b5563;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .terms-label input {
-    accent-color: #6b7280;
-    flex: 0 0 17px;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .btn-register {
-    min-height: 48px;
-    border: 0;
-    border-radius: 10px;
-    background: #b91c1c;
-    color: #fff;
-    font-family: "Figtree", "Segoe UI", system-ui, sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    transition: transform 200ms ease, background-color 200ms ease, box-shadow 200ms ease;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .btn-register:hover:not(:disabled) {
-    transform: translateY(-1px);
-    border-color: #991b1b;
-    background: #991b1b;
-    box-shadow: 0 8px 18px rgba(185, 28, 28, .2);
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .btn-register:active:not(:disabled) {
-    transform: scale(.97);
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .auth-footer {
-    color: #6b7280;
-    font-size: 13px;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .auth-footer a {
-    color: #b91c1c;
-    font-weight: 700;
-}
-
-body.skillbridge-guest:has(.register-page) .register-page {
-    position: relative;
-    isolation: isolate;
-    background:
-        radial-gradient(ellipse at 88% 12%, rgba(220, 38, 38, .07), transparent 38%),
-        linear-gradient(145deg, #f8fafc 0%, #fff 58%, #fffafa 100%);
-}
-
-body.skillbridge-guest:has(.register-page) .register-page::before,
-body.skillbridge-guest:has(.register-page) .register-page::after {
-    position: absolute;
-    z-index: 0;
-    width: 20rem;
-    height: 20rem;
-    border-radius: 9999px;
-    filter: blur(64px);
-    pointer-events: none;
-    content: "";
-}
-
-body.skillbridge-guest:has(.register-page) .register-page::before {
-    top: -5rem;
-    right: -5rem;
-    background: rgba(239, 68, 68, .1);
-}
-
-body.skillbridge-guest:has(.register-page) .register-page::after {
-    bottom: -5rem;
-    left: -5rem;
-    background: rgba(251, 113, 133, .1);
-}
-
-body.skillbridge-guest:has(.register-page) .register-content {
-    z-index: 1;
-    max-width: 500px;
-    padding: clamp(20px, 2.2vw, 30px);
-    border: 1px solid rgba(226, 232, 240, .8);
-    border-radius: 24px;
-    background: rgba(255, 255, 255, .95);
-    box-shadow: 0 20px 25px -5px rgba(15, 23, 42, .1), 0 8px 10px -6px rgba(15, 23, 42, .1);
-    backdrop-filter: blur(12px);
-    font-family: "Figtree", "Segoe UI", system-ui, sans-serif;
-}
-
-body.skillbridge-guest:has(.register-page) .register-page :is(button, input, select, textarea) {
-    font-family: "Figtree", "Segoe UI", system-ui, sans-serif;
-}
-
-body.skillbridge-guest:has(.register-page) .register-top {
-    margin-bottom: 20px;
-}
-
-body.skillbridge-guest:has(.register-page) .register-top .auth-back-link {
-    border-color: #fee2e2;
-    background: #fff7f7;
-    color: #991b1b;
-}
-
-body.skillbridge-guest:has(.register-page) .register-top .auth-back-link:hover {
-    border-color: #b91c1c;
-    background: #b91c1c;
-    color: #fff;
-}
-
-body.skillbridge-guest:has(.register-page) .register-secure {
-    border-color: #e2e8f0;
-    background: #f8fafc;
-    color: #475569;
-}
-
-body.skillbridge-guest:has(.register-page) .register-hero {
-    margin-bottom: 16px;
-}
-
-body.skillbridge-guest:has(.register-page) .register-hero h1 {
-    font-family: "Bricolage Grotesque", "Figtree", "Segoe UI", sans-serif;
-    font-size: clamp(30px, 3vw, 40px);
-    letter-spacing: -.04em;
-    line-height: 1.08;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-label {
-    color: #334155;
-    font-family: "Figtree", "Segoe UI", system-ui, sans-serif;
-    font-size: 12px;
-    letter-spacing: .02em;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-label i {
-    color: #b91c1c;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-control,
-body.skillbridge-guest:has(.register-page) .register-card .form-select {
-    border-color: #cbd5e1;
-    border-radius: 10px;
-    background-color: #f1f5f9;
-    transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-control:hover,
-body.skillbridge-guest:has(.register-page) .register-card .form-select:hover {
-    border-color: #94a3b8;
-}
-
-body.skillbridge-guest:has(.register-page) .register-card .form-control:focus,
-body.skillbridge-guest:has(.register-page) .register-card .form-select:focus {
-    border-color: #dc2626;
-    background-color: #fff;
-    box-shadow: 0 0 0 2px rgba(239, 68, 68, .2);
-}
-
-@media (max-height: 720px) and (min-width: 851px) {
-    body.skillbridge-guest:has(.register-page) .register-content {
-        padding: 16px 20px;
-    }
-}
-
-@media (max-width: 850px) {
-    body.skillbridge-guest:has(.register-page) .register-content {
-        padding: clamp(20px, 5vw, 30px);
-    }
-}
-
-@media (max-height: 720px) and (min-width: 851px) {
-    body.skillbridge-guest:has(.register-page) .register-top {
-        margin-bottom: 16px;
-    }
-
-    body.skillbridge-guest:has(.register-page) .register-card .form-grid {
-        column-gap: 12px;
-        row-gap: 11px;
-    }
-
-    body.skillbridge-guest:has(.register-page) .register-card .form-label {
-        margin-bottom: 6px;
-    }
-
-    body.skillbridge-guest:has(.register-page) .register-card .form-control,
-    body.skillbridge-guest:has(.register-page) .register-card .form-select {
-        height: 44px;
-    }
-
-    body.skillbridge-guest:has(.register-page) .register-card .terms-wrapper {
-        margin-top: 11px;
-        padding: 8px 10px;
-    }
-
-    body.skillbridge-guest:has(.register-page) .register-card .btn-register {
-        min-height: 42px;
-        margin-top: 6px;
-    }
-}
-
-@media (max-height: 600px) and (min-width: 851px) {
-    body.skillbridge-guest:has(.register-page) .register-hero p {
-        display: none;
-    }
-
-    body.skillbridge-guest:has(.register-page) .register-hero {
-        margin-bottom: 12px;
-    }
-
-    body.skillbridge-guest:has(.register-page) .register-hero h1 {
-        font-size: 27px;
-    }
-
-    body.skillbridge-guest:has(.register-page) .register-card .form-grid {
-        row-gap: 10px;
-    }
-
-    body.skillbridge-guest:has(.register-page) .register-card .form-control,
-    body.skillbridge-guest:has(.register-page) .register-card .form-select {
-        height: 40px;
-    }
-
-    body.skillbridge-guest:has(.register-page) .register-card .terms-wrapper {
-        margin-top: 8px;
-        padding: 6px 8px;
-    }
-}
-
-@media (max-width: 600px) {
-    body.skillbridge-guest:has(.register-page) .register-top {
-        margin-bottom: 16px;
-    }
-
-    body.skillbridge-guest:has(.register-page) .register-card .form-grid {
-        row-gap: 18px;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    body.skillbridge-guest:has(.register-page) .register-card .btn-register,
-    body.skillbridge-guest:has(.register-page) .register-card .form-control,
-    body.skillbridge-guest:has(.register-page) .register-card .form-select {
-        transition: none;
-    }
-}
-</style>
-
-@endpush
-
+@section('body_class', 'auth-page')
 
 @section('content')
 
-<div class="register-page">
+@php
+    // Errors for fields that have no input of their own on this form.
+    $fieldKeys = ['name', 'phone', 'email', 'password', 'institution_id', 'program_id', 'program'];
+    $otherErrorKey = collect($errors->keys())->diff($fieldKeys)->first();
+@endphp
 
-    <div class="register-content">
+<div class="auth-pane auth-pane--wide">
 
-        {{-- =====================================================
-             TOP
-        ====================================================== --}}
+    @include('admin.users.auth.partials.top', ['secure' => 'Secure Registration'])
 
-        <div class="register-top">
+    <section class="auth-card" aria-labelledby="auth-title">
 
-            <a class="auth-back-link" href="{{ route('home') }}">
-                <i class="bi bi-arrow-left" aria-hidden="true"></i>
-                Back to Home
-            </a>
+        @include('admin.users.auth.partials.mobile-brand')
 
-            <div class="register-secure">
-
-                <i class="bi bi-shield-check" aria-hidden="true"></i>
-
-                Secure Registration
-
-            </div>
-
-        </div>
-
-
-        {{-- =====================================================
-             HERO
-        ====================================================== --}}
-
-        <div class="register-hero">
-
-            <div class="register-form-mark" aria-hidden="true">
-                <i class="bi bi-asterisk"></i>
-            </div>
-
-            <h1>
-                Create your account.
+        <header class="auth-heading">
+            <h1 id="auth-title">
+                Create an account.
+                <span>Start your journey.</span>
             </h1>
+            <p>Create your SkillBridge student account and start building your future.</p>
+        </header>
 
-            <p>Create your SkillBridge student account to get started.</p>
+        @if ($otherErrorKey)
+            <div class="auth-alert auth-alert--danger" role="alert">
+                <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+                <span>{{ $errors->first($otherErrorKey) }}</span>
+            </div>
+        @endif
 
-        </div>
+        <form
+            method="POST"
+            action="{{ route('register') }}"
+            id="registerForm"
+            novalidate
+            data-auth-form
+        >
+            @csrf
 
+            {{-- ACCOUNT TYPE + INSTITUTION --}}
+            <div class="auth-chip" aria-label="Selected account type">
+                <i class="bi bi-mortarboard-fill" aria-hidden="true"></i>
+                <span>Student account</span>
+                <span class="auth-chip-note">For {{ $institution->name }} students</span>
+            </div>
 
-        {{-- =====================================================
-             CARD
-        ====================================================== --}}
-
-        <div class="register-card">
-
-
-            <form
-                method="POST"
-                action="{{ route('register') }}"
-                id="registerForm"
-                novalidate
+            <input
+                type="hidden"
+                id="institution_id"
+                name="institution_id"
+                value="{{ $institution->id }}"
             >
 
-                @csrf
-
-
-                {{-- =================================================
-                     PERSONAL
-                ================================================== --}}
-
-                <div class="form-section" id="account-type">
-
-                    <div class="section-title">
-
-                        <div class="section-icon">
-
-                            <i class="bi bi-person-vcard-fill"></i>
-
-                        </div>
-
-                        <div>
-
-                            <h3>
-                                Personal Information
-                            </h3>
-
-                            <p>
-                                Tell us about yourself
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="form-grid">
-
-
-                        {{-- NAME --}}
-
-                        <div class="form-group full">
-
-                            <label
-                                for="name"
-                                class="form-label"
-                            >
-
-                                <i class="bi bi-person-fill"></i>
-
-                                Full Name
-
-                                <span class="required">*</span>
-
-                            </label>
-
-
-                            <input
-                                type="text"
-                                class="form-control @error('name') is-invalid @enderror"
-                                id="name"
-                                name="name"
-                                value="{{ old('name') }}"
-                                placeholder="Enter your full name"
-                                maxlength="100"
-                                autocomplete="name"
-                                required
-                                autofocus
-                            >
-
-
-                            @error('name')
-
-                                <div class="invalid-feedback">
-                                    {{ $message }}
-                                </div>
-
-                            @enderror
-
-
-                            <div
-                                id="nameError"
-                                class="invalid-feedback js-error"
-                            ></div>
-
-                        </div>
-
-
-                        {{-- PHONE --}}
-
-                        <div class="form-group">
-
-                            <label
-                                for="phone"
-                                class="form-label"
-                            >
-
-                                <i class="bi bi-telephone-fill"></i>
-
-                                Phone Number
-
-                                <span
-                                    style="
-                                        color:var(--sb-muted);
-                                        font-size:7px;
-                                        text-transform:none;
-                                    "
-                                >
-                                    Optional
-                                </span>
-
-                            </label>
-
-
-                            <input
-                                type="tel"
-                                class="form-control @error('phone') is-invalid @enderror"
-                                id="phone"
-                                name="phone"
-                                value="{{ old('phone') }}"
-                                placeholder="+63 912 345 6789"
-                                maxlength="20"
-                                autocomplete="tel"
-                            >
-
-
-                            @error('phone')
-
-                                <div class="invalid-feedback">
-                                    {{ $message }}
-                                </div>
-
-                            @enderror
-
-
-                            <div
-                                id="phoneError"
-                                class="invalid-feedback js-error"
-                            ></div>
-
-                        </div>
-
-
-                        {{-- EMAIL --}}
-
-                        <div class="form-group">
-
-                            <label
-                                for="email"
-                                class="form-label"
-                            >
-
-                                <i class="bi bi-envelope-fill"></i>
-
-                                Email Address
-
-                                <span class="required">*</span>
-
-                            </label>
-
-
-                            <input
-                                type="email"
-                                class="form-control @error('email') is-invalid @enderror"
-                                id="email"
-                                name="email"
-                                value="{{ old('email') }}"
-                                placeholder="you@example.com"
-                                maxlength="255"
-                                autocomplete="email"
-                                required
-                            >
-
-
-                            @error('email')
-
-                                <div class="invalid-feedback">
-                                    {{ $message }}
-                                </div>
-
-                            @enderror
-
-
-                            <div
-                                id="emailError"
-                                class="invalid-feedback js-error"
-                            ></div>
-
-                        </div>
-
-                    </div>
-
+            @error('institution_id')
+                <div class="auth-error" role="alert">
+                    <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+                    <span>{{ $message }}</span>
                 </div>
+            @enderror
 
+            <div id="institutionError" class="auth-error js-error" role="alert"></div>
 
-                {{-- =================================================
-                     ACCOUNT TYPE
-                ================================================== --}}
+            <div class="auth-grid">
 
-                <div class="form-section">
+                {{-- NAME --}}
+                <div class="auth-field auth-field--full">
+                    <label for="name" class="auth-label">
+                        Full Name
+                        <span class="auth-required" aria-hidden="true">*</span>
+                    </label>
 
-                    @if(false)
-
-                    <div class="section-title">
-
-                        <div class="section-icon">
-
-                            <i class="bi bi-briefcase-fill"></i>
-
-                        </div>
-
-                        <div>
-
-                            <h3>
-                                Internship Profile
-                            </h3>
-
-                            <p>
-                                Choose your role in Skill Bridge
-                            </p>
-
-                        </div>
-
+                    <div class="auth-input-wrap">
+                        <i class="bi bi-person auth-input-icon" aria-hidden="true"></i>
+                        <input
+                            type="text"
+                            class="auth-input @error('name') is-invalid @enderror"
+                            id="name"
+                            name="name"
+                            value="{{ old('name') }}"
+                            placeholder="Enter your full name"
+                            maxlength="100"
+                            autocomplete="name"
+                            aria-describedby="nameError"
+                            required
+                            autofocus
+                        >
                     </div>
 
-
-                    {{-- ROLE CARDS --}}
-
-                    <div class="role-grid">
-
-                        @foreach($roles as $roleOption)
-
-                            @php
-
-                                $roleValue =
-                                    $roleOption->value;
-
-                                $roleLabel =
-                                    $roleOption->label();
-
-                                $roleIcon =
-                                    match($roleValue) {
-
-                                        'student'
-                                            => 'bi-mortarboard-fill',
-
-                                        'employer'
-                                            => 'bi-building-fill',
-
-                                        'coordinator'
-                                            => 'bi-people-fill',
-
-                                        default
-                                            => 'bi-person-badge-fill',
-
-                                    };
-
-                                $roleDescription =
-                                    match($roleValue) {
-
-                                        'student'
-                                            => 'Find internships',
-
-                                        'employer'
-                                            => 'Hire interns',
-
-                                        'coordinator'
-                                            => 'Manage placements',
-
-                                        default
-                                            => 'Skill Bridge account',
-
-                                    };
-
-                            @endphp
-
-
-                            <div class="role-card">
-
-                                <input
-                                    type="radio"
-                                    id="role_{{ $roleValue }}"
-                                    name="role"
-                                    value="{{ $roleValue }}"
-                                    {{ old('role', 'student') === $roleValue ? 'checked' : '' }}
-                                >
-
-
-                                <label
-                                    for="role_{{ $roleValue }}"
-                                >
-
-                                    <i
-                                        class="bi {{ $roleIcon }}"
-                                    ></i>
-
-
-                                    <strong>
-                                        {{ $roleLabel }}
-                                    </strong>
-
-
-                                    <small>
-                                        {{ $roleDescription }}
-                                    </small>
-
-                                </label>
-
-                            </div>
-
-                        @endforeach
-
-                    </div>
-
-
-                    @error('role')
-
-                        <div class="invalid-feedback">
-                            {{ $message }}
+                    @error('name')
+                        <div class="auth-error server-error" role="alert">
+                            <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+                            <span>{{ $message }}</span>
                         </div>
-
                     @enderror
 
-
-                    <div
-                        id="roleError"
-                        class="invalid-feedback js-error"
-                    ></div>
-
-
-                    {{-- HIDDEN BACKEND ROLE SELECT --}}
-
-                    <select
-                        id="role"
-                        name="role_backend"
-                        style="display:none;"
-                    >
-
-                        <option value="">
-                            Select role
-                        </option>
-
-                        @foreach($roles as $roleOption)
-
-                            <option
-                                value="{{ $roleOption->value }}"
-                                {{ old('role') === $roleOption->value ? 'selected' : '' }}
-                            >
-
-                                {{ $roleOption->label() }}
-
-                            </option>
-
-                        @endforeach
-
-                    </select>
-
-
-                    @endif
-
-                    {{-- =================================================
-                        ADDITIONAL PROFILE
-                    ================================================== --}}
-
-                    <div id="roleDetails" style="display:block;">
-
-                        <div
-                            class="section-title"
-                            style="
-                                margin-top:15px;
-                            "
-                        >
-
-                            <div class="section-icon">
-
-                                <i class="bi bi-person-lines-fill"></i>
-
-                            </div>
-
-                            <div>
-
-                                <h3>
-                                    Profile Details
-                                </h3>
-
-                                <p>
-                                    Additional information
-                                </p>
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="form-grid">
-
-
-                            {{-- INSTITUTION --}}
-
-                            <div
-                                class="
-                                    form-group
-                                    role-field
-                                "
-                                data-role="
-                                    student
-                                    coordinator
-                                "
-                            >
-
-                                <label
-                                    for="institution_id"
-                                    class="form-label"
-                                >
-
-                                    <i class="bi bi-building"></i>
-
-                                    Institution
-
-                                    <span class="required">*</span>
-
-                                </label>
-
-
-                                <input
-                                    type="text"
-                                    class="form-control"
-                                    value="{{ $institution->name }}"
-                                    readonly
-                                >
-
-                                <input
-                                    type="hidden"
-                                    id="institution_id"
-                                    name="institution_id"
-                                    value="{{ $institution->id }}"
-                                >
-
-
-                                @error('institution_id')
-
-                                    <div class="invalid-feedback">
-                                        {{ $message }}
-                                    </div>
-
-                                @enderror
-
-
-                                <div
-                                    id="institutionError"
-                                    class="invalid-feedback js-error"
-                                ></div>
-
-                            </div>
-
-
-                            {{-- PROGRAM --}}
-
-                            <div
-                                class="
-                                    form-group
-                                    role-field
-                                "
-                                data-role="student"
-                            >
-
-                                <label
-                                    for="program"
-                                    class="form-label"
-                                >
-
-                                    <i class="bi bi-book-fill"></i>
-
-                                    Program
-
-                                    <span class="required">*</span>
-
-                                </label>
-
-
-                                <select
-                                    class="form-select @error('program_id') is-invalid @enderror"
-                                    id="program"
-                                    name="program_id"
-                                    required
-                                >
-                                    <option value="">Select your program</option>
-                                    @foreach($programs as $program)
-                                        <option value="{{ $program->id }}" {{ (string) old('program_id') === (string) $program->id ? 'selected' : '' }}>{{ $program->display_name }}</option>
-                                    @endforeach
-                                </select>
-
-
-                                @error('program_id')
-
-                                    <div class="invalid-feedback">
-                                        {{ $message }}
-                                    </div>
-
-                                @enderror
-
-
-                                <div
-                                    id="programError"
-                                    class="invalid-feedback js-error"
-                                ></div>
-
-                            </div>
-
-
-                            {{-- COMPANY --}}
-
-                            <div
-                                class="
-                                    form-group
-                                    role-field
-                                "
-                                data-role="employer"
-                            >
-
-                                <label
-                                    for="company_name"
-                                    class="form-label"
-                                >
-
-                                    <i class="bi bi-buildings-fill"></i>
-
-                                    Company Name
-
-                                    <span class="required">*</span>
-
-                                </label>
-
-
-                                <input
-                                    type="text"
-                                    class="form-control @error('company_name') is-invalid @enderror"
-                                    id="company_name"
-                                    name="company_name"
-                                    value="{{ old('company_name') }}"
-                                    placeholder="Enter company name"
-                                    maxlength="150"
-                                >
-
-
-                                @error('company_name')
-
-                                    <div class="invalid-feedback">
-                                        {{ $message }}
-                                    </div>
-
-                                @enderror
-
-
-                                <div
-                                    id="companyError"
-                                    class="invalid-feedback js-error"
-                                ></div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
+                    <div id="nameError" class="auth-error js-error"></div>
                 </div>
 
-
-                {{-- =================================================
-                     SECURITY
-                ================================================== --}}
-
-                <div class="form-section">
-
-                    <div class="section-title">
-
-                        <div class="section-icon">
-
-                            <i class="bi bi-shield-lock-fill"></i>
-
-                        </div>
-
-                        <div>
-
-                            <h3>
-                                Account Security
-                            </h3>
-
-                            <p>
-                                Keep your account protected
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="form-grid">
-
-
-                        {{-- PASSWORD --}}
-
-                        <div class="form-group">
-
-                            <label
-                                for="password"
-                                class="form-label"
-                            >
-
-                                <i class="bi bi-lock-fill"></i>
-
-                                Password
-
-                                <span class="required">*</span>
-
-                            </label>
-
-
-                            <div class="password-wrapper">
-
-                                <input
-                                    type="password"
-                                    class="form-control @error('password') is-invalid @enderror"
-                                    id="password"
-                                    name="password"
-                                    placeholder="Create a strong password"
-                                    maxlength="128"
-                                    autocomplete="new-password"
-                                    required
-                                >
-
-
-                                <button
-                                    type="button"
-                                    class="password-toggle"
-                                    data-target="password"
-                                    aria-label="Show password"
-                                >
-
-                                    <i class="bi bi-eye"></i>
-
-                                </button>
-
-                            </div>
-
-
-                            @error('password')
-
-                                <div class="invalid-feedback">
-                                    {{ $message }}
-                                </div>
-
-                            @enderror
-
-
-                            <div
-                                id="passwordError"
-                                class="invalid-feedback js-error"
-                            ></div>
-
-
-                            <div class="password-strength">
-
-                                <div
-                                    id="passwordStrengthBar"
-                                    class="password-strength-bar"
-                                ></div>
-
-                            </div>
-
-
-                            <div
-                                id="passwordStrengthText"
-                                class="password-strength-text"
-                            ></div>
-
-
-                            <div class="password-rules">
-
-                                <span
-                                    id="ruleLength"
-                                    class="password-rule"
-                                >
-                                    <i class="bi bi-circle-fill"></i>
-                                    8+ characters
-                                </span>
-
-
-                                <span
-                                    id="ruleUpper"
-                                    class="password-rule"
-                                >
-                                    <i class="bi bi-circle-fill"></i>
-                                    Uppercase
-                                </span>
-
-
-                                <span
-                                    id="ruleLower"
-                                    class="password-rule"
-                                >
-                                    <i class="bi bi-circle-fill"></i>
-                                    Lowercase
-                                </span>
-
-
-                                <span
-                                    id="ruleNumber"
-                                    class="password-rule"
-                                >
-                                    <i class="bi bi-circle-fill"></i>
-                                    Number
-                                </span>
-
-
-                                <span
-                                    id="ruleSpecial"
-                                    class="password-rule"
-                                >
-                                    <i class="bi bi-circle-fill"></i>
-                                    Special
-                                </span>
-
-                            </div>
-
-                        </div>
-
-
-                        {{-- CONFIRM PASSWORD --}}
-                                <span id="ruleLower" class="d-none"></span>
-                                <span id="ruleNumber" class="d-none"></span>
-                                <span id="ruleSpecial" class="d-none"></span>
-
-                        <div class="form-group">
-
-                            <label
-                                for="password_confirmation"
-                                class="form-label"
-                            >
-
-                                <i class="bi bi-lock-fill"></i>
-
-                                Confirm Password
-
-                                <span class="required">*</span>
-
-                            </label>
-
-
-                            <div class="password-wrapper">
-
-                                <input
-                                    type="password"
-                                    class="form-control"
-                                    id="password_confirmation"
-                                    name="password_confirmation"
-                                    placeholder="Repeat your password"
-                                    maxlength="128"
-                                    autocomplete="new-password"
-                                    required
-                                >
-
-
-                                <button
-                                    type="button"
-                                    class="password-toggle"
-                                    data-target="password_confirmation"
-                                    aria-label="Show password"
-                                >
-
-                                    <i class="bi bi-eye"></i>
-
-                                </button>
-
-                            </div>
-
-
-                            <div
-                                id="passwordConfirmationError"
-                                class="invalid-feedback js-error"
-                            ></div>
-
-                        </div>
-
-                    </div>
-
-
-                    {{-- TERMS --}}
-
-                    <div
-                        class="terms-wrapper"
-                        id="termsWrapper"
-                    >
-
-                        <label
-                            class="terms-label"
-                            for="terms"
+                {{-- EMAIL --}}
+                <div class="auth-field">
+                    <label for="email" class="auth-label">
+                        Email Address
+                        <span class="auth-required" aria-hidden="true">*</span>
+                    </label>
+
+                    <div class="auth-input-wrap">
+                        <i class="bi bi-envelope auth-input-icon" aria-hidden="true"></i>
+                        <input
+                            type="email"
+                            class="auth-input @error('email') is-invalid @enderror"
+                            id="email"
+                            name="email"
+                            value="{{ old('email') }}"
+                            placeholder="you@example.com"
+                            maxlength="255"
+                            autocomplete="email"
+                            aria-describedby="emailError"
+                            required
                         >
+                    </div>
 
-                            <input
-                                type="checkbox"
-                                id="terms"
-                                name="terms"
-                                value="1"
-                            >
+                    @error('email')
+                        <div class="auth-error server-error" role="alert">
+                            <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+                            <span>{{ $message }}</span>
+                        </div>
+                    @enderror
 
+                    <div id="emailError" class="auth-error js-error"></div>
+                </div>
 
-                            <span>
+                {{-- PHONE --}}
+                <div class="auth-field">
+                    <label for="phone" class="auth-label">
+                        Phone Number
+                        <span class="auth-optional">Optional</span>
+                    </label>
 
-                                I agree to the
+                    <div class="auth-input-wrap">
+                        <i class="bi bi-telephone auth-input-icon" aria-hidden="true"></i>
+                        <input
+                            type="tel"
+                            class="auth-input @error('phone') is-invalid @enderror"
+                            id="phone"
+                            name="phone"
+                            value="{{ old('phone') }}"
+                            placeholder="+63 912 345 6789"
+                            maxlength="20"
+                            autocomplete="tel"
+                            aria-describedby="phoneError"
+                        >
+                    </div>
 
-                                <a href="#">
-                                    Terms and Conditions
-                                </a>
+                    @error('phone')
+                        <div class="auth-error server-error" role="alert">
+                            <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+                            <span>{{ $message }}</span>
+                        </div>
+                    @enderror
 
-                                and
+                    <div id="phoneError" class="auth-error js-error"></div>
+                </div>
 
-                                <a href="#">
-                                    Privacy Policy
-                                </a>.
+                {{-- PROFILE DETAILS (shown per role by the script below) --}}
+                <div id="roleDetails" class="auth-field--full">
 
-                                I understand that my information
-                                will be used for Skill Bridge
-                                internship and career services.
-
-                            </span>
-
+                    {{-- PROGRAM --}}
+                    <div class="auth-field role-field show" data-role="student">
+                        <label for="program" class="auth-label">
+                            Program
+                            <span class="auth-required" aria-hidden="true">*</span>
                         </label>
 
-
-                        <div
-                            id="termsError"
-                            class="terms-error"
-                        >
-                            Please agree to the Terms and Conditions
-                            and Privacy Policy.
+                        <div class="auth-input-wrap">
+                            <i class="bi bi-book auth-input-icon" aria-hidden="true"></i>
+                            <select
+                                class="auth-input @if ($errors->has('program_id') || $errors->has('program')) is-invalid @endif"
+                                id="program"
+                                name="program_id"
+                                aria-describedby="programError"
+                                required
+                            >
+                                <option value="">Select your program</option>
+                                @foreach($programs as $program)
+                                    <option value="{{ $program->id }}" {{ (string) old('program_id') === (string) $program->id ? 'selected' : '' }}>{{ $program->display_name }}</option>
+                                @endforeach
+                            </select>
+                            <i class="bi bi-chevron-down auth-select-caret" aria-hidden="true"></i>
                         </div>
 
+                        @error('program_id')
+                            <div class="auth-error server-error" role="alert">
+                                <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+                                <span>{{ $message }}</span>
+                            </div>
+                        @enderror
+
+                        @error('program')
+                            <div class="auth-error server-error" role="alert">
+                                <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+                                <span>{{ $message }}</span>
+                            </div>
+                        @enderror
+
+                        <div id="programError" class="auth-error js-error"></div>
                     </div>
 
+                    {{-- COMPANY --}}
+                    <div class="auth-field role-field" data-role="employer">
+                        <label for="company_name" class="auth-label">
+                            Company Name
+                            <span class="auth-required" aria-hidden="true">*</span>
+                        </label>
 
-                    {{-- SUBMIT --}}
+                        <div class="auth-input-wrap">
+                            <i class="bi bi-buildings auth-input-icon" aria-hidden="true"></i>
+                            <input
+                                type="text"
+                                class="auth-input @error('company_name') is-invalid @enderror"
+                                id="company_name"
+                                name="company_name"
+                                value="{{ old('company_name') }}"
+                                placeholder="Enter company name"
+                                maxlength="150"
+                                aria-describedby="companyError"
+                            >
+                        </div>
 
-                    <button
-                        type="submit"
-                        class="btn-register"
-                        id="submitBtn"
-                    >
+                        @error('company_name')
+                            <div class="auth-error server-error" role="alert">
+                                <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+                                <span>{{ $message }}</span>
+                            </div>
+                        @enderror
 
-                        <span id="submitText">
+                        <div id="companyError" class="auth-error js-error"></div>
+                    </div>
 
-                            <i class="bi bi-rocket-takeoff-fill"></i>
+                </div>
 
-                            Sign Up
+                {{-- PASSWORD --}}
+                <div class="auth-field">
+                    <label for="password" class="auth-label">
+                        Password
+                        <span class="auth-required" aria-hidden="true">*</span>
+                    </label>
 
+                    <div class="auth-input-wrap auth-input-wrap--password">
+                        <i class="bi bi-lock auth-input-icon" aria-hidden="true"></i>
+                        <input
+                            type="password"
+                            class="auth-input @error('password') is-invalid @enderror"
+                            id="password"
+                            name="password"
+                            placeholder="Create a password"
+                            maxlength="128"
+                            autocomplete="new-password"
+                            aria-describedby="passwordError passwordRules"
+                            required
+                        >
+                        <button
+                            type="button"
+                            class="auth-toggle"
+                            data-password-toggle="password"
+                            aria-controls="password"
+                            aria-label="Show password"
+                            aria-pressed="false"
+                            title="Show password"
+                        >
+                            <i class="bi bi-eye" aria-hidden="true"></i>
+                        </button>
+                    </div>
+
+                    @error('password')
+                        <div class="auth-error server-error" role="alert">
+                            <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+                            <span>{{ $message }}</span>
+                        </div>
+                    @enderror
+
+                    <div id="passwordError" class="auth-error js-error"></div>
+                </div>
+
+                {{-- CONFIRM PASSWORD --}}
+                <div class="auth-field">
+                    <label for="password_confirmation" class="auth-label">
+                        Confirm Password
+                        <span class="auth-required" aria-hidden="true">*</span>
+                    </label>
+
+                    <div class="auth-input-wrap auth-input-wrap--password">
+                        <i class="bi bi-lock auth-input-icon" aria-hidden="true"></i>
+                        <input
+                            type="password"
+                            class="auth-input"
+                            id="password_confirmation"
+                            name="password_confirmation"
+                            placeholder="Repeat password"
+                            maxlength="128"
+                            autocomplete="new-password"
+                            aria-describedby="passwordConfirmationError"
+                            required
+                        >
+                        <button
+                            type="button"
+                            class="auth-toggle"
+                            data-password-toggle="password_confirmation"
+                            aria-controls="password_confirmation"
+                            aria-label="Show password"
+                            aria-pressed="false"
+                            title="Show password"
+                        >
+                            <i class="bi bi-eye" aria-hidden="true"></i>
+                        </button>
+                    </div>
+
+                    <div id="passwordConfirmationError" class="auth-error js-error"></div>
+                </div>
+
+                <div class="auth-pw-meta" id="passwordRules">
+                    <div class="password-rules">
+                        <span id="ruleLength" class="password-rule">
+                            <i class="bi bi-circle-fill" aria-hidden="true"></i>
+                            8+ characters
                         </span>
 
-                    </button>
-
-
-                    {{-- LOGIN --}}
-
-                    <div class="auth-footer">
-
-                        Already have an account?
-
-                        <a href="{{ route('login') }}">
-                            Sign in here
-                        </a>
-
+                        <span id="ruleUpper" class="password-rule">
+                            <i class="bi bi-circle-fill" aria-hidden="true"></i>
+                            One uppercase letter
+                        </span>
                     </div>
 
-                </div>
+                    <div class="password-strength">
+                        <div id="passwordStrengthBar" class="password-strength-bar"></div>
+                    </div>
 
-
-            </form>
-
-        </div>
-
-
-        {{-- =====================================================
-             FEATURES
-        ====================================================== --}}
-
-        <div class="register-features">
-
-            <div class="feature-item">
-
-                <i class="bi bi-search-heart-fill"></i>
-
-                <div>
-
-                    <strong>
-                        Find Internships
-                    </strong>
-
-                    <span>
-                        Discover opportunities
-                    </span>
-
+                    <div id="passwordStrengthText" class="password-strength-text" aria-live="polite"></div>
                 </div>
 
             </div>
 
-
-            <div class="feature-item">
-
-                <i class="bi bi-graph-up-arrow"></i>
-
-                <div>
-
-                    <strong>
-                        Build Experience
-                    </strong>
-
-                    <span>
-                        Grow your skills
-                    </span>
-
-                </div>
-
-            </div>
-
-
-            <div class="feature-item">
-
-                <i class="bi bi-people-fill"></i>
-
-                <div>
-
-                    <strong>
-                        Connect
-                    </strong>
+            {{-- TERMS --}}
+            <div class="auth-terms" id="termsWrapper">
+                <label class="auth-terms-label" for="terms">
+                    <input
+                        type="checkbox"
+                        id="terms"
+                        name="terms"
+                        value="1"
+                        aria-describedby="termsError"
+                        {{ old('terms') ? 'checked' : '' }}
+                    >
 
                     <span>
-                        Meet professionals
+                        I agree to the
+                        <a href="#">Terms and Conditions</a>
+                        and
+                        <a href="#">Privacy Policy</a>.
+                        I understand that my information will be used for
+                        Skill Bridge internship and career services.
                     </span>
+                </label>
 
+                <div id="termsError" class="auth-error auth-terms-error" role="alert">
+                    Please agree to the Terms and Conditions and Privacy Policy.
                 </div>
-
             </div>
 
-        </div>
+            <button
+                type="submit"
+                class="auth-btn auth-btn--spaced"
+                id="submitBtn"
+                data-loading-text="Creating account..."
+            >
+                <i class="bi bi-person-check-fill" aria-hidden="true"></i>
+                <span class="auth-btn-label" id="submitText">Create Account</span>
+            </button>
+        </form>
 
+        <p class="auth-footer-text">
+            Already have a SkillBridge account?
+            <a href="{{ route('login') }}">Sign in here</a>
+        </p>
 
-    </div>
+    </section>
 
 </div>
 
@@ -3985,1255 +397,338 @@ body.skillbridge-guest:has(.register-page) .register-card .form-select:focus {
 
 
 @push('scripts')
-
 <script>
+document.addEventListener('DOMContentLoaded', function () {
+    'use strict';
 
-document.addEventListener(
-    'DOMContentLoaded',
-    function () {
+    const form = document.getElementById('registerForm');
+    const roleCards = document.querySelectorAll('input[name="role"]');
+    const roleDetails = document.getElementById('roleDetails');
+    const roleFields = document.querySelectorAll('.role-field');
+    const institution = document.getElementById('institution_id');
+    const program = document.getElementById('program');
+    const company = document.getElementById('company_name');
+    const password = document.getElementById('password');
+    const passwordConfirmation = document.getElementById('password_confirmation');
+    const terms = document.getElementById('terms');
+    const termsWrapper = document.getElementById('termsWrapper');
+    const termsError = document.getElementById('termsError');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        'use strict';
+    /* ---------- Role fields ---------- */
 
+    function getSelectedRole() {
+        const checked = document.querySelector('input[name="role"]:checked');
 
-        /* =====================================================
-           ELEMENTS
-        ====================================================== */
-
-        const form =
-            document.getElementById(
-                'registerForm'
-            );
-
-
-        const roleCards =
-            document.querySelectorAll(
-                'input[name="role"]'
-            );
-
-
-        const roleDetails =
-            document.getElementById(
-                'roleDetails'
-            );
-
-
-        const roleFields =
-            document.querySelectorAll(
-                '.role-field'
-            );
-
-
-        const institution =
-            document.getElementById(
-                'institution_id'
-            );
-
-
-        const program =
-            document.getElementById(
-                'program'
-            );
-
-
-        const company =
-            document.getElementById(
-                'company_name'
-            );
-
-
-        const password =
-            document.getElementById(
-                'password'
-            );
-
-
-        const passwordConfirmation =
-            document.getElementById(
-                'password_confirmation'
-            );
-
-
-        const terms =
-            document.getElementById(
-                'terms'
-            );
-
-
-        const submitButton =
-            document.getElementById(
-                'submitBtn'
-            );
-
-
-        /* =====================================================
-           GET SELECTED ROLE
-        ====================================================== */
-
-        function getSelectedRole() {
-
-            const checked =
-                document.querySelector(
-                    'input[name="role"]:checked'
-                );
-
-            if (checked) {
-                return checked.value;
-            }
-
-            return roleCards.length === 0
-                ? 'student'
-                : '';
-
+        if (checked) {
+            return checked.value;
         }
 
+        return roleCards.length === 0 ? 'student' : '';
+    }
 
-        /* =====================================================
-           ROLE FIELDS
-        ====================================================== */
+    function updateRoleFields() {
+        const selectedRole = getSelectedRole();
+        let visible = false;
 
-        function updateRoleFields() {
+        roleFields.forEach(function (field) {
+            const roles = field.dataset.role.trim().split(/\s+/);
+            const show = roles.includes(selectedRole);
 
-            const selectedRole =
-                getSelectedRole();
+            field.classList.toggle('show', show);
+            visible = visible || show;
+        });
 
+        roleDetails.style.display = visible ? 'block' : 'none';
 
-            let visible =
-                false;
-
-
-            roleFields.forEach(
-                function (field) {
-
-                    const roles =
-                        field.dataset.role
-                            .trim()
-                            .split(/\s+/);
-
-
-                    if (
-                        roles.includes(
-                            selectedRole
-                        )
-                    ) {
-
-                        field.classList.add(
-                            'show'
-                        );
-
-                        visible =
-                            true;
-
-                    } else {
-
-                        field.classList.remove(
-                            'show'
-                        );
-
-                    }
-
-                }
-            );
-
-
-            roleDetails.style.display =
-                visible
-                    ? 'block'
-                    : 'none';
-
-
-            /* Required fields */
-
-            if (institution) {
-
-                institution.required =
-                    selectedRole === 'student' ||
-                    selectedRole === 'coordinator';
-
-            }
-
-
-            if (program) {
-
-                program.required =
-                    selectedRole === 'student';
-
-            }
-
-
-            if (company) {
-
-                company.required =
-                    selectedRole === 'employer';
-
-            }
-
+        if (institution) {
+            institution.required = selectedRole === 'student' || selectedRole === 'coordinator';
         }
 
-
-        roleCards.forEach(
-            function (radio) {
-
-                radio.addEventListener(
-                    'change',
-                    function () {
-
-                        updateRoleFields();
-
-                        clearError(
-                            'roleError'
-                        );
-
-                    }
-                );
-
-            }
-        );
-
-
-        updateRoleFields();
-
-
-        /* =====================================================
-           PASSWORD TOGGLE
-        ====================================================== */
-
-        document
-            .querySelectorAll(
-                '.password-toggle'
-            )
-            .forEach(
-                function (button) {
-
-                    button.addEventListener(
-                        'click',
-                        function () {
-
-                            const target =
-                                document.getElementById(
-                                    this.dataset.target
-                                );
-
-
-                            const icon =
-                                this.querySelector(
-                                    'i'
-                                );
-
-
-                            if (!target) {
-                                return;
-                            }
-
-
-                            if (
-                                target.type ===
-                                'password'
-                            ) {
-
-                                target.type =
-                                    'text';
-
-
-                                icon.className =
-                                    'bi bi-eye-slash';
-
-
-                                this.setAttribute(
-                                    'aria-label',
-                                    'Hide password'
-                                );
-
-                            } else {
-
-                                target.type =
-                                    'password';
-
-
-                                icon.className =
-                                    'bi bi-eye';
-
-
-                                this.setAttribute(
-                                    'aria-label',
-                                    'Show password'
-                                );
-
-                            }
-
-                        }
-                    );
-
-                }
-            );
-
-
-        /* =====================================================
-           PASSWORD STRENGTH
-        ====================================================== */
-
-        function setRule(
-            id,
-            valid
-        ) {
-
-            const element =
-                document.getElementById(
-                    id
-                );
-
-
-            if (!element) {
-                return;
-            }
-
-
-            const icon =
-                element.querySelector(
-                    'i'
-                );
-
-
-            if (valid) {
-
-                element.classList.add(
-                    'valid'
-                );
-
-
-                if (icon) {
-
-                    icon.className =
-                        'bi bi-check-circle-fill';
-
-                }
-
-            } else {
-
-                element.classList.remove(
-                    'valid'
-                );
-
-
-                if (icon) {
-
-                    icon.className =
-                        'bi bi-circle-fill';
-
-                }
-
-            }
-
+        if (program) {
+            program.required = selectedRole === 'student';
         }
 
-
-        function updatePasswordStrength() {
-
-            const value =
-                password.value;
-
-
-            const hasLength =
-                value.length >= 8;
-
-
-            const hasUpper =
-                /[A-Z]/.test(value);
-
-
-            setRule(
-                'ruleLength',
-                hasLength
-            );
-
-
-            setRule(
-                'ruleUpper',
-                hasUpper
-            );
-
-
-            const strength =
-                document.querySelector(
-                    '.password-strength'
-                );
-
-
-            const bar =
-                document.getElementById(
-                    'passwordStrengthBar'
-                );
-
-
-            const text =
-                document.getElementById(
-                    'passwordStrengthText'
-                );
-
-
-            if (
-                value.length === 0
-            ) {
-
-                strength.classList.remove(
-                    'show'
-                );
-
-                bar.className =
-                    'password-strength-bar';
-
-                text.textContent =
-                    '';
-
-                return;
-
-            }
-
-
-            strength.classList.add(
-                'show'
-            );
-
-
-            let score =
-                0;
-
-
-            if (hasLength) score++;
-
-            if (hasUpper) score++;
-
-            bar.className =
-                'password-strength-bar';
-
-
-            if (score < 2) {
-
-                bar.classList.add(
-                    'weak'
-                );
-
-                text.textContent =
-                    'Weak password';
-
-            } else {
-
-                bar.classList.add(
-                    'strong'
-                );
-
-                text.textContent =
-                    'Password meets the requirements';
-
-            }
-
+        if (company) {
+            company.required = selectedRole === 'employer';
         }
-
-
-        password.addEventListener(
-            'input',
-            function () {
-
-                updatePasswordStrength();
-
-                clearFieldError(
-                    password,
-                    'passwordError'
-                );
-
-            }
-        );
-
-
-        /* =====================================================
-           ERROR FUNCTIONS
-        ====================================================== */
-
-        function showError(
-            input,
-            errorId,
-            message
-        ) {
-
-            if (input) {
-
-                input.classList.add(
-                    'is-invalid'
-                );
-
-            }
-
-
-            const error =
-                document.getElementById(
-                    errorId
-                );
-
-
-            if (error) {
-
-                error.textContent =
-                    message;
-
-                error.classList.add(
-                    'show'
-                );
-
-            }
-
-        }
-
-
-        function clearFieldError(
-            input,
-            errorId
-        ) {
-
-            if (input) {
-
-                input.classList.remove(
-                    'is-invalid'
-                );
-
-            }
-
-
-            clearError(
-                errorId
-            );
-
-        }
-
-
-        function clearError(
-            errorId
-        ) {
-
-            const error =
-                document.getElementById(
-                    errorId
-                );
-
-
-            if (error) {
-
-                error.textContent =
-                    '';
-
-                error.classList.remove(
-                    'show'
-                );
-
-            }
-
-        }
-
-
-        function clearAllErrors() {
-
-            form
-                .querySelectorAll(
-                    '.js-error'
-                )
-                .forEach(
-                    function (error) {
-
-                        error.textContent =
-                            '';
-
-                        error.classList.remove(
-                            'show'
-                        );
-
-                    }
-                );
-
-
-            form
-                .querySelectorAll(
-                    '.is-invalid'
-                )
-                .forEach(
-                    function (input) {
-
-                        input.classList.remove(
-                            'is-invalid'
-                        );
-
-                    }
-                );
-
-
-            document
-                .getElementById(
-                    'termsWrapper'
-                )
-                .classList.remove(
-                    'invalid'
-                );
-
-
-            document
-                .getElementById(
-                    'termsError'
-                )
-                .classList.remove(
-                    'show'
-                );
-
-        }
-
-
-        /* =====================================================
-           VALIDATE FORM
-        ====================================================== */
-
-        function validateForm() {
-
-            let valid =
-                true;
-
-
-            /* -----------------------------------------------
-               NAME
-            ------------------------------------------------ */
-
-            const name =
-                document.getElementById(
-                    'name'
-                );
-
-
-            const nameValue =
-                name.value.trim();
-
-
-            if (
-                nameValue === ''
-            ) {
-
-                showError(
-                    name,
-                    'nameError',
-                    'Full name is required.'
-                );
-
-                valid =
-                    false;
-
-            } else if (
-                nameValue.length < 2
-            ) {
-
-                showError(
-                    name,
-                    'nameError',
-                    'Full name must contain at least 2 characters.'
-                );
-
-                valid =
-                    false;
-
-            } else if (
-                !/^[A-Za-zÀ-ÿ\s.'-]+$/.test(
-                    nameValue
-                )
-            ) {
-
-                showError(
-                    name,
-                    'nameError',
-                    'Please enter a valid full name.'
-                );
-
-                valid =
-                    false;
-
-            }
-
-
-            /* -----------------------------------------------
-               PHONE
-            ------------------------------------------------ */
-
-            const phone =
-                document.getElementById(
-                    'phone'
-                );
-
-
-            const phoneValue =
-                phone.value.trim();
-
-
-            if (
-                phoneValue !== ''
-            ) {
-
-                const cleaned =
-                    phoneValue.replace(
-                        /[\s()+-]/g,
-                        ''
-                    );
-
-
-                if (
-                    !/^\d{10,15}$/.test(
-                        cleaned
-                    )
-                ) {
-
-                    showError(
-                        phone,
-                        'phoneError',
-                        'Please enter a valid phone number.'
-                    );
-
-                    valid =
-                        false;
-
-                }
-
-            }
-
-
-            /* -----------------------------------------------
-               EMAIL
-            ------------------------------------------------ */
-
-            const email =
-                document.getElementById(
-                    'email'
-                );
-
-
-            const emailValue =
-                email.value.trim();
-
-
-            const emailRegex =
-                /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
-
-            if (
-                emailValue === ''
-            ) {
-
-                showError(
-                    email,
-                    'emailError',
-                    'Email address is required.'
-                );
-
-                valid =
-                    false;
-
-            } else if (
-                !emailRegex.test(
-                    emailValue
-                )
-            ) {
-
-                showError(
-                    email,
-                    'emailError',
-                    'Please enter a valid email address.'
-                );
-
-                valid =
-                    false;
-
-            }
-
-
-            /* -----------------------------------------------
-               ROLE
-            ------------------------------------------------ */
-
-            const selectedRole =
-                getSelectedRole();
-
-
-            if (
-                selectedRole === ''
-            ) {
-
-                const roleError =
-                    document.getElementById(
-                        'roleError'
-                    );
-
-
-                roleError.textContent =
-                    'Please select your account type.';
-
-
-                roleError.classList.add(
-                    'show'
-                );
-
-
-                valid =
-                    false;
-
-            }
-
-
-            /* -----------------------------------------------
-               INSTITUTION
-            ------------------------------------------------ */
-
-            if (
-                (
-                    selectedRole ===
-                    'student'
-                    ||
-                    selectedRole ===
-                    'coordinator'
-                )
-                &&
-                institution.value === ''
-            ) {
-
-                showError(
-                    institution,
-                    'institutionError',
-                    'Please select your institution.'
-                );
-
-                valid =
-                    false;
-
-            }
-
-
-            /* -----------------------------------------------
-               PROGRAM
-            ------------------------------------------------ */
-
-            if (
-                selectedRole ===
-                'student'
-            ) {
-
-                const value =
-                    program.value.trim();
-
-
-                if (value === '') {
-
-                    showError(
-                        program,
-                        'programError',
-                        'Please select your program.'
-                    );
-
-                    valid =
-                        false;
-
-                }
-
-            }
-
-
-            /* -----------------------------------------------
-               COMPANY
-            ------------------------------------------------ */
-
-            if (
-                selectedRole ===
-                'employer'
-            ) {
-
-                const value =
-                    company.value.trim();
-
-
-                if (
-                    value === ''
-                ) {
-
-                    showError(
-                        company,
-                        'companyError',
-                        'Please enter your company name.'
-                    );
-
-                    valid =
-                        false;
-
-                } else if (
-                    value.length < 2
-                ) {
-
-                    showError(
-                        company,
-                        'companyError',
-                        'Please enter a valid company name.'
-                    );
-
-                    valid =
-                        false;
-
-                }
-
-            }
-
-
-            /* -----------------------------------------------
-               PASSWORD
-            ------------------------------------------------ */
-
-            const passwordValue =
-                password.value;
-
-
-            const passwordValid =
-                passwordValue.length >= 8
-                &&
-                /[A-Z]/.test(
-                    passwordValue
-                );
-
-
-            if (
-                !passwordValid
-            ) {
-
-                showError(
-                    password,
-                    'passwordError',
-                    'Password must be at least 8 characters and contain one uppercase letter.'
-                );
-
-                valid =
-                    false;
-
-            }
-
-
-            /* -----------------------------------------------
-               CONFIRM PASSWORD
-            ------------------------------------------------ */
-
-            if (
-                passwordConfirmation.value === ''
-            ) {
-
-                showError(
-                    passwordConfirmation,
-                    'passwordConfirmationError',
-                    'Please confirm your password.'
-                );
-
-                valid =
-                    false;
-
-            } else if (
-                passwordConfirmation.value !==
-                passwordValue
-            ) {
-
-                showError(
-                    passwordConfirmation,
-                    'passwordConfirmationError',
-                    'Passwords do not match.'
-                );
-
-                valid =
-                    false;
-
-            }
-
-
-            /* -----------------------------------------------
-               TERMS
-            ------------------------------------------------ */
-
-            const termsWrapper =
-                document.getElementById(
-                    'termsWrapper'
-                );
-
-
-            const termsError =
-                document.getElementById(
-                    'termsError'
-                );
-
-
-            if (
-                !terms.checked
-            ) {
-
-                termsWrapper.classList.add(
-                    'invalid'
-                );
-
-
-                termsError.classList.add(
-                    'show'
-                );
-
-
-                valid =
-                    false;
-
-            }
-
-
-            return valid;
-
-        }
-
-
-        /* =====================================================
-           FORM SUBMIT
-        ====================================================== */
-
-        form.addEventListener(
-            'submit',
-            function (event) {
-
-                event.preventDefault();
-
-
-                clearAllErrors();
-
-
-                const valid =
-                    validateForm();
-
-
-                if (!valid) {
-
-                    /*
-                     * Find first visible error.
-                     */
-
-                    const firstError =
-                        form.querySelector(
-                            '.is-invalid'
-                        );
-
-
-                    if (firstError) {
-
-                        firstError.scrollIntoView({
-                            behavior:
-                                'smooth',
-
-                            block:
-                                'center'
-                        });
-
-
-                        setTimeout(
-                            function () {
-
-                                firstError.focus();
-
-                            },
-                            300
-                        );
-
-                    } else {
-
-                        const roleError =
-                            document.getElementById(
-                                'roleError'
-                            );
-
-
-                        if (
-                            roleError.classList.contains(
-                                'show'
-                            )
-                        ) {
-
-                            roleError.scrollIntoView({
-                                behavior:
-                                    'smooth',
-
-                                block:
-                                    'center'
-                            });
-
-                        }
-
-                    }
-
-
-                    return;
-
-                }
-
-
-                /* ---------------------------------------------
-                   VALID
-                --------------------------------------------- */
-
-                submitButton.disabled =
-                    true;
-
-
-                document
-                    .getElementById(
-                        'submitText'
-                    )
-                    .innerHTML =
-
-                    '<i class="bi bi-hourglass-split"></i>' +
-                    ' Creating Account...';
-
-
-                /*
-                 * Allow Laravel to receive the request.
-                 */
-                form.submit();
-
-            }
-        );
-
-
-        /* =====================================================
-           LIVE VALIDATION
-        ====================================================== */
-
-        form
-            .querySelectorAll(
-                'input, select'
-            )
-            .forEach(
-                function (field) {
-
-                    field.addEventListener(
-                        'input',
-                        function () {
-
-                            this.classList.remove(
-                                'is-invalid'
-                            );
-
-
-                            const error =
-                                document.getElementById(
-                                    this.id +
-                                    'Error'
-                                );
-
-
-                            if (error) {
-
-                                error.textContent =
-                                    '';
-
-                                error.classList.remove(
-                                    'show'
-                                );
-
-                            }
-
-                        }
-                    );
-
-
-                    field.addEventListener(
-                        'change',
-                        function () {
-
-                            this.classList.remove(
-                                'is-invalid'
-                            );
-
-
-                            const error =
-                                document.getElementById(
-                                    this.id +
-                                    'Error'
-                                );
-
-
-                            if (error) {
-
-                                error.textContent =
-                                    '';
-
-                                error.classList.remove(
-                                    'show'
-                                );
-
-                            }
-
-                        }
-                    );
-
-                }
-            );
-
-
-        /* =====================================================
-           CONFIRM PASSWORD LIVE CHECK
-        ====================================================== */
-
-        passwordConfirmation.addEventListener(
-            'input',
-            function () {
-
-                if (
-                    this.value ===
-                    password.value
-                    &&
-                    this.value !== ''
-                ) {
-
-                    clearFieldError(
-                        this,
-                        'passwordConfirmationError'
-                    );
-
-                }
-
-            }
-        );
-
-
-        /* =====================================================
-           TERMS
-        ====================================================== */
-
-        terms.addEventListener(
-            'change',
-            function () {
-
-                if (
-                    this.checked
-                ) {
-
-                    document
-                        .getElementById(
-                            'termsWrapper'
-                        )
-                        .classList.remove(
-                            'invalid'
-                        );
-
-
-                    document
-                        .getElementById(
-                            'termsError'
-                        )
-                        .classList.remove(
-                            'show'
-                        );
-
-                }
-
-            }
-        );
-
-
+    }
+
+    roleCards.forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            updateRoleFields();
+            clearError('roleError');
+        });
     });
 
-</script>
+    updateRoleFields();
 
+    /* ---------- Password strength ---------- */
+
+    function setRule(id, valid) {
+        const element = document.getElementById(id);
+
+        if (!element) {
+            return;
+        }
+
+        const icon = element.querySelector('i');
+
+        element.classList.toggle('valid', valid);
+
+        if (icon) {
+            icon.className = valid ? 'bi bi-check-circle-fill' : 'bi bi-circle-fill';
+        }
+    }
+
+    function updatePasswordStrength() {
+        const value = password.value;
+        const hasLength = value.length >= 8;
+        const hasUpper = /[A-Z]/.test(value);
+        const strength = document.querySelector('.password-strength');
+        const bar = document.getElementById('passwordStrengthBar');
+        const text = document.getElementById('passwordStrengthText');
+
+        setRule('ruleLength', hasLength);
+        setRule('ruleUpper', hasUpper);
+
+        if (value.length === 0) {
+            strength.classList.remove('show');
+            bar.className = 'password-strength-bar';
+            text.textContent = '';
+            return;
+        }
+
+        strength.classList.add('show');
+        bar.className = 'password-strength-bar';
+
+        if (hasLength && hasUpper) {
+            bar.classList.add('strong');
+            text.textContent = 'Password meets the requirements';
+        } else {
+            bar.classList.add('weak');
+            text.textContent = 'Weak password';
+        }
+    }
+
+    password.addEventListener('input', function () {
+        updatePasswordStrength();
+        clearFieldError(password, 'passwordError');
+    });
+
+    updatePasswordStrength();
+
+    /* ---------- Errors ---------- */
+
+    function showError(input, errorId, message) {
+        const error = document.getElementById(errorId);
+
+        if (input) {
+            input.classList.add('is-invalid');
+            input.setAttribute('aria-invalid', 'true');
+        }
+
+        if (error) {
+            error.textContent = message;
+            error.classList.add('show');
+        }
+    }
+
+    function clearError(errorId) {
+        const error = document.getElementById(errorId);
+
+        if (error) {
+            error.textContent = '';
+            error.classList.remove('show');
+        }
+    }
+
+    function clearFieldError(input, errorId) {
+        if (input) {
+            input.classList.remove('is-invalid');
+            input.removeAttribute('aria-invalid');
+        }
+
+        clearError(errorId);
+    }
+
+    function clearAllErrors() {
+        form.querySelectorAll('.js-error').forEach(function (error) {
+            error.textContent = '';
+            error.classList.remove('show');
+        });
+
+        form.querySelectorAll('.is-invalid').forEach(function (input) {
+            input.classList.remove('is-invalid');
+            input.removeAttribute('aria-invalid');
+        });
+
+        form.querySelectorAll('.server-error').forEach(function (error) {
+            error.remove();
+        });
+
+        termsWrapper.classList.remove('invalid');
+        termsError.classList.remove('show');
+    }
+
+    /* ---------- Validation ---------- */
+
+    function validateForm() {
+        let valid = true;
+
+        const name = document.getElementById('name');
+        const nameValue = name.value.trim();
+
+        if (nameValue === '') {
+            showError(name, 'nameError', 'Full name is required.');
+            valid = false;
+        } else if (nameValue.length < 2) {
+            showError(name, 'nameError', 'Full name must contain at least 2 characters.');
+            valid = false;
+        } else if (!/^[A-Za-zÀ-ÿ\s.'-]+$/.test(nameValue)) {
+            showError(name, 'nameError', 'Please enter a valid full name.');
+            valid = false;
+        }
+
+        const phone = document.getElementById('phone');
+        const phoneValue = phone.value.trim();
+
+        if (phoneValue !== '' && !/^\d{10,15}$/.test(phoneValue.replace(/[\s()+-]/g, ''))) {
+            showError(phone, 'phoneError', 'Please enter a valid phone number.');
+            valid = false;
+        }
+
+        const email = document.getElementById('email');
+        const emailValue = email.value.trim();
+
+        if (emailValue === '') {
+            showError(email, 'emailError', 'Email address is required.');
+            valid = false;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(emailValue)) {
+            showError(email, 'emailError', 'Please enter a valid email address.');
+            valid = false;
+        }
+
+        const selectedRole = getSelectedRole();
+
+        if (selectedRole === '') {
+            const roleError = document.getElementById('roleError');
+
+            if (roleError) {
+                roleError.textContent = 'Please select your account type.';
+                roleError.classList.add('show');
+            }
+
+            valid = false;
+        }
+
+        if ((selectedRole === 'student' || selectedRole === 'coordinator') && institution.value === '') {
+            showError(institution, 'institutionError', 'Please select your institution.');
+            valid = false;
+        }
+
+        if (selectedRole === 'student' && program.value.trim() === '') {
+            showError(program, 'programError', 'Please select your program.');
+            valid = false;
+        }
+
+        if (selectedRole === 'employer') {
+            const companyValue = company.value.trim();
+
+            if (companyValue === '') {
+                showError(company, 'companyError', 'Please enter your company name.');
+                valid = false;
+            } else if (companyValue.length < 2) {
+                showError(company, 'companyError', 'Please enter a valid company name.');
+                valid = false;
+            }
+        }
+
+        if (password.value.length < 8 || !/[A-Z]/.test(password.value)) {
+            showError(password, 'passwordError', 'Password must be at least 8 characters and contain one uppercase letter.');
+            valid = false;
+        }
+
+        if (passwordConfirmation.value === '') {
+            showError(passwordConfirmation, 'passwordConfirmationError', 'Please confirm your password.');
+            valid = false;
+        } else if (passwordConfirmation.value !== password.value) {
+            showError(passwordConfirmation, 'passwordConfirmationError', 'Passwords do not match.');
+            valid = false;
+        }
+
+        if (!terms.checked) {
+            termsWrapper.classList.add('invalid');
+            termsError.classList.add('show');
+            valid = false;
+        }
+
+        return valid;
+    }
+
+    /* ---------- Submit ---------- */
+
+    // Invalid input stops here; a valid form posts normally and the shared
+    // auth-form handler (skillbridge-ui.js) shows the loading state.
+    form.addEventListener('submit', function (event) {
+        clearAllErrors();
+
+        if (validateForm()) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const firstError = form.querySelector('.auth-input.is-invalid');
+        const target = firstError || (termsWrapper.classList.contains('invalid') ? terms : null);
+
+        if (target) {
+            target.scrollIntoView({
+                behavior: reduceMotion ? 'auto' : 'smooth',
+                block: 'center'
+            });
+            target.focus({ preventScroll: true });
+        }
+    });
+
+    /* ---------- Live clearing ---------- */
+
+    function clearFieldOnEdit() {
+        this.classList.remove('is-invalid');
+        this.removeAttribute('aria-invalid');
+
+        const error = document.getElementById(this.id + 'Error');
+
+        if (error && error.classList.contains('js-error')) {
+            clearError(error.id);
+        }
+
+        const group = this.closest('.auth-field');
+
+        if (group) {
+            group.querySelectorAll('.server-error').forEach(function (error) {
+                error.remove();
+            });
+        }
+    }
+
+    form.querySelectorAll('input, select').forEach(function (field) {
+        field.addEventListener('input', clearFieldOnEdit);
+        field.addEventListener('change', clearFieldOnEdit);
+    });
+
+    passwordConfirmation.addEventListener('input', function () {
+        if (this.value !== '' && this.value === password.value) {
+            clearFieldError(this, 'passwordConfirmationError');
+        }
+    });
+
+    terms.addEventListener('change', function () {
+        if (this.checked) {
+            termsWrapper.classList.remove('invalid');
+            termsError.classList.remove('show');
+        }
+    });
+});
+</script>
 @endpush

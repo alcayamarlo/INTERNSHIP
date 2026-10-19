@@ -310,7 +310,7 @@
 
             color: #08d9f5;
 
-            font-size: 9px;
+            font-size: 11px;
 
             font-weight: 800;
 
@@ -322,7 +322,7 @@
 
         .auth-badge i {
 
-            font-size: 11px;
+            font-size: 13px;
         }
 
 
@@ -445,7 +445,7 @@
 
             color: #d8e3ef;
 
-            font-size: 11px;
+            font-size: 14px;
 
             font-weight: 800;
         }
@@ -457,7 +457,7 @@
 
             color: #70879f;
 
-            font-size: 9px;
+            font-size: 12px;
 
             line-height: 1.5;
         }
@@ -480,7 +480,7 @@
 
             color: #536b82;
 
-            font-size: 8px;
+            font-size: 11px;
 
             line-height: 1.6;
         }
@@ -554,7 +554,7 @@
 
                 margin-bottom: 22px;
 
-                font-size: 12px;
+                font-size: 13px;
 
                 line-height: 1.6;
             }
@@ -576,12 +576,12 @@
 
             .auth-feature-text strong {
 
-                font-size: 10px;
+                font-size: 13px;
             }
 
             .auth-feature-text span {
 
-                font-size: 8px;
+                font-size: 11px;
             }
 
             .auth-left-footer {
@@ -655,7 +655,7 @@
 
             .auth-description {
 
-                font-size: 12px;
+                font-size: 13px;
 
                 line-height: 1.7;
             }
@@ -732,7 +732,7 @@
                 padding:
                     7px 11px;
 
-                font-size: 8px;
+                font-size: 11px;
             }
 
 
@@ -750,7 +750,7 @@
 
                 margin-bottom: 25px;
 
-                font-size: 11px;
+                font-size: 13px;
 
                 line-height: 1.65;
             }
@@ -781,13 +781,13 @@
 
             .auth-feature-text strong {
 
-                font-size: 10px;
+                font-size: 13px;
             }
 
 
             .auth-feature-text span {
 
-                font-size: 8px;
+                font-size: 11px;
             }
 
 
@@ -797,7 +797,7 @@
 
                 padding-top: 16px;
 
-                font-size: 7px;
+                font-size: 10px;
             }
         }
 
@@ -840,7 +840,7 @@
 
             .auth-badge {
 
-                font-size: 7px;
+                font-size: 10px;
             }
 
 
@@ -852,7 +852,7 @@
 
             .auth-description {
 
-                font-size: 10px;
+                font-size: 12px;
             }
 
 
@@ -896,7 +896,7 @@
 </head>
 
 
-<body class="skillbridge-guest">
+<body class="skillbridge-guest @yield('body_class')">
 
 
     <div class="auth-shell">

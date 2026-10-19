@@ -62,10 +62,23 @@ class ResetPasswordController extends Controller
         });
 
         if ($result['status'] !== 'reset') {
+            $request->session()->put([
+                'password_reset_code_requested' => true,
+                'password_reset_code_expires_at' => $request->session()->get(
+                    'password_reset_code_expires_at',
+                    now()->timestamp
+                ),
+            ]);
+
             return back()->withErrors([
                 'code' => 'The reset code is invalid or expired. Request a new code and try again.',
             ])->withInput($request->safe()->only('email'));
         }
+
+        $request->session()->forget([
+            'password_reset_code_requested',
+            'password_reset_code_expires_at',
+        ]);
 
         event(new PasswordReset($result['user']));
 

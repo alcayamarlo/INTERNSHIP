@@ -1184,6 +1184,12 @@ body.skillbridge-app .sb-sidebar-overlay {
     }
 }
 
+/* =====================================================
+   GUEST SHELL
+   Shared by every page that extends layouts.guest.
+   Auth-page specifics live in the AUTH PAGES section.
+   ===================================================== */
+
 body.skillbridge-guest {
     min-height: 100vh;
     color: var(--sb-ink);
@@ -1195,24 +1201,19 @@ body.skillbridge-guest .auth-shell {
     background: var(--sb-canvas);
 }
 
-body.skillbridge-guest .auth-left,
-body.skillbridge-guest .auth-left-panel {
+body.skillbridge-guest .auth-left {
     color: #fff;
     border-color: rgba(255, 255, 255, .18);
     background: linear-gradient(145deg, var(--sb-red) 0%, #c5162a 52%, var(--sb-red-deep) 100%);
 }
 
 body.skillbridge-guest .auth-left::before,
-body.skillbridge-guest .auth-left::after,
-body.skillbridge-guest .auth-left-panel::before,
-body.skillbridge-guest .auth-left-panel::after {
+body.skillbridge-guest .auth-left::after {
     opacity: .28;
     background: radial-gradient(circle, rgba(255, 255, 255, .32), transparent 70%);
 }
 
-body.skillbridge-guest .auth-brand-icon,
-body.skillbridge-guest .login-brand-icon,
-body.skillbridge-guest .register-brand-icon {
+body.skillbridge-guest .auth-brand-icon {
     color: var(--sb-brand-content);
     border-color: rgba(255, 255, 255, .7);
     background: #fff;
@@ -1227,181 +1228,20 @@ body.skillbridge-guest .auth-description,
 body.skillbridge-guest .auth-feature-text strong,
 body.skillbridge-guest .auth-feature-text span,
 body.skillbridge-guest .auth-left-footer,
-body.skillbridge-guest .auth-left-footer strong,
-body.skillbridge-guest .auth-left-title,
-body.skillbridge-guest .auth-left-title span,
-body.skillbridge-guest .auth-left-description,
-body.skillbridge-guest .auth-left-panel .feature-item,
-body.skillbridge-guest .auth-left-panel .feature-item span {
+body.skillbridge-guest .auth-left-footer strong {
     color: #fff;
 }
 
-body.skillbridge-guest .auth-left-panel .feature-item i,
-body.skillbridge-guest .auth-left-panel .auth-left-footer {
-    color: rgba(255, 255, 255, .88);
-}
-
 body.skillbridge-guest .auth-badge,
-body.skillbridge-guest .auth-feature-icon,
-body.skillbridge-guest .brand-badge {
+body.skillbridge-guest .auth-feature-icon {
     color: #fff;
     border-color: rgba(255, 255, 255, .34);
     background: rgba(255, 255, 255, .12);
 }
 
-body.skillbridge-guest .auth-right,
-body.skillbridge-guest .auth-right-panel,
-body.skillbridge-guest .login-page,
-body.skillbridge-guest .register-page {
-    color: var(--sb-ink);
-    background: var(--sb-canvas);
-}
-
-body.skillbridge-guest .auth-right,
-body.skillbridge-guest .auth-right-panel {
+body.skillbridge-guest .auth-right {
     min-height: 100vh;
-}
-
-body.skillbridge-guest .login-page,
-body.skillbridge-guest .register-page {
-    padding: clamp(24px, 4vw, 56px);
-}
-
-body.skillbridge-guest .login-top,
-body.skillbridge-guest .register-top,
-body.skillbridge-guest .login-brand,
-body.skillbridge-guest .register-brand {
     color: var(--sb-ink);
-}
-
-body.skillbridge-guest .login-secure,
-body.skillbridge-guest .register-secure {
-    color: var(--sb-muted);
-    border-color: var(--sb-border);
-    background: var(--sb-surface);
-}
-
-body.skillbridge-guest .login-badge,
-body.skillbridge-guest .register-badge {
-    color: var(--sb-brand-content);
-    border-color: var(--sb-border);
-    background: var(--sb-red-soft);
-}
-
-body.skillbridge-guest .login-hero h1,
-body.skillbridge-guest .register-hero h1,
-body.skillbridge-guest .login-section-title h3,
-body.skillbridge-guest .section-title h3 {
-    color: var(--sb-ink);
-}
-
-body.skillbridge-guest .login-hero h1 span,
-body.skillbridge-guest .register-hero h1 span {
-    color: var(--sb-red);
-}
-
-body.skillbridge-guest .login-hero p,
-body.skillbridge-guest .register-hero p,
-body.skillbridge-guest .login-section-title p {
-    color: var(--sb-muted);
-}
-
-body.skillbridge-guest .login-card,
-body.skillbridge-guest .register-card {
-    color: var(--sb-ink);
-    border: 1px solid var(--sb-border);
-    border-radius: 24px;
-    background: var(--sb-surface);
-    box-shadow: var(--sb-shadow);
-}
-
-body.skillbridge-guest .login-card::before,
-body.skillbridge-guest .register-card::before {
-    background: linear-gradient(90deg, transparent, var(--sb-red), transparent);
-}
-
-body.skillbridge-guest :is(.login-form-label, .form-label, .section-title, .register-card label) {
-    color: var(--sb-ink);
-}
-
-body.skillbridge-guest :is(.login-form-control, .register-page .form-control, .register-page .form-select, .register-page textarea) {
-    color: var(--sb-ink);
-    border-color: var(--sb-border);
-    background: var(--sb-surface-raised);
-}
-
-body.skillbridge-guest :is(.login-form-control, .register-page .form-control, .register-page .form-select)::placeholder {
-    color: var(--sb-muted);
-}
-
-body.skillbridge-guest :is(.login-form-control, .register-page .form-control, .register-page .form-select):focus {
-    color: var(--sb-ink);
-    border-color: var(--sb-red);
-    outline: 0;
-    background: var(--sb-surface);
-    box-shadow: 0 0 0 3px var(--sb-red-ring);
-}
-
-body.skillbridge-guest :is(.password-toggle, .register-page .password-toggle) {
-    color: var(--sb-muted);
-    border-color: var(--sb-border);
-    background: var(--sb-surface);
-}
-
-body.skillbridge-guest :is(.login-options, .login-options label, .forgot-password-link, .register-page .form-text, .register-page .password-rule) {
-    color: var(--sb-muted);
-}
-
-body.skillbridge-guest .forgot-password-link,
-body.skillbridge-guest .login-card a,
-body.skillbridge-guest .register-card a {
-    color: var(--sb-brand-content);
-}
-
-body.skillbridge-guest :is(.btn-login, .btn-register) {
-    color: #fff;
-    border-color: var(--sb-red);
-    background: linear-gradient(110deg, var(--sb-red), var(--sb-red-deep));
-}
-
-body.skillbridge-guest :is(.btn-login, .btn-register):hover {
-    color: #fff;
-    border-color: var(--sb-red-deep);
-    background: var(--sb-red-deep);
-}
-
-body.skillbridge-guest .register-progress .progress-line {
-    background: var(--sb-border);
-}
-
-body.skillbridge-guest .login-page-wrapper {
-    background: var(--sb-canvas);
-}
-
-body.skillbridge-guest:has(.auth-split-container) > .auth-shell > .auth-left {
-    display: none;
-}
-
-body.skillbridge-guest:has(.auth-split-container) > .auth-shell > .auth-right {
-    width: 100%;
-    min-height: 100vh;
-    background: var(--sb-canvas);
-}
-
-body.skillbridge-guest:has(.auth-split-container) .auth-split-container {
-    min-height: 100vh;
-    height: auto;
-    background: var(--sb-canvas);
-}
-
-body.skillbridge-guest:has(.auth-split-container) .auth-left-panel,
-body.skillbridge-guest:has(.auth-split-container) .auth-right-panel {
-    min-height: 100vh;
-    height: auto;
-}
-
-body.skillbridge-guest:has(.auth-split-container) .auth-right-panel {
-    overflow-y: auto;
     background: var(--sb-canvas);
 }
 
@@ -1427,30 +1267,6 @@ body.skillbridge-guest .skillbridge-guest-theme-toggle:hover {
     background: var(--sb-red-soft);
 }
 
-@media (max-width: 850px) {
-    body.skillbridge-guest:has(.auth-split-container) .auth-split-container {
-        display: flex;
-        flex-direction: column;
-    }
-
-    body.skillbridge-guest:has(.auth-split-container) .auth-left-panel,
-    body.skillbridge-guest:has(.auth-split-container) .auth-right-panel {
-        width: 100%;
-        min-width: 0;
-    }
-}
-
-@media (max-width: 600px) {
-    body.skillbridge-guest .login-page,
-    body.skillbridge-guest .register-page {
-        padding: 22px 16px;
-    }
-
-    body.skillbridge-guest .login-card,
-    body.skillbridge-guest .register-card {
-        border-radius: 18px;
-    }
-}
 
 :is(.skillbridge-app, .skillbridge-guest, .skillbridge-public) :is(h1, h2, h3, h4, h5, h6) {
     font-family: "Bricolage Grotesque", "Figtree", "Segoe UI", sans-serif;
@@ -3085,178 +2901,6 @@ body.skillbridge-app .sb-notification-menu > p {
     }
 }
 
-:root body.skillbridge-guest:has(.login-split-container) .auth-right-panel,
-:root body.skillbridge-guest:has(.register-page) .register-page,
-:root body.skillbridge-guest:has(.forgot-password-page) .forgot-password-page {
-    background: var(--sb-auth-panel-background) !important;
-    color: var(--sb-auth-text);
-}
-
-:root body.skillbridge-guest:has(.login-split-container) .auth-right-panel > .login-page,
-:root body.skillbridge-guest:has(.register-page) .register-content,
-:root body.skillbridge-guest:has(.forgot-password-page) .forgot-password-card {
-    border-color: var(--sb-auth-card-border);
-    background: var(--sb-auth-card-background);
-    color: var(--sb-auth-text);
-}
-
-:root body.skillbridge-guest:has(.login-split-container) .login-hero h1,
-:root body.skillbridge-guest:has(.register-page) .register-hero h1,
-:root body.skillbridge-guest:has(.forgot-password-page) .forgot-password-heading h1 {
-    color: var(--sb-auth-text);
-}
-
-:root body.skillbridge-guest:has(.login-split-container) .login-hero h1 span,
-:root body.skillbridge-guest:has(.register-page) .register-hero h1 span,
-:root body.skillbridge-guest:has(.forgot-password-page) .forgot-password-heading h1 span {
-    color: var(--sb-brand-content);
-}
-
-:root body.skillbridge-guest:has(.login-split-container) .login-hero p,
-:root body.skillbridge-guest:has(.register-page) .register-hero p,
-:root body.skillbridge-guest:has(.register-page) .register-card .auth-footer,
-:root body.skillbridge-guest:has(.forgot-password-page) .forgot-password-heading p {
-    color: var(--sb-auth-muted);
-}
-
-:root body.skillbridge-guest:has(.forgot-password-page) .forgot-password-back {
-    color: var(--sb-brand-content);
-}
-
-:root body.skillbridge-guest:has(.login-split-container) .login-secure,
-:root body.skillbridge-guest:has(.register-page) .register-secure,
-:root body.skillbridge-guest:has(.forgot-password-page) .forgot-password-secure {
-    border-color: var(--sb-auth-pill-border);
-    background: var(--sb-auth-pill-background);
-    color: var(--sb-auth-pill-text);
-}
-
-:root body.skillbridge-guest:has(.login-split-container) .login-top .auth-back-link,
-:root body.skillbridge-guest:has(.register-page) .register-top .auth-back-link,
-:root body.skillbridge-guest:has(.forgot-password-page) .forgot-password-top .auth-back-link {
-    border-color: var(--sb-auth-card-border);
-    background: var(--sb-auth-card-background);
-    color: var(--sb-auth-text);
-}
-
-:root body.skillbridge-guest:has(.login-split-container) .login-form-label,
-:root body.skillbridge-guest:has(.register-page) .register-card .form-label,
-:root body.skillbridge-guest:has(.forgot-password-page) .forgot-field label {
-    color: var(--sb-auth-label);
-}
-
-:root body.skillbridge-guest:has(.login-split-container) .login-form-control,
-:root body.skillbridge-guest:has(.register-page) .register-card :is(.form-control, .form-select),
-:root body.skillbridge-guest:has(.forgot-password-page) .forgot-input {
-    border-color: var(--sb-auth-input-border);
-    background-color: var(--sb-auth-input-background);
-    color: var(--sb-auth-input-text) !important;
-    -webkit-text-fill-color: var(--sb-auth-input-text) !important;
-}
-
-:root body.skillbridge-guest:has(.register-page) .register-card .form-select {
-    color-scheme: light;
-}
-
-:root[data-theme="dark"] body.skillbridge-guest:has(.register-page) .register-card .form-select {
-    color-scheme: dark;
-}
-
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) body.skillbridge-guest:has(.register-page) .register-card .form-select {
-        color-scheme: dark;
-    }
-}
-
-:root body.skillbridge-guest:has(.register-page) .register-card .form-select option {
-    background-color: var(--sb-auth-option-background);
-    color: var(--sb-auth-option-text);
-}
-
-:root body.skillbridge-guest:has(.register-page) .register-card .form-select option:checked {
-    background-color: var(--sb-auth-option-selected-background);
-    color: var(--sb-auth-option-selected-text);
-}
-
-@supports (appearance: base-select) {
-    :root body.skillbridge-guest:has(.register-page) .register-card .form-select {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        appearance: base-select;
-        background-image: none;
-    }
-
-    :root body.skillbridge-guest:has(.register-page) .register-card .form-select::picker-icon {
-        color: var(--sb-auth-input-placeholder);
-        transition: rotate 160ms ease;
-    }
-
-    :root body.skillbridge-guest:has(.register-page) .register-card .form-select:open::picker-icon {
-        rotate: 180deg;
-    }
-
-    :root body.skillbridge-guest:has(.register-page) .register-card .form-select::picker(select) {
-        appearance: base-select;
-        margin-block: 6px;
-        padding: 4px;
-        border: 1px solid var(--sb-auth-input-border);
-        border-radius: 10px;
-        background: var(--sb-auth-card-background);
-        box-shadow: 0 12px 24px rgba(15, 23, 42, .15);
-    }
-
-    :root body.skillbridge-guest:has(.register-page) .register-card .form-select option {
-        padding: 9px 12px;
-        border-radius: 7px;
-    }
-
-    :root body.skillbridge-guest:has(.register-page) .register-card .form-select option:hover,
-    :root body.skillbridge-guest:has(.register-page) .register-card .form-select option:focus {
-        background-color: var(--sb-red-soft);
-        color: var(--sb-brand-content);
-    }
-}
-
-:root body.skillbridge-guest:has(.login-split-container) .login-form-control::placeholder,
-:root body.skillbridge-guest:has(.register-page) .register-card .form-control::placeholder,
-:root body.skillbridge-guest:has(.forgot-password-page) .forgot-input::placeholder {
-    color: var(--sb-auth-input-placeholder);
-    -webkit-text-fill-color: var(--sb-auth-input-placeholder);
-}
-
-:root body.skillbridge-guest:has(.login-split-container) .auth-right-panel .login-form-control:focus,
-:root body.skillbridge-guest:has(.register-page) .register-card :is(.form-control, .form-select):focus,
-:root body.skillbridge-guest:has(.forgot-password-page) .forgot-input:focus {
-    border-color: #dc2626;
-    background-color: var(--sb-auth-input-background);
-    color: var(--sb-auth-input-text) !important;
-    -webkit-text-fill-color: var(--sb-auth-input-text) !important;
-    box-shadow: 0 0 0 2px rgba(239, 68, 68, .2);
-}
-
-:root body.skillbridge-guest:has(.login-split-container) .login-input-icon,
-:root body.skillbridge-guest:has(.register-page) .register-card .password-toggle,
-:root body.skillbridge-guest:has(.forgot-password-page) .forgot-input-wrap > i {
-    color: var(--sb-auth-input-placeholder);
-}
-
-:root body.skillbridge-guest:has(.register-page) .register-card .terms-wrapper {
-    border-color: var(--sb-auth-card-border);
-    background: var(--sb-auth-terms-background);
-}
-
-:root body.skillbridge-guest:has(.register-page) .register-card .terms-label,
-:root body.skillbridge-guest:has(.forgot-password-page) .forgot-errors,
-:root body.skillbridge-guest:has(.forgot-password-page) .forgot-field-error {
-    color: var(--sb-auth-danger);
-}
-
-:root body.skillbridge-guest:has(.register-page) .register-card .terms-label {
-    color: var(--sb-auth-muted);
-}
-
 :root body.skillbridge-guest .skillbridge-guest-theme-toggle[aria-pressed="true"] {
     border-color: var(--sb-red);
     background: var(--sb-red-soft);
@@ -3266,4 +2910,889 @@ body.skillbridge-app .sb-notification-menu > p {
 :root body.skillbridge-guest .skillbridge-guest-theme-toggle:focus-visible {
     outline: 3px solid var(--sb-red-ring);
     outline-offset: 3px;
+}
+
+/* =====================================================
+   AUTH PAGES: login, register, forgot / reset password
+   One shared component set (.auth-*) so all four screens
+   look and behave the same. Colors come from the
+   --sb-auth-* tokens and the global --sb-* tokens, so
+   light and dark themes follow [data-theme] with no
+   per-page overrides. Fonts are inherited from the guest
+   layout and are never set here.
+   ===================================================== */
+
+/* ---------- Page frame: 100vh on desktop ---------- */
+
+body.auth-page {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+}
+
+body.auth-page .auth-shell {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* ---------- Brand panel ---------- */
+
+body.auth-page .auth-left {
+    height: 100%;
+    min-height: 0;
+    padding: clamp(28px, 4vw, 56px);
+    background-color: #301016;
+}
+
+body.auth-page .auth-left::before,
+body.auth-page .auth-left::after {
+    inset: 0;
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    opacity: 1;
+}
+
+body.auth-page .auth-left::before {
+    background: url('../images/login-campus.png') center 48% / cover no-repeat;
+}
+
+body.auth-page .auth-left::after {
+    background: linear-gradient(145deg, rgba(35, 8, 13, .84), rgba(116, 12, 29, .64) 55%, rgba(29, 13, 18, .84));
+}
+
+body.auth-page .auth-left-content {
+    max-width: 520px;
+}
+
+body.auth-page .auth-feature {
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid rgba(255, 255, 255, .16);
+    border-radius: 12px;
+    background: rgba(35, 8, 13, .32);
+}
+
+body.auth-page .auth-left h1 span {
+    color: #ffc2c8;
+}
+
+body.auth-page .auth-left-footer {
+    border-top-color: rgba(255, 255, 255, .2);
+}
+
+/* ---------- Form pane ---------- */
+
+body.auth-page .auth-right {
+    display: flex;
+    height: 100%;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    color: var(--sb-auth-text);
+    background: var(--sb-auth-panel-background);
+}
+
+/* margin: auto centres the pane when it fits and lets the
+   right side scroll (never clip) when it does not. */
+.auth-pane {
+    width: 100%;
+    max-width: 520px;
+    margin: auto;
+    padding: clamp(14px, 2.5vh, 28px) clamp(16px, 3vw, 32px);
+}
+
+/* Register has two-column rows, so it gets a little more room. */
+.auth-pane--wide {
+    max-width: 600px;
+}
+
+.auth-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: clamp(10px, 2vh, 18px);
+}
+
+/* The fixed theme toggle can sit over the pill on narrower screens. */
+@media (max-width: 1152px) {
+    .auth-top {
+        padding-right: 52px;
+    }
+}
+
+.auth-back-link,
+.auth-secure {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid var(--sb-auth-pill-border);
+    border-radius: 999px;
+    background: var(--sb-auth-pill-background);
+    color: var(--sb-auth-pill-text);
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.auth-back-link {
+    font-weight: 600;
+    text-decoration: none;
+    transition: border-color var(--sb-motion-fast) var(--sb-ease), color var(--sb-motion-fast) var(--sb-ease);
+}
+
+.auth-back-link:hover {
+    border-color: var(--sb-brand);
+    color: var(--sb-brand-content);
+}
+
+.auth-secure {
+    min-height: 34px;
+    font-size: 13px;
+}
+
+.auth-secure i {
+    color: var(--sb-success-ink);
+}
+
+.auth-card {
+    padding: clamp(18px, 2.6vh, 28px) clamp(18px, 3vw, 30px);
+    border: 1px solid var(--sb-auth-card-border);
+    border-radius: 20px;
+    background: var(--sb-auth-card-background);
+    color: var(--sb-auth-text);
+    box-shadow: var(--sb-shadow);
+}
+
+.auth-mobile-brand {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    color: var(--sb-auth-text);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.auth-mobile-brand-mark {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--sb-brand);
+    color: #fff;
+}
+
+.auth-heading {
+    margin-bottom: clamp(12px, 2.2vh, 20px);
+}
+
+.auth-step-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    padding: 4px 10px;
+    border: 1px solid var(--sb-auth-pill-border);
+    border-radius: 999px;
+    background: var(--sb-auth-pill-background);
+    color: var(--sb-auth-pill-text);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.auth-heading h1 {
+    margin: 0 0 6px;
+    color: var(--sb-auth-text);
+    font-size: clamp(26px, 2.6vw, 34px);
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.auth-heading h1 span {
+    display: block;
+    color: var(--sb-brand-content);
+}
+
+.auth-heading p {
+    margin: 0;
+    color: var(--sb-auth-muted);
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+/* ---------- Alerts ---------- */
+
+.auth-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    border: 1px solid;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.auth-alert i {
+    flex: 0 0 auto;
+    margin-top: 2px;
+}
+
+.auth-alert--success {
+    border-color: var(--sb-success-border);
+    background: var(--sb-success-bg);
+    color: var(--sb-success-ink);
+}
+
+.auth-alert--danger {
+    border-color: var(--sb-danger-border);
+    background: var(--sb-danger-bg);
+    color: var(--sb-auth-danger);
+}
+
+/* ---------- Fields ---------- */
+
+.auth-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(10px, 1.6vh, 14px) 14px;
+}
+
+.auth-field {
+    min-width: 0;
+    margin-bottom: clamp(10px, 1.8vh, 16px);
+}
+
+.auth-grid .auth-field {
+    margin-bottom: 0;
+}
+
+/* Role-specific fields; the register script adds .show for the active role. */
+.role-field {
+    display: none;
+}
+
+.role-field.show {
+    display: block;
+}
+
+.auth-field--full {
+    grid-column: 1 / -1;
+}
+
+.auth-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    color: var(--sb-auth-label);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.auth-label i {
+    color: var(--sb-brand-content);
+    font-size: 14px;
+}
+
+.auth-required {
+    color: var(--sb-auth-danger);
+}
+
+.auth-optional {
+    margin-left: auto;
+    color: var(--sb-auth-muted);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.auth-input-wrap {
+    position: relative;
+}
+
+.auth-input-icon {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    transform: translateY(-50%);
+    color: var(--sb-auth-input-placeholder);
+    font-size: 16px;
+    pointer-events: none;
+}
+
+.auth-input {
+    display: block;
+    width: 100%;
+    height: 46px;
+    padding: 0 14px 0 42px;
+    border: 1px solid var(--sb-auth-input-border);
+    border-radius: 10px;
+    background-color: var(--sb-auth-input-background);
+    color: var(--sb-auth-input-text);
+    font: inherit;
+    font-size: 15px;
+    transition: border-color var(--sb-motion-fast) var(--sb-ease), background-color var(--sb-motion-fast) var(--sb-ease);
+}
+
+.auth-input::placeholder {
+    color: var(--sb-auth-input-placeholder);
+    opacity: 1;
+}
+
+.auth-input:hover {
+    border-color: var(--sb-auth-muted);
+}
+
+.auth-input:focus {
+    border-color: var(--sb-brand);
+    outline: 0;
+    box-shadow: 0 0 0 3px var(--sb-brand-ring);
+}
+
+.auth-input.is-invalid {
+    border-color: var(--sb-auth-danger);
+}
+
+.auth-input[readonly] {
+    border-style: dashed;
+    color: var(--sb-auth-muted);
+    cursor: default;
+}
+
+.auth-input:-webkit-autofill,
+.auth-input:-webkit-autofill:hover,
+.auth-input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px var(--sb-auth-input-background) inset;
+    -webkit-text-fill-color: var(--sb-auth-input-text);
+    caret-color: var(--sb-auth-input-text);
+}
+
+.auth-input--code {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: .3em;
+}
+
+.auth-input--code::placeholder {
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: normal;
+}
+
+select.auth-input {
+    padding-right: 40px;
+    appearance: none;
+    cursor: pointer;
+    color-scheme: light;
+}
+
+select.auth-input option {
+    background-color: var(--sb-auth-option-background);
+    color: var(--sb-auth-option-text);
+}
+
+:root[data-theme="dark"] select.auth-input {
+    color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) select.auth-input {
+        color-scheme: dark;
+    }
+}
+
+.auth-select-caret {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    color: var(--sb-auth-input-placeholder);
+    pointer-events: none;
+}
+
+.auth-input-wrap--password .auth-input {
+    padding-right: 52px;
+}
+
+.auth-toggle {
+    position: absolute;
+    top: 50%;
+    right: 5px;
+    transform: translateY(-50%);
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--sb-auth-input-placeholder);
+    font-size: 17px;
+    cursor: pointer;
+    transition: color var(--sb-motion-fast) var(--sb-ease), background-color var(--sb-motion-fast) var(--sb-ease);
+}
+
+.auth-toggle:hover,
+.auth-toggle[aria-pressed="true"] {
+    color: var(--sb-brand-content);
+}
+
+.auth-toggle:hover {
+    background: var(--sb-brand-soft);
+}
+
+.auth-error {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin-top: 6px;
+    color: var(--sb-auth-danger);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.auth-error:empty {
+    display: none;
+}
+
+.auth-error i {
+    flex: 0 0 auto;
+    margin-top: 2px;
+}
+
+.auth-hint {
+    margin: 6px 0 0;
+    color: var(--sb-auth-muted);
+    font-size: 13px;
+}
+
+/* ---------- Checkbox rows, links ---------- */
+
+.auth-options {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px 12px;
+    margin-bottom: clamp(8px, 1.6vh, 14px);
+}
+
+.auth-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    color: var(--sb-auth-muted);
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.auth-check input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--sb-brand);
+    cursor: pointer;
+}
+
+.auth-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 40px;
+    color: var(--sb-brand-content);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-link:hover,
+.auth-link:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+button.auth-link {
+    padding: 0 4px;
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+button.auth-link:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+/* ---------- Buttons ---------- */
+
+.auth-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 48px;
+    padding: 0 18px;
+    border: 1px solid var(--sb-brand);
+    border-radius: 10px;
+    background: var(--sb-brand);
+    color: #fff;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color var(--sb-motion-fast) var(--sb-ease), border-color var(--sb-motion-fast) var(--sb-ease);
+}
+
+.auth-btn:hover:not(:disabled) {
+    border-color: var(--sb-brand-deep);
+    background: var(--sb-brand-deep);
+    color: #fff;
+}
+
+.auth-btn:disabled {
+    opacity: .72;
+    cursor: not-allowed;
+}
+
+.auth-btn.is-loading:disabled {
+    cursor: progress;
+}
+
+.auth-btn--spaced {
+    margin-top: clamp(10px, 1.8vh, 14px);
+}
+
+.auth-footer-text {
+    margin: clamp(10px, 1.8vh, 16px) 0 0;
+    color: var(--sb-auth-muted);
+    font-size: 14px;
+    text-align: center;
+}
+
+.auth-footer-text a {
+    color: var(--sb-brand-content);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.auth-footer-text a:hover,
+.auth-footer-text a:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.auth-footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 18px;
+    margin-top: clamp(6px, 1.4vh, 12px);
+}
+
+/* ---------- Register extras ---------- */
+
+.auth-chip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    margin-bottom: clamp(10px, 1.8vh, 14px);
+    padding: 8px 12px;
+    border: 1px solid var(--sb-auth-pill-border);
+    border-radius: 10px;
+    background: var(--sb-auth-pill-background);
+    color: var(--sb-brand-content);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.auth-chip-note {
+    margin-left: auto;
+    color: var(--sb-auth-muted);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.auth-pw-meta {
+    grid-column: 1 / -1;
+    margin-top: -2px;
+}
+
+.password-rules {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 14px;
+}
+
+.password-rule {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--sb-auth-muted);
+    font-size: 12px;
+}
+
+.password-rule i {
+    font-size: 10px;
+}
+
+.password-rule.valid {
+    color: var(--sb-success-ink);
+}
+
+.password-strength {
+    display: none;
+    height: 4px;
+    margin-top: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--sb-auth-pill-border);
+}
+
+.password-strength.show {
+    display: block;
+}
+
+.password-strength-bar {
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    transition: width var(--sb-motion-base) var(--sb-ease);
+}
+
+.password-strength-bar.weak {
+    width: 35%;
+    background: var(--sb-auth-danger);
+}
+
+.password-strength-bar.strong {
+    width: 100%;
+    background: var(--sb-success-ink);
+}
+
+.password-strength-text {
+    margin-top: 4px;
+    color: var(--sb-auth-muted);
+    font-size: 12px;
+}
+
+.password-strength-text:empty {
+    display: none;
+}
+
+.auth-terms {
+    margin-top: clamp(10px, 1.8vh, 14px);
+    padding: 10px 12px;
+    border: 1px solid var(--sb-auth-card-border);
+    border-radius: 10px;
+    background: var(--sb-auth-terms-background);
+}
+
+.auth-terms.invalid {
+    border-color: var(--sb-auth-danger);
+}
+
+.auth-terms-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0;
+    color: var(--sb-auth-muted);
+    font-size: 13px;
+    line-height: 1.45;
+    cursor: pointer;
+}
+
+.auth-terms-label input {
+    flex: 0 0 18px;
+    width: 18px;
+    height: 18px;
+    margin: 1px 0 0;
+    accent-color: var(--sb-brand);
+}
+
+.auth-terms-label a {
+    color: var(--sb-brand-content);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.auth-terms-error {
+    display: none;
+    margin-left: 28px;
+}
+
+.auth-terms-error.show {
+    display: flex;
+}
+
+/* ---------- Reset password: step 2 ---------- */
+
+.auth-step {
+    animation: auth-reveal 260ms var(--sb-ease) both;
+}
+
+@keyframes auth-reveal {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.auth-label-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px 12px;
+    margin-bottom: 6px;
+}
+
+.auth-label-row .auth-label {
+    margin-bottom: 0;
+}
+
+.auth-countdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--sb-auth-muted);
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.auth-countdown.is-expired {
+    color: var(--sb-auth-danger);
+}
+
+.auth-code-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0 12px;
+    margin-top: 4px;
+    color: var(--sb-auth-muted);
+    font-size: 13px;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (min-width: 851px) and (max-height: 760px) {
+    body.auth-page .auth-left-footer,
+    body.auth-page .auth-feature-text span {
+        display: none;
+    }
+
+    .auth-heading p {
+        display: none;
+    }
+
+    .auth-input {
+        height: 42px;
+    }
+
+    .auth-btn {
+        min-height: 44px;
+    }
+
+    .auth-check,
+    .auth-link {
+        min-height: 34px;
+    }
+}
+
+@media (min-width: 851px) and (max-height: 620px) {
+    body.auth-page .auth-features {
+        display: none;
+    }
+
+    .auth-input {
+        height: 40px;
+    }
+}
+
+@media (min-width: 851px) and (max-width: 1100px) {
+    .auth-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 850px) {
+    body.auth-page {
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow: auto;
+    }
+
+    body.auth-page .auth-shell {
+        display: block;
+        height: auto;
+        overflow: visible;
+    }
+
+    body.auth-page .auth-left {
+        display: none;
+    }
+
+    body.auth-page .auth-right {
+        width: 100%;
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow: visible;
+    }
+
+    .auth-mobile-brand {
+        display: flex;
+    }
+}
+
+@media (max-width: 600px) {
+    .auth-pane {
+        padding: 14px 14px 28px;
+    }
+
+    .auth-secure {
+        display: none;
+    }
+
+    .auth-card {
+        border-radius: 16px;
+    }
+
+    /* 16px keeps iOS from zooming into focused fields */
+    .auth-input {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 520px) {
+    .auth-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .auth-chip-note {
+        margin-left: 0;
+    }
 }

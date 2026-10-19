@@ -90,7 +90,7 @@
 
         if (!reduceMotion && 'IntersectionObserver' in window) {
             const revealTargets = document.querySelectorAll(
-                '.skillbridge-public section, .skillbridge-app #sbContent .card, .skillbridge-app #sbContent [data-reveal], .skillbridge-guest .login-card, .skillbridge-guest .register-page'
+                '.skillbridge-public section, .skillbridge-app #sbContent .card, .skillbridge-app #sbContent [data-reveal]'
             );
             const revealObserver = new IntersectionObserver((entries, observer) => {
                 entries.forEach((entry) => {
@@ -106,12 +106,44 @@
             });
         }
 
+        // Includes submit buttons placed outside the form but tied to it with form="id".
+        const submitButtons = (form) => Array.from(form.elements).filter(
+            (element) => element instanceof HTMLButtonElement && element.type === 'submit'
+        );
+
+        // Password visibility: <button data-password-toggle="inputId">.
+        document.addEventListener('click', (event) => {
+            const button = event.target instanceof Element ? event.target.closest('[data-password-toggle]') : null;
+            if (!button) return;
+
+            const input = document.getElementById(button.dataset.passwordToggle);
+            if (!input) return;
+
+            const reveal = input.type === 'password';
+            const label = reveal ? 'Hide password' : 'Show password';
+            input.type = reveal ? 'text' : 'password';
+            button.setAttribute('aria-pressed', String(reveal));
+            button.setAttribute('aria-label', label);
+            button.setAttribute('title', label);
+            const icon = button.querySelector('i');
+            if (icon) icon.className = `bi ${reveal ? 'bi-eye-slash' : 'bi-eye'}`;
+        });
+
         document.addEventListener('submit', (event) => {
-            if (event.defaultPrevented || !(event.target instanceof HTMLFormElement)) return;
-            if (event.target.dataset.noLoading === 'true') return;
+            if (!(event.target instanceof HTMLFormElement)) return;
+            const form = event.target;
+            const isAuthForm = form.hasAttribute('data-auth-form');
+
+            // Auth forms: ignore a second submit while the first is in flight.
+            if (isAuthForm && form.dataset.submitting === 'true') {
+                event.preventDefault();
+                return;
+            }
+
+            if (event.defaultPrevented || form.dataset.noLoading === 'true') return;
             const button = event.submitter instanceof HTMLButtonElement
                 ? event.submitter
-                : event.target.querySelector('button[type="submit"]');
+                : form.querySelector('button[type="submit"]');
             if (!button || button.querySelector('.sb-submit-spinner')) return;
 
             const spinner = document.createElement('span');
@@ -119,11 +151,48 @@
             spinner.setAttribute('aria-hidden', 'true');
             button.prepend(spinner);
             button.setAttribute('aria-busy', 'true');
+
+            if (!isAuthForm) return;
+
+            form.dataset.submitting = 'true';
+            button.classList.add('is-loading');
+
+            const label = button.querySelector('.auth-btn-label');
+            if (label && button.dataset.loadingText) {
+                label.dataset.original = label.textContent;
+                label.textContent = button.dataset.loadingText;
+            }
+
+            const icon = button.querySelector('i.bi');
+            if (icon) icon.hidden = true;
+
+            // Disable after the browser has built the form data, so the request still goes out.
+            window.setTimeout(() => {
+                submitButtons(form).forEach((submit) => {
+                    submit.disabled = true;
+                });
+            }, 0);
         });
 
         window.addEventListener('pageshow', () => {
             document.querySelectorAll('button[aria-busy="true"] .sb-submit-spinner').forEach((spinner) => spinner.remove());
             document.querySelectorAll('button[aria-busy="true"]').forEach((button) => button.removeAttribute('aria-busy'));
+
+            // Restore auth forms when the page comes back from the back/forward cache.
+            document.querySelectorAll('form[data-auth-form][data-submitting]').forEach((form) => {
+                delete form.dataset.submitting;
+                submitButtons(form).forEach((submit) => {
+                    submit.disabled = false;
+                    submit.classList.remove('is-loading');
+                    const label = submit.querySelector('.auth-btn-label[data-original]');
+                    if (label) {
+                        label.textContent = label.dataset.original;
+                        delete label.dataset.original;
+                    }
+                    const icon = submit.querySelector('i.bi[hidden]');
+                    if (icon) icon.hidden = false;
+                });
+            });
         });
 
         document.querySelectorAll('[data-count-up]').forEach((element) => {

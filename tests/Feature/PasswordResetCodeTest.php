@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\Mailer\Exception\TransportException;
 
 uses(RefreshDatabase::class);
 
@@ -33,6 +34,64 @@ function submitPasswordResetCode(string $email, string $code = '123456'): \Illum
         'password_confirmation' => 'NewPassword#2026',
     ]);
 }
+
+it('shows only the email field before a reset code is requested', function () {
+    $this->get(route('password.request'))
+        ->assertOk()
+        ->assertSee('Enter your email to receive a 6-digit verification code.')
+        ->assertSee('Send Reset Code')
+        ->assertSee('name="email"', false)
+        ->assertDontSee('Six-Digit Code')
+        ->assertDontSee('name="code"', false)
+        ->assertDontSee('name="password"', false);
+});
+
+it('reveals the code and new password fields after requesting a reset code', function () {
+    Mail::fake();
+    User::factory()->create(['email' => 'reset-step@example.test']);
+
+    $this->post(route('password.email'), ['email' => 'reset-step@example.test'])
+        ->assertRedirect(route('password.request'))
+        ->assertSessionHas('status')
+        ->assertSessionHas('password_reset_code_requested', true);
+
+    $this->get(route('password.request'))
+        ->assertOk()
+        ->assertSee('Six-Digit Code')
+        ->assertSee('New Password')
+        ->assertSee('Confirm New Password')
+        ->assertSee('Reset Password')
+        ->assertSee('Resend Code')
+        ->assertSee('data-reset-countdown', false)
+        ->assertSee('name="code"', false);
+
+    Mail::assertSent(PasswordResetCodeMail::class, fn (PasswordResetCodeMail $mail) => $mail->hasTo('reset-step@example.test'));
+});
+
+it('keeps the reset form on step one when the mail transport fails', function () {
+    $user = User::factory()->create(['email' => 'reset-mail-failure@example.test']);
+    $pendingMail = Mockery::mock();
+    $pendingMail->shouldReceive('send')
+        ->once()
+        ->andThrow(new TransportException('SMTP unavailable'));
+    Mail::shouldReceive('to')
+        ->once()
+        ->with($user->email)
+        ->andReturn($pendingMail);
+
+    $this->post(route('password.email'), ['email' => $user->email])
+        ->assertRedirect(route('password.request'))
+        ->assertSessionHasErrors('email')
+        ->assertSessionMissing('password_reset_code_requested')
+        ->assertSessionMissing('password_reset_code_expires_at');
+
+    $this->get(route('password.request'))
+        ->assertOk()
+        ->assertSee('Send Reset Code')
+        ->assertDontSee('Six-Digit Code')
+        ->assertDontSee('New Password')
+        ->assertDontSee('Confirm New Password');
+});
 
 it('resets the password with a valid code and consumes the code', function () {
     Event::fake([PasswordReset::class]);
@@ -105,7 +164,7 @@ it('invalidates the code after five wrong attempts', function () {
 });
 
 it('returns the same response and queues the same job for known and unknown emails', function () {
-    Bus::fake();
+    Mail::fake();
     $user = User::factory()->create(['email' => 'reset-known@example.test']);
 
     $knownResponse = $this->from(route('password.request'))
@@ -115,9 +174,10 @@ it('returns the same response and queues the same job for known and unknown emai
 
     expect($knownResponse->getSession()->get('status'))
         ->toBe($unknownResponse->getSession()->get('status'))
-        ->toBe('If an account exists for that email address, a password reset code will be sent shortly.');
+        ->toBe('If an account exists for that email address, a password reset code is on its way.');
 
-    Bus::assertDispatchedTimes(SendPasswordResetCode::class, 2);
+    Mail::assertSent(PasswordResetCodeMail::class, fn (PasswordResetCodeMail $mail) => $mail->hasTo($user->email));
+    Mail::assertSent(PasswordResetCodeMail::class, 1);
 });
 
 it('queues a reset code that is hashed, expires after fifteen minutes, and resets attempts', function () {
