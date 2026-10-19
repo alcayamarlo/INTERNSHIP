@@ -191,12 +191,6 @@ body.skillbridge-app .sb-brand {
     border-bottom-color: var(--sb-border);
 }
 
-body.skillbridge-app .sb-brand-icon {
-    color: #fff;
-    background: linear-gradient(135deg, var(--sb-red), var(--sb-red-deep));
-    box-shadow: 0 8px 18px rgba(225, 29, 46, .18);
-}
-
 body.skillbridge-app .sb-brand-title,
 body.skillbridge-app .sb-user-name {
     color: var(--sb-ink);
@@ -1093,11 +1087,9 @@ body.skillbridge-app .sb-sidebar-overlay {
         border: 0;
     }
 
-    body.skillbridge-app .sb-brand-icon {
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
-        font-size: 17px;
+    body.skillbridge-app .sb-brand-logo {
+        width: 32px;
+        height: 32px;
     }
 
     body.skillbridge-app .sb-brand-title {
@@ -1211,13 +1203,6 @@ body.skillbridge-guest .auth-left::before,
 body.skillbridge-guest .auth-left::after {
     opacity: .28;
     background: radial-gradient(circle, rgba(255, 255, 255, .32), transparent 70%);
-}
-
-body.skillbridge-guest .auth-brand-icon {
-    color: var(--sb-brand-content);
-    border-color: rgba(255, 255, 255, .7);
-    background: #fff;
-    box-shadow: 0 10px 24px rgba(72, 7, 16, .16);
 }
 
 body.skillbridge-guest .auth-brand-name,
@@ -3079,14 +3064,11 @@ body.auth-page .auth-right {
     font-weight: 700;
 }
 
-.auth-mobile-brand-mark {
-    display: grid;
-    place-items: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    background: var(--sb-brand);
-    color: #fff;
+.auth-mobile-brand-logo {
+    display: block;
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
 }
 
 .auth-heading {

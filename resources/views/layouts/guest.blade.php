@@ -14,6 +14,8 @@
         content="{{ csrf_token() }}"
     >
 
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/brand/favicon.svg') }}">
+
     <title>
         @yield('title', 'Authentication') — SKILL BRIDGE
     </title>
@@ -234,34 +236,11 @@
         }
 
 
-        .auth-brand-icon {
-
+        .auth-brand-logo {
+            display: block;
             width: 48px;
             height: 48px;
-
             flex-shrink: 0;
-
-            display: flex;
-
-            align-items: center;
-            justify-content: center;
-
-            border-radius: 13px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #08d9f5,
-                    #0891b2
-                );
-
-            color: #032333;
-
-            font-size: 21px;
-
-            box-shadow:
-                0 12px 30px
-                rgba(8,217,245,.12);
         }
 
 
@@ -708,14 +687,11 @@
             }
 
 
-            .auth-brand-icon {
-
+            .auth-brand-logo {
+                display: block;
                 width: 44px;
                 height: 44px;
-
-                border-radius: 12px;
-
-                font-size: 19px;
+                flex-shrink: 0;
             }
 
 
@@ -823,12 +799,11 @@
             }
 
 
-            .auth-brand-icon {
-
+            .auth-brand-logo {
+                display: block;
                 width: 40px;
                 height: 40px;
-
-                font-size: 17px;
+                flex-shrink: 0;
             }
 
 
@@ -918,7 +893,7 @@
 
                 <div class="auth-brand">
 
-                    <div class="auth-brand-icon" aria-hidden="true">S</div>
+                    <img class="auth-brand-logo" src="{{ asset('images/brand/skillbridge-logo-icon.svg') }}" width="48" height="48" alt="" aria-hidden="true">
 
                     <div class="auth-brand-name">
 

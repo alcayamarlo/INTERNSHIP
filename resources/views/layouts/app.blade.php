@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/brand/favicon.svg') }}">
 
     <meta charset="UTF-8">
 
@@ -279,31 +280,11 @@
         }
 
 
-        .sb-brand-icon {
-
-            width: 40px;
-            height: 40px;
-
+        .sb-brand-logo {
+            display: block;
+            width: 36px;
+            height: 36px;
             flex-shrink: 0;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            border-radius: 11px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #b8c6d5,
-                    #8aa0b7
-                );
-
-            color: #102231;
-
-            font-size: 19px;
-
-            box-shadow: none;
         }
 
 
@@ -2033,14 +2014,6 @@
         }
 
 
-        .sb-brand-icon {
-            width: 52px;
-            height: 52px;
-            border-radius: 15px;
-            background: linear-gradient(135deg, #19def7, #079abb);
-            font-size: 23px;
-            box-shadow: 0 10px 28px rgba(8,217,245,.22);
-        }
 
 
         .sb-brand-title {
@@ -2242,7 +2215,7 @@
 
     <div class="sb-brand">
 
-        <div class="sb-brand-icon" aria-hidden="true">S</div>
+        <img class="sb-brand-logo" src="{{ asset('images/brand/skillbridge-logo-icon.svg') }}" width="36" height="36" alt="" aria-hidden="true">
 
 
         <div class="sb-brand-text">
