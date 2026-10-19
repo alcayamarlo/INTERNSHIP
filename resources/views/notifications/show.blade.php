@@ -3,20 +3,15 @@
 @section('title', $notification->title)
 
 @section('content')
-<div class="student-page-shell">
-    <div class="mb-4">
-        <a href="{{ route('notifications.index') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left" aria-hidden="true"></i> Back to notifications
-        </a>
-    </div>
+<x-page-header :title="$notification->title" :subtitle="$notification->created_at->format('M d, Y h:i A')">
+    <a href="{{ route('notifications.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to notifications</a>
+</x-page-header>
+
+<div>
 
     <article class="card">
         <div class="card-body p-4">
-            <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
-                <span class="badge bg-secondary">{{ $notification->type }}</span>
-                <small class="text-muted">{{ $notification->created_at->format('M d, Y h:i A') }}</small>
-            </div>
-            <h1 class="h3">{{ $notification->title }}</h1>
+            <div class="mb-3"><span class="sb-tag">{{ $notification->type }}</span></div>
             <p class="mb-4">{{ $announcement?->content ?? $notification->message }}</p>
 
             @if($relatedUrl)

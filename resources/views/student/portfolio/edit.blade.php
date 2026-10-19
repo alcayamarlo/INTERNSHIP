@@ -3,10 +3,7 @@
 @section('title', 'Edit Portfolio Item')
 
 @section('content')
-<div class="mb-4">
-    <h1 class="h3 mb-1">Edit Portfolio Item</h1>
-    <p class="text-muted mb-0">Update your portfolio information</p>
-</div>
+<x-page-header title="Edit Portfolio Item" subtitle="Update your portfolio information" />
 
 <div class="row justify-content-center">
     <div class="col-lg-8">
@@ -17,7 +14,7 @@
                     @method('PUT')
 
                     <div class="mb-3">
-                        <label class="form-label">Title *</label>
+                        <label class="form-label">Title <span class="text-danger" aria-hidden="true">*</span></label>
                         <input type="text" class="form-control @error('title') is-invalid @enderror" name="title" value="{{ old('title', $portfolio->title) }}" required>
                         @error('title')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -25,7 +22,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">File Type *</label>
+                        <label class="form-label">File Type <span class="text-danger" aria-hidden="true">*</span></label>
                         <select class="form-select @error('type') is-invalid @enderror" name="type" required>
                             <option value="">Select a type</option>
                             @foreach($types as $type)
@@ -87,12 +84,12 @@
 
         <!-- Danger Zone -->
         <div class="card mt-4 border-danger">
-            <div class="card-header bg-danger-light">
-                <h5 class="mb-0 text-danger"><i class="bi bi-exclamation-triangle"></i> Danger Zone</h5>
+            <div class="card-header">
+                <h2 class="text-danger"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> Danger Zone</h2>
             </div>
             <div class="card-body">
                 <p class="text-muted mb-3">Deleting this portfolio item cannot be undone.</p>
-                <form method="POST" action="{{ route('student.portfolio.destroyPortfolio', $portfolio) }}" style="display:inline;" onsubmit="return confirm('Are you sure? This cannot be undone.');" data-ajax-form>
+                <form method="POST" action="{{ route('student.portfolio.destroyPortfolio', $portfolio) }}" style="display:inline;" data-confirm="Are you sure? This cannot be undone." data-ajax-form>
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger">

@@ -648,6 +648,30 @@
 
 
 {{-- =========================================================
+     CONFIRM DIALOG
+     Used by any form or button that carries data-confirm="message".
+========================================================== --}}
+
+<div class="modal fade" id="sbConfirmModal" tabindex="-1" aria-labelledby="sbConfirmTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="sbConfirmTitle" data-confirm-title>Please confirm</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0" data-confirm-message></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" data-confirm-ok>Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{{-- =========================================================
      TOAST CONTAINER
 ========================================================== --}}
 

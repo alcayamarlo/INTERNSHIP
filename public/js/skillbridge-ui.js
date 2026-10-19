@@ -140,6 +140,51 @@
             });
         }
 
+        // Confirm dialog: <form data-confirm="Message"> or <button data-confirm="Message">.
+        // data-confirm-title and data-confirm-label customise the dialog.
+        const confirmElement = document.getElementById('sbConfirmModal');
+        if (confirmElement && window.bootstrap) {
+            const confirmModal = window.bootstrap.Modal.getOrCreateInstance(confirmElement);
+            const confirmTitle = confirmElement.querySelector('[data-confirm-title]');
+            const confirmMessage = confirmElement.querySelector('[data-confirm-message]');
+            const confirmOk = confirmElement.querySelector('[data-confirm-ok]');
+            let pending = null;
+
+            document.addEventListener('submit', (event) => {
+                if (!(event.target instanceof HTMLFormElement)) return;
+                const form = event.target;
+                if (form.dataset.confirmed === 'true') return;
+
+                const submitter = event.submitter instanceof HTMLElement ? event.submitter : null;
+                const source = submitter?.dataset.confirm ? submitter : (form.dataset.confirm ? form : null);
+                if (!source) return;
+
+                // Capture phase and stopImmediatePropagation keep ajax submit handlers
+                // (resources/js/app.js) from sending the request before it is confirmed.
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                pending = { form, submitter };
+                confirmTitle.textContent = source.dataset.confirmTitle || 'Please confirm';
+                confirmMessage.textContent = source.dataset.confirm;
+                confirmOk.textContent = source.dataset.confirmLabel || 'Delete';
+                confirmModal.show();
+            }, true);
+
+            confirmOk.addEventListener('click', () => {
+                if (!pending) return;
+                const { form, submitter } = pending;
+                pending = null;
+                form.dataset.confirmed = 'true';
+                confirmModal.hide();
+                form.requestSubmit(submitter && submitter.form === form ? submitter : undefined);
+                delete form.dataset.confirmed;
+            });
+
+            confirmElement.addEventListener('hidden.bs.modal', () => {
+                pending = null;
+            });
+        }
+
         // Includes submit buttons placed outside the form but tied to it with form="id".
         const submitButtons = (form) => Array.from(form.elements).filter(
             (element) => element instanceof HTMLButtonElement && element.type === 'submit'

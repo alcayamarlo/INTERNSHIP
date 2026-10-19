@@ -2,109 +2,38 @@
 
 @section('title', 'Notifications')
 
-@push('styles')
-<style>
-    .student-page-shell {
-        padding: 6px 0 0;
-        color: #edf8ff;
-    }
-
-    .student-page-title {
-        margin: 0 0 8px;
-        color: #f4f9ff;
-        font-size: clamp(1.8rem, 1.2vw + 1.1rem, 2.5rem);
-        font-weight: 800;
-        letter-spacing: -0.05em;
-    }
-
-    .student-page-subtitle {
-        margin: 0;
-        color: rgba(186,209,228,.8);
-        font-size: 0.95rem;
-    }
-
-    .student-page-shell .card,
-    .student-page-shell .list-group-item,
-    .student-page-shell .btn {
-        border-color: rgba(117,176,215,.18) !important;
-        background: rgba(16,31,45,.86) !important;
-        color: #edf8ff !important;
-    }
-
-    .student-page-shell .card {
-        border-radius: 18px;
-        border: 1px solid rgba(148,163,184,.14);
-        box-shadow: 0 10px 22px rgba(2,9,20,.12);
-        overflow: hidden;
-    }
-
-    .student-page-shell .card:hover {
-        border-color: rgba(49,217,244,.36) !important;
-    }
-
-    .student-page-shell .list-group-item {
-        border-bottom: 1px solid rgba(117,176,215,.12);
-        padding: 0.95rem 1rem;
-    }
-
-    .student-page-shell .btn-outline-primary {
-        border-color: rgba(77,210,255,.5);
-        color: #7fe0ff !important;
-        border-radius: 10px;
-    }
-
-    .student-page-shell .badge {
-        border-radius: 999px;
-        padding: 0.4rem 0.7rem;
-        font-weight: 700;
-    }
-
-    .student-page-shell .bg-light {
-        background: rgba(31,191,255,.1) !important;
-        color: #edf8ff !important;
-    }
-</style>
-@endpush
-
 @section('content')
-<div class="student-page-shell">
-<div class="d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
-    <div>
-        <h1 class="student-page-title">Notifications</h1>
-        <p class="student-page-subtitle">Your recent alerts and updates</p>
+<x-page-header title="Notifications" subtitle="Your recent alerts and updates">
+    <div class="btn-group" role="group" aria-label="Notification views">
+        <a href="{{ route('notifications.index', ['view' => 'active']) }}" class="btn btn-sm {{ $view === 'active' ? 'btn-primary' : 'btn-outline-primary' }}" @if($view === 'active') aria-current="true" @endif>Active</a>
+        <a href="{{ route('notifications.index', ['view' => 'archived']) }}" class="btn btn-sm {{ $view === 'archived' ? 'btn-primary' : 'btn-outline-primary' }}" @if($view === 'archived') aria-current="true" @endif>Archived</a>
     </div>
-    <div class="d-flex gap-2 align-items-center flex-wrap">
-        <div class="btn-group" role="group" aria-label="Notification views">
-            <a href="{{ route('notifications.index', ['view' => 'active']) }}" class="btn btn-sm {{ $view === 'active' ? 'btn-primary' : 'btn-outline-primary' }}">Active</a>
-            <a href="{{ route('notifications.index', ['view' => 'archived']) }}" class="btn btn-sm {{ $view === 'archived' ? 'btn-primary' : 'btn-outline-primary' }}">Archived</a>
-        </div>
-        <form action="{{ route('notifications.read-all') }}" method="POST" data-ajax-notification="read-all">
+    <form action="{{ route('notifications.read-all') }}" method="POST" data-ajax-notification="read-all">
+        @csrf
+        <button type="submit" class="btn btn-outline-primary btn-sm"><i class="bi bi-check-all" aria-hidden="true"></i> Mark All Read</button>
+    </form>
+    @if($view === 'archived')
+        <form action="{{ route('notifications.archive-all-read') }}" method="POST" data-ajax-notification="archive-all-read">
             @csrf
-            <button type="submit" class="btn btn-outline-primary btn-sm"><i class="bi bi-check-all"></i> Mark All Read</button>
+            <button type="submit" class="btn btn-outline-secondary btn-sm">Archive all read</button>
         </form>
-        @if($view === 'archived')
-            <form action="{{ route('notifications.archive-all-read') }}" method="POST" data-ajax-notification="archive-all-read">
-                @csrf
-                <button type="submit" class="btn btn-outline-secondary btn-sm">Archive all read</button>
-            </form>
-        @endif
-    </div>
-</div>
+    @endif
+</x-page-header>
 
 <div class="card">
     <div class="list-group list-group-flush">
         @forelse($notifications as $notification)
-            <div class="list-group-item {{ $notification->read_at ? '' : 'bg-light border-start border-primary border-3' }}" data-notification-item data-notification-id="{{ $notification->id }}">
+            <div class="list-group-item {{ $notification->read_at ? '' : 'is-unread' }}" data-notification-item data-notification-id="{{ $notification->id }}">
                 <div class="d-flex justify-content-between align-items-start gap-3">
                     <a class="flex-grow-1 text-reset text-decoration-none notification-open-link"
                        href="{{ route('notifications.show', $notification) }}"
                        data-notification-open
                        data-read-url="{{ route('notifications.read', $notification) }}">
                         <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                            @if(!$notification->read_at)<span class="badge bg-primary">New</span>@endif
-                            @if($notification->archived_at)<span class="badge bg-secondary">Archived</span>@endif
+                            @if(!$notification->read_at)<x-status-badge status="new" label="New" tone="brand" />@endif
+                            @if($notification->archived_at)<span class="sb-tag">Archived</span>@endif
                             <strong>{{ $notification->title }}</strong>
-                            <span class="badge bg-secondary">{{ $notification->type }}</span>
+                            <span class="sb-tag">{{ $notification->type }}</span>
                         </div>
                         <p class="mb-1">{{ $notification->message }}</p>
                         <small class="text-muted">{{ $notification->created_at->format('M d, Y h:i A') }} ({{ $notification->created_at->diffForHumans() }})</small>
@@ -131,13 +60,9 @@
                 </div>
             </div>
         @empty
-            <div class="list-group-item text-center text-muted py-5">
-                <i class="bi bi-bell-slash fs-1 d-block mb-2"></i>
-                No notifications yet.
-            </div>
+            <x-empty-state icon="bi-bell-slash" title="No notifications yet" message="Alerts and updates about your activity will appear here." />
         @endforelse
     </div>
     @if($notifications->hasPages())<div class="card-footer">{{ $notifications->links() }}</div>@endif
-</div>
 </div>
 @endsection

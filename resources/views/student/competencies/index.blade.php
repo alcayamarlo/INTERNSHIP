@@ -84,15 +84,16 @@
 
     #competenciesOverview .co-title {
         color: var(--co-text);
-        font-size: 16px;
-        font-weight: 500;
-        letter-spacing: -.01em;
+        font-size: clamp(24px, 2.4vw, 30px);
+        font-weight: 700;
+        line-height: 1.15;
+        letter-spacing: -.035em;
     }
 
     #competenciesOverview .co-hint {
         color: var(--co-muted);
-        font-size: 13px;
-        margin-top: var(--co-space-1);
+        font-size: 15px;
+        margin-top: 6px;
     }
 
     #competenciesOverview .co-segment {

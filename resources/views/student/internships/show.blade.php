@@ -3,22 +3,15 @@
 @section('title', $internship->title)
 
 @section('content')
-<div class="mb-3">
-    <a href="{{ route('student.internships.index') }}" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Back to Internships</a>
-</div>
+<x-page-header :title="$internship->title" :subtitle="$internship->employer->company_name">
+    <x-status-badge :status="$internship->status" :label="ucfirst($internship->status)" />
+    <a href="{{ route('student.internships.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to Internships</a>
+</x-page-header>
 
 <div class="row g-4">
     <div class="col-lg-8">
         <div class="card" id="applicationCard">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <h1 class="h3">{{ $internship->title }}</h1>
-                        <p class="text-muted mb-0">{{ $internship->employer->company_name }}</p>
-                    </div>
-                    <span class="badge bg-{{ $internship->status === 'open' ? 'success' : 'secondary' }} fs-6">{{ ucfirst($internship->status) }}</span>
-                </div>
-
                 <div class="d-flex flex-wrap gap-3 mb-4 text-muted small">
                     @if($internship->location)<span><i class="bi bi-geo-alt"></i> {{ $internship->location }}</span>@endif
                     <span><i class="bi bi-laptop"></i> {{ $internship->work_setup->label() }}</span>
@@ -26,21 +19,21 @@
                     @if($internship->allowance)<span><i class="bi bi-cash"></i> ₱{{ number_format($internship->allowance, 2) }}/mo</span>@endif
                 </div>
 
-                <h5>Description</h5>
+                <h2 class="h6">Description</h2>
                 <p>{!! nl2br(e($internship->description)) !!}</p>
 
                 @if($internship->responsibilities)
-                    <h5>Responsibilities</h5>
+                    <h2 class="h6">Responsibilities</h2>
                     <p>{!! nl2br(e($internship->responsibilities)) !!}</p>
                 @endif
 
                 @if($internship->requirements)
-                    <h5>General Requirements</h5>
+                    <h2 class="h6">General Requirements</h2>
                     <p>{!! nl2br(e($internship->requirements)) !!}</p>
                 @endif
 
                 @if($internship->requirementsList->count())
-                    <h5>Competency Requirements</h5>
+                    <h2 class="h6">Competency Requirements</h2>
                     <ul>
                         @foreach($internship->requirementsList as $req)
                             <li>{{ $req->requirement_name }} — <strong>{{ $req->required_level instanceof \App\Enums\ProficiencyLevel ? $req->required_level->label() : ucfirst($req->required_level) }}</strong></li>
@@ -54,7 +47,7 @@
     <div class="col-lg-4">
         <div class="card mb-4">
             <div class="card-body text-center">
-                <h5>Your Match Score</h5>
+                <h2 class="h6">Your Match Score</h2>
                 <div class="display-4 fw-bold {{ $matchPercentage >= 70 ? 'text-success' : ($matchPercentage >= 40 ? 'text-warning' : 'text-secondary') }}">
                     {{ $matchPercentage }}%
                 </div>
@@ -64,7 +57,7 @@
 
         <div class="card mb-4">
             <div class="card-body">
-                <h5>Recommendation Feedback</h5>
+                <h2 class="h6">Recommendation Feedback</h2>
                 @if($recommendationFeedback)
                     <div class="alert alert-success mb-3">
                         <i class="bi bi-check-circle"></i> You previously marked this recommendation as <strong>{{ $recommendationFeedback->feedback === 'helpful' ? 'helpful' : 'not helpful' }}</strong>.
@@ -114,7 +107,7 @@
                         </ul>
                     </div>
                 @else
-                    <h5>Apply Now</h5>
+                    <h2 class="h6">Apply Now</h2>
                     @if($resumes->isEmpty())
                         <p class="text-muted">Create a resume before applying. Archived resumes cannot be submitted.</p>
                         <a href="{{ route('student.resume.index') }}" class="btn btn-outline-primary w-100">Manage My Resumes</a>

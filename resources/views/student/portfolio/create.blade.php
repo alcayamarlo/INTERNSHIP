@@ -3,10 +3,7 @@
 @section('title', 'Upload Portfolio Item')
 
 @section('content')
-<div class="mb-4">
-    <h1 class="h3 mb-1">Upload to Portfolio</h1>
-    <p class="text-muted mb-0">Add certificates, projects, and supporting documents</p>
-</div>
+<x-page-header title="Upload to Portfolio" subtitle="Add certificates, projects, and supporting documents" />
 
 <div class="row justify-content-center">
     <div class="col-lg-8">
@@ -34,7 +31,7 @@
                             @csrf
 
                             <div class="mb-3">
-                                <label class="form-label">Title *</label>
+                                <label class="form-label">Title <span class="text-danger" aria-hidden="true">*</span></label>
                                 <input type="text" class="form-control @error('title') is-invalid @enderror" name="title" value="{{ old('title') }}" placeholder="e.g., E-Commerce Website Project" required>
                                 @error('title')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -42,7 +39,7 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">File Type *</label>
+                                <label class="form-label">File Type <span class="text-danger" aria-hidden="true">*</span></label>
                                 <select class="form-select @error('type') is-invalid @enderror" name="type" required>
                                     <option value="">Select a type</option>
                                     @foreach($types as $type)
@@ -66,7 +63,7 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Upload File *</label>
+                                <label class="form-label">Upload File <span class="text-danger" aria-hidden="true">*</span></label>
                                 <div class="input-group">
                                     <input type="file" class="form-control @error('file') is-invalid @enderror" name="file" id="portfolioFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
                                     <label class="input-group-text" for="portfolioFile">Choose</label>
@@ -98,7 +95,7 @@
                             @csrf
 
                             <div class="mb-3">
-                                <label class="form-label">Certificate Title *</label>
+                                <label class="form-label">Certificate Title <span class="text-danger" aria-hidden="true">*</span></label>
                                 <input type="text" class="form-control @error('title') is-invalid @enderror" name="title" value="{{ old('title') }}" placeholder="e.g., AWS Solutions Architect Associate" required>
                                 @error('title')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -129,7 +126,7 @@
                             </div>
 
                             <div class="mb-3 mt-3">
-                                <label class="form-label">Upload Certificate File *</label>
+                                <label class="form-label">Upload Certificate File <span class="text-danger" aria-hidden="true">*</span></label>
                                 <div class="input-group">
                                     <input type="file" class="form-control @error('file') is-invalid @enderror" name="file" id="certificateFile" accept=".pdf,.jpg,.jpeg,.png" required>
                                     <label class="input-group-text" for="certificateFile">Choose</label>
