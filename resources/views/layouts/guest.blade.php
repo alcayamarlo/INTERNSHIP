@@ -960,7 +960,7 @@
 
                 <p class="auth-description">
 
-                    Skill Bridge helps students,
+                    SkillBridge helps students,
                     employers, and institutions
                     connect through meaningful
                     internship opportunities and
@@ -1056,15 +1056,8 @@
 
                 <div class="auth-left-footer">
 
-                    <strong>
-                        SKILL BRIDGE
-                    </strong>
-
-                    <br>
-
-                    Connecting students, institutions,
-                    and employers for better
-                    internship experiences.
+                    <strong>SKILLBRIDGE</strong>
+                    &mdash; Connecting students, institutions, and employers for better internship experiences.
 
                 </div>
 

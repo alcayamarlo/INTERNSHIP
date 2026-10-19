@@ -2068,6 +2068,910 @@
 
 </style>
 
+<style>
+html:has(body.skillbridge-guest .register-page) {
+    height: 100%;
+    overflow: hidden;
+}
+
+body.skillbridge-guest:has(.register-page) {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+}
+
+body.skillbridge-guest:has(.register-page) .auth-shell {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+}
+
+body.skillbridge-guest:has(.register-page) .auth-left {
+    flex: 0 0 58.3333%;
+    width: 58.3333%;
+    height: 100%;
+    min-height: 0;
+    background: #301016;
+}
+
+body.skillbridge-guest:has(.register-page) .auth-left::before {
+    inset: 0;
+    width: auto;
+    height: auto;
+    opacity: 1;
+    border-radius: 0;
+    background: url('{{ asset("images/login-campus.png") }}') center 48% / cover no-repeat;
+}
+
+body.skillbridge-guest:has(.register-page) .auth-left::after {
+    inset: 0;
+    width: auto;
+    height: auto;
+    opacity: 1;
+    border-radius: 0;
+    background: linear-gradient(145deg, rgba(35, 8, 13, .78), rgba(116, 12, 29, .58) 55%, rgba(29, 13, 18, .78));
+}
+
+body.skillbridge-guest:has(.register-page) .auth-left h1 span {
+    color: #ffb8bf;
+}
+
+body.skillbridge-guest:has(.register-page) .auth-right {
+    flex: 0 0 41.6667%;
+    width: 41.6667%;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse at 88% 12%, rgba(220, 38, 38, .07), transparent 38%),
+        linear-gradient(145deg, #f8fafc 0%, #fff 58%, #fffafa 100%);
+}
+
+body.skillbridge-guest:has(.register-page) .register-page {
+    position: relative;
+    isolation: isolate;
+    background:
+        linear-gradient(135deg, #f8fafc 0%, #fff 52%, rgba(254, 242, 242, .7) 100%);
+}
+
+body.skillbridge-guest:has(.register-page) .register-content :is(input, select, button) {
+    font-family: "Figtree", "Segoe UI", system-ui, sans-serif;
+}
+
+body.skillbridge-guest:has(.register-page) .register-page {
+    position: relative;
+    inset: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+    padding: clamp(12px, 2vh, 24px) clamp(20px, 3vw, 48px);
+    border: 0;
+    font-family: "Figtree", "Segoe UI", system-ui, sans-serif;
+    background:
+        radial-gradient(ellipse at 88% 12%, rgba(220, 38, 38, .07), transparent 38%),
+        linear-gradient(145deg, #f8fafc 0%, #fff 58%, #fffafa 100%);
+}
+
+body.skillbridge-guest:has(.register-page) .register-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 480px;
+    min-height: 0;
+    margin: 0 auto;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+body.skillbridge-guest:has(.register-page) .register-content :is(input, select, button) {
+    font-family: inherit;
+}
+
+body.skillbridge-guest:has(.register-page) .register-hero h1 {
+    font-family: "Bricolage Grotesque", "Figtree", "Segoe UI", sans-serif;
+    font-size: clamp(28px, 2.5vw, 36px);
+    font-weight: 700;
+    letter-spacing: -.04em;
+    line-height: 1.12;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-label {
+    align-items: center;
+    line-height: 1.2;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-control,
+body.skillbridge-guest:has(.register-page) .register-card .form-select {
+    line-height: 1.4;
+}
+
+body.skillbridge-guest:has(.register-page) .register-top {
+    margin-bottom: clamp(12px, 2vh, 20px);
+}
+
+body.skillbridge-guest:has(.register-page) .register-brand {
+    display: none;
+}
+
+body.skillbridge-guest:has(.register-page) .register-top .auth-back-link {
+    margin: 0;
+}
+
+body.skillbridge-guest:has(.register-page) .register-secure {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--sb-border);
+    border-radius: 999px;
+    background: var(--sb-surface);
+    color: var(--sb-muted);
+    font-size: 12px;
+}
+
+body.skillbridge-guest:has(.register-page) .register-secure i {
+    color: var(--sb-success-ink);
+}
+
+body.skillbridge-guest:has(.register-page) .register-hero {
+    margin-bottom: 10px;
+}
+
+body.skillbridge-guest:has(.register-page) .register-badge,
+body.skillbridge-guest:has(.register-page) .register-progress,
+body.skillbridge-guest:has(.register-page) .register-features {
+    display: none;
+}
+
+body.skillbridge-guest:has(.register-page) .register-hero h1 {
+    margin-bottom: 4px;
+    color: var(--sb-ink);
+    font-size: clamp(27px, 2.7vw, 36px);
+    line-height: 1.08;
+}
+
+body.skillbridge-guest:has(.register-page) .register-hero h1 span {
+    color: var(--sb-brand-content);
+}
+
+body.skillbridge-guest:has(.register-page) .register-hero p {
+    margin: 0;
+    color: var(--sb-muted);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+body.skillbridge-guest:has(.register-page) .register-account-type {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 34px;
+    margin-bottom: 10px;
+    padding: 6px 10px;
+    border: 1px solid var(--sb-border);
+    border-radius: 9px;
+    background: var(--sb-red-soft);
+    color: var(--sb-brand-content);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+body.skillbridge-guest:has(.register-page) .register-account-type-note {
+    margin-left: auto;
+    color: var(--sb-muted);
+    font-size: 11px;
+    font-weight: 500;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card {
+    padding: clamp(14px, 2vh, 20px);
+    border-color: var(--sb-border);
+    border-radius: 16px;
+    background: var(--sb-surface);
+    box-shadow: var(--sb-shadow);
+}
+
+body.skillbridge-guest:has(.register-page) .register-card::before {
+    background: linear-gradient(90deg, transparent, var(--sb-brand), transparent);
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .section-title {
+    display: none;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-section {
+    margin: 0;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px 12px;
+}
+
+body.skillbridge-guest:has(.register-page) #account-type .form-group.full {
+    grid-column: auto;
+}
+
+body.skillbridge-guest:has(.register-page) #account-type .form-group:has(#phone) {
+    display: none;
+}
+
+body.skillbridge-guest:has(.register-page) #account-type .form-group:has(#name) {
+    order: 1;
+}
+
+body.skillbridge-guest:has(.register-page) #account-type .form-group:has(#email) {
+    order: 2;
+}
+
+body.skillbridge-guest:has(.register-page) #roleDetails > .section-title {
+    display: none;
+}
+
+body.skillbridge-guest:has(.register-page) #roleDetails .role-field:has(#institution_id) {
+    display: none;
+}
+
+body.skillbridge-guest:has(.register-page) #roleDetails .role-field:has(#program) {
+    display: block;
+    grid-column: 1 / -1;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-label {
+    gap: 6px;
+    margin-bottom: 4px;
+    color: var(--sb-ink);
+    font-size: 11px;
+    letter-spacing: .02em;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-label i {
+    color: var(--sb-brand);
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-control,
+body.skillbridge-guest:has(.register-page) .register-card .form-select {
+    height: 42px;
+    padding: 0 11px;
+    border-color: var(--sb-border);
+    border-radius: 9px;
+    background-color: var(--sb-surface-raised);
+    color: var(--sb-ink) !important;
+    -webkit-text-fill-color: var(--sb-ink) !important;
+    font-size: 14px;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-control::placeholder {
+    color: var(--sb-muted);
+    -webkit-text-fill-color: var(--sb-muted);
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-control:focus,
+body.skillbridge-guest:has(.register-page) .register-card .form-select:focus {
+    border-color: var(--sb-brand);
+    background-color: var(--sb-surface);
+    box-shadow: 0 0 0 3px var(--sb-brand-ring);
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-control.is-invalid,
+body.skillbridge-guest:has(.register-page) .register-card .form-select.is-invalid {
+    border-color: var(--sb-danger-ink) !important;
+    box-shadow: 0 0 0 3px var(--sb-danger-bg) !important;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .invalid-feedback {
+    margin-top: 3px;
+    color: var(--sb-danger-ink);
+    font-size: 11px;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .password-wrapper .form-control {
+    padding-right: 44px;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .password-toggle {
+    width: 36px;
+    height: 36px;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card :is(.password-strength, .password-strength-text, .password-rules) {
+    display: none;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .terms-wrapper {
+    margin-top: 10px;
+    padding: 8px 10px;
+    border-color: var(--sb-border);
+    background: var(--sb-surface-raised);
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .terms-label {
+    align-items: flex-start;
+    gap: 8px;
+    color: var(--sb-muted);
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .terms-label input {
+    width: 17px;
+    height: 17px;
+    margin-top: 1px;
+    accent-color: var(--sb-brand);
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .terms-label a,
+body.skillbridge-guest:has(.register-page) .register-card .auth-footer a {
+    color: var(--sb-brand-content);
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .terms-error {
+    color: var(--sb-danger-ink);
+    font-size: 11px;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .btn-register {
+    min-height: 46px;
+    height: auto;
+    margin-top: 9px;
+    border-radius: 9px;
+    background: linear-gradient(110deg, var(--sb-brand), var(--sb-brand-deep));
+    color: #fff;
+    font-size: 14px;
+    transition: transform var(--sb-motion-fast) var(--sb-ease), box-shadow var(--sb-motion-fast) var(--sb-ease), background-color var(--sb-motion-fast) var(--sb-ease);
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .btn-register:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(155, 15, 30, .2);
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .auth-footer {
+    margin-top: 8px;
+    padding: 0;
+    color: var(--sb-muted);
+    font-size: 12px;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card :is(.auth-back-link, .password-toggle, .terms-label a, .auth-footer a, .btn-register, input, select):focus-visible {
+    outline: 3px solid var(--sb-brand-ring);
+    outline-offset: 2px;
+}
+
+@media (max-height: 720px) and (min-width: 851px) {
+    body.skillbridge-guest:has(.register-page) .register-page {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    body.skillbridge-guest:has(.register-page) .register-top,
+    body.skillbridge-guest:has(.register-page) .register-hero {
+        margin-bottom: 8px;
+    }
+
+    body.skillbridge-guest:has(.register-page) .register-hero p {
+        display: none;
+    }
+
+    body.skillbridge-guest:has(.register-page) .register-card {
+        padding: 12px 15px;
+    }
+
+    body.skillbridge-guest:has(.register-page) .register-card .form-grid {
+        gap: 6px 10px;
+    }
+
+    body.skillbridge-guest:has(.register-page) .register-card .form-control,
+    body.skillbridge-guest:has(.register-page) .register-card .form-select {
+        height: 38px;
+    }
+
+    body.skillbridge-guest:has(.register-page) .register-card .terms-wrapper {
+        margin-top: 7px;
+        padding: 6px 8px;
+    }
+
+    body.skillbridge-guest:has(.register-page) .register-card .btn-register {
+        min-height: 40px;
+        margin-top: 6px;
+    }
+
+    body.skillbridge-guest:has(.register-page) .register-card .auth-footer {
+        margin-top: 5px;
+    }
+}
+
+@media (max-height: 560px) and (min-width: 851px) {
+    body.skillbridge-guest:has(.register-page) .auth-left-footer,
+    body.skillbridge-guest:has(.register-page) .auth-features {
+        display: none;
+    }
+
+    body.skillbridge-guest:has(.register-page) .auth-brand {
+        margin-bottom: 18px;
+    }
+
+    body.skillbridge-guest:has(.register-page) .auth-left h1 {
+        font-size: 34px;
+    }
+}
+
+@media (max-width: 850px) {
+    html:has(body.skillbridge-guest .register-page) {
+        height: auto;
+        overflow: auto;
+    }
+
+    body.skillbridge-guest:has(.register-page) {
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow: auto;
+    }
+
+    body.skillbridge-guest:has(.register-page) .auth-shell {
+        display: block;
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow: visible;
+    }
+
+    body.skillbridge-guest:has(.register-page) .auth-left {
+        display: none;
+    }
+
+    body.skillbridge-guest:has(.register-page) .auth-right {
+        width: 100%;
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow: visible;
+    }
+
+    body.skillbridge-guest:has(.register-page) .register-page {
+        position: relative;
+        inset: auto;
+        flex: 1 1 auto;
+        width: 100%;
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow: visible;
+        padding: 20px clamp(16px, 5vw, 32px) 28px;
+    }
+}
+
+@media (max-width: 520px) {
+    body.skillbridge-guest:has(.register-page) .register-card .form-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    body.skillbridge-guest:has(.register-page) #roleDetails .role-field:has(#program) {
+        grid-column: auto;
+    }
+}
+
+body.skillbridge-guest:has(.register-page) .register-top {
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+body.skillbridge-guest:has(.register-page) .register-top .auth-back-link {
+    border-color: #e5e7eb;
+    background: #fff;
+    color: #4b5563;
+    font-weight: 600;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+body.skillbridge-guest:has(.register-page) .register-top .auth-back-link:hover {
+    border-color: #d1d5db;
+    background: #f9fafb;
+    color: #111827;
+}
+
+body.skillbridge-guest:has(.register-page) .register-secure {
+    gap: 6px;
+    padding: 8px 10px;
+    border-color: #e5e7eb;
+    background: #fff;
+    color: #6b7280;
+    white-space: nowrap;
+}
+
+body.skillbridge-guest:has(.register-page) .register-secure i {
+    color: #6b7280;
+}
+
+body.skillbridge-guest:has(.register-page) .register-hero {
+    margin-bottom: 24px;
+}
+
+body.skillbridge-guest:has(.register-page) .register-form-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 15px;
+}
+
+body.skillbridge-guest:has(.register-page) .register-hero h1 {
+    margin-bottom: 6px;
+    color: #0f172a;
+    font-family: "Bricolage Grotesque", "Figtree", "Segoe UI", sans-serif;
+    font-size: clamp(28px, 2.5vw, 34px);
+    font-weight: 700;
+    letter-spacing: -.04em;
+    line-height: 1.08;
+}
+
+body.skillbridge-guest:has(.register-page) .register-hero h1 span {
+    color: inherit;
+}
+
+body.skillbridge-guest:has(.register-page) .register-hero p {
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card::before {
+    display: none;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-grid {
+    column-gap: 16px;
+    row-gap: 16px;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-label {
+    gap: 7px;
+    margin-bottom: 8px;
+    color: #374151;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-label i {
+    color: #6b7280;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .required {
+    color: #6b7280;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-control,
+body.skillbridge-guest:has(.register-page) .register-card .form-select {
+    height: 48px;
+    padding: 0 14px;
+    border-color: #e5e7eb;
+    border-radius: 12px;
+    background-color: #f9fafb;
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+    font-family: "Figtree", "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-control::placeholder {
+    color: #6b7280;
+    -webkit-text-fill-color: #6b7280;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-control:hover,
+body.skillbridge-guest:has(.register-page) .register-card .form-select:hover {
+    border-color: #d1d5db;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-control:focus,
+body.skillbridge-guest:has(.register-page) .register-card .form-select:focus {
+    border-color: #9ca3af;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(107, 114, 128, .14);
+}
+
+body.skillbridge-guest:has(.register-page) .register-card input.form-control:-webkit-autofill,
+body.skillbridge-guest:has(.register-page) .register-card input.form-control:-webkit-autofill:hover,
+body.skillbridge-guest:has(.register-page) .register-card input.form-control:-webkit-autofill:focus,
+body.skillbridge-guest:has(.register-page) .register-card select.form-select:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px #f9fafb inset !important;
+    -webkit-text-fill-color: #0f172a !important;
+    color: #0f172a !important;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .terms-wrapper {
+    margin-top: 18px;
+    padding: 12px 14px;
+    border-color: #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .terms-label {
+    gap: 10px;
+    color: #475569;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .terms-label a {
+    color: #4b5563;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .terms-label input {
+    accent-color: #6b7280;
+    flex: 0 0 17px;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .btn-register {
+    min-height: 48px;
+    border: 0;
+    border-radius: 10px;
+    background: #b91c1c;
+    color: #fff;
+    font-family: "Figtree", "Segoe UI", system-ui, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    transition: transform 200ms ease, background-color 200ms ease, box-shadow 200ms ease;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .btn-register:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: #991b1b;
+    background: #991b1b;
+    box-shadow: 0 8px 18px rgba(185, 28, 28, .2);
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .btn-register:active:not(:disabled) {
+    transform: scale(.97);
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .auth-footer {
+    color: #6b7280;
+    font-size: 13px;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .auth-footer a {
+    color: #b91c1c;
+    font-weight: 700;
+}
+
+body.skillbridge-guest:has(.register-page) .register-page {
+    position: relative;
+    isolation: isolate;
+    background:
+        radial-gradient(ellipse at 88% 12%, rgba(220, 38, 38, .07), transparent 38%),
+        linear-gradient(145deg, #f8fafc 0%, #fff 58%, #fffafa 100%);
+}
+
+body.skillbridge-guest:has(.register-page) .register-page::before,
+body.skillbridge-guest:has(.register-page) .register-page::after {
+    position: absolute;
+    z-index: 0;
+    width: 20rem;
+    height: 20rem;
+    border-radius: 9999px;
+    filter: blur(64px);
+    pointer-events: none;
+    content: "";
+}
+
+body.skillbridge-guest:has(.register-page) .register-page::before {
+    top: -5rem;
+    right: -5rem;
+    background: rgba(239, 68, 68, .1);
+}
+
+body.skillbridge-guest:has(.register-page) .register-page::after {
+    bottom: -5rem;
+    left: -5rem;
+    background: rgba(251, 113, 133, .1);
+}
+
+body.skillbridge-guest:has(.register-page) .register-content {
+    z-index: 1;
+    max-width: 500px;
+    padding: clamp(20px, 2.2vw, 30px);
+    border: 1px solid rgba(226, 232, 240, .8);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, .95);
+    box-shadow: 0 20px 25px -5px rgba(15, 23, 42, .1), 0 8px 10px -6px rgba(15, 23, 42, .1);
+    backdrop-filter: blur(12px);
+    font-family: "Figtree", "Segoe UI", system-ui, sans-serif;
+}
+
+body.skillbridge-guest:has(.register-page) .register-page :is(button, input, select, textarea) {
+    font-family: "Figtree", "Segoe UI", system-ui, sans-serif;
+}
+
+body.skillbridge-guest:has(.register-page) .register-top {
+    margin-bottom: 20px;
+}
+
+body.skillbridge-guest:has(.register-page) .register-top .auth-back-link {
+    border-color: #fee2e2;
+    background: #fff7f7;
+    color: #991b1b;
+}
+
+body.skillbridge-guest:has(.register-page) .register-top .auth-back-link:hover {
+    border-color: #b91c1c;
+    background: #b91c1c;
+    color: #fff;
+}
+
+body.skillbridge-guest:has(.register-page) .register-secure {
+    border-color: #e2e8f0;
+    background: #f8fafc;
+    color: #475569;
+}
+
+body.skillbridge-guest:has(.register-page) .register-hero {
+    margin-bottom: 16px;
+}
+
+body.skillbridge-guest:has(.register-page) .register-hero h1 {
+    font-family: "Bricolage Grotesque", "Figtree", "Segoe UI", sans-serif;
+    font-size: clamp(30px, 3vw, 40px);
+    letter-spacing: -.04em;
+    line-height: 1.08;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-label {
+    color: #334155;
+    font-family: "Figtree", "Segoe UI", system-ui, sans-serif;
+    font-size: 12px;
+    letter-spacing: .02em;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-label i {
+    color: #b91c1c;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-control,
+body.skillbridge-guest:has(.register-page) .register-card .form-select {
+    border-color: #cbd5e1;
+    border-radius: 10px;
+    background-color: #f1f5f9;
+    transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-control:hover,
+body.skillbridge-guest:has(.register-page) .register-card .form-select:hover {
+    border-color: #94a3b8;
+}
+
+body.skillbridge-guest:has(.register-page) .register-card .form-control:focus,
+body.skillbridge-guest:has(.register-page) .register-card .form-select:focus {
+    border-color: #dc2626;
+    background-color: #fff;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, .2);
+}
+
+@media (max-height: 720px) and (min-width: 851px) {
+    body.skillbridge-guest:has(.register-page) .register-content {
+        padding: 16px 20px;
+    }
+}
+
+@media (max-width: 850px) {
+    body.skillbridge-guest:has(.register-page) .register-content {
+        padding: clamp(20px, 5vw, 30px);
+    }
+}
+
+@media (max-height: 720px) and (min-width: 851px) {
+    body.skillbridge-guest:has(.register-page) .register-top {
+        margin-bottom: 16px;
+    }
+
+    body.skillbridge-guest:has(.register-page) .register-card .form-grid {
+        column-gap: 12px;
+        row-gap: 11px;
+    }
+
+    body.skillbridge-guest:has(.register-page) .register-card .form-label {
+        margin-bottom: 6px;
+    }
+
+    body.skillbridge-guest:has(.register-page) .register-card .form-control,
+    body.skillbridge-guest:has(.register-page) .register-card .form-select {
+        height: 44px;
+    }
+
+    body.skillbridge-guest:has(.register-page) .register-card .terms-wrapper {
+        margin-top: 11px;
+        padding: 8px 10px;
+    }
+
+    body.skillbridge-guest:has(.register-page) .register-card .btn-register {
+        min-height: 42px;
+        margin-top: 6px;
+    }
+}
+
+@media (max-height: 600px) and (min-width: 851px) {
+    body.skillbridge-guest:has(.register-page) .register-hero p {
+        display: none;
+    }
+
+    body.skillbridge-guest:has(.register-page) .register-hero {
+        margin-bottom: 12px;
+    }
+
+    body.skillbridge-guest:has(.register-page) .register-hero h1 {
+        font-size: 27px;
+    }
+
+    body.skillbridge-guest:has(.register-page) .register-card .form-grid {
+        row-gap: 10px;
+    }
+
+    body.skillbridge-guest:has(.register-page) .register-card .form-control,
+    body.skillbridge-guest:has(.register-page) .register-card .form-select {
+        height: 40px;
+    }
+
+    body.skillbridge-guest:has(.register-page) .register-card .terms-wrapper {
+        margin-top: 8px;
+        padding: 6px 8px;
+    }
+}
+
+@media (max-width: 600px) {
+    body.skillbridge-guest:has(.register-page) .register-top {
+        margin-bottom: 16px;
+    }
+
+    body.skillbridge-guest:has(.register-page) .register-card .form-grid {
+        row-gap: 18px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.skillbridge-guest:has(.register-page) .register-card .btn-register,
+    body.skillbridge-guest:has(.register-page) .register-card .form-control,
+    body.skillbridge-guest:has(.register-page) .register-card .form-select {
+        transition: none;
+    }
+}
+</style>
+
 @endpush
 
 
@@ -2077,33 +2981,20 @@
 
     <div class="register-content">
 
-        <a class="auth-back-link" href="{{ route('home') }}">
-            <i class="bi bi-arrow-left" aria-hidden="true"></i>
-            Back to Home
-        </a>
-
         {{-- =====================================================
              TOP
         ====================================================== --}}
 
         <div class="register-top">
 
-            <div class="register-brand">
-
-                <div class="register-brand-icon">
-                    <i class="bi bi-mortarboard-fill"></i>
-                </div>
-
-                <span>
-                    SKILL BRIDGE
-                </span>
-
-            </div>
-
+            <a class="auth-back-link" href="{{ route('home') }}">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                Back to Home
+            </a>
 
             <div class="register-secure">
 
-                <i class="bi bi-shield-check"></i>
+                <i class="bi bi-shield-check" aria-hidden="true"></i>
 
                 Secure Registration
 
@@ -2118,83 +3009,15 @@
 
         <div class="register-hero">
 
-            <div class="register-badge">
-
-                <i class="bi bi-rocket-takeoff-fill"></i>
-
-                Internship Platform
-
+            <div class="register-form-mark" aria-hidden="true">
+                <i class="bi bi-asterisk"></i>
             </div>
-
 
             <h1>
-
-                Build your future.
-                <span>Start today.</span>
-
+                Create your account.
             </h1>
 
-
-            <p>
-
-                Create your Skill Bridge account and connect
-                with internship opportunities, institutions,
-                employers, and career-building resources.
-
-            </p>
-
-        </div>
-
-
-        {{-- =====================================================
-             PROGRESS
-        ====================================================== --}}
-
-        <div class="register-progress">
-
-            <div class="progress-step active">
-
-                <div class="progress-number">
-                    1
-                </div>
-
-                <span>
-                    Account
-                </span>
-
-            </div>
-
-
-            <div class="progress-line"></div>
-
-
-            <div class="progress-step">
-
-                <div class="progress-number">
-                    2
-                </div>
-
-                <span>
-                    Profile
-                </span>
-
-            </div>
-
-
-            <div class="progress-line"></div>
-
-
-            <div class="progress-step">
-
-                <div class="progress-number">
-                    3
-                </div>
-
-                <span>
-                    Get Started
-                </span>
-
-            </div>
+            <p>Create your SkillBridge student account to get started.</p>
 
         </div>
 
