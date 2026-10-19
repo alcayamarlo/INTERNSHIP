@@ -226,6 +226,7 @@ body.skillbridge-app {
     --bs-link-hover-color-rgb: 155, 15, 30;
     --bs-white-rgb: 255, 255, 255;
     --bs-light-rgb: 255, 250, 250;
+    --bs-dark-rgb: 26, 11, 13;
     --bs-primary: var(--sb-brand);
     --bs-primary-rgb: 225, 29, 46;
     --bs-secondary-rgb: 122, 95, 99;
@@ -249,6 +250,7 @@ body.skillbridge-app {
     --bs-body-color-rgb: 255, 245, 245;
     --bs-white-rgb: 33, 25, 26;
     --bs-light-rgb: 42, 29, 31;
+    --bs-dark-rgb: 255, 245, 245;
     --bs-secondary-rgb: 208, 184, 187;
 }
 
@@ -263,6 +265,7 @@ body.skillbridge-app {
         --bs-body-color-rgb: 255, 245, 245;
         --bs-white-rgb: 33, 25, 26;
         --bs-light-rgb: 42, 29, 31;
+        --bs-dark-rgb: 255, 245, 245;
         --bs-secondary-rgb: 208, 184, 187;
     }
 }
@@ -1360,7 +1363,38 @@ body.skillbridge-app .badge {
     --bs-badge-font-size: 12px;
     --bs-badge-font-weight: 600;
     --bs-badge-border-radius: 999px;
+    --bs-bg-opacity: .14;
+    border: 1px solid var(--sb-border);
     line-height: 1.4;
+}
+
+body.skillbridge-app .badge.bg-primary {
+    --bs-badge-color: var(--sb-brand-content);
+    border-color: var(--sb-border);
+}
+
+body.skillbridge-app .badge.bg-success {
+    --bs-badge-color: var(--sb-success-ink);
+    border-color: var(--sb-success-border);
+}
+
+body.skillbridge-app .badge.bg-warning {
+    --bs-badge-color: var(--sb-warning-ink);
+    border-color: var(--sb-warning-border);
+}
+
+body.skillbridge-app .badge.bg-danger {
+    --bs-badge-color: var(--sb-danger-ink);
+    border-color: var(--sb-danger-border);
+}
+
+body.skillbridge-app .badge.bg-info {
+    --bs-badge-color: var(--sb-info-ink);
+    border-color: var(--sb-info-border);
+}
+
+body.skillbridge-app .badge:is(.bg-secondary, .bg-dark, .bg-light) {
+    --bs-badge-color: var(--sb-text-soft);
 }
 
 .sb-status {
@@ -2537,6 +2571,142 @@ body.skillbridge-app .list-group-item.is-unread {
     .student-profile-page .identity {
         align-items: flex-start;
     }
+}
+
+/* ---------- Meters (labelled progress rows) ---------- */
+
+.sb-meter {
+    display: grid;
+    gap: 16px;
+}
+
+.sb-meter-row {
+    display: grid;
+    gap: 6px;
+}
+
+.sb-meter-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.sb-meter-bar {
+    height: 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--sb-border);
+}
+
+.sb-meter-bar > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--sb-brand);
+}
+
+.sb-meter-bar > .is-info {
+    background: var(--sb-info-ink);
+}
+
+.sb-meter-bar > .is-warning {
+    background: var(--sb-warning-ink);
+}
+
+.sb-meter-bar > .is-success {
+    background: var(--sb-success-ink);
+}
+
+/* ---------- Native dialog (file previews) ---------- */
+
+.sb-dialog {
+    width: min(900px, calc(100% - 24px));
+    max-height: calc(100% - 24px);
+    padding: 0;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-lg);
+    background: var(--sb-surface);
+    color: var(--sb-ink);
+    box-shadow: var(--sb-shadow);
+}
+
+.sb-dialog::backdrop {
+    background: rgba(26, 11, 13, .6);
+}
+
+.sb-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--sb-border);
+}
+
+.sb-dialog-header h2 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.sb-dialog-body {
+    padding: 20px;
+}
+
+.sb-dialog dl {
+    margin: 0;
+    font-size: 13px;
+}
+
+.sb-dialog dt {
+    margin-top: 12px;
+    color: var(--sb-muted);
+    font-weight: 500;
+}
+
+.sb-dialog dd {
+    margin: 2px 0 0;
+    color: var(--sb-ink);
+    overflow-wrap: anywhere;
+}
+
+.sb-dialog iframe {
+    width: 100%;
+    min-height: 60vh;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-sm);
+    background: var(--sb-surface-raised);
+}
+
+.sb-dialog img {
+    display: block;
+    max-width: 100%;
+    max-height: 60vh;
+    margin: auto;
+}
+
+/* ---------- Logo / avatar box ---------- */
+
+.sb-logo-box {
+    display: grid;
+    place-items: center;
+    width: 140px;
+    height: 140px;
+    overflow: hidden;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-lg);
+    background: var(--sb-surface-raised);
+    color: var(--sb-brand-content);
+    font-size: 40px;
+    font-weight: 700;
+}
+
+.sb-logo-box img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 
 /* ---------- Hover (pointer devices only) ---------- */

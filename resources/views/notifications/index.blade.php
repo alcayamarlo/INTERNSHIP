@@ -30,7 +30,7 @@
                        data-notification-open
                        data-read-url="{{ route('notifications.read', $notification) }}">
                         <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                            @if(!$notification->read_at)<x-status-badge status="new" label="New" tone="brand" />@endif
+                            @if(!$notification->read_at)<span class="badge bg-primary">New</span>@endif
                             @if($notification->archived_at)<span class="sb-tag">Archived</span>@endif
                             <strong>{{ $notification->title }}</strong>
                             <span class="sb-tag">{{ $notification->type }}</span>

@@ -3,44 +3,45 @@
 @section('title', $application->student->user->name)
 
 @section('content')
-<div class="mb-3">
-    <a href="{{ route('employer.applicants.index') }}" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Back to Applicants</a>
-</div>
+<x-page-header :title="$application->student->user->name" :subtitle="$application->student->user->email">
+    <a href="{{ route('employer.applicants.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to Applicants</a>
+</x-page-header>
 
 <div class="row g-4">
     <div class="col-lg-8">
         <div class="card mb-4">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
+                <div class="d-flex justify-content-between align-items-start gap-3">
                     <div>
-                        <h1 class="h4">{{ $application->student->user->name }}</h1>
-                        <p class="text-muted mb-0">{{ $application->student->user->email }}</p>
-                        @if($application->student->program)<p class="small">{{ $application->student->program }} — {{ $application->student->year_level }}</p>@endif
+                        @if($application->student->program)<p class="mb-0">{{ $application->student->program }} — {{ $application->student->year_level }}</p>@endif
                     </div>
+                    {{-- Status badge is rewritten by resources/js/app.js after an ajax status update. --}}
                     <span class="badge {{ $application->status->badgeClass() }} fs-6" data-application-status>{{ $application->status->label() }}</span>
                 </div>
                 <hr>
                 <p><strong>Applied for:</strong> {{ $application->internship->title }}</p>
-                <p><strong>Match Score:</strong> <span class="badge bg-primary">{{ $application->match_percentage }}%</span></p>
+                <p><strong>Match Score:</strong> <span class="sb-tag sb-tag--brand">{{ $application->match_percentage }}%</span></p>
                 <p><strong>Applied:</strong> {{ $application->applied_at?->format('M d, Y h:i A') }}</p>
                 @if($application->cover_letter)
-                    <h5>Cover Letter</h5>
-                    <p class="border rounded p-3 bg-light">{!! nl2br(e($application->cover_letter)) !!}</p>
+                    <h2 class="h6">Cover Letter</h2>
+                    <p class="sb-tile">{!! nl2br(e($application->cover_letter)) !!}</p>
                 @endif
             </div>
         </div>
 
         @if($application->student->competencies->count())
         <div class="card mb-4">
-            <div class="card-header bg-white"><h5 class="mb-0">Competencies</h5></div>
+            <div class="card-header"><h2>Competencies</h2></div>
             <div class="card-body">
                 <div class="row g-2">
                     @foreach($application->student->competencies as $comp)
                         <div class="col-md-6">
-                            <div class="border rounded p-2">
+                            <div class="sb-tile">
                                 <strong>{{ $comp->name }}</strong>
-                                <span class="badge bg-light text-dark ms-1">{{ $comp->category->label() }}</span>
-                                <span class="badge bg-primary">{{ $comp->proficiency_level->label() }}</span>
+                                <div class="d-flex flex-wrap gap-1 mt-2">
+                                    <span class="sb-tag">{{ $comp->category->label() }}</span>
+                                    <span class="sb-tag sb-tag--brand">{{ $comp->proficiency_level->label() }}</span>
+                                </div>
                             </div>
                         </div>
                     @endforeach
@@ -51,10 +52,10 @@
 
         @if($application->student->portfolios->count() || $application->student->certificates->count())
         <div class="card">
-            <div class="card-header bg-white"><h5 class="mb-0">Portfolio and certificates</h5></div>
+            <div class="card-header"><h2>Portfolio and certificates</h2></div>
             <div class="card-body">
                 @if($application->student->portfolios->count())
-                    <h6>Projects</h6>
+                    <h3 class="h6">Projects</h3>
                     <ul class="list-unstyled">
                         @foreach($application->student->portfolios as $p)
                             <li class="d-flex justify-content-between align-items-center border-bottom py-2">
@@ -74,7 +75,7 @@
                     </ul>
                 @endif
                 @if($application->student->certificates->count())
-                    <h6>Certificates</h6>
+                    <h3 class="h6">Certificates</h3>
                     <ul class="list-unstyled">
                         @foreach($application->student->certificates as $c)
                             @php($certificatePreviewUrl = $c instanceof \App\Models\Certificate
@@ -82,7 +83,7 @@
                                 : route('employer.applicants.portfolios.preview', [$application, $c], false))
                             <li class="d-flex justify-content-between align-items-center border-bottom py-2">
                         <span>{{ $c->title }}
-                            <small class="d-block text-success"><i class="bi bi-patch-check-fill" aria-hidden="true"></i> Verified</small>
+                            <small class="d-block" style="color: var(--sb-success-ink)"><i class="bi bi-patch-check-fill" aria-hidden="true"></i> Verified</small>
                             <small class="text-muted d-block">{{ $c instanceof \App\Models\Certificate ? ($c->issuer ?? 'Issuer not provided') : ($c->description ?: 'Issuer not provided') }}</small>
                         </span>
                         <button type="button" class="btn btn-sm btn-outline-primary employer-file-preview"
@@ -115,23 +116,23 @@
                         data-file-status="Available" data-file-reviewer="{{ $applicationResume->reviewerUser?->name ?? 'Not reviewed' }}"
                         data-file-reviewed-at="{{ $applicationResume->reviewed_at?->format('M d, Y') ?? 'Not reviewed' }}"
                         data-file-size="{{ $applicationResume->file_size_display }}" data-file-extension="pdf">
-                        <i class="bi bi-eye"></i> View resume
+                        <i class="bi bi-eye" aria-hidden="true"></i> View resume
                     </button>
-                    <a href="{{ route('employer.applicants.resume', $application, false) }}" class="btn btn-outline-primary"><i class="bi bi-file-earmark-pdf"></i> Download resume</a>
+                    <a href="{{ route('employer.applicants.resume', $application, false) }}" class="btn btn-outline-primary"><i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Download resume</a>
                 @endif
-                <a href="{{ route('messages.show', $application->student->user) }}" class="btn btn-outline-secondary"><i class="bi bi-chat"></i> Message Student</a>
+                <a href="{{ route('messages.show', $application->student->user) }}" class="btn btn-outline-secondary"><i class="bi bi-chat" aria-hidden="true"></i> Message Student</a>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-header bg-white"><h5 class="mb-0">Update Status</h5></div>
+            <div class="card-header"><h2>Update Status</h2></div>
             <div class="card-body">
                 @if($availableStatuses !== [])
                 <form method="POST" action="{{ route('employer.applicants.status', $application) }}" data-ajax-form data-application-status-form>
                     @csrf @method('PUT')
                     <div class="mb-3">
-                        <label class="form-label">Status</label>
-                        <select class="form-select @error('status') is-invalid @enderror" name="status" required>
+                        <label class="form-label" for="statusSelect">Status</label>
+                        <select id="statusSelect" class="form-select @error('status') is-invalid @enderror" name="status" required>
                             @foreach($availableStatuses as $status)
                                 <option value="{{ $status->value }}" {{ $application->status === $status ? 'selected' : '' }}>{{ $status->label() }}</option>
                             @endforeach
@@ -155,14 +156,14 @@
     </div>
 </div>
 
-<dialog id="employerFilePreview" class="p-0 border rounded" style="width:min(900px, calc(100% - 24px)); max-height:calc(100% - 24px); background:#0f2238; color:#e6f0fa;">
-    <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
-        <h2 class="h6 mb-0" id="employerPreviewTitle">File preview</h2>
-        <button type="button" class="btn-close btn-close-white" id="closeEmployerPreview" aria-label="Close"></button>
+<dialog id="employerFilePreview" class="sb-dialog" aria-labelledby="employerPreviewTitle">
+    <div class="sb-dialog-header">
+        <h2 id="employerPreviewTitle">File preview</h2>
+        <button type="button" class="btn-close" id="closeEmployerPreview" aria-label="Close"></button>
     </div>
-    <div class="row g-3 p-3">
+    <div class="row g-3 sb-dialog-body">
         <div class="col-lg-8" id="employerPreviewPane"></div>
-        <dl class="col-lg-4 small">
+        <dl class="col-lg-4">
             <dt>Category</dt><dd id="employerPreviewCategory"></dd>
             <dt>Issuer</dt><dd id="employerPreviewIssuer"></dd>
             <dt>Date uploaded</dt><dd id="employerPreviewUploaded"></dd>
@@ -170,7 +171,7 @@
             <dt>Reviewed by</dt><dd id="employerPreviewReviewer"></dd>
             <dt>Reviewed on</dt><dd id="employerPreviewReviewedAt"></dd>
             <dt>File size</dt><dd id="employerPreviewSize"></dd>
-            <a class="btn btn-primary" id="employerPreviewDownload" href hidden>Download</a>
+            <a class="btn btn-primary mt-3" id="employerPreviewDownload" href hidden>Download</a>
         </dl>
     </div>
 </dialog>
@@ -197,14 +198,12 @@
                 const frame = document.createElement('iframe');
                 frame.title = `Preview of ${data.fileName}`;
                 frame.src = data.previewUrl;
-                frame.style.cssText = 'width:100%;min-height:60vh;background:#0b1a2e;border:1px solid #1c3250;';
-                pane.append(frame);
+                                pane.append(frame);
             } else if (['jpg', 'jpeg', 'png'].includes(data.fileExtension)) {
                 const image = document.createElement('img');
                 image.src = data.previewUrl;
                 image.alt = data.fileName;
-                image.style.cssText = 'display:block;max-width:100%;max-height:60vh;margin:auto;';
-                pane.append(image);
+                                pane.append(image);
             } else {
                 const message = document.createElement('p');
                 message.textContent = `Preview not available for ${data.fileName} (${data.fileExtension || 'unknown type'}, ${data.fileSize}).`;
