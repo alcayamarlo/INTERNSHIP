@@ -49,6 +49,40 @@
             syncThemeButtons();
         });
 
+        // App sidebar: collapse to an icon rail (desktop/tablet) and close the drawer with Escape.
+        const rootElement = document.documentElement;
+        const collapseButton = document.querySelector('[data-sidebar-collapse]');
+        const syncSidebar = () => {
+            const collapsed = rootElement.classList.contains('sb-collapsed');
+            document.querySelectorAll('.sb-nav-link').forEach((link) => {
+                const text = link.querySelector('span:not(.sb-nav-badge)');
+                if (collapsed && text) {
+                    link.setAttribute('title', text.textContent.trim());
+                } else {
+                    link.removeAttribute('title');
+                }
+            });
+            if (collapseButton) {
+                collapseButton.setAttribute('aria-pressed', String(collapsed));
+                collapseButton.setAttribute('aria-label', collapsed ? 'Expand navigation' : 'Collapse navigation');
+            }
+        };
+        syncSidebar();
+        collapseButton?.addEventListener('click', () => {
+            const collapsed = rootElement.classList.toggle('sb-collapsed');
+            try {
+                window.localStorage.setItem('skillbridge-sidebar', collapsed ? 'collapsed' : 'expanded');
+            } catch {
+                // The choice applies until the page is closed.
+            }
+            syncSidebar();
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && document.getElementById('sidebar')?.classList.contains('show')) {
+                window.closeSidebar?.();
+            }
+        });
+
         const publicNavigation = document.getElementById('publicNavigation');
         const publicNavigationToggle = document.querySelector('[data-public-nav-toggle]');
         if (publicNavigation && publicNavigationToggle) {
@@ -90,7 +124,7 @@
 
         if (!reduceMotion && 'IntersectionObserver' in window) {
             const revealTargets = document.querySelectorAll(
-                '.skillbridge-public section, .skillbridge-app #sbContent .card, .skillbridge-app #sbContent [data-reveal]'
+                '.skillbridge-public section'
             );
             const revealObserver = new IntersectionObserver((entries, observer) => {
                 entries.forEach((entry) => {
@@ -103,6 +137,51 @@
             revealTargets.forEach((target) => {
                 target.classList.add('sb-reveal');
                 revealObserver.observe(target);
+            });
+        }
+
+        // Confirm dialog: <form data-confirm="Message"> or <button data-confirm="Message">.
+        // data-confirm-title and data-confirm-label customise the dialog.
+        const confirmElement = document.getElementById('sbConfirmModal');
+        if (confirmElement && window.bootstrap) {
+            const confirmModal = window.bootstrap.Modal.getOrCreateInstance(confirmElement);
+            const confirmTitle = confirmElement.querySelector('[data-confirm-title]');
+            const confirmMessage = confirmElement.querySelector('[data-confirm-message]');
+            const confirmOk = confirmElement.querySelector('[data-confirm-ok]');
+            let pending = null;
+
+            document.addEventListener('submit', (event) => {
+                if (!(event.target instanceof HTMLFormElement)) return;
+                const form = event.target;
+                if (form.dataset.confirmed === 'true') return;
+
+                const submitter = event.submitter instanceof HTMLElement ? event.submitter : null;
+                const source = submitter?.dataset.confirm ? submitter : (form.dataset.confirm ? form : null);
+                if (!source) return;
+
+                // Capture phase and stopImmediatePropagation keep ajax submit handlers
+                // (resources/js/app.js) from sending the request before it is confirmed.
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                pending = { form, submitter };
+                confirmTitle.textContent = source.dataset.confirmTitle || 'Please confirm';
+                confirmMessage.textContent = source.dataset.confirm;
+                confirmOk.textContent = source.dataset.confirmLabel || 'Delete';
+                confirmModal.show();
+            }, true);
+
+            confirmOk.addEventListener('click', () => {
+                if (!pending) return;
+                const { form, submitter } = pending;
+                pending = null;
+                form.dataset.confirmed = 'true';
+                confirmModal.hide();
+                form.requestSubmit(submitter && submitter.form === form ? submitter : undefined);
+                delete form.dataset.confirmed;
+            });
+
+            confirmElement.addEventListener('hidden.bs.modal', () => {
+                pending = null;
             });
         }
 

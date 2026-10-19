@@ -3,9 +3,11 @@
 @section('title', 'Edit certificate')
 
 @section('content')
-<div class="container py-4">
+<x-page-header title="Edit certificate" subtitle="Update the details or replace the file" />
+
+<div class="row justify-content-center">
+<div class="col-lg-8">
     <div class="card">
-        <div class="card-header"><h1 class="h5 mb-0">Edit certificate</h1></div>
         <div class="card-body">
             <form method="POST" action="{{ route('student.certificates.update', $certificate) }}" enctype="multipart/form-data" data-ajax-form>
                 @csrf
@@ -45,5 +47,6 @@
             </form>
         </div>
     </div>
+</div>
 </div>
 @endsection

@@ -14,6 +14,8 @@
         content="{{ csrf_token() }}"
     >
 
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/brand/favicon.svg') }}">
+
     <title>
         @yield('title', 'Authentication') — SKILL BRIDGE
     </title>
@@ -234,34 +236,11 @@
         }
 
 
-        .auth-brand-icon {
-
+        .auth-brand-logo {
+            display: block;
             width: 48px;
             height: 48px;
-
             flex-shrink: 0;
-
-            display: flex;
-
-            align-items: center;
-            justify-content: center;
-
-            border-radius: 13px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #08d9f5,
-                    #0891b2
-                );
-
-            color: #032333;
-
-            font-size: 21px;
-
-            box-shadow:
-                0 12px 30px
-                rgba(8,217,245,.12);
         }
 
 
@@ -708,14 +687,11 @@
             }
 
 
-            .auth-brand-icon {
-
+            .auth-brand-logo {
+                display: block;
                 width: 44px;
                 height: 44px;
-
-                border-radius: 12px;
-
-                font-size: 19px;
+                flex-shrink: 0;
             }
 
 
@@ -823,12 +799,11 @@
             }
 
 
-            .auth-brand-icon {
-
+            .auth-brand-logo {
+                display: block;
                 width: 40px;
                 height: 40px;
-
-                font-size: 17px;
+                flex-shrink: 0;
             }
 
 
@@ -891,6 +866,7 @@
 
     @stack('styles')
     <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/auth-photo.css') }}?v={{ @filemtime(public_path('css/auth-photo.css')) }}">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}"></script>
 
 </head>
@@ -900,10 +876,6 @@
 
 
     <div class="auth-shell">
-
-        <button type="button" class="sb-theme-toggle skillbridge-guest-theme-toggle" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false">
-            <i class="bi bi-moon-stars" aria-hidden="true"></i>
-        </button>
 
         {{-- =================================================
              LEFT BRANDING PANEL
@@ -918,7 +890,7 @@
 
                 <div class="auth-brand">
 
-                    <div class="auth-brand-icon" aria-hidden="true">S</div>
+                    <img class="auth-brand-logo" src="{{ asset('images/brand/skillbridge-logo-icon.svg') }}" width="48" height="48" alt="" aria-hidden="true">
 
                     <div class="auth-brand-name">
 

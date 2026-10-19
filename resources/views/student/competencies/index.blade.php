@@ -5,28 +5,29 @@
 @push('styles')
 <style>
     #competenciesOverview {
-        --co-page: #08131f;
-        --co-panel: #0b1a2e;
-        --co-card: #0f2238;
-        --co-raised: #12304d;
-        --co-border: rgba(142, 163, 187, .14);
-        --co-border-strong: rgba(142, 163, 187, .28);
-        --co-accent: #38bdf8;
-        --co-accent-hover: #5cc8fa;
-        --co-text-on-accent: #08131f;
-        --co-accent-soft: rgba(56, 189, 248, .14);
-        --co-accent-ring: rgba(56, 189, 248, .35);
-        --co-text: #e6edf5;
-        --co-secondary: #a9bad0;
-        --co-muted: #8ea3bb;
-        --co-verified: #86efac;
-        --co-verified-bg: rgba(20, 83, 45, .42);
-        --co-pending: #fcd34d;
-        --co-pending-bg: rgba(120, 53, 15, .4);
-        --co-rejected: #fda4af;
-        --co-rejected-bg: rgba(127, 29, 29, .42);
-        --co-neutral: #cbd5e1;
-        --co-neutral-bg: rgba(71, 85, 105, .35);
+        --co-page: var(--sb-canvas);
+        --co-panel: var(--sb-surface);
+        --co-card: var(--sb-surface);
+        --co-raised: var(--sb-surface-raised);
+        --co-border: var(--sb-border);
+        --co-border-strong: var(--sb-control-border);
+        --co-accent: var(--sb-brand);
+        --co-accent-text: var(--sb-brand-content);
+        --co-accent-hover: var(--sb-brand-deep);
+        --co-text-on-accent: #fff;
+        --co-accent-soft: var(--sb-red-soft);
+        --co-accent-ring: var(--sb-brand-ring);
+        --co-text: var(--sb-ink);
+        --co-secondary: var(--sb-text-soft);
+        --co-muted: var(--sb-muted);
+        --co-verified: var(--sb-success-ink);
+        --co-verified-bg: var(--sb-success-bg);
+        --co-pending: var(--sb-warning-ink);
+        --co-pending-bg: var(--sb-warning-bg);
+        --co-rejected: var(--sb-danger-ink);
+        --co-rejected-bg: var(--sb-danger-bg);
+        --co-neutral: var(--sb-text-soft);
+        --co-neutral-bg: var(--sb-surface-raised);
         --co-radius-control: 8px;
         --co-radius-card: 14px;
         --co-radius-panel: 18px;
@@ -84,15 +85,16 @@
 
     #competenciesOverview .co-title {
         color: var(--co-text);
-        font-size: 16px;
-        font-weight: 500;
-        letter-spacing: -.01em;
+        font-size: clamp(24px, 2.4vw, 30px);
+        font-weight: 700;
+        line-height: 1.15;
+        letter-spacing: -.035em;
     }
 
     #competenciesOverview .co-hint {
         color: var(--co-muted);
-        font-size: 13px;
-        margin-top: var(--co-space-1);
+        font-size: 15px;
+        margin-top: 6px;
     }
 
     #competenciesOverview .co-segment {
@@ -553,7 +555,7 @@
     #competenciesOverview .co-chip[aria-pressed="true"] {
         background: var(--co-accent-soft);
         border-color: var(--co-accent);
-        color: var(--co-accent);
+        color: var(--co-accent-text);
         font-weight: 500;
     }
 
@@ -570,7 +572,7 @@
     #competenciesOverview .co-chip[aria-pressed="true"]:focus-visible {
         background-color: var(--co-accent-soft);
         border-color: var(--co-accent);
-        color: var(--co-accent);
+        color: var(--co-accent-text);
     }
 
     #competenciesOverview .co-skill-list {
@@ -810,9 +812,9 @@
 
     #competenciesOverview .co-category-tag {
         background: var(--co-accent-soft);
-        border: 1px solid rgba(56, 189, 248, .24);
+        border: 1px solid var(--co-border-strong);
         border-radius: var(--co-radius-control);
-        color: var(--co-accent);
+        color: var(--co-accent-text);
         font-size: 12px;
         padding: var(--co-space-1) var(--co-space-2);
     }
@@ -1117,7 +1119,7 @@
                     <polygon id="radarPrimaryShape" class="co-primary-shape" points="200,150 200,150 200,150"></polygon>
                     <g id="radarVertices"></g>
                 </svg>
-                <div class="co-vertex-tooltip" id="radarVertexTooltip" role="tooltip"></div>
+                <div class="co-vertex-tooltip" id="radarVertexTooltip" role="tooltip" aria-hidden="true"></div>
                 <span class="co-sr-only" id="competencyChartAnnouncement" aria-live="polite" aria-atomic="true"></span>
                 @foreach(['technical' => 'Technical', 'soft' => 'Soft skills', 'certification' => 'Certification'] as $axis => $label)
                     @php

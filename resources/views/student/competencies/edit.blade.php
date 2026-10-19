@@ -3,10 +3,7 @@
 @section('title', 'Edit Competency')
 
 @section('content')
-<div class="mb-4">
-    <h1 class="h3 mb-1">Edit Competency</h1>
-    <p class="text-muted mb-0">Update your competency information</p>
-</div>
+<x-page-header title="Edit Competency" subtitle="Update your competency information" />
 
 <div class="row justify-content-center">
     <div class="col-lg-8">
@@ -17,7 +14,7 @@
                     @method('PUT')
 
                     <div class="mb-3">
-                        <label class="form-label">Competency Name *</label>
+                        <label class="form-label">Competency Name <span class="text-danger" aria-hidden="true">*</span></label>
                         <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name', $competency->name) }}" placeholder="e.g., JavaScript, Leadership, Project Management" required>
                         @error('name')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -25,11 +22,11 @@
                     </div>
 
                     <div class="alert alert-info small">This competency is earned from submitted evidence. Changing the evidence resets verification to Pending Verification.</div>
-                    <div class="row g-3 mb-3"><div class="col-md-6"><label class="form-label">Assessment / credential *</label><input name="assessment_name" class="form-control" value="{{ old('assessment_name', $competency->assessment_name) }}" required></div><div class="col-md-6"><label class="form-label">Replace evidence (optional)</label><input type="file" name="evidence" class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"></div></div>
+                    <div class="row g-3 mb-3"><div class="col-md-6"><label class="form-label">Assessment / credential <span class="text-danger" aria-hidden="true">*</span></label><input name="assessment_name" class="form-control" value="{{ old('assessment_name', $competency->assessment_name) }}" required></div><div class="col-md-6"><label class="form-label">Replace evidence (optional)</label><input type="file" name="evidence" class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"></div></div>
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Category *</label>
+                            <label class="form-label">Category <span class="text-danger" aria-hidden="true">*</span></label>
                             <select class="form-select @error('category') is-invalid @enderror" name="category" required>
                                 <option value="">Select a category</option>
                                 @foreach($categories as $category)
@@ -44,7 +41,7 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Proficiency Level *</label>
+                            <label class="form-label">Proficiency Level <span class="text-danger" aria-hidden="true">*</span></label>
                             <select class="form-select @error('proficiency_level') is-invalid @enderror" name="proficiency_level" required>
                                 <option value="">Select a level</option>
                                 @foreach($levels as $level)
@@ -102,12 +99,12 @@
 
         <!-- Danger Zone -->
         <div class="card mt-4 border-danger">
-            <div class="card-header bg-danger-light">
-                <h5 class="mb-0 text-danger"><i class="bi bi-exclamation-triangle"></i> Danger Zone</h5>
+            <div class="card-header">
+                <h2 class="text-danger"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> Danger Zone</h2>
             </div>
             <div class="card-body">
                 <p class="text-muted mb-3">Deleting this competency cannot be undone.</p>
-                <form method="POST" action="{{ route('student.competencies.destroy', $competency) }}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this competency? This action cannot be undone.');">
+                <form method="POST" action="{{ route('student.competencies.destroy', $competency) }}" class="d-inline" data-confirm="Are you sure you want to delete this competency? This action cannot be undone." data-confirm-title="Delete competency">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger">

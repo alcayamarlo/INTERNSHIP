@@ -19,26 +19,33 @@
     data-evidence-url="{{ route('coordinator.verification.evidence', ['type' => '__type__', 'id' => '__id__'], false) }}"
     data-download-url="{{ route('coordinator.verification.download', ['type' => '__type__', 'id' => '__id__'], false) }}"
 >
-    <header class="verification-heading">
-        <div>
-            <p class="verification-eyebrow">Student submissions</p>
-            <h1>Verification Queue</h1>
-            <p>Review each student's submissions. Verify with one click; give a reason only when you reject.</p>
-        </div>
-    </header>
+    <x-page-header
+        title="Verification Queue"
+        subtitle="Review each student's submissions. Verify with one click; give a reason only when you reject."
+        eyebrow="Student submissions"
+    />
 
-    <section class="verification-summary" aria-label="Verification summary">
-        <article class="summary-card summary-pending">
-            <span>Pending</span>
-            <strong id="countPending">0</strong>
+    <section class="sb-stat-grid" aria-label="Verification summary">
+        <article class="sb-stat">
+            <span class="sb-stat-icon sb-stat-icon--warning" aria-hidden="true"><i class="bi bi-hourglass-split"></i></span>
+            <div class="sb-stat-body">
+                <div class="sb-stat-label">Pending</div>
+                <div class="sb-stat-value" id="countPending">0</div>
+            </div>
         </article>
-        <article class="summary-card summary-verified">
-            <span>Verified</span>
-            <strong id="countVerified">0</strong>
+        <article class="sb-stat">
+            <span class="sb-stat-icon sb-stat-icon--success" aria-hidden="true"><i class="bi bi-patch-check"></i></span>
+            <div class="sb-stat-body">
+                <div class="sb-stat-label">Verified</div>
+                <div class="sb-stat-value" id="countVerified">0</div>
+            </div>
         </article>
-        <article class="summary-card summary-rejected">
-            <span>Rejected</span>
-            <strong id="countRejected">0</strong>
+        <article class="sb-stat">
+            <span class="sb-stat-icon" aria-hidden="true"><i class="bi bi-x-circle"></i></span>
+            <div class="sb-stat-body">
+                <div class="sb-stat-label">Rejected</div>
+                <div class="sb-stat-value" id="countRejected">0</div>
+            </div>
         </article>
     </section>
 
@@ -88,14 +95,14 @@
     </div>
 </main>
 
-<dialog id="verificationFilePreview" style="width:min(900px, calc(100% - 24px)); max-height:calc(100% - 24px); padding:0; border:1px solid #1c3250; border-radius:8px; background:#0f2238; color:#e6f0fa;">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid #1c3250;">
-        <h2 id="verificationPreviewTitle" style="margin:0;font-size:15px;">File preview</h2>
-        <button type="button" id="closeVerificationPreview" aria-label="Close preview" style="border:0;background:transparent;color:#e6f0fa;font-size:22px;">&times;</button>
+<dialog id="verificationFilePreview" class="sb-dialog" aria-labelledby="verificationPreviewTitle">
+    <div class="sb-dialog-header">
+        <h2 id="verificationPreviewTitle">File preview</h2>
+        <button type="button" class="btn-close" id="closeVerificationPreview" aria-label="Close preview"></button>
     </div>
-    <div style="display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:18px;padding:18px;">
-        <div id="verificationPreviewPane"></div>
-        <dl class="small">
+    <div class="row g-3 sb-dialog-body">
+        <div class="col-lg-8" id="verificationPreviewPane"></div>
+        <dl class="col-lg-4">
             <dt>Category</dt><dd id="verificationPreviewCategory"></dd>
             <dt>Issuer</dt><dd id="verificationPreviewIssuer"></dd>
             <dt>Date uploaded</dt><dd id="verificationPreviewUploaded"></dd>
@@ -103,7 +110,7 @@
             <dt>Reviewed by</dt><dd id="verificationPreviewReviewer"></dd>
             <dt>Reviewed on</dt><dd id="verificationPreviewReviewedAt"></dd>
             <dt>File size</dt><dd id="verificationPreviewSize"></dd>
-            <a class="btn btn-primary" id="verificationPreviewDownload" href>Download</a>
+            <a class="btn btn-primary mt-3" id="verificationPreviewDownload" href>Download</a>
         </dl>
     </div>
 </dialog>

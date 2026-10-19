@@ -11,26 +11,29 @@
 
 @section('content')
 <main class="coordinator-students-page" id="coordinatorStudentsPage">
-    <header class="coordinator-students-heading">
-        <div>
-            <p class="students-eyebrow">Student tracking</p>
-            <h1>Students</h1>
-            <p>Monitor student profiles and progress</p>
-        </div>
-    </header>
+    <x-page-header title="Students" subtitle="Monitor student profiles and progress" eyebrow="Student tracking" />
 
-    <section class="students-summary" aria-label="Student summary">
-        <article class="students-summary-card">
-            <span>Total students</span>
-            <strong id="studentsTotal">{{ number_format($summary['total']) }}</strong>
+    <section class="sb-stat-grid" aria-label="Student summary">
+        <article class="sb-stat">
+            <span class="sb-stat-icon" aria-hidden="true"><i class="bi bi-people"></i></span>
+            <div class="sb-stat-body">
+                <div class="sb-stat-label">Total students</div>
+                <div class="sb-stat-value" id="studentsTotal">{{ number_format($summary['total']) }}</div>
+            </div>
         </article>
-        <article class="students-summary-card completion-average-card">
-            <span>Average profile completion</span>
-            <strong id="studentsAverage">{{ $summary['average_completion'] }}%</strong>
+        <article class="sb-stat">
+            <span class="sb-stat-icon sb-stat-icon--success" aria-hidden="true"><i class="bi bi-graph-up-arrow"></i></span>
+            <div class="sb-stat-body">
+                <div class="sb-stat-label">Average profile completion</div>
+                <div class="sb-stat-value" id="studentsAverage">{{ $summary['average_completion'] }}%</div>
+            </div>
         </article>
-        <article class="students-summary-card completion-low-card">
-            <span>Below 50% completion</span>
-            <strong id="studentsBelow">{{ number_format($summary['below_50']) }}</strong>
+        <article class="sb-stat">
+            <span class="sb-stat-icon sb-stat-icon--warning" aria-hidden="true"><i class="bi bi-exclamation-circle"></i></span>
+            <div class="sb-stat-body">
+                <div class="sb-stat-label">Below 50% completion</div>
+                <div class="sb-stat-value" id="studentsBelow">{{ number_format($summary['below_50']) }}</div>
+            </div>
         </article>
     </section>
 

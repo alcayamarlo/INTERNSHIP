@@ -3,26 +3,23 @@
 @section('title', $skill->exists ? 'Edit Skill' : 'Add Skill')
 
 @section('content')
-<div class="mb-4">
-    <h1 class="h3 mb-1">{{ $skill->exists ? 'Edit Skill' : 'Add Skill' }}</h1>
-    <p class="text-muted mb-0">Skill names are unique without regard to case or repeated whitespace.</p>
-</div>
+<x-page-header :title="$skill->exists ? 'Edit Skill' : 'Add Skill'" subtitle="Skill names are unique without regard to case or repeated whitespace." />
 
-<div class="card">
+<div class="card" style="max-width: 720px;">
     <div class="card-body">
         <form method="POST" action="{{ $skill->exists ? route('employer.skills.update', $skill) : route('employer.skills.store') }}">
             @csrf
             @if($skill->exists) @method('PUT') @endif
 
             <div class="mb-3">
-                <label for="name" class="form-label">Skill name</label>
+                <label for="name" class="form-label">Skill name <span class="text-danger" aria-hidden="true">*</span></label>
                 <input id="name" name="name" value="{{ old('name', $skill->name) }}" class="form-control @error('name') is-invalid @enderror" maxlength="255" required>
                 @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                @error('name_normalized')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                @error('name_normalized')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
             </div>
 
             <div class="mb-3">
-                <label for="category_id" class="form-label">Category</label>
+                <label for="category_id" class="form-label">Category <span class="text-danger" aria-hidden="true">*</span></label>
                 <select id="category_id" name="category_id" class="form-select @error('category_id') is-invalid @enderror" required>
                     <option value="">Select a category</option>
                     @foreach($categories as $category)

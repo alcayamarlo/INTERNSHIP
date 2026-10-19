@@ -1,25 +1,34 @@
-{{-- Dashboard Statistic Card Component --}}
-<div class="card">
-    <div class="card-body">
-        <h6 class="card-title mb-3 text-muted small">{{ $title }}</h6>
-        <div class="d-flex align-items-end gap-3">
-            <div>
-                <div class="h3 mb-0" @if($color) style="color: {{ $color }}" @endif>
-                    {{ $value }}
-                </div>
+{{-- Dashboard statistic card. Props: title, value, icon, tone (success|warning|info), description, showProgress, href --}}
+@props([
+    'title',
+    'value',
+    'icon' => null,
+    'tone' => null,
+    'color' => null,
+    'description' => null,
+    'showProgress' => false,
+    'href' => null,
+])
+
+<{{ $href ? 'a' : 'div' }} @if($href) href="{{ $href }}" @endif class="sb-stat">
+    @if($icon)
+        <span class="sb-stat-icon {{ $tone ? 'sb-stat-icon--'.$tone : '' }}" aria-hidden="true">
+            <i class="bi {{ $icon }}"></i>
+        </span>
+    @endif
+
+    <div class="sb-stat-body">
+        <div class="sb-stat-label">{{ $title }}</div>
+        <div class="sb-stat-value" @if($color) style="color: {{ $color }}" @endif>{{ $value }}</div>
+
+        @if($showProgress)
+            <div class="progress" role="progressbar" aria-label="{{ $title }}" aria-valuenow="{{ (int) $value }}" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar" style="width: {{ max(0, min(100, (int) $value)) }}%"></div>
             </div>
-            @if($showProgress ?? false)
-                <div class="flex-grow-1">
-                    <div class="progress" style="height: 4px;">
-                        <div class="progress-bar" style="width: {{ $value }}%; background-color: {{ $color ?? '#2563EB' }}"></div>
-                    </div>
-                </div>
-            @endif
-        </div>
+        @endif
+
         @if($description)
-            <small class="text-muted d-block mt-2">
-                {!! $description !!}
-            </small>
+            <div class="sb-stat-hint">{!! $description !!}</div>
         @endif
     </div>
-</div>
+</{{ $href ? 'a' : 'div' }}>

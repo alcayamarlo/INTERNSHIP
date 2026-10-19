@@ -3,10 +3,7 @@
 @section('title', 'Add Competency')
 
 @section('content')
-<div class="mb-4">
-    <h1 class="h3 mb-1">Add New Competency</h1>
-    <p class="text-muted mb-0">Add a skill, certification, training, or other qualification</p>
-</div>
+<x-page-header title="Add New Competency" subtitle="Add a skill, certification, training, or other qualification" />
 
 <div class="row justify-content-center">
     <div class="col-lg-8">
@@ -16,7 +13,7 @@
                     @csrf
 
                     <div class="mb-3">
-                        <label class="form-label">Competency Name *</label>
+                        <label class="form-label">Competency Name <span class="text-danger" aria-hidden="true">*</span></label>
                         <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" placeholder="e.g., JavaScript, Leadership, Project Management" required>
                         @error('name')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -25,7 +22,7 @@
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Category *</label>
+                            <label class="form-label">Category <span class="text-danger" aria-hidden="true">*</span></label>
                             <select class="form-select @error('category') is-invalid @enderror" name="category" required>
                                 <option value="">Select a category</option>
                                 @foreach($categories as $category)
@@ -40,7 +37,7 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Earned Level *</label>
+                            <label class="form-label">Earned Level <span class="text-danger" aria-hidden="true">*</span></label>
                             <select class="form-select @error('proficiency_level') is-invalid @enderror" name="proficiency_level" required>
                                 <option value="">Select a level</option>
                                 @foreach($levels as $level)
@@ -56,7 +53,7 @@
                     </div>
 
                     <div class="alert alert-info small">Skills must be earned through an assessment, certification, or verified training. Self-declared skills are not accepted.</div>
-                    <div class="row g-3 mb-3"><div class="col-md-6"><label class="form-label">Assessment / credential *</label><input name="assessment_name" class="form-control" value="{{ old('assessment_name') }}" required placeholder="e.g. Python Skills Assessment"></div><div class="col-md-6"><label class="form-label">Evidence document *</label><input type="file" name="evidence" class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required><small class="text-muted">Pending verification until reviewed.</small></div></div>
+                    <div class="row g-3 mb-3"><div class="col-md-6"><label class="form-label">Assessment / credential <span class="text-danger" aria-hidden="true">*</span></label><input name="assessment_name" class="form-control" value="{{ old('assessment_name') }}" required placeholder="e.g. Python Skills Assessment"></div><div class="col-md-6"><label class="form-label">Evidence document <span class="text-danger" aria-hidden="true">*</span></label><input type="file" name="evidence" class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required><small class="text-muted">Pending verification until reviewed.</small></div></div>
 
                     <div class="mb-3">
                         <label class="form-label">Description</label>

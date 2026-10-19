@@ -3,14 +3,11 @@
 @section('title', $internship->exists ? 'Edit Internship' : 'New Internship')
 
 @section('content')
-<div class="mb-3">
-    <a href="{{ route('employer.internships.index') }}" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Back to Internships</a>
-</div>
+<x-page-header :title="$internship->exists ? 'Edit Internship' : 'Post New Internship'" subtitle="Describe the role and the competencies you are looking for.">
+    <a href="{{ route('employer.internships.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to Internships</a>
+</x-page-header>
 
 <div class="card">
-    <div class="card-header bg-white">
-        <h1 class="h4 mb-0">{{ $internship->exists ? 'Edit Internship' : 'Post New Internship' }}</h1>
-    </div>
     <div class="card-body">
         <form method="POST" action="{{ $internship->exists ? route('employer.internships.update', $internship) : route('employer.internships.store') }}">
             @csrf
@@ -18,19 +15,19 @@
 
             <div class="row g-3">
                 <div class="col-md-8">
-                    <label class="form-label">Title</label>
+                    <label class="form-label">Title <span class="text-danger" aria-hidden="true">*</span></label>
                     <input type="text" class="form-control @error('title') is-invalid @enderror" name="title" value="{{ old('title', $internship->title) }}" required>
                     @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Status</label>
+                    <label class="form-label">Status <span class="text-danger" aria-hidden="true">*</span></label>
                     <select class="form-select @error('status') is-invalid @enderror" name="status" required>
                         <option value="open" {{ old('status', $internship->status) === 'open' ? 'selected' : '' }}>Open</option>
                         <option value="closed" {{ old('status', $internship->status) === 'closed' ? 'selected' : '' }}>Closed</option>
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Work Setup</label>
+                    <label class="form-label">Work Setup <span class="text-danger" aria-hidden="true">*</span></label>
                     <select class="form-select @error('work_setup') is-invalid @enderror" name="work_setup" required>
                         @foreach($workSetups as $setup)
                             <option value="{{ $setup->value }}" {{ old('work_setup', $internship->work_setup?->value) === $setup->value ? 'selected' : '' }}>{{ $setup->label() }}</option>
@@ -50,7 +47,7 @@
                     <input type="number" step="0.01" min="0" class="form-control" name="allowance" value="{{ old('allowance', $internship->allowance) }}">
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Description</label>
+                    <label class="form-label">Description <span class="text-danger" aria-hidden="true">*</span></label>
                     <textarea class="form-control @error('description') is-invalid @enderror" name="description" rows="4" required>{{ old('description', $internship->description) }}</textarea>
                     @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
@@ -67,8 +64,8 @@
             <hr class="my-4">
 
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0">Competency Requirements</h5>
-                <button type="button" class="btn btn-sm btn-outline-primary" id="addRequirement"><i class="bi bi-plus-lg"></i> Add Requirement</button>
+                <h2 class="h6 mb-0">Competency Requirements</h2>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="addRequirement"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add Requirement</button>
             </div>
             <div id="requirementsContainer">
                 @php
@@ -89,14 +86,14 @@
                             </select>
                         </div>
                         <div class="col-md-1">
-                            <button type="button" class="btn btn-outline-danger w-100 remove-requirement"><i class="bi bi-x"></i></button>
+                            <button type="button" class="btn btn-outline-danger w-100 remove-requirement" aria-label="Remove requirement"><i class="bi bi-x" aria-hidden="true"></i></button>
                         </div>
                     </div>
                 @endforeach
             </div>
 
             <div class="mt-4">
-                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> {{ $internship->exists ? 'Update' : 'Post' }} Internship</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save" aria-hidden="true"></i> {{ $internship->exists ? 'Update' : 'Post' }} Internship</button>
             </div>
         </form>
     </div>
@@ -113,7 +110,7 @@
             </select>
         </div>
         <div class="col-md-1">
-            <button type="button" class="btn btn-outline-danger w-100 remove-requirement"><i class="bi bi-x"></i></button>
+            <button type="button" class="btn btn-outline-danger w-100 remove-requirement" aria-label="Remove requirement"><i class="bi bi-x" aria-hidden="true"></i></button>
         </div>
     </div>
 </template>

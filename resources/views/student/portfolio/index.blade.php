@@ -241,7 +241,7 @@
                             <a href="{{ route('student.portfolio.download', $item, false) }}" class="btn btn-outline-success" title="Download">
                                 <i class="bi bi-download"></i>
                             </a>
-                            <form method="POST" action="{{ route('student.portfolio.destroyPortfolio', $item) }}" class="d-inline" onsubmit="return confirm('Delete this file?');">
+                            <form method="POST" action="{{ route('student.portfolio.destroyPortfolio', $item) }}" class="d-inline" data-confirm="Delete this file?">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-outline-danger" title="Delete">

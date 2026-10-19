@@ -3,40 +3,25 @@
 @section('title', $portfolio->title)
 
 @section('content')
-<div class="mb-4">
-    <a href="{{ route('student.profile.edit') }}#portfolio" class="btn btn-sm btn-outline-secondary mb-3">
-        <i class="bi bi-chevron-left"></i> Back to Portfolio
-    </a>
-</div>
+<x-page-header :title="$portfolio->title" :subtitle="$portfolio->type->label().' · '.strtoupper(pathinfo($portfolio->file_path, PATHINFO_EXTENSION)).' file'">
+    <a href="{{ route('student.profile.edit') }}#portfolio" class="btn btn-outline-secondary"><i class="bi bi-chevron-left" aria-hidden="true"></i> Back to Portfolio</a>
+</x-page-header>
 
 <div class="row justify-content-center">
     <div class="col-lg-8">
         <div class="card">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-4">
-                    <div>
-                        <h1 class="h3 mb-2">{{ $portfolio->title }}</h1>
-                        <div class="mb-3">
-                            <span class="badge bg-light text-dark me-2">{{ $portfolio->type->label() }}</span>
-                            <span class="badge bg-success">
-                                <i class="bi bi-file"></i>
-                                {{ strtoupper(pathinfo($portfolio->file_path, PATHINFO_EXTENSION)) }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
                 @if($portfolio->description)
                     <div class="mb-4">
-                        <h5>Description</h5>
+                        <h2 class="h6">Description</h2>
                         <p class="text-muted">{{ $portfolio->description }}</p>
                     </div>
                 @endif
 
                 <!-- File Info -->
-                <div class="card bg-light mb-4">
-                    <div class="card-body">
-                        <h6 class="mb-3"><i class="bi bi-info-circle"></i> File Information</h6>
+                <div class="sb-tile mb-4">
+                    <div>
+                        <h3 class="mb-3"><i class="bi bi-info-circle" aria-hidden="true"></i> File Information</h3>
                         <dl class="row mb-0">
                             <dt class="col-sm-4">Filename:</dt>
                             <dd class="col-sm-8"><code>{{ pathinfo($portfolio->file_path, PATHINFO_BASENAME) }}</code></dd>
@@ -61,7 +46,7 @@
 
                 @if($isPreviewable)
                     <div class="mb-4">
-                        <h5 class="mb-3">Preview</h5>
+                        <h2 class="h6 mb-3">Preview</h2>
                         <div class="border rounded p-3 bg-light" style="min-height: 300px; display: flex; align-items: center; justify-content: center;">
                             @if(in_array($extension, ['jpg', 'jpeg', 'png']))
                                 <img src="{{ route('student.portfolio.preview', $portfolio, false) }}" alt="{{ $portfolio->title }}" class="img-fluid" style="max-height: 400px;" onerror="this.hidden=true;this.insertAdjacentHTML('afterend', '&lt;p&gt;Preview not available. The file could not be loaded.&lt;/p&gt;');">

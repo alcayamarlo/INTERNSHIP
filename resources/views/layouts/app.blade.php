@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/brand/favicon.svg') }}">
 
     <meta charset="UTF-8">
 
@@ -49,2131 +50,15 @@
     >
 
 
-    {{-- =========================================================
-         GLOBAL SKILL BRIDGE DESIGN
-    ========================================================== --}}
-
-    <style>
-
-        /* =====================================================
-           ROOT
-        ====================================================== */
-
-        :root {
-
-            --sb-cyan: #9ca9b8;
-            --sb-cyan-dark: #7f8fa1;
-            --sb-cyan-soft: rgba(156, 169, 184, .06);
-            --sb-cyan-border: rgba(156, 169, 184, .12);
-
-            --sb-bg: #0c1722;
-            --sb-bg-deep: #09141d;
-
-            --sb-sidebar: #101d2a;
-            --sb-sidebar-2: #132536;
-
-            --sb-card: #132536;
-            --sb-card-light: #172e3f;
-
-            --sb-border: rgba(148, 163, 184, .12);
-
-            --sb-text: #edf3f8;
-            --sb-text-soft: #dfeaf4;
-            --sb-muted: #9aa9ba;
-
-            --sb-green: #5bbf89;
-            --sb-red: #d96a7d;
-            --sb-yellow: #d4a94d;
-            --sb-blue: #7d9cc5;
-            --sb-purple: #9b8ec6;
-
-            --sb-sidebar-width: 270px;
-            --sb-topbar-height: 72px;
-
-            --sb-radius: 14px;
-        }
-
-        .sb-user-avatar img,
-        .sb-profile-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-
-        .sb-user-avatar [hidden],
-        .sb-profile-avatar [hidden] {
-            display: none !important;
-        }
-
-
-        /* =====================================================
-           RESET
-        ====================================================== */
-
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-        }
-
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-
-        body {
-
-            margin: 0;
-
-            min-height: 100vh;
-
-            font-family:
-                'Inter',
-                -apple-system,
-                BlinkMacSystemFont,
-                'Segoe UI',
-                sans-serif;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    var(--sb-bg-deep) 0%,
-                    var(--sb-bg) 45%,
-                    #081a2e 100%
-                );
-
-            color: var(--sb-text);
-
-            -webkit-font-smoothing: antialiased;
-        }
-
-
-        a {
-            text-decoration: none;
-        }
-
-
-        button,
-        input,
-        select,
-        textarea {
-            font-family: inherit;
-        }
-
-
-        /* =====================================================
-           PAGE BACKGROUND EFFECT
-        ====================================================== */
-
-        body::before {
-
-            content: "";
-
-            position: fixed;
-
-            top: -250px;
-            right: -250px;
-
-            width: 550px;
-            height: 550px;
-
-            border-radius: 50%;
-
-            background:
-                radial-gradient(
-                    circle,
-                    rgba(148, 163, 184, .04),
-                    transparent 68%
-                );
-
-            pointer-events: none;
-
-            z-index: -1;
-        }
-
-
-        /* =====================================================
-           SIDEBAR
-        ====================================================== */
-
-        .sb-sidebar {
-
-            position: fixed;
-
-            top: 0;
-            left: 0;
-
-            width: var(--sb-sidebar-width);
-            height: 100vh;
-
-            background:
-                linear-gradient(
-                    180deg,
-                    #0a1d32 0%,
-                    #071526 100%
-                );
-
-            border-right:
-                1px solid
-                var(--sb-border);
-
-            z-index: 1045;
-
-            overflow-y: auto;
-            overflow-x: hidden;
-
-            transition: transform .3s ease;
-        }
-
-
-        /* =====================================================
-           SIDEBAR SCROLLBAR
-        ====================================================== */
-
-        .sb-sidebar::-webkit-scrollbar {
-            width: 5px;
-        }
-
-
-        .sb-sidebar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-
-        .sb-sidebar::-webkit-scrollbar-thumb {
-
-            background:
-                rgba(148, 163, 184, .22);
-
-            border-radius: 20px;
-        }
-
-
-        .sb-sidebar::-webkit-scrollbar-thumb:hover {
-
-            background:
-                rgba(148, 163, 184, .38);
-        }
-
-
-        /* =====================================================
-           BRAND
-        ====================================================== */
-
-        .sb-brand {
-
-            height: 82px;
-
-            padding: 0 22px;
-
-            display: flex;
-            align-items: center;
-
-            gap: 11px;
-
-            border-bottom:
-                1px solid
-                var(--sb-border);
-        }
-
-
-        .sb-brand-icon {
-
-            width: 40px;
-            height: 40px;
-
-            flex-shrink: 0;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            border-radius: 11px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #b8c6d5,
-                    #8aa0b7
-                );
-
-            color: #102231;
-
-            font-size: 19px;
-
-            box-shadow: none;
-        }
-
-
-        .sb-brand-text {
-
-            display: flex;
-            flex-direction: column;
-
-            line-height: 1.1;
-        }
-
-
-        .sb-brand-title {
-
-            color: var(--sb-text);
-
-            font-size: 14px;
-
-            font-weight: 900;
-
-            letter-spacing: .02em;
-        }
-
-
-        .sb-brand-subtitle {
-
-            margin-top: 4px;
-
-            color: var(--sb-muted);
-
-            font-size: 7px;
-
-            font-weight: 700;
-
-            text-transform: uppercase;
-
-            letter-spacing: .12em;
-        }
-
-
-        /* =====================================================
-           SIDEBAR USER
-        ====================================================== */
-
-        .sb-user-card {
-
-            margin: 18px 15px;
-
-            padding: 12px;
-
-            display: flex;
-            align-items: center;
-
-            gap: 10px;
-
-            border:
-                1px solid
-                var(--sb-border);
-
-            border-radius: 12px;
-
-            background:
-                rgba(12,32,54,.65);
-        }
-
-
-        .sb-user-avatar {
-
-            width: 36px;
-            height: 36px;
-
-            flex-shrink: 0;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            overflow: hidden;
-            border-radius: 50%;
-
-            background:
-                rgba(8,217,245,.10);
-
-            border:
-                1px solid
-                rgba(8,217,245,.20);
-
-            color: var(--sb-cyan);
-
-            font-size: 15px;
-        }
-
-
-        .sb-user-info {
-            min-width: 0;
-        }
-
-
-        .sb-user-name {
-
-            color: var(--sb-text-soft);
-
-            font-size: 9px;
-
-            font-weight: 800;
-
-            white-space: nowrap;
-
-            overflow: hidden;
-
-            text-overflow: ellipsis;
-        }
-
-
-        .sb-user-role {
-
-            margin-top: 3px;
-
-            color: var(--sb-cyan);
-
-            font-size: 9px;
-
-            font-weight: 700;
-
-            text-transform: uppercase;
-
-            letter-spacing: .05em;
-        }
-
-
-        /* =====================================================
-           NAVIGATION LABEL
-        ====================================================== */
-
-        .sb-nav-label {
-
-            padding: 8px 22px 7px;
-
-            color: #5f7892;
-
-            font-size: 9px;
-
-            font-weight: 800;
-
-            text-transform: uppercase;
-
-            letter-spacing: .13em;
-        }
-
-
-        /* =====================================================
-           NAVIGATION
-        ====================================================== */
-
-        .sb-nav {
-            padding: 0 10px 15px;
-        }
-
-
-        .sb-nav-link {
-
-            position: relative;
-
-            min-height: 47px;
-
-            margin-bottom: 3px;
-
-            padding: 0 13px;
-
-            display: flex;
-            align-items: center;
-
-            gap: 11px;
-
-            border:
-                1px solid
-                transparent;
-
-            border-radius: 9px;
-
-            color: var(--sb-muted);
-
-            font-size: 12px;
-
-            font-weight: 650;
-
-            transition: all .2s ease;
-        }
-
-
-        .sb-nav-link i {
-
-            width: 19px;
-
-            color: #6f879e;
-
-            font-size: 16px;
-
-            text-align: center;
-
-            transition: .2s ease;
-        }
-
-
-        .sb-nav-link:hover {
-
-            color: var(--sb-text);
-
-            background:
-                rgba(148, 163, 184, .05);
-
-            border-color:
-                rgba(148, 163, 184, .08);
-        }
-
-
-        .sb-nav-link:hover i {
-            color: var(--sb-cyan);
-        }
-
-
-        .sb-nav-link.active {
-
-            color: var(--sb-cyan);
-
-            background:
-                rgba(148, 163, 184, .08);
-
-            border-color:
-                rgba(148, 163, 184, .12);
-        }
-
-
-        .sb-nav-link.active i {
-            color: var(--sb-cyan);
-        }
-
-
-        .sb-nav-link.active::before {
-
-            content: "";
-
-            position: absolute;
-
-            left: -10px;
-
-            top: 8px;
-            bottom: 8px;
-
-            width: 3px;
-
-            border-radius:
-                0 5px 5px 0;
-
-            background: var(--sb-cyan);
-
-            box-shadow: none;
-        }
-
-
-        .sb-nav-divider {
-
-            height: 1px;
-
-            margin: 12px 10px;
-
-            background: var(--sb-border);
-        }
-
-
-        /* =====================================================
-           SIDEBAR FOOTER
-        ====================================================== */
-
-        .sb-sidebar-footer {
-
-            margin: 10px 15px 20px;
-
-            padding: 12px;
-
-            border:
-                1px solid
-                var(--sb-border);
-
-            border-radius: 11px;
-
-            background:
-                rgba(4,17,31,.35);
-
-            text-align: center;
-        }
-
-
-        .sb-sidebar-footer small {
-
-            color: #607991;
-
-            font-size: 7px;
-        }
-
-
-        .sb-sidebar-footer strong {
-
-            display: block;
-
-            margin-top: 3px;
-
-            color: var(--sb-text-soft);
-
-            font-size: 8px;
-        }
-
-
-        /* =====================================================
-           MAIN
-        ====================================================== */
-
-        .sb-main {
-
-            margin-left:
-                var(--sb-sidebar-width);
-
-            width:
-                calc(100% - var(--sb-sidebar-width));
-
-            min-height: 100vh;
-
-            min-width: 0;
-
-            display: flex;
-
-            flex-direction: column;
-        }
-
-
-        /* =====================================================
-           TOPBAR
-        ====================================================== */
-
-        .sb-topbar {
-
-            position: sticky;
-
-            top: 0;
-
-            z-index: 1030;
-
-            width: 100%;
-
-            min-height: 92px;
-
-            padding: 16px 28px;
-
-            display: flex;
-
-            align-items: center;
-
-            gap: 20px;
-
-            box-sizing: border-box;
-
-            background:
-                rgba(7,20,38,.86);
-
-            border-bottom:
-                1px solid
-                var(--sb-border);
-
-            backdrop-filter: blur(18px);
-        }
-
-
-        /* =====================================================
-           MOBILE TOGGLE
-        ====================================================== */
-
-        .sb-mobile-toggle {
-
-            width: 38px;
-            height: 38px;
-
-            display: flex;
-
-            align-items: center;
-            justify-content: center;
-
-            border:
-                1px solid
-                var(--sb-border);
-
-            border-radius: 9px;
-
-            background: var(--sb-card);
-
-            color: var(--sb-text-soft);
-
-            cursor: pointer;
-        }
-
-
-        .sb-mobile-toggle:hover {
-
-            color: var(--sb-cyan);
-
-            border-color:
-                var(--sb-cyan-border);
-        }
-
-
-        /* =====================================================
-           PAGE TITLE
-        ====================================================== */
-
-        .sb-topbar-title {
-            flex: 0 1 260px;
-            min-width: 170px;
-        }
-
-
-        .sb-topbar-title strong {
-
-            display: block;
-
-            color: var(--sb-text);
-
-            font-size: 17px;
-
-            font-weight: 800;
-        }
-
-
-        .sb-topbar-title span {
-
-            display: block;
-
-            margin-top: 4px;
-
-            color: var(--sb-muted);
-
-            font-size: 12px;
-        }
-
-
-        /* =====================================================
-           SEARCH
-        ====================================================== */
-
-        .sb-search {
-
-            flex: 1 1 auto;
-
-            width: min(100%, 620px);
-
-            max-width: 620px;
-
-            margin-left: 15px;
-        }
-
-
-        .sb-search .input-group {
-            height: 56px;
-        }
-
-
-        .sb-search .input-group-text {
-
-            padding-left: 16px;
-
-            padding-right: 10px;
-
-            border:
-                1px solid
-                var(--sb-border) !important;
-
-            border-right:
-                none !important;
-
-            background:
-                var(--sb-card) !important;
-
-            color: var(--sb-muted);
-
-            font-size: 18px;
-        }
-
-
-        .sb-search .form-control {
-
-            border:
-                1px solid
-                var(--sb-border);
-
-            border-left: none;
-
-            background: var(--sb-card);
-
-            color: var(--sb-text);
-
-            font-size: 15px;
-
-            box-shadow: none;
-        }
-
-
-        .sb-search .form-control::placeholder {
-            color: #5e748a;
-        }
-
-
-        .sb-search .form-control:focus {
-
-            border-color:
-                var(--sb-cyan);
-
-            box-shadow:
-                0 0 0 3px
-                rgba(8,217,245,.05);
-        }
-
-
-        /* =====================================================
-           TOPBAR ACTIONS
-        ====================================================== */
-
-        .sb-top-actions {
-
-            margin-left: auto;
-
-            display: flex;
-
-            align-items: center;
-
-            gap: 10px;
-        }
-
-
-        .sb-top-action {
-
-            position: relative;
-
-            width: 52px;
-            height: 52px;
-
-            display: flex;
-
-            align-items: center;
-            justify-content: center;
-
-            border:
-                1px solid
-                var(--sb-border);
-
-            border-radius: 12px;
-
-            background:
-                rgba(12,32,54,.65);
-
-            color: var(--sb-muted);
-
-            transition: .2s ease;
-        }
-
-
-        .sb-top-action:hover {
-
-            color: var(--sb-cyan);
-
-            border-color:
-                var(--sb-cyan-border);
-
-            background:
-                var(--sb-cyan-soft);
-        }
-
-
-        .sb-notification-badge {
-
-            position: absolute;
-
-            top: -4px;
-            right: -4px;
-
-            min-width: 16px;
-            height: 16px;
-
-            padding: 0 4px;
-
-            display: flex;
-
-            align-items: center;
-            justify-content: center;
-
-            border:
-                2px solid
-                var(--sb-bg);
-
-            border-radius: 20px;
-
-            background: var(--sb-red);
-
-            color: white;
-
-            font-size: 6px;
-
-            font-weight: 800;
-        }
-
-
-        /* =====================================================
-           PROFILE BUTTON
-        ====================================================== */
-
-        .sb-profile-btn {
-
-            min-height: 52px;
-
-            margin-left: 5px;
-
-            padding: 7px 12px 7px 8px;
-
-            display: flex;
-
-            align-items: center;
-
-            gap: 10px;
-
-            border:
-                1px solid
-                var(--sb-border);
-
-            border-radius: 12px;
-
-            background:
-                rgba(12,32,54,.65);
-
-            color: var(--sb-text-soft);
-
-            cursor: pointer;
-
-            transition: .2s ease;
-        }
-
-
-        .sb-profile-btn:hover {
-
-            border-color:
-                var(--sb-cyan-border);
-
-            background:
-                rgba(8,217,245,.05);
-
-            color: var(--sb-text);
-        }
-
-
-        /*
-         * IMPORTANT:
-         *
-         * We intentionally DO NOT use:
-         *
-         * .dropdown-toggle
-         *
-         * because Bootstrap automatically creates
-         * its own arrow. We already have our own
-         * Bootstrap Icons chevron below.
-         */
-
-
-        .sb-profile-btn::after {
-            display: none !important;
-        }
-
-
-        .sb-profile-avatar {
-
-            width: 38px;
-            height: 38px;
-
-            display: flex;
-
-            align-items: center;
-            justify-content: center;
-
-            overflow: hidden;
-            border-radius: 50%;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    rgba(8,217,245,.2),
-                    rgba(8,217,245,.05)
-                );
-
-            color: var(--sb-cyan);
-
-            font-size: 16px;
-        }
-
-
-        .sb-profile-info {
-
-            text-align: left;
-
-            line-height: 1.1;
-        }
-
-
-        .sb-profile-name {
-
-            display: block;
-
-            max-width: 150px;
-
-            overflow: hidden;
-
-            text-overflow: ellipsis;
-
-            white-space: nowrap;
-
-            color: var(--sb-text);
-
-            font-size: 12px;
-
-            font-weight: 800;
-        }
-
-
-        .sb-profile-role {
-
-            display: block;
-
-            margin-top: 4px;
-
-            color: var(--sb-muted);
-
-            font-size: 9px;
-
-            text-transform: uppercase;
-
-            letter-spacing: .06em;
-        }
-
-
-        /* =====================================================
-           PROFILE CHEVRON
-        ====================================================== */
-
-        .sb-profile-btn > .bi-chevron-down {
-
-            font-size: 12px;
-
-            color: var(--sb-muted);
-
-            transition: transform .2s ease;
-        }
-
-
-        .sb-profile-btn[aria-expanded="true"]
-        > .bi-chevron-down {
-
-            transform: rotate(180deg);
-
-            color: var(--sb-cyan);
-        }
-
-
-        /* =====================================================
-           DROPDOWN
-        ====================================================== */
-
-        .sb-dropdown {
-
-            min-width: 260px;
-
-            padding: 12px;
-
-            border:
-                1px solid
-                var(--sb-border);
-
-            border-radius: 14px;
-
-            background: #0b2036;
-
-            box-shadow:
-                0 20px 45px
-                rgba(0,0,0,.35);
-        }
-
-
-        .sb-dropdown .dropdown-header {
-
-            padding: 12px 12px 10px;
-
-            color: var(--sb-muted);
-
-            font-size: 11px;
-        }
-
-
-        .sb-dropdown .dropdown-item {
-
-            padding: 12px 12px;
-
-            border-radius: 9px;
-
-            color: var(--sb-text-soft);
-
-            font-size: 13px;
-        }
-
-
-        .sb-dropdown .dropdown-item:hover {
-
-            background:
-                rgba(8,217,245,.07);
-
-            color: var(--sb-cyan);
-        }
-
-
-        .sb-dropdown .dropdown-divider {
-
-            border-color:
-                var(--sb-border);
-        }
-
-
-        /* =====================================================
-           CONTENT
-        ====================================================== */
-
-        .sb-content {
-
-            width: 100%;
-
-            max-width: 1600px;
-
-            margin: 0 auto;
-
-            padding: 30px;
-
-            flex: 1;
-        }
-
-
-        /* =====================================================
-           PAGE HEADER
-        ====================================================== */
-
-        .sb-page-header {
-            margin-bottom: 25px;
-        }
-
-
-        .sb-page-header .eyebrow {
-
-            display: inline-flex;
-
-            align-items: center;
-
-            gap: 5px;
-
-            margin-bottom: 8px;
-
-            color: var(--sb-cyan);
-
-            font-size: 7px;
-
-            font-weight: 800;
-
-            text-transform: uppercase;
-
-            letter-spacing: .1em;
-        }
-
-
-        .sb-page-header h1 {
-
-            margin: 0;
-
-            color: var(--sb-text);
-
-            font-size:
-                clamp(22px, 2.3vw, 30px);
-
-            font-weight: 850;
-
-            letter-spacing: -.035em;
-        }
-
-
-        .sb-page-header p {
-
-            margin: 6px 0 0;
-
-            color: var(--sb-muted);
-
-            font-size: 9px;
-        }
-
-
-        /* =====================================================
-           BOOTSTRAP OVERRIDES
-        ====================================================== */
-
-        .text-muted {
-            color: var(--sb-muted) !important;
-        }
-
-
-        .text-primary {
-            color: var(--sb-cyan) !important;
-        }
-
-
-        /* =====================================================
-           CARDS
-        ====================================================== */
-
-        .card {
-
-            overflow: hidden;
-
-            border:
-                1px solid
-                var(--sb-border);
-
-            border-radius:
-                var(--sb-radius);
-
-            background:
-                linear-gradient(
-                    145deg,
-                    rgba(12,32,54,.96),
-                    rgba(7,21,38,.96)
-                );
-
-            color: var(--sb-text);
-
-            box-shadow:
-                0 12px 35px
-                rgba(0,0,0,.12);
-
-            transition:
-                border-color .2s ease,
-                transform .2s ease,
-                box-shadow .2s ease;
-        }
-
-
-        .card:hover {
-
-            border-color:
-                rgba(8,217,245,.18);
-
-            box-shadow:
-                0 16px 40px
-                rgba(0,0,0,.18);
-        }
-
-
-        .card-header {
-
-            padding: 15px 18px;
-
-            border-bottom:
-                1px solid
-                var(--sb-border);
-
-            background:
-                rgba(8,217,245,.035) !important;
-
-            color: var(--sb-text);
-        }
-
-
-        .card-header h5,
-        .card-header h6 {
-
-            margin: 0;
-
-            color: var(--sb-text);
-
-            font-size: 10px;
-
-            font-weight: 800;
-        }
-
-
-        .card-body {
-            color: var(--sb-text-soft);
-        }
-
-
-        /* =====================================================
-           STAT CARDS
-        ====================================================== */
-
-        .stat-card {
-
-            position: relative;
-
-            min-height: 120px;
-        }
-
-
-        .stat-card::before {
-
-            content: "";
-
-            position: absolute;
-
-            top: 0;
-            left: 0;
-            right: 0;
-
-            height: 2px;
-
-            background:
-                linear-gradient(
-                    90deg,
-                    transparent,
-                    var(--sb-cyan),
-                    transparent
-                );
-        }
-
-
-        .stat-card .card-body {
-
-            padding: 18px;
-
-            display: flex;
-
-            flex-direction: column;
-
-            justify-content: center;
-        }
-
-
-        .stat-card .stat-icon {
-
-            width: 36px;
-            height: 36px;
-
-            margin-bottom: 10px;
-
-            display: flex;
-
-            align-items: center;
-            justify-content: center;
-
-            border-radius: 9px;
-
-            background:
-                rgba(8,217,245,.08);
-
-            color: var(--sb-cyan);
-        }
-
-
-        .stat-card .stat-label {
-
-            color: var(--sb-muted);
-
-            font-size: 7px;
-
-            font-weight: 750;
-
-            text-transform: uppercase;
-
-            letter-spacing: .07em;
-        }
-
-
-        .stat-card h3 {
-
-            margin: 5px 0 0;
-
-            color: var(--sb-text);
-
-            font-size: 24px;
-
-            font-weight: 850;
-        }
-
-
-        .stat-card.accent {
-
-            border-color:
-                rgba(8,217,245,.18);
-
-            background:
-                linear-gradient(
-                    145deg,
-                    rgba(8,217,245,.08),
-                    rgba(12,32,54,.95)
-                );
-        }
-
-
-        /* =====================================================
-           BUTTONS
-        ====================================================== */
-
-        .btn {
-
-            border-radius: 8px;
-
-            font-size: 8px;
-
-            font-weight: 750;
-        }
-
-
-        .btn-primary {
-
-            border: none;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    var(--sb-cyan),
-                    var(--sb-cyan-dark)
-                );
-
-            color: #03212e;
-        }
-
-
-        .btn-primary:hover {
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #19def7,
-                    #08abc5
-                );
-
-            color: #03212e;
-
-            transform: translateY(-1px);
-
-            box-shadow:
-                0 8px 20px
-                rgba(8,217,245,.15);
-        }
-
-
-        .btn-outline-primary {
-
-            border:
-                1px solid
-                rgba(8,217,245,.3);
-
-            color: var(--sb-cyan);
-
-            background: transparent;
-        }
-
-
-        .btn-outline-primary:hover {
-
-            border-color: var(--sb-cyan);
-
-            background:
-                rgba(8,217,245,.08);
-
-            color: var(--sb-cyan);
-        }
-
-
-        /* =====================================================
-           TABLES
-        ====================================================== */
-
-        .table {
-
-            margin: 0;
-
-            color: var(--sb-text-soft);
-
-            --bs-table-bg: transparent;
-
-            --bs-table-color:
-                var(--sb-text-soft);
-
-            --bs-table-border-color:
-                var(--sb-border);
-        }
-
-
-        .table thead {
-
-            background:
-                rgba(4,17,31,.55);
-        }
-
-
-        .table thead th {
-
-            padding: 11px 14px;
-
-            color: var(--sb-muted);
-
-            border-color: var(--sb-border);
-
-            font-size: 7px;
-
-            font-weight: 800;
-
-            text-transform: uppercase;
-
-            letter-spacing: .05em;
-        }
-
-
-        .table tbody td {
-
-            padding: 12px 14px;
-
-            color: var(--sb-text-soft);
-
-            border-color: var(--sb-border);
-
-            font-size: 8px;
-
-            vertical-align: middle;
-        }
-
-
-        .table tbody tr {
-            transition: background .2s ease;
-        }
-
-
-        .table tbody tr:hover {
-
-            background:
-                rgba(8,217,245,.035);
-        }
-
-
-        /* =====================================================
-           LIST GROUP
-        ====================================================== */
-
-        .list-group-item {
-
-            border-color: var(--sb-border);
-
-            background: transparent;
-
-            color: var(--sb-text-soft);
-        }
-
-
-        /* =====================================================
-           BADGES
-        ====================================================== */
-
-        .badge {
-
-            padding: 5px 8px;
-
-            border-radius: 6px;
-
-            font-size: 7px;
-
-            font-weight: 750;
-        }
-
-
-        /* =====================================================
-           FORMS
-        ====================================================== */
-
-        .form-control,
-        .form-select {
-
-            min-height: 40px;
-
-            border:
-                1px solid
-                var(--sb-border);
-
-            border-radius: 8px;
-
-            background:
-                rgba(4,17,31,.65);
-
-            color: var(--sb-text);
-
-            font-size: 9px;
-        }
-
-
-        .form-control::placeholder {
-            color: #617890;
-        }
-
-
-        .form-control:focus,
-        .form-select:focus {
-
-            border-color:
-                var(--sb-cyan);
-
-            background:
-                rgba(4,17,31,.85);
-
-            color: var(--sb-text);
-
-            box-shadow:
-                0 0 0 3px
-                rgba(8,217,245,.06);
-        }
-
-
-        .form-select option {
-
-            background: #0b2036;
-
-            color: white;
-        }
-
-
-        .form-label {
-
-            margin-bottom: 6px;
-
-            color: var(--sb-text-soft);
-
-            font-size: 8px;
-
-            font-weight: 750;
-        }
-
-
-        /* =====================================================
-           ALERTS
-        ====================================================== */
-
-        .alert {
-
-            border:
-                1px solid
-                var(--sb-border);
-
-            border-radius: 10px;
-
-            background: var(--sb-card);
-
-            color: var(--sb-text-soft);
-
-            font-size: 8px;
-        }
-
-
-        .alert-success {
-
-            border-left:
-                3px solid
-                var(--sb-green);
-        }
-
-
-        .alert-danger {
-
-            border-left:
-                3px solid
-                var(--sb-red);
-        }
-
-
-        .alert-info {
-
-            border-left:
-                3px solid
-                var(--sb-blue);
-        }
-
-
-        .alert-warning {
-
-            border-left:
-                3px solid
-                var(--sb-yellow);
-        }
-
-
-        .btn-close {
-
-            filter: invert(1);
-
-            opacity: .5;
-        }
-
-
-        /* =====================================================
-           TOAST
-        ====================================================== */
-
-        .toast-container {
-
-            position: fixed;
-
-            right: 22px;
-
-            bottom: 22px;
-
-            z-index: 1090;
-        }
-
-
-        .toast {
-
-            min-width: 280px;
-
-            border:
-                1px solid
-                var(--sb-border);
-
-            border-radius: 10px;
-
-            background: #0c2036;
-
-            color: var(--sb-text);
-
-            box-shadow:
-                0 15px 35px
-                rgba(0,0,0,.3);
-        }
-
-
-        .toast-body {
-
-            color: var(--sb-text-soft);
-        }
-
-
-        /* =====================================================
-           MOBILE OVERLAY
-        ====================================================== */
-
-        .sb-sidebar-overlay {
-
-            display: none;
-
-            position: fixed;
-
-            inset: 0;
-
-            background:
-                rgba(0,0,0,.55);
-
-            z-index: 1040;
-
-            backdrop-filter: blur(2px);
-        }
-
-
-        .sb-sidebar-overlay.show {
-            display: block;
-        }
-
-
-        /* =====================================================
-           RESPONSIVE
-        ====================================================== */
-
-        @media (max-width: 1199px) {
-
-            .sb-content {
-                padding: 25px;
+    {{-- Collapsed-sidebar preference is applied before first paint to avoid a layout jump. --}}
+    <script>
+        try {
+            var sbSidebar = localStorage.getItem('skillbridge-sidebar');
+            if (sbSidebar === 'collapsed' || (sbSidebar === null && window.innerWidth >= 992 && window.innerWidth < 1200)) {
+                document.documentElement.classList.add('sb-collapsed');
             }
-
-
-            .sb-topbar {
-                padding: 0 22px;
-            }
-
-            .sb-search {
-                max-width: 520px;
-            }
-
-        }
-
-
-        @media (min-width: 1440px) {
-
-            .sb-content {
-                padding-left: 42px;
-                padding-right: 42px;
-            }
-
-        }
-
-
-        @media (max-width: 991.98px) {
-
-            .sb-sidebar {
-
-                transform:
-                    translateX(-100%);
-
-                box-shadow:
-                    15px 0 40px
-                    rgba(0,0,0,.35);
-            }
-
-
-            .sb-sidebar.show {
-
-                transform:
-                    translateX(0);
-            }
-
-
-            .sb-main {
-
-                margin-left: 0;
-            }
-
-
-            .sb-mobile-toggle {
-
-                display: flex !important;
-            }
-
-
-            .sb-topbar-title {
-
-                display: none;
-            }
-
-
-            .sb-search {
-
-                margin-left: 0;
-            }
-
-        }
-
-
-        @media (max-width: 767px) {
-
-            .sb-topbar {
-
-                min-height: 64px;
-
-                padding: 0 15px;
-
-                gap: 8px;
-            }
-
-
-            .sb-search {
-                display: none;
-            }
-
-
-            .sb-content {
-
-                padding:
-                    20px 15px 30px;
-            }
-
-
-            .sb-profile-info {
-                display: none;
-            }
-
-
-            .sb-profile-btn {
-                padding-right: 5px;
-            }
-
-
-            .sb-top-actions {
-                gap: 4px;
-            }
-
-
-            .sb-top-action {
-
-                width: 35px;
-                height: 35px;
-            }
-
-
-            .sb-page-header h1 {
-                font-size: 22px;
-            }
-
-        }
-
-
-        @media (max-width: 480px) {
-
-            .sb-content {
-
-                padding:
-                    17px 12px 25px;
-            }
-
-
-            .sb-topbar {
-
-                padding: 0 12px;
-            }
-
-
-            .sb-top-action {
-
-                width: 33px;
-                height: 33px;
-            }
-
-
-            .sb-profile-avatar {
-
-                width: 28px;
-                height: 28px;
-            }
-
-
-            .card {
-                border-radius: 11px;
-            }
-
-
-            .toast-container {
-
-                right: 12px;
-
-                left: 12px;
-
-                bottom: 12px;
-            }
-
-
-            .toast {
-
-                min-width: 0;
-
-                width: 100%;
-            }
-
-        }
-
-
-        /* =====================================================
-           SCROLLBAR
-        ====================================================== */
-
-        ::-webkit-scrollbar {
-
-            width: 7px;
-
-            height: 7px;
-        }
-
-
-        ::-webkit-scrollbar-track {
-
-            background:
-                var(--sb-bg-deep);
-        }
-
-
-        ::-webkit-scrollbar-thumb {
-
-            background:
-                rgba(141,164,189,.2);
-
-            border-radius: 20px;
-        }
-
-
-        ::-webkit-scrollbar-thumb:hover {
-
-            background:
-                rgba(8,217,245,.35);
-        }
-
-
-        /* =====================================================
-           SIDEBAR VISUAL POLISH
-        ====================================================== */
-
-        .sb-sidebar {
-            background:
-                linear-gradient(180deg, #0a2135 0%, #071526 48%, #061321 100%);
-
-            border-right-color:
-                rgba(90, 170, 210, .2);
-
-            box-shadow:
-                10px 0 35px rgba(1, 8, 17, .16);
-        }
-
-
-        .sb-sidebar::after {
-            content: "";
-
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 2px;
-            height: 86%;
-
-            background:
-                linear-gradient(180deg, rgba(8,217,245,.75), rgba(8,217,245,.12), transparent);
-
-            opacity: .7;
-            pointer-events: none;
-        }
-
-
-        .sb-brand {
-            height: 104px;
-            padding: 0 30px;
-            gap: 15px;
-            border-bottom-color: rgba(117, 176, 215, .12);
-        }
-
-
-        .sb-brand-icon {
-            width: 52px;
-            height: 52px;
-            border-radius: 15px;
-            background: linear-gradient(135deg, #19def7, #079abb);
-            font-size: 23px;
-            box-shadow: 0 10px 28px rgba(8,217,245,.22);
-        }
-
-
-        .sb-brand-title {
-            font-size: 18px;
-            letter-spacing: .01em;
-        }
-
-
-        .sb-brand-subtitle {
-            margin-top: 6px;
-            color: #8ba9c2;
-            font-size: 8px;
-            letter-spacing: .16em;
-        }
-
-
-        .sb-user-card {
-            margin: 27px 22px 28px;
-            padding: 18px;
-            gap: 14px;
-            border-color: rgba(117, 176, 215, .18);
-            border-radius: 17px;
-            background: linear-gradient(135deg, rgba(14, 39, 61, .86), rgba(8, 25, 42, .7));
-            box-shadow: inset 0 1px 0 rgba(255,255,255,.025), 0 8px 24px rgba(1, 9, 18, .12);
-        }
-
-
-        .sb-user-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 13px;
-            background: rgba(8,217,245,.08);
-            border-color: rgba(8,217,245,.32);
-            font-size: 18px;
-        }
-
-
-        .sb-user-name {
-            color: #e6f3fc;
-            font-size: 11px;
-        }
-
-
-        .sb-user-role {
-            margin-top: 5px;
-            font-size: 8px;
-            letter-spacing: .1em;
-        }
-
-
-        .sb-nav {
-            padding: 0 15px 20px;
-        }
-
-
-        .sb-nav-label {
-            padding: 8px 25px 11px;
-            color: #6f8ca5;
-            font-size: 8px;
-            letter-spacing: .18em;
-        }
-
-
-        .sb-nav-link {
-            min-height: 54px;
-            margin-bottom: 4px;
-            padding: 0 17px;
-            gap: 15px;
-            border-radius: 13px;
-            color: #91abc0;
-            font-size: 11px;
-            font-weight: 650;
-        }
-
-
-        .sb-nav-link i {
-            width: 22px;
-            color: #8199ae;
-            font-size: 17px;
-        }
-
-
-        .sb-nav-link:hover {
-            color: #e5f7ff;
-            background: rgba(8,217,245,.07);
-            border-color: rgba(8,217,245,.1);
-            transform: translateX(2px);
-        }
-
-
-        .sb-nav-link.active {
-            color: #2ee0f7;
-            background: linear-gradient(90deg, rgba(8,217,245,.16), rgba(8,217,245,.07));
-            border-color: rgba(8,217,245,.2);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,.025), 0 8px 20px rgba(1, 11, 21, .14);
-        }
-
-
-        .sb-nav-link.active::before {
-            left: -15px;
-            top: 12px;
-            bottom: 12px;
-            width: 4px;
-        }
-
-
-        .sb-nav-divider {
-            margin: 18px 15px;
-            background: rgba(117,176,215,.13);
-        }
-
-
-        .sb-sidebar-footer {
-            margin: 16px 22px 24px;
-            padding: 15px;
-            border-color: rgba(117,176,215,.13);
-            border-radius: 13px;
-            background: rgba(4,17,31,.28);
-        }
-
-
-        .sb-sidebar-footer small {
-            font-size: 8px;
-            letter-spacing: .1em;
-        }
-
-
-        .sb-sidebar-footer strong {
-            margin-top: 5px;
-            font-size: 10px;
-        }
-
-    </style>
+        } catch (error) {}
+    </script>
 
 
     @stack('styles')
@@ -2214,6 +99,66 @@
 
     $profilePictureUrl = \App\Support\PublicFileUrl::relative($profilePicture);
 
+    $unread = $currentUser?->appNotifications()->whereNull('read_at')->whereNull('archived_at')->count() ?? 0;
+
+    // [route name, active pattern, icon, label]
+    $navGroups = match (true) {
+        (bool) $currentUser?->isRole(UserRole::Student) => [
+            'Overview' => [
+                ['student.dashboard', 'student.dashboard', 'bi-grid-1x2', 'Dashboard'],
+                ['student.profile.edit', 'student.profile.*', 'bi-person-vcard', 'My Profile'],
+            ],
+            'Career' => [
+                ['student.competencies.index', 'student.competencies.*', 'bi-award', 'Competencies'],
+                ['student.internships.index', 'student.internships.*', 'bi-briefcase', 'Internships'],
+                ['student.applications.index', 'student.applications.*', 'bi-send', 'My Applications'],
+                ['student.resume.index', 'student.resume.*', 'bi-file-earmark-person', 'Resume'],
+            ],
+        ],
+        (bool) $currentUser?->isRole(UserRole::Employer) => [
+            'Overview' => [
+                ['employer.dashboard', 'employer.dashboard', 'bi-grid-1x2', 'Dashboard'],
+                ['employer.profile.edit', 'employer.profile.*', 'bi-building', 'Company Profile'],
+            ],
+            'Hiring' => [
+                ['employer.internships.index', 'employer.internships.*', 'bi-briefcase', 'Internships'],
+                ['employer.skills.index', 'employer.skills.*', 'bi-tags', 'Skills Catalog'],
+                ['employer.applicants.index', 'employer.applicants.*', 'bi-people', 'Applicants'],
+            ],
+        ],
+        (bool) $currentUser?->isRole(UserRole::Coordinator) => [
+            'Overview' => [
+                ['coordinator.dashboard', 'coordinator.dashboard', 'bi-grid-1x2', 'Dashboard'],
+            ],
+            'Manage' => [
+                ['coordinator.students.index', 'coordinator.students.*', 'bi-mortarboard', 'Students'],
+                ['coordinator.verification.index', 'coordinator.verification.*', 'bi-shield-check', 'Verification'],
+                ['coordinator.reports.index', 'coordinator.reports.*', 'bi-bar-chart', 'Reports'],
+            ],
+        ],
+        (bool) $currentUser?->isRole(UserRole::Admin) => [
+            'Overview' => [
+                ['admin.dashboard', 'admin.dashboard', 'bi-grid-1x2', 'Dashboard'],
+            ],
+            'Management' => [
+                ['admin.academics.index', 'admin.academics.*', 'bi-mortarboard', 'Academic settings'],
+                ['admin.users.index', 'admin.users.*', 'bi-people', 'Users'],
+                ['admin.announcements.index', 'admin.announcements.*', 'bi-megaphone', 'Announcements'],
+                ['admin.skill-categories.index', 'admin.skill-categories.*', 'bi-tags', 'Skill Categories'],
+            ],
+            'System' => [
+                ['admin.logs', 'admin.logs', 'bi-journal-text', 'System Logs'],
+                ['admin.reports', 'admin.reports', 'bi-file-earmark-bar-graph', 'Reports'],
+            ],
+        ],
+        default => [],
+    };
+
+    $navGroups['Communication'] = [
+        ['messages.index', 'messages.*', 'bi-chat-dots', 'Messages'],
+        ['notifications.index', 'notifications.*', 'bi-bell', 'Notifications'],
+    ];
+
 @endphp
 
 
@@ -2235,27 +180,28 @@
 <aside
     class="sb-sidebar"
     id="sidebar"
+    aria-label="Main navigation"
 >
-
 
     {{-- BRAND --}}
 
     <div class="sb-brand">
 
-        <div class="sb-brand-icon" aria-hidden="true">S</div>
-
+        <img class="sb-brand-logo" src="{{ asset('images/brand/skillbridge-logo-icon.svg') }}" width="36" height="36" alt="" aria-hidden="true">
 
         <div class="sb-brand-text">
-
-            <span class="sb-brand-title">
-                SkillBridge
-            </span>
-
-            <span class="sb-brand-subtitle">
-                St. Cecilia's College-Cebu, Inc.
-            </span>
-
+            <span class="sb-brand-title">SkillBridge</span>
+            <span class="sb-brand-subtitle">St. Cecilia's College-Cebu, Inc.</span>
         </div>
+
+        <button
+            type="button"
+            class="sb-sidebar-close"
+            onclick="closeSidebar()"
+            aria-label="Close navigation"
+        >
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
 
     </div>
 
@@ -2273,386 +219,53 @@
             @endif
         </div>
 
-
         <div class="sb-user-info">
-
-            <div class="sb-user-name">
-                {{ $userName }}
-            </div>
-
-
-            <div class="sb-user-role">
-
-                {{ $userRole?->label() ?? 'User' }}
-
-            </div>
-
+            <div class="sb-user-name">{{ $userName }}</div>
+            <div class="sb-user-role">{{ $userRole?->label() ?? 'User' }}</div>
         </div>
 
     </div>
 
 
-    {{-- =====================================================
-         NAVIGATION
-    ====================================================== --}}
+    {{-- NAVIGATION --}}
 
     <nav class="sb-nav">
 
+        @foreach($navGroups as $groupLabel => $groupItems)
 
-        <div class="sb-nav-label">
-            Workspace
-        </div>
+            <div class="sb-nav-label">{{ $groupLabel }}</div>
 
+            @foreach($groupItems as [$routeName, $routePattern, $icon, $label])
 
-        {{-- =================================================
-             STUDENT
-        ================================================== --}}
+                @php $isActive = request()->routeIs($routePattern); @endphp
 
-        @if(
-            $currentUser &&
-            $currentUser->isRole(UserRole::Student)
-        )
+                <a
+                    class="sb-nav-link {{ $isActive ? 'active' : '' }}"
+                    href="{{ route($routeName) }}"
+                    @if($isActive) aria-current="page" @endif
+                >
+                    <i class="bi {{ $icon }}" aria-hidden="true"></i>
 
+                    <span>{{ $label }}</span>
 
-            <a
-                class="sb-nav-link {{ request()->routeIs('student.dashboard') ? 'active' : '' }}"
-                href="{{ route('student.dashboard') }}"
-            >
+                    @if($routePattern === 'notifications.*' && $unread > 0)
+                        <span class="sb-nav-badge" aria-label="{{ $unread }} unread">{{ $unread > 99 ? '99+' : $unread }}</span>
+                    @endif
+                </a>
 
-                <i class="bi bi-grid-1x2-fill"></i>
+            @endforeach
 
-                <span>Dashboard</span>
-
-            </a>
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('student.profile.*') ? 'active' : '' }}"
-                href="{{ route('student.profile.edit') }}"
-            >
-
-                <i class="bi bi-person-vcard"></i>
-
-                <span>My Profile</span>
-
-            </a>
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('student.competencies.*') ? 'active' : '' }}"
-                href="{{ route('student.competencies.index') }}"
-            >
-
-                <i class="bi bi-award-fill"></i>
-
-                <span>Competencies</span>
-
-            </a>
-
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('student.internships.*') ? 'active' : '' }}"
-                href="{{ route('student.internships.index') }}"
-            >
-
-                <i class="bi bi-briefcase-fill"></i>
-
-                <span>Internships</span>
-
-            </a>
-
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('student.applications.*') ? 'active' : '' }}"
-                href="{{ route('student.applications.index') }}"
-            >
-
-                <i class="bi bi-send-fill"></i>
-
-                <span>My Applications</span>
-
-            </a>
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('student.resume.*') ? 'active' : '' }}"
-                href="{{ route('student.resume.index') }}"
-            >
-                <i class="bi bi-file-earmark-person"></i>
-                <span>Resume</span>
-            </a>
-
-
-        {{-- =================================================
-             EMPLOYER
-        ================================================== --}}
-
-        @elseif(
-            $currentUser &&
-            $currentUser->isRole(UserRole::Employer)
-        )
-
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('employer.dashboard') ? 'active' : '' }}"
-                href="{{ route('employer.dashboard') }}"
-            >
-
-                <i class="bi bi-grid-1x2-fill"></i>
-
-                <span>Dashboard</span>
-
-            </a>
-
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('employer.profile.*') ? 'active' : '' }}"
-                href="{{ route('employer.profile.edit') }}"
-            >
-
-                <i class="bi bi-building-fill"></i>
-
-                <span>Company Profile</span>
-
-            </a>
-
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('employer.internships.*') ? 'active' : '' }}"
-                href="{{ route('employer.internships.index') }}"
-            >
-
-                <i class="bi bi-briefcase-fill"></i>
-
-                <span>Internships</span>
-
-            </a>
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('employer.skills.*') ? 'active' : '' }}"
-                href="{{ route('employer.skills.index') }}"
-            >
-                <i class="bi bi-tags-fill"></i>
-                <span>Skills Catalog</span>
-            </a>
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('employer.applicants.*') ? 'active' : '' }}"
-                href="{{ route('employer.applicants.index') }}"
-            >
-
-                <i class="bi bi-people-fill"></i>
-
-                <span>Applicants</span>
-
-            </a>
-
-
-        {{-- =================================================
-             COORDINATOR
-        ================================================== --}}
-
-        @elseif(
-            $currentUser &&
-            $currentUser->isRole(UserRole::Coordinator)
-        )
-
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('coordinator.dashboard') ? 'active' : '' }}"
-                href="{{ route('coordinator.dashboard') }}"
-            >
-
-                <i class="bi bi-grid-1x2-fill"></i>
-
-                <span>Dashboard</span>
-
-            </a>
-
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('coordinator.students.*') ? 'active' : '' }}"
-                href="{{ route('coordinator.students.index') }}"
-            >
-
-                <i class="bi bi-mortarboard-fill"></i>
-
-                <span>Students</span>
-
-            </a>
-
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('coordinator.verification.*') ? 'active' : '' }}"
-                href="{{ route('coordinator.verification.index') }}"
-            >
-
-                <i class="bi bi-shield-check"></i>
-
-                <span>Verification</span>
-
-            </a>
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('coordinator.reports.*') ? 'active' : '' }}"
-                href="{{ route('coordinator.reports.index') }}"
-            >
-
-                <i class="bi bi-bar-chart-fill"></i>
-
-                <span>Reports</span>
-
-            </a>
-
-
-        {{-- =================================================
-             ADMIN
-        ================================================== --}}
-
-        @elseif(
-            $currentUser &&
-            $currentUser->isRole(UserRole::Admin)
-        )
-
-
-            <div class="sb-nav-label">
-                Administration
-            </div>
-
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
-                href="{{ route('admin.dashboard') }}"
-            >
-
-                <i class="bi bi-grid-1x2-fill"></i>
-
-                <span>Dashboard</span>
-
-            </a>
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('admin.academics.*') ? 'active' : '' }}"
-                href="{{ route('admin.academics.index') }}"
-            >
-
-                <i class="bi bi-mortarboard-fill"></i>
-
-                <span>Academic settings</span>
-
-            </a>
-
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
-                href="{{ route('admin.users.index') }}"
-            >
-
-                <i class="bi bi-people-fill"></i>
-
-                <span>Users</span>
-
-            </a>
-
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('admin.announcements.*') ? 'active' : '' }}"
-                href="{{ route('admin.announcements.index') }}"
-            >
-
-                <i class="bi bi-megaphone-fill"></i>
-
-                <span>Announcements</span>
-
-            </a>
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('admin.skill-categories.*') ? 'active' : '' }}"
-                href="{{ route('admin.skill-categories.index') }}"
-            >
-                <i class="bi bi-tags-fill"></i>
-                <span>Skill Categories</span>
-            </a>
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('admin.logs') ? 'active' : '' }}"
-                href="{{ route('admin.logs') }}"
-            >
-
-                <i class="bi bi-journal-text"></i>
-
-                <span>System Logs</span>
-
-            </a>
-
-
-            <a
-                class="sb-nav-link {{ request()->routeIs('admin.reports') ? 'active' : '' }}"
-                href="{{ route('admin.reports') }}"
-            >
-
-                <i class="bi bi-file-earmark-bar-graph-fill"></i>
-
-                <span>Reports</span>
-
-            </a>
-
-
-        @endif
-
-
-        {{-- =================================================
-             COMMUNICATION
-        ================================================== --}}
-
-        <div class="sb-nav-divider"></div>
-
-
-        <div class="sb-nav-label">
-            Communication
-        </div>
-
-
-        <a
-            class="sb-nav-link {{ request()->routeIs('messages.*') ? 'active' : '' }}"
-            href="{{ route('messages.index') }}"
-        >
-
-            <i class="bi bi-chat-dots-fill"></i>
-
-            <span>Messages</span>
-
-        </a>
-
-
-        <a
-            class="sb-nav-link {{ request()->routeIs('notifications.*') ? 'active' : '' }}"
-            href="{{ route('notifications.index') }}"
-        >
-
-            <i class="bi bi-bell-fill"></i>
-
-            <span>Notifications</span>
-
-        </a>
-
+        @endforeach
 
     </nav>
 
 
-    {{-- =====================================================
-         SIDEBAR FOOTER
-    ====================================================== --}}
+    {{-- SIDEBAR FOOTER --}}
 
     <div class="sb-sidebar-footer">
-
-        <small>
-            SKILL BRIDGE PLATFORM
-        </small>
-
-        <strong>
-            Connect. Grow. Succeed.
-        </strong>
-
+        <small>SKILL BRIDGE PLATFORM</small>
+        <strong>Connect. Grow. Succeed.</strong>
     </div>
-
 
 </aside>
 
@@ -2663,61 +276,48 @@
 
 <div class="sb-main">
 
-
-    {{-- =====================================================
-         TOPBAR
-    ====================================================== --}}
+    {{-- TOPBAR --}}
 
     <header class="sb-topbar">
 
-
-        {{-- MOBILE BUTTON --}}
-
         <button
             type="button"
-            class="sb-mobile-toggle d-none"
+            class="sb-mobile-toggle"
             onclick="toggleSidebar()"
             aria-label="Open navigation"
             aria-controls="sidebar"
             aria-expanded="false"
         >
-
-            <i class="bi bi-list"></i>
-
+            <i class="bi bi-list" aria-hidden="true"></i>
         </button>
 
+        <button
+            type="button"
+            class="sb-collapse-toggle"
+            data-sidebar-collapse
+            aria-controls="sidebar"
+            aria-label="Collapse navigation"
+            aria-pressed="false"
+        >
+            <i class="bi bi-layout-sidebar-inset" aria-hidden="true"></i>
+        </button>
 
         {{-- PAGE TITLE --}}
 
         <div class="sb-topbar-title">
-
-            <strong>
-                @yield('title', 'Dashboard')
-            </strong>
-
-            <span>
-                St. Cecilia's College-Cebu, Inc.
-            </span>
-
+            <strong>@yield('title', 'Dashboard')</strong>
+            <span>{{ $userRole?->label() ?? 'User' }} workspace</span>
         </div>
-
 
         {{-- SEARCH --}}
 
-        <form
-            action="{{ route('search') }}"
-            method="GET"
-            class="sb-search"
-        >
+        <form action="{{ route('search') }}" method="GET" class="sb-search" role="search">
 
             <div class="input-group">
 
                 <span class="input-group-text">
-
-                    <i class="bi bi-search"></i>
-
+                    <i class="bi bi-search" aria-hidden="true"></i>
                 </span>
-
 
                 <input
                     type="search"
@@ -2732,10 +332,7 @@
 
         </form>
 
-
-        {{-- =================================================
-             TOP ACTIONS
-        ================================================== --}}
+        {{-- TOP ACTIONS --}}
 
         <div class="sb-top-actions">
 
@@ -2743,15 +340,13 @@
                 <i class="bi bi-moon-stars" aria-hidden="true"></i>
             </button>
 
-
             {{-- NOTIFICATIONS --}}
 
             @php
                 $recentNotifications = $currentUser->appNotifications()->whereNull('archived_at')->latest()->take(5)->get();
-                $unread = $currentUser->appNotifications()->whereNull('read_at')->whereNull('archived_at')->count();
             @endphp
             <div class="dropdown sb-notification-dropdown">
-                <button type="button" class="sb-top-action" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications{{ $unread ? ', '.$unread.' unread' : '' }}">
+                <button type="button" class="sb-top-action" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" aria-label="Notifications{{ $unread ? ', '.$unread.' unread' : '' }}">
                     <i class="bi bi-bell" aria-hidden="true"></i>
                     @if($unread > 0)
                         <span class="sb-notification-badge" data-unread-badge>{{ $unread > 9 ? '9+' : $unread }}</span>
@@ -2774,7 +369,11 @@
                             @endif
                         </div>
                     @empty
-                        <p class="px-3 py-2 mb-0 text-muted">You’re all caught up.</p>
+                        <div class="sb-empty">
+                            <span class="sb-empty-icon" aria-hidden="true"><i class="bi bi-bell"></i></span>
+                            <h3>You’re all caught up</h3>
+                            <p>New notifications will appear here.</p>
+                        </div>
                     @endforelse
                     @if($unread > 0)
                         <form action="{{ route('notifications.read-all') }}" method="POST" class="px-2 py-2" data-ajax-notification="read-all">
@@ -2782,212 +381,108 @@
                             <button type="submit" class="btn btn-sm btn-outline-primary w-100">Mark all as read</button>
                         </form>
                     @endif
-                    <a class="dropdown-item text-center" href="{{ route('notifications.index') }}">View all notifications</a>
+                    <a class="dropdown-item justify-content-center" href="{{ route('notifications.index') }}">View all notifications</a>
                 </div>
             </div>
 
-
-            {{-- =================================================
-                 PROFILE DROPDOWN
-            ================================================== --}}
+            {{-- PROFILE DROPDOWN --}}
 
             <div class="dropdown">
-
-
-                {{--
-                    IMPORTANT FIX:
-
-                    Removed "dropdown-toggle".
-
-                    Bootstrap automatically adds a large
-                    arrow when dropdown-toggle is present.
-
-                    We use our own small Bootstrap Icon.
-                --}}
 
                 <button
                     type="button"
                     class="sb-profile-btn"
                     data-bs-toggle="dropdown"
+                    data-bs-display="static"
                     aria-expanded="false"
+                    aria-label="Account menu for {{ $userName }}"
                 >
 
-                    <div class="sb-profile-avatar">
+                    <span class="sb-profile-avatar">
                         @if($profilePictureUrl)
-                            <img src="{{ $profilePictureUrl }}" alt="{{ $userName }}" onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+                            <img src="{{ $profilePictureUrl }}" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
                             <span hidden>{{ $userInitial }}</span>
                         @else
                             {{ $userInitial }}
                         @endif
+                    </span>
 
-                    </div>
+                    <span class="sb-profile-info">
+                        <span class="sb-profile-name">{{ $userName }}</span>
+                        <span class="sb-profile-role">{{ $userRole?->label() ?? 'User' }}</span>
+                    </span>
 
-
-                    <div class="sb-profile-info">
-
-                        <span class="sb-profile-name">
-
-                            {{ $userName }}
-
-                        </span>
-
-
-                        <span class="sb-profile-role">
-
-                            {{ $userRole?->label() ?? 'User' }}
-
-                        </span>
-
-                    </div>
-
-
-                    <i class="bi bi-chevron-down ms-1"></i>
+                    <i class="bi bi-chevron-down" aria-hidden="true"></i>
 
                 </button>
 
-
-                {{-- PROFILE MENU --}}
-
-                <ul
-                    class="dropdown-menu dropdown-menu-end sb-dropdown"
-                >
-
+                <ul class="dropdown-menu dropdown-menu-end sb-dropdown">
 
                     <li>
-
                         <div class="dropdown-header">
-
-                            SIGNED IN AS
-
-
-                            <strong
-                                class="d-block mt-1"
-                                style="color:var(--sb-text-soft);"
-                            >
-
-                                {{ $userName }}
-
-                            </strong>
-
+                            Signed in as
+                            <strong class="d-block mt-1">{{ $userName }}</strong>
                         </div>
-
                     </li>
 
+                    <li><hr class="dropdown-divider"></li>
 
-                    <li>
-
-                        <hr class="dropdown-divider">
-
-                    </li>
-
-
-                    {{-- STUDENT PROFILE --}}
-
-                    @if(
-                        $currentUser &&
-                        $currentUser->isRole(UserRole::Student)
-                    )
+                    @if($currentUser && $currentUser->isRole(UserRole::Student))
 
                         <li>
-
-                            <a
-                                class="dropdown-item"
-                                href="{{ route('student.profile.edit') }}"
-                            >
-
-                                <i class="bi bi-person me-2"></i>
-
+                            <a class="dropdown-item" href="{{ route('student.profile.edit') }}">
+                                <i class="bi bi-person" aria-hidden="true"></i>
                                 My Profile
-
                             </a>
-
                         </li>
 
-
-                    {{-- EMPLOYER PROFILE --}}
-
-                    @elseif(
-                        $currentUser &&
-                        $currentUser->isRole(UserRole::Employer)
-                    )
+                    @elseif($currentUser && $currentUser->isRole(UserRole::Employer))
 
                         <li>
-
-                            <a
-                                class="dropdown-item"
-                                href="{{ route('employer.profile.edit') }}"
-                            >
-
-                                <i class="bi bi-building me-2"></i>
-
+                            <a class="dropdown-item" href="{{ route('employer.profile.edit') }}">
+                                <i class="bi bi-building" aria-hidden="true"></i>
                                 Company Profile
-
                             </a>
-
                         </li>
 
-                    {{-- COORDINATOR PROFILE --}}
-
-                    @elseif(
-                        $currentUser &&
-                        $currentUser->isRole(UserRole::Coordinator)
-                    )
+                    @elseif($currentUser && $currentUser->isRole(UserRole::Coordinator))
 
                         <li>
                             <a class="dropdown-item" href="{{ route('coordinator.profile.edit') }}">
-                                <i class="bi bi-person-badge me-2"></i>
+                                <i class="bi bi-person-badge" aria-hidden="true"></i>
                                 Coordinator Profile
                             </a>
                         </li>
 
-                    @elseif(
-                        $currentUser &&
-                        $currentUser->isRole(UserRole::Admin)
-                    )
+                    @elseif($currentUser && $currentUser->isRole(UserRole::Admin))
 
                         <li>
                             <a class="dropdown-item" href="{{ route('admin.profile.edit') }}">
-                                <i class="bi bi-person me-2"></i>
+                                <i class="bi bi-person" aria-hidden="true"></i>
                                 My Profile
                             </a>
                         </li>
 
                     @endif
 
-
                     <li>
-
-                        <hr class="dropdown-divider">
-
+                        <button type="button" class="dropdown-item" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false">
+                            <i class="bi bi-moon-stars" aria-hidden="true"></i>
+                            Switch theme
+                        </button>
                     </li>
 
-
-                    {{-- LOGOUT --}}
+                    <li><hr class="dropdown-divider"></li>
 
                     <li>
-
-                        <form
-                            action="{{ route('logout') }}"
-                            method="POST"
-                        >
-
+                        <form action="{{ route('logout') }}" method="POST">
                             @csrf
-
-                            <button
-                                type="submit"
-                                class="dropdown-item"
-                            >
-
-                                <i class="bi bi-box-arrow-right me-2"></i>
-
+                            <button type="submit" class="dropdown-item">
+                                <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
                                 Sign Out
-
                             </button>
-
                         </form>
-
                     </li>
-
 
                 </ul>
 
@@ -3153,6 +648,30 @@
 
 
 {{-- =========================================================
+     CONFIRM DIALOG
+     Used by any form or button that carries data-confirm="message".
+========================================================== --}}
+
+<div class="modal fade" id="sbConfirmModal" tabindex="-1" aria-labelledby="sbConfirmTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="sbConfirmTitle" data-confirm-title>Please confirm</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0" data-confirm-message></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" data-confirm-ok>Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{{-- =========================================================
      TOAST CONTAINER
 ========================================================== --}}
 
@@ -3206,6 +725,11 @@
         const isOpen = sidebar.classList.toggle('show');
 
         overlay.classList.toggle('show');
+        document.body.classList.toggle('sb-drawer-open', isOpen);
+
+        if (isOpen) {
+            sidebar.querySelector('.sb-sidebar-close')?.focus();
+        }
 
         if (toggleButton) {
             toggleButton.setAttribute('aria-expanded', String(isOpen));
@@ -3235,9 +759,16 @@
         }
 
 
+        const wasOpen = sidebar.classList.contains('show');
+
         sidebar.classList.remove('show');
 
         overlay.classList.remove('show');
+        document.body.classList.remove('sb-drawer-open');
+
+        if (wasOpen) {
+            toggleButton?.focus();
+        }
 
         if (toggleButton) {
             toggleButton.setAttribute('aria-expanded', 'false');
@@ -3574,53 +1105,6 @@
      * around JavaScript statements, we safely pass
      * Laravel session values into JavaScript.
      */
-
-
-            /*
-             * SUCCESS
-             */
-
-            const successMessage = @json(session('success'));
-            const errorMessage = @json(session('error'));
-            const statusMessage = @json(session('status'));
-
-            if (successMessage) {
-
-                showToast(
-                    successMessage,
-                    'success'
-                );
-
-            }
-
-
-            /*
-             * ERROR
-             */
-
-            if (errorMessage) {
-
-                showToast(
-                    errorMessage,
-                    'error'
-                );
-
-            }
-
-
-            /*
-             * STATUS / INFO
-             */
-
-            if (statusMessage) {
-
-                showToast(
-                    statusMessage,
-                    'info'
-                );
-
-            }
-
 
 
 </script>

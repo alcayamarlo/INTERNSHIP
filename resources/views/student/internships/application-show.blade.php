@@ -3,15 +3,17 @@
 @section('title', 'Application Details')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4"><div><h1 class="h3 mb-1">Application Details</h1><p class="text-muted mb-0">{{ $application->internship->title }}</p></div><a href="{{ route('student.applications.index') }}" class="btn btn-outline-secondary">Back to applications</a></div>
+<x-page-header title="Application Details" :subtitle="$application->internship->title">
+    <a href="{{ route('student.applications.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to applications</a>
+</x-page-header>
 <div class="card"><div class="card-body">
-    <div class="row g-3"><div class="col-md-6"><strong>Company</strong><p>{{ $application->internship->employer->company_name }}</p></div><div class="col-md-6"><strong>Location</strong><p>{{ $application->internship->location ?? '—' }}</p></div><div class="col-md-6"><strong>Status</strong><p><span class="badge {{ $application->status->badgeClass() }}">{{ $application->status->label() }}</span></p></div><div class="col-md-6"><strong>Applied</strong><p>{{ $application->applied_at?->format('M d, Y h:i A') }}</p></div></div>
-    <hr><h5>Cover letter</h5><p class="text-muted">{{ $application->cover_letter ?: 'No cover letter provided.' }}</p>
+    <div class="row g-3"><div class="col-md-6"><strong>Company</strong><p>{{ $application->internship->employer->company_name }}</p></div><div class="col-md-6"><strong>Location</strong><p>{{ $application->internship->location ?? '—' }}</p></div><div class="col-md-6"><strong>Status</strong><p><x-status-badge :status="$application->status->value" :label="$application->status->label()" /></p></div><div class="col-md-6"><strong>Applied</strong><p>{{ $application->applied_at?->format('M d, Y h:i A') }}</p></div></div>
+    <hr><h2 class="h6">Cover letter</h2><p class="text-muted">{{ $application->cover_letter ?: 'No cover letter provided.' }}</p>
     @if(in_array($application->status, [\App\Enums\ApplicationStatus::Applied, \App\Enums\ApplicationStatus::Submitted], true))<a href="{{ route('student.applications.edit', $application) }}" class="btn btn-primary">Edit application</a>@endif
 </div></div>
 
 <div class="card mt-4">
-    <div class="card-header bg-white"><h5 class="mb-0">Application Timeline</h5></div>
+    <div class="card-header"><h2>Application Timeline</h2></div>
     <div class="card-body">
         @forelse($application->statusHistory->sortByDesc('created_at') as $history)
             <div class="border-start border-3 ps-3 mb-3">

@@ -3,10 +3,7 @@
 @section('title', 'Edit Profile')
 
 @section('content')
-<div class="mb-4">
-    <h1 class="h3 mb-1">Your Profile</h1>
-    <p class="text-muted mb-0">Update your personal and institution information</p>
-</div>
+<x-page-header title="Your Profile" subtitle="Update your personal and institution information" />
 
 <div class="row g-4">
     <!-- Profile Picture Card -->
@@ -23,8 +20,8 @@
                             ->implode('');
                     @endphp
                     <div data-coordinator-avatar>
-                        <img data-coordinator-photo src="{{ $coordinatorPictureUrl ?? '' }}" alt="{{ $user->name }}" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover;" @if(!$coordinatorPictureUrl) hidden @endif onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
-                        <div data-coordinator-placeholder @if($coordinatorPictureUrl) hidden @endif class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 150px; height: 150px;">
+                        <img data-coordinator-photo class="sb-avatar-xl" src="{{ $coordinatorPictureUrl ?? '' }}" alt="{{ $user->name }}" @if(!$coordinatorPictureUrl) hidden @endif onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+                        <div data-coordinator-placeholder class="sb-avatar-xl" @if($coordinatorPictureUrl) hidden @endif>
                             {{ strtoupper($coordinatorInitials ?: 'U') }}
                         </div>
                     </div>
@@ -33,11 +30,11 @@
                 <form method="POST" action="{{ route('coordinator.profile.update') }}" enctype="multipart/form-data" id="pictureForm" class="d-none">
                     @csrf
                     @method('PUT')
-                    <input type="file" name="profile_picture" id="profilePictureInput" accept="image/jpeg,image/jpg,image/png">
+                    <input type="file" name="profile_picture" id="profilePictureInput" accept="image/jpeg,image/jpg,image/png" aria-label="Profile picture">
                 </form>
 
                 <button type="button" class="btn btn-sm btn-outline-primary" id="uploadCoordinatorPhoto">
-                    <i class="bi bi-cloud-upload"></i> {{ $coordinator->profile_picture ? 'Change Photo' : 'Upload Photo' }}
+                    <i class="bi bi-cloud-upload" aria-hidden="true"></i> {{ $coordinator->profile_picture ? 'Change Photo' : 'Upload Photo' }}
                 </button>
                 <div data-coordinator-feedback class="small mt-2" role="status" aria-live="polite"></div>
 
@@ -45,8 +42,8 @@
                     <form method="POST" action="{{ route('coordinator.profile.delete-picture') }}" class="d-inline">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Remove profile picture?');">
-                            <i class="bi bi-trash"></i> Remove
+                        <button type="submit" class="btn btn-sm btn-outline-danger" data-confirm="Remove your profile picture?" data-confirm-title="Remove profile picture" data-confirm-label="Remove">
+                            <i class="bi bi-trash" aria-hidden="true"></i> Remove
                         </button>
                     </form>
                 @endif
@@ -62,32 +59,32 @@
 
             <!-- Institution Information -->
             <div class="card mb-4">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-mortarboard"></i> Institution Information</h5>
+                <div class="card-header">
+                    <h2><i class="bi bi-mortarboard" aria-hidden="true"></i> Institution Information</h2>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">Institution</label>
-                        <input type="text" class="form-control" name="institution" value="{{ old('institution', $coordinator->institution->name ?? '') }}" disabled>
-                        <small class="text-muted">Your institution cannot be changed. Contact an administrator if needed.</small>
+                        <label class="form-label" for="coordInstitution">Institution</label>
+                        <input type="text" class="form-control" id="coordInstitution" name="institution" value="{{ old('institution', $coordinator->institution->name ?? '') }}" disabled>
+                        <div class="form-text">Your institution cannot be changed. Contact an administrator if needed.</div>
                     </div>
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Department</label>
-                            <input type="text" class="form-control @error('department') is-invalid @enderror" name="department" value="{{ old('department', $coordinator->department) }}" required>
+                            <label class="form-label" for="coordDepartment">Department <span class="text-danger" aria-hidden="true">*</span></label>
+                            <input type="text" class="form-control @error('department') is-invalid @enderror" id="coordDepartment" name="department" value="{{ old('department', $coordinator->department) }}" required>
                             @error('department')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Position</label>
-                            <input type="text" class="form-control @error('position') is-invalid @enderror" name="position" placeholder="Coordinator, Director, etc." value="{{ old('position', $coordinatorInfo['position'] ?? '') }}" required>
+                            <label class="form-label" for="coordPosition">Position <span class="text-danger" aria-hidden="true">*</span></label>
+                            <input type="text" class="form-control @error('position') is-invalid @enderror" id="coordPosition" name="position" placeholder="Coordinator, Director, etc." value="{{ old('position', $coordinatorInfo['position'] ?? '') }}" required>
                             @error('position')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                     </div>
 
                     <div class="mt-3">
-                        <label class="form-label">Office Address</label>
-                        <input type="text" class="form-control @error('office_address') is-invalid @enderror" name="office_address" value="{{ old('office_address', $coordinator->office_address) }}" required>
+                        <label class="form-label" for="coordOffice">Office Address <span class="text-danger" aria-hidden="true">*</span></label>
+                        <input type="text" class="form-control @error('office_address') is-invalid @enderror" id="coordOffice" name="office_address" value="{{ old('office_address', $coordinator->office_address) }}" required>
                         @error('office_address')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                 </div>
@@ -95,25 +92,25 @@
 
             <!-- Personal Information -->
             <div class="card mb-4">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-person"></i> Personal Information</h5>
+                <div class="card-header">
+                    <h2><i class="bi bi-person" aria-hidden="true"></i> Personal Information</h2>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">Full Name</label>
-                        <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name', $user->name) }}" required>
+                        <label class="form-label" for="coordName">Full Name <span class="text-danger" aria-hidden="true">*</span></label>
+                        <input type="text" class="form-control @error('name') is-invalid @enderror" id="coordName" name="name" value="{{ old('name', $user->name) }}" required>
                         @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Email Address</label>
-                            <input type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email', $user->email) }}" required>
+                            <label class="form-label" for="coordEmail">Email Address <span class="text-danger" aria-hidden="true">*</span></label>
+                            <input type="email" class="form-control @error('email') is-invalid @enderror" id="coordEmail" name="email" value="{{ old('email', $user->email) }}" required>
                             @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Mobile Number</label>
-                            <input type="tel" class="form-control @error('phone') is-invalid @enderror" name="phone" placeholder="+63 900 000 0000" value="{{ old('phone', $user->phone) }}" required>
+                            <label class="form-label" for="coordPhone">Mobile Number <span class="text-danger" aria-hidden="true">*</span></label>
+                            <input type="tel" class="form-control @error('phone') is-invalid @enderror" id="coordPhone" name="phone" placeholder="+63 900 000 0000" value="{{ old('phone', $user->phone) }}" required>
                             @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                     </div>
@@ -121,12 +118,12 @@
             </div>
 
             <!-- Actions -->
-            <div class="d-flex gap-2">
+            <div class="d-flex flex-wrap gap-2">
                 <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-check-circle"></i> Save Changes
+                    <i class="bi bi-check-circle" aria-hidden="true"></i> Save Changes
                 </button>
                 <a href="{{ route('coordinator.dashboard') }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-x-circle"></i> Cancel
+                    <i class="bi bi-x-circle" aria-hidden="true"></i> Cancel
                 </a>
             </div>
         </form>

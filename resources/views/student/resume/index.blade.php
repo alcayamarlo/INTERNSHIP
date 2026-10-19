@@ -3,18 +3,14 @@
 @section('title', 'Resume')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4 gap-3 flex-wrap">
-    <div>
-        <h1 class="h3 mb-1">Resume Builder</h1>
-        <p class="text-muted mb-0">Generate PDF resumes from your profile data</p>
-    </div>
+<x-page-header title="Resume Builder" subtitle="Generate PDF resumes from your profile data">
     @if($view === 'active')
         <form action="{{ route('student.resume.generate') }}" method="POST">
             @csrf
-            <button type="submit" class="btn btn-primary"><i class="bi bi-file-earmark-pdf"></i> Generate New Resume</button>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Generate New Resume</button>
         </form>
     @endif
-</div>
+</x-page-header>
 
 <div class="d-flex gap-2 mb-3" role="group" aria-label="Resume views">
     <a href="{{ route('student.resume.index', ['view' => 'active']) }}" class="btn btn-sm {{ $view === 'active' ? 'btn-primary' : 'btn-outline-primary' }}">Active</a>
@@ -24,7 +20,7 @@
 <div id="resumeActionFeedback" class="alert d-none" role="status" aria-live="polite"></div>
 
 <div class="card">
-    <div class="card-header"><h5 class="mb-0">{{ $view === 'archived' ? 'Archived Resumes' : 'Generated Resumes' }}</h5></div>
+    <div class="card-header"><h2>{{ $view === 'archived' ? 'Archived Resumes' : 'Generated Resumes' }}</h2></div>
     <div class="table-responsive">
         <table class="table table-hover mb-0">
             <thead><tr><th>Generated</th><th>Actions</th></tr></thead>
@@ -35,7 +31,7 @@
                             {{ $resume->generated_at?->format('M d, Y h:i A') ?? $resume->created_at->format('M d, Y h:i A') }}
                             @if($resume->archived_at)<small class="text-muted d-block">Archived {{ $resume->archived_at->diffForHumans() }}</small>@endif
                         </td>
-                        <td class="d-flex gap-2 flex-wrap">
+                        <td class="sb-row-actions">
                             @if(!$resume->archived_at)
                                 <a href="{{ route('student.resume.view', $resume, false) }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-eye"></i> View PDF
