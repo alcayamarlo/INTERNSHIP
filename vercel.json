@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "framework": null,
   "functions": {
     "api/index.php": {
       "runtime": "vercel-php@0.6.0"
@@ -10,6 +9,14 @@
     {
       "src": "/build/(.*)",
       "dest": "/public/build/$1"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/public/assets/$1"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "/public/favicon.ico"
     },
     {
       "src": "/(.*)",
