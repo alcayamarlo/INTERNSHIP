@@ -375,3 +375,18 @@ body.auth-page .auth-chip {
 body.auth-page .auth-terms-label a {
     color: #ffc2c8;
 }
+
+/* =====================================================
+   Keep the description under the heading on short screens
+   (skillbridge-ui.css hides it at <= 760px height).
+   ===================================================== */
+
+body.auth-page .auth-heading p {
+    display: block;
+}
+
+@media (min-width: 851px) and (max-height: 620px) {
+    body.auth-page .auth-heading p {
+        display: none;
+    }
+}
