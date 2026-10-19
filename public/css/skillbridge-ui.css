@@ -208,6 +208,9 @@ body.skillbridge-app {
     --sb-control-border: var(--sb-auth-input-border);
     --sb-danger-solid: #b42332;
     --sb-danger-solid-deep: #8f1a27;
+    --sb-success-solid: #187443;
+    --sb-success-solid-deep: #125c35;
+    --sb-success-solid-ink: #fff;
 
     /* Bootstrap bridge */
     --bs-body-bg: var(--sb-canvas);
@@ -244,6 +247,9 @@ body.skillbridge-app {
     --sb-shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
     --sb-danger-solid: #c8364a;
     --sb-danger-solid-deep: #a82a3c;
+    --sb-success-solid: #34d399;
+    --sb-success-solid-deep: #2ab887;
+    --sb-success-solid-ink: #06251c;
     --bs-link-color-rgb: 255, 135, 148;
     --bs-link-hover-color-rgb: 255, 135, 148;
     --bs-body-bg-rgb: 23, 17, 18;
@@ -259,6 +265,9 @@ body.skillbridge-app {
         --sb-shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
         --sb-danger-solid: #c8364a;
         --sb-danger-solid-deep: #a82a3c;
+        --sb-success-solid: #34d399;
+        --sb-success-solid-deep: #2ab887;
+        --sb-success-solid-ink: #06251c;
         --bs-link-color-rgb: 255, 135, 148;
         --bs-link-hover-color-rgb: 255, 135, 148;
         --bs-body-bg-rgb: 23, 17, 18;
@@ -2709,6 +2718,47 @@ body.skillbridge-app .list-group-item.is-unread {
     object-fit: contain;
 }
 
+/* ---------- Definition list ---------- */
+
+.sb-dl {
+    display: grid;
+    grid-template-columns: minmax(96px, auto) minmax(0, 1fr);
+    gap: 12px 20px;
+    margin: 0;
+}
+
+.sb-dl dt {
+    color: var(--sb-muted);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.sb-dl dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+/* ---------- Large avatar ---------- */
+
+.sb-avatar-xl {
+    display: inline-grid;
+    place-items: center;
+    width: 140px;
+    height: 140px;
+    overflow: hidden;
+    border-radius: 50%;
+    background: var(--sb-red-soft);
+    color: var(--sb-brand-content);
+    font-size: 40px;
+    font-weight: 700;
+    object-fit: cover;
+}
+
+img.sb-avatar-xl[hidden],
+div.sb-avatar-xl[hidden] {
+    display: none;
+}
+
 /* ---------- Hover (pointer devices only) ---------- */
 
 @media (hover: hover) {
@@ -2991,18 +3041,6 @@ body.skillbridge-app .employer-page-shell .table {
     --bs-table-color: var(--sb-ink);
     --bs-table-bg: transparent;
     --bs-table-border-color: var(--sb-border);
-}
-
-body.skillbridge-app .verification-page,
-body.skillbridge-app .student-drawer {
-    --vq-bg: var(--sb-canvas);
-    --vq-panel: var(--sb-surface);
-    --vq-panel-raised: var(--sb-surface-raised);
-    --vq-border: var(--sb-border);
-    --vq-text: var(--sb-ink);
-    --vq-muted: var(--sb-muted);
-    --vq-cyan: var(--sb-red);
-    color: var(--sb-ink);
 }
 
 body.skillbridge-app .reports-page,
@@ -3732,282 +3770,6 @@ body.skillbridge-app .student-page-shell .btn-outline-primary:hover {
     background: var(--sb-red-soft) !important;
 }
 
-body.skillbridge-app .coordinator-students-page {
-    --cs-bg: var(--sb-canvas);
-    --cs-panel: var(--sb-surface);
-    --cs-raised: var(--sb-surface-raised);
-    --cs-border: var(--sb-border);
-    --cs-text: var(--sb-ink);
-    --cs-muted: var(--sb-muted);
-    --cs-cyan: var(--sb-red-deep);
-    --cs-green: var(--sb-success-ink);
-    --cs-amber: var(--sb-warning-ink);
-    color: var(--sb-ink);
-}
-
-body.skillbridge-app .coordinator-students-page :is(.student-full-name, .students-empty strong) {
-    color: var(--sb-ink);
-}
-
-body.skillbridge-app .coordinator-students-page :is(.students-search, .students-select, .student-tracking-row) {
-    border-color: var(--sb-border);
-    background: var(--sb-surface);
-}
-
-body.skillbridge-app .coordinator-students-page .student-tracking-row:hover {
-    border-color: var(--sb-red);
-    background: var(--sb-red-soft);
-}
-
-body.skillbridge-app .coordinator-students-page :is(.students-search input, .students-select select) {
-    color: var(--sb-ink);
-}
-
-body.skillbridge-app .coordinator-students-page .students-search input::placeholder {
-    color: var(--sb-muted);
-}
-
-body.skillbridge-app .coordinator-students-page .student-view-button {
-    border-color: var(--sb-border);
-    color: var(--sb-brand-content);
-    background: var(--sb-red-soft);
-}
-
-body.skillbridge-app .coordinator-students-page .student-view-button:hover {
-    border-color: var(--sb-red);
-    color: var(--sb-brand-content);
-    background: var(--sb-red-soft);
-}
-
-body.skillbridge-app .coordinator-students-page .students-page-button[aria-current="page"] {
-    border-color: var(--sb-red);
-    color: var(--sb-brand-content);
-    background: var(--sb-red-soft);
-}
-
-body.skillbridge-app .coordinator-students-page .student-avatar {
-    border-color: var(--sb-border);
-    color: var(--sb-brand-content);
-    background: var(--sb-red-soft);
-}
-
-body.skillbridge-app .coordinator-students-page .student-completion-track {
-    background: var(--sb-red-soft);
-}
-
-body.skillbridge-app .coordinator-students-page .students-empty {
-    border-color: var(--sb-border);
-    background: var(--sb-surface);
-}
-
-body.skillbridge-app .coordinator-students-page .students-empty-icon {
-    color: var(--sb-brand-content);
-    background: var(--sb-red-soft);
-}
-
-body.skillbridge-app .student-profile-page {
-    --profile-bg: var(--sb-canvas);
-    --profile-panel: var(--sb-surface);
-    --profile-panel-raised: var(--sb-surface-raised);
-    --profile-border: var(--sb-border);
-    --profile-cyan: var(--sb-red);
-    --profile-green: #187443;
-    --profile-red: #b42332;
-    --profile-amber: #8a5700;
-    color: var(--sb-ink);
-}
-
-body.skillbridge-app .student-profile-page .profile-hero {
-    border-color: var(--sb-border);
-    background: linear-gradient(112deg, var(--sb-red-soft), var(--sb-surface) 72%);
-}
-
-body.skillbridge-app .student-profile-page :is(.profile-ring-inner, .profile-stat-card strong, .profile-card h2, .profile-details dd, .profile-item-card h3) {
-    color: var(--sb-ink);
-}
-
-body.skillbridge-app .student-profile-page :is(.profile-program-line, .profile-prose, .profile-timeline li p) {
-    color: var(--sb-text-soft);
-}
-
-body.skillbridge-app .student-profile-page :is(.profile-institution, .profile-completion span, .profile-stat-label, .profile-details dt, .profile-item-card p, .profile-level-labels) {
-    color: var(--sb-muted);
-}
-
-body.skillbridge-app .student-profile-page :is(.profile-chip, .profile-count, .profile-item-card) {
-    border-color: var(--sb-border);
-    color: var(--sb-ink);
-    background: var(--sb-surface-raised);
-}
-
-body.skillbridge-app .student-profile-page .profile-chip-id {
-    border-color: var(--sb-red);
-    color: var(--sb-brand-content);
-    background: var(--sb-red-soft);
-}
-
-body.skillbridge-app .student-profile-page .profile-level-segments span {
-    background: var(--sb-border);
-}
-
-body.skillbridge-app .student-profile-page .profile-level-segments span.is-filled,
-body.skillbridge-app .student-profile-page .profile-timeline-dot {
-    background: var(--sb-red);
-}
-
-body.skillbridge-app .student-profile-page :is(.profile-back-link, .profile-completion strong, .profile-stat-card strong, .profile-details dd, .profile-card h2, .profile-item-card h3) {
-    color: var(--sb-ink) !important;
-}
-
-body.skillbridge-app .student-profile-page .profile-back-link:hover {
-    color: var(--sb-red) !important;
-}
-
-body.skillbridge-app .student-profile-page .profile-status-verified,
-body.skillbridge-app .student-profile-page .profile-status-approved {
-    border-color: var(--sb-success-border);
-    color: var(--sb-success-ink);
-    background: var(--sb-success-bg);
-}
-
-body.skillbridge-app .student-profile-page .profile-status-pending {
-    border-color: rgba(138, 87, 0, .24);
-    color: var(--sb-warning-ink);
-    background: var(--sb-warning-bg);
-}
-
-body.skillbridge-app .student-profile-page .profile-status-rejected {
-    border-color: var(--sb-danger-border);
-    color: var(--sb-danger-ink);
-    background: var(--sb-danger-bg);
-}
-
-body.skillbridge-app .student-profile-page .profile-empty {
-    border-color: var(--sb-border);
-    color: var(--sb-muted);
-    background: var(--sb-surface-raised);
-}
-
-body.skillbridge-app .student-profile-page .profile-level-segments span {
-    background: var(--sb-border);
-}
-
-body.skillbridge-app .student-profile-page .profile-timeline li:not(:last-child)::before {
-    background: var(--sb-border);
-}
-
-body.skillbridge-app .verification-page,
-body.skillbridge-app .student-drawer {
-    --vq-bg: var(--sb-canvas);
-    --vq-panel: var(--sb-surface);
-    --vq-panel-raised: var(--sb-surface-raised);
-    --vq-border: var(--sb-border);
-    --vq-text: var(--sb-ink);
-    --vq-muted: var(--sb-muted);
-    --vq-cyan: var(--sb-red);
-    --vq-green: var(--sb-success-ink);
-    --vq-red: var(--sb-danger-ink);
-    --vq-amber: var(--sb-warning-ink);
-    --vq-purple: var(--sb-purple);
-    color: var(--sb-ink);
-}
-
-body.skillbridge-app .verification-page :is(.verification-search, .verification-program),
-body.skillbridge-app .verification-page :is(.filter-chip, .student-group, .submission-row, .quick-reason, .reject-reason, .empty-queue),
-body.skillbridge-app .student-drawer :is(.drawer-header, .drawer-item, .drawer-activity) {
-    border-color: var(--sb-border);
-    color: var(--sb-ink);
-    background: var(--sb-surface);
-}
-
-body.skillbridge-app .verification-page :is(.verification-search, .verification-program) {
-    background: var(--sb-surface-raised);
-}
-
-body.skillbridge-app .verification-page :is(.verification-search input, .verification-program select, .reject-reason) {
-    color: var(--sb-ink);
-}
-
-body.skillbridge-app .verification-page .verification-search input::placeholder {
-    color: var(--sb-muted);
-}
-
-body.skillbridge-app .verification-page .filter-chip:hover,
-body.skillbridge-app .verification-page .filter-chip.is-active {
-    border-color: var(--sb-red);
-    color: var(--sb-brand-content);
-    background: var(--sb-red-soft);
-}
-
-body.skillbridge-app .verification-page :is(.student-avatar, .empty-queue-icon) {
-    border-color: var(--sb-border);
-    color: var(--sb-brand-content);
-    background: var(--sb-red-soft);
-}
-
-body.skillbridge-app .verification-page .progress-track,
-body.skillbridge-app .student-drawer .drawer-progress-track {
-    background: var(--sb-red-soft);
-}
-
-body.skillbridge-app .verification-page .type-competencies {
-    color: var(--sb-brand-content);
-    background: var(--sb-red-soft);
-}
-
-body.skillbridge-app .verification-page .type-certificates {
-    color: var(--sb-warning-ink);
-    background: var(--sb-warning-bg);
-}
-
-body.skillbridge-app .verification-page .type-portfolio {
-    color: var(--sb-purple);
-    background: var(--sb-surface-raised);
-}
-
-body.skillbridge-app .verification-page :is(.verify-all-button, .verify-button, .action-button.verify) {
-    border-color: #187443;
-    color: #fff;
-    background: #187443;
-}
-
-body.skillbridge-app .verification-page .confirm-reject {
-    border-color: #b42332;
-    color: #fff;
-    background: #b42332;
-}
-
-body.skillbridge-app .verification-page .action-button {
-    color: var(--sb-ink);
-}
-
-body.skillbridge-app .verification-page .action-button:hover {
-    color: var(--sb-brand-content);
-    background: var(--sb-red-soft);
-}
-
-body.skillbridge-app .verification-page .action-button.reject {
-    border-color: var(--sb-danger-border);
-    color: var(--sb-danger-ink);
-}
-
-body.skillbridge-app .verification-page .action-button:disabled {
-    color: var(--sb-muted);
-    background: var(--sb-surface-raised);
-}
-
-body.skillbridge-app .verification-page .empty-queue {
-    border-style: dashed;
-    color: var(--sb-muted);
-}
-
-body.skillbridge-app .verification-page .verification-toast {
-    border-color: var(--sb-border);
-    color: var(--sb-ink);
-    background: var(--sb-surface);
-    box-shadow: var(--sb-shadow);
-}
-
 body.skillbridge-app .admin-academics-page :is(.form-text, .academic-section-subtitle) {
     color: var(--sb-muted);
 }
@@ -4535,9 +4297,6 @@ body.skillbridge-app :is(
     .coordinator-stat-card:hover,
     .admin-stat-card:hover,
     .admin-quick-action:hover,
-    .coordinator-students-page .student-tracking-row:hover,
-    .verification-page .filter-chip:hover,
-    .verification-page .action-button:hover,
     .student-page-shell a:not(.btn):hover,
     .employer-page-shell a:not(.btn):hover
 ) {

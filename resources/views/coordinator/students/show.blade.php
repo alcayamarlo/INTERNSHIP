@@ -13,7 +13,7 @@
     </a>
 
     <section class="profile-hero" aria-labelledby="student-profile-name">
-        <div class="profile-ring" style="--profile-progress: {{ $profileCompletion }}%; --profile-color: {{ $profileCompletion >= 50 ? '#34d399' : '#fbbf24' }};" role="img" aria-label="Profile {{ $profileCompletion }} percent complete">
+        <div class="profile-ring" style="--profile-progress: {{ $profileCompletion }}%; --profile-color: {{ $profileCompletion >= 50 ? 'var(--sb-success-ink)' : 'var(--sb-warning-ink)' }};" role="img" aria-label="Profile {{ $profileCompletion }} percent complete">
             <div class="profile-ring-inner">{{ $initials }}</div>
         </div>
 

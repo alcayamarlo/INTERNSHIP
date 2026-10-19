@@ -384,7 +384,6 @@
             const frame = create('iframe', 'preview-frame');
             frame.title = `Preview of ${item.title}`;
             frame.src = getEvidenceUrl(item.type, item.id);
-            frame.style.cssText = 'width:100%;min-height:60vh;border:1px solid #1c3250;background:#0b1a2e;';
             frame.addEventListener('error', () => {
                 previewPane.replaceChildren(create('p', '', 'Preview not available. The file could not be loaded.'));
             }, { once: true });
@@ -393,7 +392,6 @@
             const image = create('img', 'preview-image');
             image.src = getEvidenceUrl(item.type, item.id);
             image.alt = item.title;
-            image.style.cssText = 'display:block;max-width:100%;max-height:60vh;margin:auto;';
             image.addEventListener('error', () => {
                 previewPane.replaceChildren(create('p', '', 'Preview not available. The file could not be loaded.'));
             }, { once: true });

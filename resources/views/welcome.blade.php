@@ -4,17 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="SkillBridge connects students, coordinators, and employers around internship readiness and verified competencies.">
-    <link rel="icon" type="image/svg+xml" href="{{ asset('images/brand/favicon.svg') }}">
     <title>SkillBridge — St. Cecilia's College</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/brand/favicon.svg') }}">
+    <link rel="icon" href="{{ asset('images/brand/favicon.ico') }}" sizes="any">
+    <link rel="apple-touch-icon" href="{{ asset('images/brand/apple-touch-icon.png') }}">
     <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}"></script>
     <style>
+        body.skillbridge-public { margin: 0; }
         .public-page { --public-gutter: clamp(22px, 6vw, 88px); color: var(--sb-ink); }
         .public-announcement { padding: 9px 18px; text-align: center; color: #fff; background: var(--sb-brand-deep); font-size: 13px; }
         .public-nav { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--sb-border); background: color-mix(in srgb, var(--sb-surface) 92%, transparent); backdrop-filter: blur(16px); }
         .public-nav-inner { min-height: 76px; padding-inline: var(--public-gutter); }
         .public-brand { display: inline-flex; align-items: center; gap: 11px; color: var(--sb-ink); text-decoration: none; }
-        .public-brand-logo { display: block; width: 42px; height: 42px; flex-shrink: 0; }
+        .public-brand-mark { display: block; flex: 0 0 auto; width: 42px; height: 42px; }
+        .public-brand-mark img { display: block; width: 100%; height: 100%; }
         .public-brand-copy { display: grid; line-height: 1.05; }
         .public-brand-copy strong { font-family: 'Bricolage Grotesque', sans-serif; font-size: 17px; }
         .public-brand-copy small { margin-top: 5px; color: var(--sb-muted); font-size: 10px; }
@@ -77,7 +81,6 @@
         .public-bridge-card { position: relative; width: min(100%, 430px); padding: 24px; overflow: hidden; border: 1px solid var(--sb-border); border-radius: 28px; background: color-mix(in srgb, var(--sb-surface) 90%, transparent); box-shadow: var(--sb-shadow); }
         .public-bridge-card::before { position: absolute; top: -80px; right: -60px; width: 220px; height: 220px; border-radius: 50%; background: var(--sb-brand-soft); content: ""; }
         .public-bridge-head { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--sb-ink); font-size: 13px; font-weight: 600; }
-        .public-bridge-mark { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 12px; color: var(--sb-red-deep); background: var(--sb-red-soft); }
         .public-bridge-illustration { position: relative; display: block; width: 100%; margin: 14px 0 4px; }
         .public-bridge-illustration .bridge-stroke { stroke-dasharray: 440; stroke-dashoffset: 440; animation: public-bridge-draw 1200ms cubic-bezier(.16, 1, .3, 1) 200ms forwards; }
         .public-bridge-illustration .bridge-path { stroke: var(--sb-red); }
@@ -91,7 +94,6 @@
         .public-page .row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; }
         .public-page .row:has(.col-md-6) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .public-col { min-width: 0; }
-        .public-eyebrow-mark { display: grid; width: 20px; height: 20px; place-items: center; border-radius: 7px; color: #fff; background: linear-gradient(145deg, var(--sb-red), var(--sb-red-deep)); font-size: 11px; }
         .public-faq-item { padding: 0; overflow: hidden; }
         .public-faq-item summary { position: relative; min-height: 58px; padding: 19px 52px 19px 21px; color: var(--sb-ink); font-size: 16px; font-weight: 600; cursor: pointer; list-style: none; }
         .public-faq-item summary::-webkit-details-marker { display: none; }
@@ -131,7 +133,7 @@
             #publicNavigation { display: block; width: 100%; }
             #publicNavigation .public-nav-links, #publicNavigation .public-nav-actions { display: none; }
             #publicNavigation.is-open .public-nav-links, #publicNavigation.is-open .public-nav-actions { display: flex; }
-            .public-brand-logo { width: 38px; height: 38px; }
+            .public-brand-mark { width: 38px; height: 38px; }
             .public-section { padding-inline: 20px; }
             .public-hero { padding-inline: 20px; }
             .public-hero-actions .public-button { width: min(100%, 320px); }
@@ -146,6 +148,33 @@
             .public-bridge-illustration .bridge-stroke { animation: none; stroke-dashoffset: 0; }
             .public-announce-dot { animation: none; }
         }
+
+        /* ---- Navigation spacing + footer refinement (presentation only) ---- */
+        @media (min-width: 768px) {
+            .public-nav-inner { gap: 24px; }
+            #publicNavigation { display: flex; align-items: center; justify-content: flex-end; gap: clamp(28px, 3.4vw, 60px); }
+            .public-nav-links { margin: 0; gap: clamp(22px, 2.6vw, 40px); }
+            .public-nav-links a { padding: 10px 2px; white-space: nowrap; }
+            .public-nav-actions { flex-wrap: nowrap; gap: 12px; }
+            .public-nav-actions .public-button { white-space: nowrap; }
+        }
+        @media (min-width: 768px) and (max-width: 1100px) {
+            .public-nav-actions .public-button { padding: 0 14px; font-size: 13.5px; }
+            .public-nav-actions { gap: 8px; }
+        }
+        .public-footer { padding: 0; border-top: 1px solid var(--sb-border); background: var(--sb-surface); }
+        .public-footer-main { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, .7fr)); gap: clamp(28px, 5vw, 72px); padding: 48px var(--public-gutter) 36px; }
+        .public-footer-about p { max-width: 360px; margin: 16px 0 0; color: var(--sb-muted); font-size: 14px; line-height: 1.7; }
+        .public-footer-col h3 { margin: 0 0 14px; color: var(--sb-ink); font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
+        .public-footer-col ul { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+        .public-footer-col a { color: var(--sb-muted); font-size: 14px; text-decoration: none; }
+        .public-footer-col a:hover { color: var(--sb-brand-content); }
+        .public-footer-bottom { margin: 0; padding: 18px var(--public-gutter); border-top: 1px solid var(--sb-border); }
+        @media (max-width: 767px) {
+            .public-footer-main { grid-template-columns: 1fr 1fr; padding-block: 36px 28px; padding-inline: 20px; }
+            .public-footer-about { grid-column: 1 / -1; }
+            .public-footer-bottom { padding-inline: 20px; }
+        }
     </style>
 </head>
 <body class="skillbridge-public">
@@ -158,7 +187,7 @@
         <nav class="public-nav" aria-label="Main navigation">
             <div class="public-nav-inner d-flex align-items-center justify-content-between">
                 <a class="public-brand" href="{{ route('home') }}" aria-label="SkillBridge home">
-                    <img class="public-brand-logo" src="{{ asset('images/brand/skillbridge-logo-icon.svg') }}" width="42" height="42" alt="" aria-hidden="true">
+                    <span class="public-brand-mark" aria-hidden="true"><img src="{{ asset('images/brand/skillbridge-logo-icon.svg') }}" alt="" width="42" height="42"></span>
                     <span class="public-brand-copy"><strong>SkillBridge</strong><small>St. Cecilia's College</small></span>
                 </a>
                 <button class="public-nav-toggle" type="button" data-public-nav-toggle aria-controls="publicNavigation" aria-expanded="false" aria-label="Toggle navigation">
@@ -184,7 +213,7 @@
         <section class="public-hero" aria-labelledby="hero-heading">
             <div class="public-hero-layout">
                 <div class="public-hero-content">
-                    <div class="public-eyebrow"><span class="public-eyebrow-mark" aria-hidden="true">S</span> Student development and internship placement</div>
+                    <div class="public-eyebrow">Student development and internship placement</div>
                     <h1 id="hero-heading">Build your skills.<br>Move toward <span>what's next.</span></h1>
                     <p>Track competencies, prepare your internship profile, and connect with opportunities through a shared workspace for students, coordinators, and employers.</p>
                     <div class="public-hero-actions">
@@ -196,7 +225,7 @@
                 <div class="public-hero-art" aria-hidden="true">
                     <div class="public-bridge-card">
                         <div class="public-bridge-head">
-                            <span class="public-icon-line"><span class="public-bridge-mark">S</span> A connected pathway</span>
+                            <span class="public-icon-line">A connected pathway</span>
                             <span>SkillBridge</span>
                         </div>
                         <svg class="public-bridge-illustration" viewBox="0 0 440 190" fill="none">
@@ -328,15 +357,32 @@
         </section>
 
         <footer class="public-footer">
-            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-                <a class="public-brand" href="{{ route('home') }}">
-                    <img class="public-brand-logo" src="{{ asset('images/brand/skillbridge-logo-icon.svg') }}" width="42" height="42" alt="" aria-hidden="true">
-                    <span class="public-brand-copy"><strong>SkillBridge</strong><small>St. Cecilia's College</small></span>
-                </a>
-                <a class="public-button" href="{{ route('login') }}">Sign in</a>
+            <div class="public-footer-main">
+                <div class="public-footer-about">
+                    <a class="public-brand" href="{{ route('home') }}">
+                        <span class="public-brand-mark" aria-hidden="true"><img src="{{ asset('images/brand/skillbridge-logo-icon.svg') }}" alt="" width="42" height="42"></span>
+                        <span class="public-brand-copy"><strong>SkillBridge</strong><small>St. Cecilia's College</small></span>
+                    </a>
+                    <p>Internship readiness and verified competencies for students, coordinators, and employers, in one shared workspace.</p>
+                </div>
+                <nav class="public-footer-col" aria-label="Explore">
+                    <h3>Explore</h3>
+                    <ul>
+                        <li><a href="#how-it-works">How it works</a></li>
+                        <li><a href="#audiences">Who it's for</a></li>
+                        <li><a href="#questions">FAQs</a></li>
+                    </ul>
+                </nav>
+                <nav class="public-footer-col" aria-label="Account">
+                    <h3>Account</h3>
+                    <ul>
+                        <li><a href="{{ route('login') }}">Log in</a></li>
+                        <li><a href="{{ route('register') }}">Student registration</a></li>
+                    </ul>
+                </nav>
             </div>
             <div class="public-footer-bottom">
-                <span>SkillBridge · St. Cecilia's College</span>
+                <span>&copy; {{ date('Y') }} SkillBridge &middot; St. Cecilia's College</span>
                 <span>Student development and internship placement</span>
             </div>
         </footer>
