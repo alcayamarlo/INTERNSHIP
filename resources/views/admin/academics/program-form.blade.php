@@ -8,10 +8,7 @@
 
 @section('content')
 <div class="admin-academics-page">
-<div class="mb-4">
-    <h1 class="h3 mb-1">{{ $program->exists ? 'Edit program' : 'Add program' }}</h1>
-    <p class="academic-section-subtitle mb-0">Set the program details, available majors, required internship hours, and assigned coordinator.</p>
-</div>
+<x-page-header :title="$program->exists ? 'Edit program' : 'Add program'" subtitle="Set the program details, available majors, required internship hours, and assigned coordinator." />
 
 <div class="card">
     <div class="card-body">
@@ -21,17 +18,17 @@
 
             <div class="row g-3">
                 <div class="col-md-8">
-                    <label class="form-label" for="name">Program name</label>
+                    <label class="form-label" for="name">Program name <span class="text-danger" aria-hidden="true">*</span></label>
                     <input id="name" name="name" value="{{ old('name', $program->name) }}" class="form-control @error('name') is-invalid @enderror" required>
                     @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label" for="code">Program code</label>
+                    <label class="form-label" for="code">Program code <span class="text-danger" aria-hidden="true">*</span></label>
                     <input id="code" name="code" value="{{ old('code', $program->code) }}" class="form-control @error('code') is-invalid @enderror" required>
                     @error('code')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label" for="required_internship_hours">Required internship hours</label>
+                    <label class="form-label" for="required_internship_hours">Required internship hours <span class="text-danger" aria-hidden="true">*</span></label>
                     <input id="required_internship_hours" name="required_internship_hours" type="number" min="1" max="10000" value="{{ old('required_internship_hours', $program->required_internship_hours) }}" class="form-control @error('required_internship_hours') is-invalid @enderror" required>
                     @error('required_internship_hours')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>

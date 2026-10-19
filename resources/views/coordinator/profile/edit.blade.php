@@ -30,7 +30,7 @@
                 <form method="POST" action="{{ route('coordinator.profile.update') }}" enctype="multipart/form-data" id="pictureForm" class="d-none">
                     @csrf
                     @method('PUT')
-                    <input type="file" name="profile_picture" id="profilePictureInput" accept="image/jpeg,image/jpg,image/png">
+                    <input type="file" name="profile_picture" id="profilePictureInput" accept="image/jpeg,image/jpg,image/png" aria-label="Profile picture">
                 </form>
 
                 <button type="button" class="btn btn-sm btn-outline-primary" id="uploadCoordinatorPhoto">
@@ -64,27 +64,27 @@
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">Institution</label>
-                        <input type="text" class="form-control" name="institution" value="{{ old('institution', $coordinator->institution->name ?? '') }}" disabled>
+                        <label class="form-label" for="coordInstitution">Institution</label>
+                        <input type="text" class="form-control" id="coordInstitution" name="institution" value="{{ old('institution', $coordinator->institution->name ?? '') }}" disabled>
                         <div class="form-text">Your institution cannot be changed. Contact an administrator if needed.</div>
                     </div>
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Department <span class="text-danger" aria-hidden="true">*</span></label>
-                            <input type="text" class="form-control @error('department') is-invalid @enderror" name="department" value="{{ old('department', $coordinator->department) }}" required>
+                            <label class="form-label" for="coordDepartment">Department <span class="text-danger" aria-hidden="true">*</span></label>
+                            <input type="text" class="form-control @error('department') is-invalid @enderror" id="coordDepartment" name="department" value="{{ old('department', $coordinator->department) }}" required>
                             @error('department')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Position <span class="text-danger" aria-hidden="true">*</span></label>
-                            <input type="text" class="form-control @error('position') is-invalid @enderror" name="position" placeholder="Coordinator, Director, etc." value="{{ old('position', $coordinatorInfo['position'] ?? '') }}" required>
+                            <label class="form-label" for="coordPosition">Position <span class="text-danger" aria-hidden="true">*</span></label>
+                            <input type="text" class="form-control @error('position') is-invalid @enderror" id="coordPosition" name="position" placeholder="Coordinator, Director, etc." value="{{ old('position', $coordinatorInfo['position'] ?? '') }}" required>
                             @error('position')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                     </div>
 
                     <div class="mt-3">
-                        <label class="form-label">Office Address <span class="text-danger" aria-hidden="true">*</span></label>
-                        <input type="text" class="form-control @error('office_address') is-invalid @enderror" name="office_address" value="{{ old('office_address', $coordinator->office_address) }}" required>
+                        <label class="form-label" for="coordOffice">Office Address <span class="text-danger" aria-hidden="true">*</span></label>
+                        <input type="text" class="form-control @error('office_address') is-invalid @enderror" id="coordOffice" name="office_address" value="{{ old('office_address', $coordinator->office_address) }}" required>
                         @error('office_address')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                 </div>
@@ -97,20 +97,20 @@
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">Full Name <span class="text-danger" aria-hidden="true">*</span></label>
-                        <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name', $user->name) }}" required>
+                        <label class="form-label" for="coordName">Full Name <span class="text-danger" aria-hidden="true">*</span></label>
+                        <input type="text" class="form-control @error('name') is-invalid @enderror" id="coordName" name="name" value="{{ old('name', $user->name) }}" required>
                         @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Email Address <span class="text-danger" aria-hidden="true">*</span></label>
-                            <input type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email', $user->email) }}" required>
+                            <label class="form-label" for="coordEmail">Email Address <span class="text-danger" aria-hidden="true">*</span></label>
+                            <input type="email" class="form-control @error('email') is-invalid @enderror" id="coordEmail" name="email" value="{{ old('email', $user->email) }}" required>
                             @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Mobile Number <span class="text-danger" aria-hidden="true">*</span></label>
-                            <input type="tel" class="form-control @error('phone') is-invalid @enderror" name="phone" placeholder="+63 900 000 0000" value="{{ old('phone', $user->phone) }}" required>
+                            <label class="form-label" for="coordPhone">Mobile Number <span class="text-danger" aria-hidden="true">*</span></label>
+                            <input type="tel" class="form-control @error('phone') is-invalid @enderror" id="coordPhone" name="phone" placeholder="+63 900 000 0000" value="{{ old('phone', $user->phone) }}" required>
                             @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                     </div>

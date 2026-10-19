@@ -8,13 +8,9 @@
 
 @section('content')
 <div class="admin-academics-page">
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-    <div>
-        <h1 class="h3 mb-1">Academic settings</h1>
-        <p class="text-muted mb-0">Manage school programs, majors, internship hours, and academic calendar defaults.</p>
-    </div>
-    <a href="{{ route('admin.academics.programs.create') }}" class="btn btn-primary">Add program</a>
-</div>
+<x-page-header title="Academic settings" subtitle="Manage school programs, majors, internship hours, and academic calendar defaults.">
+    <a href="{{ route('admin.academics.programs.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add program</a>
+</x-page-header>
 
 @if($errors->any())
     <div class="alert alert-danger" role="alert" aria-labelledby="academic-settings-errors-title">
@@ -30,10 +26,10 @@
 @endif
 
 <section class="card mb-4">
-    <div class="card-header"><h2 class="h5 mb-0">Programs</h2></div>
+    <div class="card-header"><h2><i class="bi bi-mortarboard" aria-hidden="true"></i> Programs</h2></div>
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-            <thead><tr><th>Program</th><th>Majors</th><th>Required hours</th><th>Assigned coordinator</th><th>Students</th><th></th></tr></thead>
+        <table class="table table-hover align-middle">
+            <thead><tr><th scope="col">Program</th><th scope="col">Majors</th><th scope="col">Required hours</th><th scope="col">Assigned coordinator</th><th scope="col">Students</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
             <tbody>
                 @forelse($programs as $program)
                     <tr>
@@ -42,7 +38,7 @@
                         <td>
                             {{ number_format($program->required_internship_hours) }}
                             @unless($program->required_hours_confirmed)
-                                <span class="badge text-bg-warning">To be confirmed</span>
+                                <span class="badge bg-warning">To be confirmed</span>
                             @endunless
                         </td>
                         <td>{{ $program->coordinator?->user?->name ?? 'Not assigned' }}</td>
@@ -50,7 +46,7 @@
                         <td><a class="btn btn-sm btn-outline-primary" href="{{ route('admin.academics.programs.edit', $program) }}">Edit</a></td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="text-center text-muted py-4">No programs are configured.</td></tr>
+                    <tr><td colspan="6"><x-empty-state icon="bi-mortarboard" title="No programs configured" message="Add a program so students can register against it." /></td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -58,17 +54,17 @@
 </section>
 
 <section class="card mb-4">
-    <div class="card-header"><h2 class="h5 mb-0">Deployment requirements</h2></div>
+    <div class="card-header"><h2><i class="bi bi-file-earmark-check" aria-hidden="true"></i> Deployment requirements</h2></div>
     <div class="card-body">
         <p class="text-muted">Manage the documents students need before deployment. Requirements with uploaded files cannot be deleted; deactivate them to hide them from new submissions.</p>
         <form method="POST" action="{{ route('admin.academics.deployment-requirements.store') }}" class="row g-3 align-items-end mb-4">
             @csrf
             <div class="col-md-6">
-                <label class="form-label" for="new_requirement_name">Document name</label>
+                <label class="form-label" for="new_requirement_name">Document name <span class="text-danger" aria-hidden="true">*</span></label>
                 <input class="form-control" id="new_requirement_name" name="name" value="{{ old('name') }}" maxlength="255" required>
             </div>
             <div class="col-md-4">
-                <label class="form-label" for="new_requirement_source">Uploaded by</label>
+                <label class="form-label" for="new_requirement_source">Uploaded by <span class="text-danger" aria-hidden="true">*</span></label>
                 <select class="form-select" id="new_requirement_source" name="upload_source" required>
                     <option value="student">Student</option>
                     <option value="coordinator">Coordinator</option>
@@ -77,8 +73,8 @@
             <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Add requirement</button></div>
         </form>
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead><tr><th>Document</th><th>Uploaded by</th><th>Order</th><th>Active</th><th></th></tr></thead>
+            <table class="table table-hover align-middle">
+                <thead><tr><th scope="col">Document</th><th scope="col">Uploaded by</th><th scope="col">Order</th><th scope="col">Active</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
                 <tbody>
                     @forelse($deploymentRequirements as $requirement)
                         <tr>
@@ -113,7 +109,7 @@
                             <td>
                                 <button class="btn btn-sm btn-outline-primary" type="submit" form="{{ $requirementFormId }}">Save</button>
                                 @if(!$requirement->portfolios()->exists())
-                                    <form method="POST" action="{{ route('admin.academics.deployment-requirements.destroy', $requirement) }}" onsubmit="return confirm('Delete this requirement?')">
+                                    <form method="POST" action="{{ route('admin.academics.deployment-requirements.destroy', $requirement) }}" class="d-inline" data-confirm="Delete this requirement?" data-confirm-title="Delete requirement">
                                         @csrf
                                         @method('DELETE')
                                         <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
@@ -124,7 +120,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="text-center text-muted py-4">No deployment requirements are configured.</td></tr>
+                        <tr><td colspan="5"><x-empty-state icon="bi-file-earmark-check" title="No deployment requirements" message="Add the documents students must submit before deployment." /></td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -133,7 +129,7 @@
 </section>
 
 <section class="card">
-    <div class="card-header"><h2 class="h5 mb-0">Academic calendar and student ID settings</h2></div>
+    <div class="card-header"><h2><i class="bi bi-calendar3" aria-hidden="true"></i> Academic calendar and student ID settings</h2></div>
     <div class="card-body">
         <form method="POST" action="{{ route('admin.academics.settings.update') }}">
             @csrf
@@ -148,7 +144,7 @@
                         <input class="form-check-input" type="checkbox" id="require_fourth_year_standing" name="require_fourth_year_standing" value="1" @checked(old('require_fourth_year_standing', $settings->require_fourth_year_standing))>
                         <label class="form-check-label" for="require_fourth_year_standing">Require 4th-year standing</label>
                     </div>
-                    @error('require_fourth_year_standing')<div class="text-danger small">{{ $message }}</div>@enderror
+                    @error('require_fourth_year_standing')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-6">
                     <input type="hidden" name="require_major_subjects_passed" value="0">
@@ -156,13 +152,13 @@
                         <input class="form-check-input" type="checkbox" id="require_major_subjects_passed" name="require_major_subjects_passed" value="1" @checked(old('require_major_subjects_passed', $settings->require_major_subjects_passed))>
                         <label class="form-check-label" for="require_major_subjects_passed">Require all major subjects passed</label>
                     </div>
-                    @error('require_major_subjects_passed')<div class="text-danger small">{{ $message }}</div>@enderror
+                    @error('require_major_subjects_passed')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label" for="student_id_pattern">Student ID format</label>
+                    <label class="form-label" for="student_id_pattern">Student ID format <span class="text-danger" aria-hidden="true">*</span></label>
                     <input id="student_id_pattern" name="student_id_pattern" value="{{ old('student_id_pattern', $settings->student_id_pattern) }}" class="form-control @error('student_id_pattern') is-invalid @enderror" required>
                     @error('student_id_pattern')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    <small class="form-text">Enter a regular-expression pattern without delimiters. Example: SCC-21-00013240.</small>
+                    <div class="form-text">Enter a regular-expression pattern without delimiters. Example: SCC-21-00013240.</div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label" for="academic_year_start_month">Academic year start month</label>
@@ -172,7 +168,7 @@
                         @endforeach
                     </select>
                     @error('academic_year_start_month')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    <small class="form-text">The 1st semester start month must match.</small>
+                    <div class="form-text">The 1st semester start month must match.</div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label" for="current_term_override">Current term override</label>
@@ -190,7 +186,7 @@
                         <input class="form-check-input" type="checkbox" id="summer_enabled" name="summer_enabled" value="1" @checked(old('summer_enabled', $settings->summer_enabled))>
                         <label class="form-check-label" for="summer_enabled">Enable Summer term</label>
                     </div>
-                    @error('summer_enabled')<div class="text-danger small">{{ $message }}</div>@enderror
+                    @error('summer_enabled')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 </div>
             </div>
 

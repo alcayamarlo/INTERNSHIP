@@ -866,6 +866,7 @@
 
     @stack('styles')
     <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/auth-photo.css') }}?v={{ @filemtime(public_path('css/auth-photo.css')) }}">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}"></script>
 
 </head>
@@ -875,10 +876,6 @@
 
 
     <div class="auth-shell">
-
-        <button type="button" class="sb-theme-toggle skillbridge-guest-theme-toggle" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false">
-            <i class="bi bi-moon-stars" aria-hidden="true"></i>
-        </button>
 
         {{-- =================================================
              LEFT BRANDING PANEL

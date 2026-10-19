@@ -3,22 +3,17 @@
 @section('title', 'Student files')
 
 @section('content')
-<div class="container py-4">
-    <a href="{{ route('admin.users.index') }}" class="text-decoration-none">&larr; User management</a>
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-3 mb-4">
-        <div>
-            <h1 class="h3 mb-1">Files for {{ $student->user->name }}</h1>
-            <p class="text-muted mb-0">
-                {{ $student->program ?: 'Program not set' }} · Student ID {{ $student->student_id_number ?: 'Not provided' }}
-                @if($studentIdNeedsCorrection)<span class="badge text-bg-warning">ID needs correction</span>@endif
-            </p>
-        </div>
-        <div class="d-flex gap-2">
-            <span class="badge bg-secondary">Total files: {{ $stats['total'] }}</span>
-            <span class="badge bg-secondary">Certificates: {{ $stats['certificates'] }}</span>
-            <span class="badge bg-secondary">Projects: {{ $stats['projects'] }}</span>
-            <span class="badge bg-secondary">Storage used: {{ $stats['storage_used'] }} / 10 MB</span>
-        </div>
+<x-page-header :title="'Files for '.$student->user->name" :subtitle="($student->program ?: 'Program not set').' · Student ID '.($student->student_id_number ?: 'Not provided')">
+    @if($studentIdNeedsCorrection)<x-status-badge status="warning" label="ID needs correction" />@endif
+    <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> User management</a>
+</x-page-header>
+
+<div>
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <span class="sb-tag">Total files: {{ $stats['total'] }}</span>
+        <span class="sb-tag">Certificates: {{ $stats['certificates'] }}</span>
+        <span class="sb-tag">Projects: {{ $stats['projects'] }}</span>
+        <span class="sb-tag">Storage used: {{ $stats['storage_used'] }} / 10 MB</span>
     </div>
 
     <section class="card mb-4">
@@ -40,8 +35,8 @@
 
     <div class="card">
         <div class="table-responsive">
-            <table class="table align-middle mb-0">
-                <thead><tr><th>Name</th><th>Category</th><th>Status</th><th>Review details</th><th>Actions</th></tr></thead>
+            <table class="table table-hover align-middle">
+                <thead><tr><th scope="col">Name</th><th scope="col">Category</th><th scope="col">Status</th><th scope="col">Review details</th><th scope="col">Actions</th></tr></thead>
                 <tbody>
                 @forelse($files as $file)
                     @php
@@ -67,7 +62,7 @@
                             <small class="d-block text-muted">{{ $file->file_size_display }} · Uploaded {{ $file->created_at?->format('M d, Y') }}</small>
                         </td>
                         <td>{{ $fileCategory?->label() ?? 'File' }}</td>
-                        <td>{{ ucfirst(match($fileStatus) { 'evidence_submitted' => 'pending', default => $fileStatus }) }}</td>
+                        <td><x-status-badge :status="match($fileStatus) { 'evidence_submitted' => 'pending', default => $fileStatus }" /></td>
                         <td>
                             {{ $file->reviewerUser?->name ?? 'Not reviewed' }}
                             <small class="d-block text-muted">{{ $file->reviewed_at?->format('M d, Y') ?? 'Not reviewed' }}</small>
@@ -100,7 +95,7 @@
                                     <input name="remark" class="form-control form-control-sm" aria-label="Review remark" placeholder="Remark">
                                     <button type="submit" class="btn btn-sm btn-primary">Save</button>
                                 </form>
-                                <form method="POST" action="{{ route('admin.portfolio-files.destroy', [$fileType, $file->id]) }}" onsubmit="return confirm('Remove this file?');">
+                                <form method="POST" action="{{ route('admin.portfolio-files.destroy', [$fileType, $file->id]) }}" data-confirm="Remove this file? This cannot be undone." data-confirm-title="Remove file" data-confirm-label="Remove">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger">Remove</button>
@@ -109,7 +104,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="text-center text-muted py-5">No files are available for this student.</td></tr>
+                    <tr><td colspan="5"><x-empty-state icon="bi-folder2-open" title="No files available" message="This student has not uploaded any files yet." /></td></tr>
                 @endforelse
                 </tbody>
             </table>
@@ -117,19 +112,19 @@
     </div>
 </div>
 
-<dialog id="adminFilePreview" class="p-0 border rounded" style="width:min(900px, calc(100% - 24px));max-height:calc(100% - 24px);background:#0f2238;color:#e6f0fa;">
-    <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
-        <h2 class="h6 mb-0" id="adminPreviewTitle"></h2>
-        <button type="button" class="btn-close btn-close-white" id="closeAdminPreview" aria-label="Close"></button>
+<dialog id="adminFilePreview" class="sb-dialog" aria-labelledby="adminPreviewTitle">
+    <div class="sb-dialog-header">
+        <h2 id="adminPreviewTitle"></h2>
+        <button type="button" class="btn-close" id="closeAdminPreview" aria-label="Close"></button>
     </div>
-    <div class="row g-3 p-3">
+    <div class="row g-3 sb-dialog-body">
         <div class="col-lg-8" id="adminPreviewPane"></div>
-        <dl class="col-lg-4 small">
+        <dl class="col-lg-4">
             <dt>Category</dt><dd id="adminPreviewCategory"></dd><dt>Issuer</dt><dd id="adminPreviewIssuer"></dd>
             <dt>Date uploaded</dt><dd id="adminPreviewUploaded"></dd><dt>Status</dt><dd id="adminPreviewStatus"></dd>
             <dt>Reviewed by</dt><dd id="adminPreviewReviewer"></dd><dt>Reviewed on</dt><dd id="adminPreviewReviewedAt"></dd>
             <dt>File size</dt><dd id="adminPreviewSize"></dd>
-            <a class="btn btn-primary" id="adminPreviewDownload">Download</a>
+            <a class="btn btn-primary mt-3" id="adminPreviewDownload">Download</a>
         </dl>
     </div>
 </dialog>
@@ -153,13 +148,11 @@
             const frame = document.createElement('iframe');
             frame.title = `Preview of ${data.fileName}`;
             frame.src = data.previewUrl;
-            frame.style.cssText = 'width:100%;min-height:60vh;background:#0b1a2e;border:1px solid #1c3250;';
             pane.append(frame);
         } else if (['jpg', 'jpeg', 'png'].includes(data.fileExtension)) {
             const image = document.createElement('img');
             image.src = data.previewUrl;
             image.alt = data.fileName;
-            image.style.cssText = 'display:block;max-width:100%;max-height:60vh;margin:auto;';
             image.addEventListener('error', () => {
                 const message = document.createElement('p');
                 message.textContent = 'Preview not available. The file could not be loaded.';

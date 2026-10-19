@@ -1,0 +1,377 @@
+/* =====================================================
+   AUTH PAGES: full-page campus photo + frosted form
+   Separate file: public/css/auth-photo.css
+   Linked in resources/views/layouts/guest.blade.php AFTER skillbridge-ui.css.
+   Pure CSS. No Blade logic / JS / backend / font changes.
+   Image: public/images/login-campus.png
+   Applies to login, register, forgot / reset password, verify email.
+   ===================================================== */
+
+/* One look for both themes: white text on a photo. The tokens below are
+   scoped to body.auth-page, so every .auth-* component recolors itself. */
+body.auth-page {
+    --sb-auth-text: #fff;
+    --sb-auth-muted: rgba(255, 255, 255, .74);
+    --sb-auth-label: rgba(255, 255, 255, .88);
+    --sb-auth-card-background: transparent;
+    --sb-auth-card-border: rgba(255, 255, 255, .16);
+    --sb-auth-input-background: transparent;
+    --sb-auth-input-border: rgba(255, 255, 255, .5);
+    --sb-auth-input-text: #fff;
+    --sb-auth-input-placeholder: rgba(255, 255, 255, .62);
+    --sb-auth-danger: #ffb3bb;
+    --sb-auth-pill-background: rgba(255, 255, 255, .12);
+    --sb-auth-pill-border: rgba(255, 255, 255, .3);
+    --sb-auth-pill-text: #fff;
+    --sb-auth-option-background: #2a1d1f;
+    --sb-auth-option-text: #fff5f5;
+    --sb-auth-terms-background: rgba(255, 255, 255, .08);
+    --sb-brand-content: #ffc2c8;
+    --sb-brand-soft: rgba(255, 255, 255, .12);
+    --sb-danger-bg: rgba(120, 12, 29, .45);
+    --sb-danger-border: rgba(255, 179, 187, .45);
+    --sb-success-bg: rgba(22, 101, 52, .45);
+    --sb-success-border: rgba(134, 239, 172, .45);
+    --sb-success-ink: #bbf7d0;
+}
+
+/* ---------- One photo across the whole page ---------- */
+
+body.auth-page .auth-shell {
+    background:
+        linear-gradient(100deg, rgba(20, 5, 9, .72) 0%, rgba(20, 5, 9, .38) 50%, rgba(20, 5, 9, .30) 100%),
+        url('../images/login-campus.png') 38% center / cover no-repeat;
+    background-color: #1a0b0d;
+}
+
+/* The left panel stops painting its own photo/red wash; text sits on the page photo. */
+body.auth-page .auth-left {
+    background: transparent;
+}
+
+body.auth-page .auth-left::before,
+body.auth-page .auth-left::after {
+    display: none;
+}
+
+/* ---------- Frosted form side ---------- */
+
+body.auth-page .auth-right {
+    background: rgba(14, 6, 9, .34);
+    -webkit-backdrop-filter: blur(20px) saturate(1.1);
+    backdrop-filter: blur(20px) saturate(1.1);
+    border-left: 1px solid rgba(255, 255, 255, .14);
+    color: #fff;
+}
+
+/* No card: the form sits directly on the glass. */
+body.auth-page .auth-card {
+    padding: clamp(8px, 1.6vh, 16px) 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+
+body.auth-page .auth-pane {
+    max-width: 460px;
+}
+
+body.auth-page .auth-pane--wide {
+    max-width: 600px;
+}
+
+body.auth-page .auth-heading h1 {
+    color: #fff;
+    font-weight: 600;
+    letter-spacing: -.02em;
+}
+
+body.auth-page .auth-heading h1 span {
+    color: #ffc2c8;
+}
+
+body.auth-page .auth-heading p {
+    margin-top: 10px;
+    color: var(--sb-auth-muted);
+}
+
+body.auth-page .auth-step-tag {
+    color: #fff;
+}
+
+/* ---------- Underline inputs ---------- */
+
+body.auth-page .auth-input {
+    border: 0;
+    border-bottom: 1px solid var(--sb-auth-input-border);
+    border-radius: 0;
+    background-color: transparent;
+    color: #fff;
+    box-shadow: none;
+}
+
+body.auth-page .auth-input:hover {
+    border-bottom-color: rgba(255, 255, 255, .85);
+}
+
+body.auth-page .auth-input:focus {
+    border-bottom-color: #fff;
+    background-color: rgba(255, 255, 255, .06);
+    box-shadow: 0 1px 0 0 #fff;
+}
+
+body.auth-page .auth-input.is-invalid {
+    border-bottom-color: var(--sb-auth-danger);
+}
+
+body.auth-page .auth-input-icon {
+    left: 2px;
+}
+
+body.auth-page .auth-input {
+    padding-left: 32px;
+}
+
+body.auth-page .auth-input-wrap:focus-within .auth-input-icon {
+    color: #fff;
+}
+
+/* Keep browser autofill from painting a white box. */
+body.auth-page .auth-input:-webkit-autofill,
+body.auth-page .auth-input:-webkit-autofill:hover,
+body.auth-page .auth-input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #fff;
+    caret-color: #fff;
+    transition: background-color 9999s ease-out 0s;
+    box-shadow: 0 0 0 1000px rgba(30, 14, 18, .9) inset;
+}
+
+body.auth-page .auth-toggle {
+    color: rgba(255, 255, 255, .7);
+}
+
+body.auth-page .auth-toggle:hover,
+body.auth-page .auth-toggle[aria-pressed="true"] {
+    color: #fff;
+    background: rgba(255, 255, 255, .12);
+}
+
+body.auth-page select.auth-input option {
+    background: var(--sb-auth-option-background);
+    color: var(--sb-auth-option-text);
+}
+
+/* ---------- Checkbox, links ---------- */
+
+body.auth-page .auth-check {
+    color: var(--sb-auth-muted);
+}
+
+body.auth-page .auth-check input {
+    accent-color: #e11d2e;
+}
+
+body.auth-page .auth-link,
+body.auth-page .auth-footer-text a {
+    color: #fff;
+}
+
+/* ---------- Pills ---------- */
+
+body.auth-page .auth-back-link,
+body.auth-page .auth-secure {
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+}
+
+body.auth-page .auth-back-link:hover {
+    border-color: #fff;
+    color: #fff;
+}
+
+body.auth-page .auth-secure i {
+    color: #bbf7d0;
+}
+
+/* ---------- Button: red pill so the main action stays obvious ---------- */
+
+body.auth-page .auth-btn {
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #e11d2e 0%, #9b0f1e 100%);
+    box-shadow: 0 12px 26px rgba(225, 29, 46, .38);
+    transition:
+        transform var(--sb-motion-fast) var(--sb-ease),
+        box-shadow var(--sb-motion-base) var(--sb-ease),
+        filter var(--sb-motion-fast) var(--sb-ease);
+}
+
+body.auth-page .auth-btn:hover:not(:disabled) {
+    border: 0;
+    background: linear-gradient(135deg, #e11d2e 0%, #9b0f1e 100%);
+    box-shadow: 0 16px 32px rgba(225, 29, 46, .5);
+    filter: brightness(1.06);
+    transform: translateY(-1px);
+}
+
+body.auth-page .auth-btn:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 6px 14px rgba(225, 29, 46, .4);
+}
+
+body.auth-page .auth-footer-text {
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, .16);
+}
+
+/* ---------- Left text: a little more air, readable on the photo ---------- */
+
+body.auth-page .auth-left h1,
+body.auth-page .auth-description {
+    text-shadow: 0 2px 18px rgba(0, 0, 0, .45);
+}
+
+/* ---------- Small screens: left panel is hidden, photo stays behind the glass ---------- */
+
+@media (max-width: 850px) {
+    body.auth-page .auth-shell {
+        background-position: 30% center;
+    }
+
+    body.auth-page .auth-right {
+        border-left: 0;
+        background: rgba(14, 6, 9, .5);
+    }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    body.auth-page .auth-right {
+        background: rgba(14, 6, 9, .78);
+    }
+}
+
+/* =====================================================
+   Theme switch is removed on auth pages (the look is fixed).
+   ===================================================== */
+
+body.auth-page .skillbridge-guest-theme-toggle,
+body.auth-page [data-theme-toggle] {
+    display: none !important;
+}
+
+@media (max-width: 1152px) {
+    body.auth-page .auth-top {
+        padding-right: 0;
+    }
+}
+
+/* Focus: just the brighter underline, no filled box. */
+body.auth-page .auth-input:focus {
+    background-color: transparent;
+}
+
+/* Empty <select> looks like a placeholder, like the other fields. */
+body.auth-page select.auth-input:required:invalid {
+    color: var(--sb-auth-input-placeholder);
+}
+
+body.auth-page select.auth-input option {
+    color: var(--sb-auth-option-text);
+}
+
+/* =====================================================
+   Register: tighter, so the form fits without a long scroll
+   ===================================================== */
+
+body.auth-page .auth-pane--wide {
+    max-width: 640px;
+    padding-top: clamp(10px, 1.6vh, 20px);
+    padding-bottom: clamp(10px, 1.6vh, 20px);
+}
+
+body.auth-page .auth-pane--wide .auth-top {
+    margin-bottom: 16px;
+}
+
+body.auth-page .auth-pane--wide .auth-card {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+body.auth-page .auth-pane--wide .auth-heading {
+    margin-bottom: 10px;
+}
+
+body.auth-page .auth-pane--wide .auth-heading h1 {
+    margin-bottom: 4px;
+    font-size: clamp(24px, 2.1vw, 30px);
+    line-height: 1.08;
+}
+
+body.auth-page .auth-pane--wide .auth-heading p {
+    margin-top: 4px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+body.auth-page .auth-pane--wide .auth-chip {
+    margin-bottom: 8px;
+}
+
+body.auth-page .auth-pane--wide .auth-grid {
+    gap: 8px 22px;
+}
+
+body.auth-page .auth-pane--wide .auth-field {
+    margin-bottom: 0;
+}
+
+body.auth-page .auth-pane--wide .auth-label {
+    margin-bottom: 0;
+    font-size: 12.5px;
+}
+
+body.auth-page .auth-pane--wide .auth-input {
+    height: 40px;
+    font-size: 14.5px;
+}
+
+body.auth-page .auth-pane--wide .auth-toggle {
+    width: 34px;
+    height: 34px;
+}
+
+body.auth-page .auth-pane--wide .auth-terms {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-color: rgba(255, 255, 255, .18);
+}
+
+body.auth-page .auth-pane--wide .auth-terms-label {
+    font-size: 12.5px;
+    line-height: 1.4;
+}
+
+body.auth-page .auth-pane--wide .auth-btn {
+    min-height: 44px;
+}
+
+body.auth-page .auth-pane--wide .auth-footer-text {
+    margin-top: 10px;
+    padding-top: 10px;
+}
+
+/* Account-type bar (the "Student account" chip) */
+body.auth-page .auth-chip {
+    border-color: rgba(255, 255, 255, .22);
+    background: rgba(255, 255, 255, .08);
+    color: #fff;
+}
+
+/* Terms links */
+body.auth-page .auth-terms-label a {
+    color: #ffc2c8;
+}

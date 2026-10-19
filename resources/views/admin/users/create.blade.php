@@ -3,33 +3,29 @@
 @section('title', 'Create User')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="h3 mb-1">Create User</h1>
-        <p class="text-muted mb-0">Create an employer, coordinator, or student account</p>
-    </div>
-    <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary">Back to Users</a>
-</div>
+<x-page-header title="Create User" subtitle="Create an employer, coordinator, or student account">
+    <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to Users</a>
+</x-page-header>
 
-<div class="card">
+<div class="card" style="max-width: 900px;">
     <div class="card-body">
         <form method="POST" action="{{ route('admin.users.store') }}" class="row g-3">
             @csrf
 
             <div class="col-md-6">
-                <label for="name" class="form-label">Full Name</label>
+                <label for="name" class="form-label">Full Name <span class="text-danger" aria-hidden="true">*</span></label>
                 <input id="name" name="name" type="text" value="{{ old('name') }}" class="form-control @error('name') is-invalid @enderror" required>
                 @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
 
             <div class="col-md-6">
-                <label for="email" class="form-label">Email Address</label>
+                <label for="email" class="form-label">Email Address <span class="text-danger" aria-hidden="true">*</span></label>
                 <input id="email" name="email" type="email" value="{{ old('email') }}" class="form-control @error('email') is-invalid @enderror" required>
                 @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
 
             <div class="col-md-6">
-                <label for="role" class="form-label">Account Type</label>
+                <label for="role" class="form-label">Account Type <span class="text-danger" aria-hidden="true">*</span></label>
                 <select id="role" name="role" class="form-select @error('role') is-invalid @enderror" required>
                     <option value="">Select account type</option>
                     @foreach($roles as $role)
@@ -40,7 +36,7 @@
             </div>
 
             <div class="col-md-6">
-                <label for="phone" class="form-label">Phone Number <span class="text-muted">(optional)</span></label>
+                <label for="phone" class="form-label">Phone Number <span class="text-muted fw-normal">(optional)</span></label>
                 <input id="phone" name="phone" type="text" value="{{ old('phone') }}" class="form-control @error('phone') is-invalid @enderror">
                 @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
@@ -67,18 +63,18 @@
             </div>
 
             <div class="col-md-6">
-                <label for="password" class="form-label">Temporary Password</label>
+                <label for="password" class="form-label">Temporary Password <span class="text-danger" aria-hidden="true">*</span></label>
                 <input id="password" name="password" type="password" class="form-control @error('password') is-invalid @enderror" required>
                 @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
 
             <div class="col-md-6">
-                <label for="password_confirmation" class="form-label">Confirm Password</label>
+                <label for="password_confirmation" class="form-label">Confirm Password <span class="text-danger" aria-hidden="true">*</span></label>
                 <input id="password_confirmation" name="password_confirmation" type="password" class="form-control" required>
             </div>
 
             <div class="col-12">
-                <button type="submit" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i>Create Account</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-person-plus" aria-hidden="true"></i> Create Account</button>
             </div>
         </form>
     </div>

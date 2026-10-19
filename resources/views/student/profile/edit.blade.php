@@ -34,7 +34,7 @@
                 <button type="button" class="avatar-action" id="uploadPhotoButton">Upload photo</button>
                 <form method="POST" action="{{ route('student.profile.update-picture') }}" enctype="multipart/form-data" class="visually-hidden" id="profilePictureForm">
                     @csrf
-                    <input type="file" name="profile_picture" id="profilePictureInput" accept="image/jpeg,image/jpg,image/png">
+                    <input type="file" name="profile_picture" id="profilePictureInput" accept="image/jpeg,image/jpg,image/png" aria-label="Profile picture">
                 </form>
             </div>
             <div>
@@ -206,7 +206,7 @@
                                     <div class="list-group-item px-0">
                                         <div class="d-flex flex-wrap justify-content-between gap-2">
                                             <strong>{{ match($changeRequest->field) {'student_id_number' => 'Student ID', 'program_id' => 'Program', 'year_level' => 'Year level', default => 'Profile field'} }}</strong>
-                                            <span class="badge text-bg-{{ $changeRequest->status === 'approved' ? 'success' : ($changeRequest->status === 'rejected' ? 'danger' : 'warning') }}">{{ ucfirst($changeRequest->status) }}</span>
+                                            <span class="badge bg-{{ $changeRequest->status === 'approved' ? 'success' : ($changeRequest->status === 'rejected' ? 'danger' : 'warning') }}">{{ ucfirst($changeRequest->status) }}</span>
                                         </div>
                                         @if($changeRequest->field === 'program_id')
                                             <p class="small mb-1">{{ $programs->firstWhere('id', (int) $changeRequest->requested_value)?->display_name ?? 'Program no longer available' }}</p>
