@@ -164,7 +164,7 @@
                     <label class="form-label" for="required_ojt_hours">Required OJT hours <span class="text-danger" aria-hidden="true">*</span></label>
                     <input type="number" min="1" max="2000" id="required_ojt_hours" name="required_ojt_hours" value="{{ old('required_ojt_hours', $settings->required_ojt_hours ?? 300) }}" class="form-control @error('required_ojt_hours') is-invalid @enderror" required>
                     @error('required_ojt_hours')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    <div class="form-text">Applied to new placements when an employer accepts a student. Existing placements keep their target.</div>
+                    <div class="form-text">Fallback for new placements when the student's program has no required internship hours. Existing placements keep their target.</div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label" for="academic_year_start_month">Academic year start month</label>

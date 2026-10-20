@@ -22,7 +22,7 @@ class PlacementService
      */
     public function openForApplication(InternshipApplication $application): Placement
     {
-        $application->loadMissing('internship');
+        $application->loadMissing('internship', 'student.academicProgram');
 
         return Placement::withTrashed()->firstOrCreate(
             ['application_id' => $application->id],
@@ -31,7 +31,9 @@ class PlacementService
                 'employer_id' => $application->internship->employer_id,
                 'internship_id' => $application->internship_id,
                 'start_date' => now()->toDateString(),
-                'required_hours' => AcademicSetting::current()->required_ojt_hours ?: 300,
+                // The program's own requirement wins; the academic setting is the fallback.
+                'required_hours' => $application->student?->academicProgram?->required_internship_hours
+                    ?: (AcademicSetting::current()->required_ojt_hours ?: 300),
                 'status' => Placement::STATUS_ACTIVE,
             ]
         );

@@ -27,8 +27,10 @@ class CompetencyMatchingService
         $cacheKey = "recommendations_{$student->id}_{$limit}";
 
         return Cache::remember($cacheKey, 1800, function () use ($student, $limit) {
+            // Recommendations stay within the student's program; searching covers every program.
             $internships = Internship::query()
                 ->open()
+                ->forProgram($student->program_id)
                 ->with(['employer', 'requirementsList'])
                 ->latest()
                 ->get();

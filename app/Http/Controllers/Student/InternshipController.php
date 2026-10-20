@@ -12,6 +12,7 @@ use App\Services\ApplicationService;
 use App\Services\CompetencyMatchingService;
 use App\Services\InternshipEligibility;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -27,7 +28,21 @@ class InternshipController extends Controller
     public function index(Request $request)
     {
         $student = Auth::user()->student;
-        $query = Internship::query()->open()->with('employer', 'requirementsList');
+        $query = Internship::query()->open()->with('employer', 'requirementsList', 'programs');
+
+        // Browsing defaults to the student's program; searching defaults to every program,
+        // so students can still find internships outside their program or competencies.
+        $isSearching = collect(['search', 'location', 'company', 'skill'])->contains(fn ($field) => $request->filled($field));
+        $scope = in_array($request->get('scope'), ['program', 'all'], true)
+            ? $request->get('scope')
+            : ($isSearching ? 'all' : 'program');
+        if (! $student->program_id) {
+            $scope = 'all';
+        }
+
+        if ($scope === 'program') {
+            $query->forProgram($student->program_id);
+        }
 
         if ($search = $request->get('search')) {
             $query->where(function ($q) use ($search) {
@@ -49,14 +64,24 @@ class InternshipController extends Controller
             $query->whereHas('requirementsList', fn ($q) => $q->where('requirement_name', 'like', "%{$skill}%"));
         }
 
-        $internships = $query->latest()->paginate(12)->withQueryString();
+        // Best competency match first, newest first among equal scores.
+        $matches = $query->latest()->get()
+            ->each(fn (Internship $internship) => $internship->match_percentage = $this->matchingService->calculateMatch($student, $internship))
+            ->sortByDesc('match_percentage')
+            ->values();
+        $page = LengthAwarePaginator::resolveCurrentPage();
+        $internships = (new LengthAwarePaginator($matches->forPage($page, 12)->values(), $matches->count(), 12, $page, [
+            'path' => $request->url(),
+        ]))->withQueryString();
+
+        $programName = $student->academicProgram?->code;
         $recommendations = $this->matchingService->getRecommendations($student, 3);
         $appliedInternshipIds = InternshipApplication::withTrashed()
             ->where('student_id', $student->id)
             ->pluck('internship_id');
         $resumes = $student->resumes()->latest()->get();
 
-        return view('student.internships.index', compact('internships', 'recommendations', 'appliedInternshipIds', 'resumes'));
+        return view('student.internships.index', compact('internships', 'recommendations', 'appliedInternshipIds', 'resumes', 'scope', 'programName'));
     }
 
     public function show(Internship $internship)

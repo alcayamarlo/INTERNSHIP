@@ -31,6 +31,7 @@
 @endif
 
 <form method="GET" class="sb-toolbar" role="search" aria-label="Filter internships">
+    @if(request()->filled('scope'))<input type="hidden" name="scope" value="{{ $scope }}">@endif
     <input type="text" class="form-control" name="search" placeholder="Search title..." aria-label="Search title" value="{{ request('search') }}">
     <input type="text" class="form-control" name="location" placeholder="Location" aria-label="Location" value="{{ request('location') }}">
     <input type="text" class="form-control" name="company" placeholder="Company" aria-label="Company" value="{{ request('company') }}">
@@ -41,18 +42,33 @@
     </div>
 </form>
 
+<p class="small text-muted mb-3" data-internship-scope="{{ $scope }}">
+    @if($scope === 'program')
+        <i class="bi bi-mortarboard" aria-hidden="true"></i>
+        Showing internships for your program ({{ $programName }}), best competency match first. Searching looks across every program.
+        <a href="{{ route('student.internships.index', array_merge(request()->except('page'), ['scope' => 'all'])) }}">Show all programs</a>
+    @else
+        <i class="bi bi-globe" aria-hidden="true"></i>
+        Showing internships from all programs, best competency match first. A low match does not stop you from applying.
+        @if($programName)
+            <a href="{{ route('student.internships.index', array_merge(request()->except('page'), ['scope' => 'program'])) }}">Only my program ({{ $programName }})</a>
+        @endif
+    @endif
+</p>
+
 <div class="row g-4">
     @forelse($internships as $internship)
         <div class="col-md-6 col-xl-4">
             <div class="card h-100">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <x-status-badge :status="$internship->status" :label="ucfirst($internship->status)" />
+                    <div class="d-flex justify-content-between align-items-center mb-3 gap-2">
+                        <x-status-badge :status="$internship->match_percentage >= 80 ? 'success' : ($internship->match_percentage >= 60 ? 'warning' : ($internship->match_percentage > 0 ? 'info' : 'neutral'))" :label="$internship->match_percentage.'% match'" />
                         <span class="sb-tag">{{ $internship->work_setup->label() }}</span>
                     </div>
                     <h3 class="h5 mb-2">{{ $internship->title }}</h3>
                     <p class="sb-meta"><i class="bi bi-building" aria-hidden="true"></i> {{ $internship->employer->company_name }}</p>
                     @if($internship->location)<p class="sb-meta"><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ $internship->location }}</p>@endif
+                    <p class="sb-meta"><i class="bi bi-mortarboard" aria-hidden="true"></i> {{ $internship->programs->isEmpty() ? 'All programs' : $internship->programs->pluck('code')->implode(', ') }}</p>
                     <p class="card-text small">{{ Str::limit($internship->description, 120) }}</p>
                     @if($internship->requirementsList->count())
                         <div class="d-flex flex-wrap gap-1 mt-2">

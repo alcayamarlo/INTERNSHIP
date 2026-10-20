@@ -7,6 +7,7 @@ use App\Enums\UserRole;
 use App\Enums\WorkSetup;
 use App\Models\Employer;
 use App\Models\Internship;
+use App\Models\Program;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -19,6 +20,17 @@ class InternshipCatalogSeeder extends Seeder
 {
     public function run(): void
     {
+        // The original demo postings are IT roles.
+        $bsitId = Program::where('code', 'BSIT')->value('id');
+        if ($bsitId) {
+            $originals = Internship::whereIn('title', ['Web Developer Intern', 'UI/UX Design Intern'])
+                ->whereDoesntHave('programs')
+                ->get();
+            foreach ($originals as $internship) {
+                $internship->programs()->attach($bsitId);
+            }
+        }
+
         foreach ($this->catalog() as $company) {
             $employer = $this->employer($company['employer']);
 
@@ -36,6 +48,11 @@ class InternshipCatalogSeeder extends Seeder
                         'status' => 'open',
                     ]
                 );
+
+                $programIds = Program::whereIn('code', $posting['programs'])->pluck('id');
+                if ($internship->wasRecentlyCreated || $internship->programs()->doesntExist()) {
+                    $internship->programs()->syncWithoutDetaching($programIds);
+                }
 
                 if ($internship->wasRecentlyCreated) {
                     foreach ($posting['skills'] as [$name, $level]) {
@@ -84,6 +101,7 @@ class InternshipCatalogSeeder extends Seeder
                 'internships' => [
                     [
                         'title' => 'IT Support and Network Intern',
+                        'programs' => ['BSIT'],
                         'description' => 'For BS Information Technology students. Help the IT team keep office systems, networks and user accounts running.',
                         'responsibilities' => ['Resolve help-desk tickets', 'Set up workstations and network devices', 'Document fixes in the knowledge base'],
                         'requirements' => 'BS Information Technology, 4th year. Basic networking and troubleshooting.',
@@ -95,6 +113,7 @@ class InternshipCatalogSeeder extends Seeder
                     ],
                     [
                         'title' => 'Mobile App Developer Intern',
+                        'programs' => ['BSIT'],
                         'description' => 'For BS Information Technology students. Build features for our customer mobile app.',
                         'responsibilities' => ['Implement screens and API integrations', 'Fix bugs reported by QA', 'Join daily stand-ups'],
                         'requirements' => 'BS Information Technology, 4th year. Knowledge of JavaScript or Flutter.',
@@ -118,6 +137,7 @@ class InternshipCatalogSeeder extends Seeder
                 'internships' => [
                     [
                         'title' => 'Front Office Intern',
+                        'programs' => ['BSHM'],
                         'description' => 'For BS Hospitality Management students. Assist the front desk with guest check-in, reservations and concierge requests.',
                         'responsibilities' => ['Check guests in and out', 'Handle reservations in the property system', 'Respond to guest requests'],
                         'requirements' => 'BS Hospitality Management, 4th year. Good English and customer service skills.',
@@ -129,6 +149,7 @@ class InternshipCatalogSeeder extends Seeder
                     ],
                     [
                         'title' => 'Food and Beverage Service Intern',
+                        'programs' => ['BSHM'],
                         'description' => 'For BS Hospitality Management students. Rotate through the hotel restaurant, bar and banquet operations.',
                         'responsibilities' => ['Serve guests following service standards', 'Set up banquet functions', 'Assist with inventory counts'],
                         'requirements' => 'BS Hospitality Management, 4th year. Food safety training is a plus.',
@@ -152,6 +173,7 @@ class InternshipCatalogSeeder extends Seeder
                 'internships' => [
                     [
                         'title' => 'Travel Agency Operations Intern',
+                        'programs' => ['BSTM'],
                         'description' => 'For BS Tourism Management students. Support ticketing, bookings and client inquiries.',
                         'responsibilities' => ['Prepare travel itineraries and quotations', 'Book flights and hotels', 'Answer client inquiries by phone and chat'],
                         'requirements' => 'BS Tourism Management, 4th year. Familiarity with booking systems is a plus.',
@@ -163,6 +185,7 @@ class InternshipCatalogSeeder extends Seeder
                     ],
                     [
                         'title' => 'Tour Coordination and Events Intern',
+                        'programs' => ['BSTM', 'BSHM'],
                         'description' => 'For BS Tourism Management students. Help plan and run local tours and travel events.',
                         'responsibilities' => ['Coordinate with tour guides and suppliers', 'Prepare tour materials', 'Assist guests during tours'],
                         'requirements' => 'BS Tourism Management, 4th year. Willing to travel within Cebu.',
@@ -186,6 +209,7 @@ class InternshipCatalogSeeder extends Seeder
                 'internships' => [
                     [
                         'title' => 'Marketing Assistant Intern',
+                        'programs' => ['BSBA'],
                         'description' => 'For BS Business Administration students majoring in Marketing Management. Support campaigns and social media.',
                         'responsibilities' => ['Draft social media posts', 'Track campaign results', 'Help organize in-store promotions'],
                         'requirements' => 'BS Business Administration, Marketing Management major, 4th year.',
@@ -197,6 +221,7 @@ class InternshipCatalogSeeder extends Seeder
                     ],
                     [
                         'title' => 'Human Resources Intern',
+                        'programs' => ['BSBA'],
                         'description' => 'For BS Business Administration students majoring in Human Resource Management. Assist with recruitment and employee records.',
                         'responsibilities' => ['Screen applications and schedule interviews', 'Update employee files', 'Help prepare onboarding materials'],
                         'requirements' => 'BS Business Administration, Human Resource Management major, 4th year.',
@@ -208,6 +233,7 @@ class InternshipCatalogSeeder extends Seeder
                     ],
                     [
                         'title' => 'Operations and Supply Chain Intern',
+                        'programs' => ['BSBA'],
                         'description' => 'For BS Business Administration students majoring in Operations or Financial Management. Support the distribution hub.',
                         'responsibilities' => ['Monitor inventory levels', 'Prepare delivery and cost reports', 'Suggest process improvements'],
                         'requirements' => 'BS Business Administration, Operations or Financial Management major, 4th year.',
@@ -231,6 +257,7 @@ class InternshipCatalogSeeder extends Seeder
                 'internships' => [
                     [
                         'title' => 'Accounting and Audit Intern',
+                        'programs' => ['BSMA', 'BSBA'],
                         'description' => 'For BS Management Accounting students. Assist the audit and tax teams with client engagements.',
                         'responsibilities' => ['Prepare working papers', 'Reconcile accounts and vouch transactions', 'Assist with tax filings'],
                         'requirements' => 'BS Management Accounting, 4th year. Strong Excel skills.',
