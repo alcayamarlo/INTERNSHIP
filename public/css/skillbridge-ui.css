@@ -4398,3 +4398,91 @@ button.auth-link:disabled {
         margin-left: 0;
     }
 }
+
+/* =========================================================
+   Stacked tables on phones: add .sb-table-stack to a table and
+   data-label="…" to each cell; rows become cards under 576px.
+========================================================= */
+@media (max-width: 575.98px) {
+    .sb-table-stack thead {
+        display: none;
+    }
+
+    .sb-table-stack,
+    .sb-table-stack tbody,
+    .sb-table-stack tr,
+    .sb-table-stack td {
+        display: block;
+        width: 100%;
+    }
+
+    .sb-table-stack tr {
+        margin: 0 0 12px;
+        border: 1px solid var(--sb-border);
+        border-radius: var(--sb-radius-md);
+        overflow: hidden;
+    }
+
+    .sb-table-stack td {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        min-width: 0 !important;
+        padding: 10px 12px;
+        text-align: right;
+    }
+
+    .sb-table-stack td[data-label]::before {
+        flex: 0 0 auto;
+        color: var(--sb-muted);
+        font-size: 12px;
+        text-align: left;
+        content: attr(data-label);
+    }
+
+    .sb-table-stack td.sb-stack-block {
+        display: block;
+        text-align: left;
+    }
+
+    .sb-table-stack td.sb-stack-block::before {
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .sb-table-stack td:empty,
+    .sb-table-stack td.sb-stack-hide-empty:not(:has(*)) {
+        display: none;
+    }
+
+    /* Evaluation rubric: criterion on its own line, the five ratings in a row below it. */
+    .sb-rubric thead {
+        display: none;
+    }
+
+    .sb-rubric tr {
+        display: flex;
+        flex-wrap: wrap;
+        border-bottom: 1px solid var(--sb-border);
+    }
+
+    .sb-rubric td {
+        flex: 1 1 20%;
+        border: 0;
+        text-align: center;
+    }
+
+    .sb-rubric td:first-child {
+        flex-basis: 100%;
+        text-align: left;
+        font-weight: 600;
+    }
+
+    .sb-rubric td[data-label]::after {
+        display: block;
+        color: var(--sb-muted);
+        font-size: 11px;
+        content: attr(data-label);
+    }
+}

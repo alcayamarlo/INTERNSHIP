@@ -49,7 +49,7 @@
             <form method="POST" action="{{ route('employer.interns.evaluation.store', $placement) }}">
                 @csrf
                 <div class="table-responsive">
-                    <table class="table table-sm align-middle">
+                    <table class="table table-sm align-middle sb-rubric">
                         <thead>
                             <tr>
                                 <th scope="col">Criterion</th>
@@ -64,7 +64,7 @@
                                 <tr>
                                     <td>{{ $label }} @error('scores.'.$key)<div class="text-danger small">{{ $message }}</div>@enderror</td>
                                     @foreach(\App\Models\Evaluation::SCALE as $value => $scaleLabel)
-                                        <td class="text-center">
+                                        <td class="text-center" data-label="{{ $value }}">
                                             <input class="form-check-input" type="radio" name="scores[{{ $key }}]" value="{{ $value }}" aria-label="{{ $label }}: {{ $value }} {{ $scaleLabel }}" @checked($current === $value) required>
                                         </td>
                                     @endforeach
