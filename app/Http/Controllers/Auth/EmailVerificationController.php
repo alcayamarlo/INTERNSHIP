@@ -78,7 +78,11 @@ class EmailVerificationController extends Controller
             return redirect()->intended(route($user->dashboardRoute()));
         }
 
-        $user->sendEmailVerificationNotification();
+        if (! $user->sendEmailVerificationNotification()) {
+            return back()->withErrors([
+                'code' => 'We could not send the verification code right now. Please try again later or contact your administrator.',
+            ]);
+        }
 
         return back()->with('status', 'A new 6-digit verification code has been sent to your email address.');
     }

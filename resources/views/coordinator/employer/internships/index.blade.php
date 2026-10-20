@@ -33,7 +33,7 @@
                                     <button type="submit" class="btn btn-sm btn-outline-warning" title="Close posting"><i class="bi bi-lock"></i></button>
                                 </form>
                             @endif
-                            <form action="{{ route('employer.internships.destroy', $internship) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this internship?')">
+                            <form action="{{ route('employer.internships.destroy', $internship) }}" method="POST" class="d-inline" data-confirm="Delete this internship? This action cannot be undone." data-confirm-title="Delete internship">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                             </form>

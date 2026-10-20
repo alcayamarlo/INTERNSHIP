@@ -87,7 +87,7 @@ it('allows students to upload and replace their checklist documents, resetting r
         ->assertSessionHasNoErrors();
 
     $document->refresh();
-    expect($document->verification_status)->toBe('submitted')
+    expect($document->verification_status)->toBe('resubmitted')
         ->and($document->review_notes)->toBeNull()
         ->and($document->reviewed_at)->toBeNull()
         ->and($document->file_path)->not->toBe($oldPath)

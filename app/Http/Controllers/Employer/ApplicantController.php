@@ -12,8 +12,8 @@ use App\Services\ActivityLogService;
 use App\Services\NotificationService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use App\Support\UploadDisks;
 use Illuminate\Validation\ValidationException;
 
 class ApplicantController extends Controller
@@ -132,6 +132,7 @@ class ApplicantController extends Controller
         });
 
         $studentUser = $application->student->user;
+        $invitationSent = true;
         $this->notificationService->send(
             $studentUser,
             'application_update',
@@ -141,19 +142,24 @@ class ApplicantController extends Controller
         );
 
         if ($status === ApplicationStatus::Interview && $application->interview_at) {
-            Mail::to($studentUser->email)->send(new InterviewInvitationMail(
+            // The status change is already saved; a mail failure only warns the employer.
+            $invitationSent = app(\App\Services\MailSender::class)->send($studentUser->email, new InterviewInvitationMail(
                 internshipTitle: $application->internship->title,
                 interviewAt: $application->interview_at,
                 companyName: $application->internship->employer?->company_name ?? 'The employer',
                 location: $application->internship->location ?? '',
                 recipientName: $studentUser->name,
-            ));
+            ), 'interview_invitation');
         }
+
+        $statusMessage = $invitationSent
+            ? 'Application status updated.'
+            : "Application status updated, but we couldn't send the interview email. Please try again later or contact the student directly.";
 
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Application status updated.',
+                'message' => $statusMessage,
                 'status' => $application->status->value,
                 'status_label' => $application->status->label(),
                 'status_badge_class' => $application->status->badgeClass(),
@@ -167,7 +173,7 @@ class ApplicantController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Application status updated.');
+        return back()->with($invitationSent ? 'success' : 'error', $statusMessage);
     }
 
     public function downloadResume(InternshipApplication $application)
@@ -179,10 +185,10 @@ class ApplicantController extends Controller
         abort_unless($resume && $resume->file_path, 404, 'Resume not found.');
 
         $this->authorize('download', $resume);
-        $disk = collect(['private', 'public'])->first(fn (string $disk) => Storage::disk($disk)->exists($resume->file_path));
+        $disk = app(\App\Services\ResumeBuilderService::class)->diskFor($resume);
         abort_unless($disk, 404, 'Resume file not found.');
 
-        return Storage::disk($disk)->download($resume->file_path);
+        return Storage::disk($disk)->download($resume->file_path, 'resume-'.$resume->student_id.'.pdf', ['Content-Type' => 'application/pdf', 'X-Content-Type-Options' => 'nosniff']);
     }
 
     private function fileSize(?string $path): string
@@ -191,7 +197,7 @@ class ApplicantController extends Controller
             return 'Unavailable';
         }
 
-        foreach (['private', 'public'] as $disk) {
+        foreach (UploadDisks::search() as $disk) {
             if (Storage::disk($disk)->exists($path)) {
                 return number_format(Storage::disk($disk)->size($path) / 1024, 1).' KB';
             }

@@ -39,7 +39,7 @@ function internshipFormData(array $overrides = []): array
     ], $overrides);
 }
 
-it('allows an admin to create, update, and delete users', function () {
+it('allows an admin to create, update, and archive users', function () {
     $admin = User::factory()->create(['role' => UserRole::Admin]);
     $institution = Institution::create(['name' => 'Admin CRUD University']);
 
@@ -67,7 +67,15 @@ it('allows an admin to create, update, and delete users', function () {
         ->and($managedUser->coordinator)->toBeInstanceOf(Coordinator::class);
 
     $this->delete(route('admin.users.destroy', $managedUser))->assertRedirect();
-    expect($managedUser->fresh()->trashed())->toBeTrue();
+    expect($managedUser->fresh()->archived_at)->not->toBeNull();
+    $this->assertDatabaseHas('users', ['id' => $managedUser->id]);
+
+    $this->post(route('admin.users.restore', $managedUser))->assertRedirect();
+    expect($managedUser->fresh()->archived_at)->toBeNull();
+
+    $this->post(route('admin.users.archive', $managedUser))->assertRedirect();
+    $this->delete(route('admin.users.force-delete', $managedUser))->assertRedirect();
+    $this->assertDatabaseMissing('users', ['id' => $managedUser->id]);
 });
 
 it('allows employers to create, update, and delete only their own opportunities', function () {

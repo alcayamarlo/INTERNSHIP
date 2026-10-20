@@ -60,7 +60,7 @@ document.addEventListener('click', async (event) => {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             }
         });
-        const payload = await response.json();
+        const payload = await response.json().catch(() => ({ message: response.status === 413 ? 'The file is too large to upload.' : `Request failed (HTTP ${response.status}). Please try again.` }));
         if (!response.ok) throw new Error(payload.message || 'Unable to open notification.');
 
         link.closest('[data-notification-item]')?.classList.remove('is-unread', 'bg-light', 'border-start', 'border-primary', 'border-3');
@@ -97,7 +97,7 @@ document.addEventListener('submit', async (event) => {
             body: new FormData(form),
             headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
         });
-        const payload = await response.json();
+        const payload = await response.json().catch(() => ({ message: response.status === 413 ? 'The file is too large to upload.' : `Request failed (HTTP ${response.status}). Please try again.` }));
         if (!response.ok) {
             const firstError = payload.errors ? Object.values(payload.errors).flat()[0] : null;
             throw new Error(firstError || payload.message || 'Unable to submit application.');
@@ -150,7 +150,7 @@ document.addEventListener('submit', async (event) => {
             body: new FormData(form),
             headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
         });
-        const payload = await response.json();
+        const payload = await response.json().catch(() => ({ message: response.status === 413 ? 'The file is too large to upload.' : `Request failed (HTTP ${response.status}). Please try again.` }));
         if (!response.ok) throw new Error(payload.message || 'Unable to update notification.');
 
         updateUnreadNotificationBadge(payload.unread_count);
@@ -226,7 +226,7 @@ document.addEventListener('submit', async (event) => {
             body: new FormData(form),
             headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
         });
-        const payload = await response.json();
+        const payload = await response.json().catch(() => ({ message: response.status === 413 ? 'The file is too large to upload.' : `Request failed (HTTP ${response.status}). Please try again.` }));
         return { response, payload };
     };
 
@@ -324,7 +324,7 @@ document.addEventListener('submit', async (event) => {
             body: new FormData(form),
             headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
         });
-        const payload = await response.json();
+        const payload = await response.json().catch(() => ({ message: response.status === 413 ? 'The file is too large to upload.' : `Request failed (HTTP ${response.status}). Please try again.` }));
         if (!response.ok) {
             const firstError = payload.errors ? Object.values(payload.errors).flat()[0] : null;
             throw new Error(firstError || payload.message || 'Unable to complete this action.');
@@ -351,6 +351,10 @@ document.addEventListener('submit', async (event) => {
                 }
             }
         }
+        if (form.hasAttribute('data-ajax-redirect') && payload.redirect_url) {
+            window.location.assign(payload.redirect_url);
+            return;
+        }
         if (form.dataset.ajaxReset === 'true') form.reset();
     } catch (error) {
         feedback.textContent = error.message || 'Unable to complete this action.';
@@ -367,6 +371,20 @@ document.addEventListener('submit', async (event) => {
         }
     }
 }, true);
+
+const focusRefreshTarget = document.querySelector('[data-refresh-on-focus]');
+if (focusRefreshTarget) {
+    let blurredAt = null;
+    window.addEventListener('blur', () => {
+        blurredAt = Date.now();
+    });
+    window.addEventListener('focus', () => {
+        if (blurredAt !== null && Date.now() - blurredAt > 3000) {
+            window.location.reload();
+        }
+        blurredAt = null;
+    });
+}
 
 window.addEventListener('pageshow', () => {
     document.querySelectorAll('[aria-busy="true"]').forEach((button) => {

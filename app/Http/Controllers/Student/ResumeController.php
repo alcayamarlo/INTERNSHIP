@@ -10,6 +10,7 @@ use App\Models\Student;
 use App\Services\ResumeBuilderService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Support\UploadDisks;
 use Illuminate\Http\Request;
 
 class ResumeController extends Controller
@@ -103,7 +104,7 @@ class ResumeController extends Controller
     {
         $this->authorize('download', $resume);
 
-        return Storage::disk($this->diskWithFile($resume->file_path))->download(
+        return Storage::disk($this->resumeBuilder->diskFor($resume))->download(
             $resume->file_path,
             'resume-'.$resume->student_id.'.pdf',
             ['Content-Type' => 'application/pdf', 'X-Content-Type-Options' => 'nosniff']
@@ -114,7 +115,7 @@ class ResumeController extends Controller
     {
         $this->authorize('view', $resume);
 
-        return Storage::disk($this->diskWithFile($resume->file_path))->response($resume->file_path, null, [
+        return Storage::disk($this->resumeBuilder->diskFor($resume))->response($resume->file_path, null, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline',
             'X-Content-Type-Options' => 'nosniff',
@@ -132,7 +133,7 @@ class ResumeController extends Controller
     {
         abort_unless($path, 404, 'Resume file not found. Please regenerate it.');
 
-        foreach (['private', 'public'] as $disk) {
+        foreach (UploadDisks::search() as $disk) {
             if (Storage::disk($disk)->exists($path)) {
                 return $disk;
             }

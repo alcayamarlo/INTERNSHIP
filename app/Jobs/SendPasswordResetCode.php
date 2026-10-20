@@ -2,8 +2,10 @@
 
 namespace App\Jobs;
 
+use App\Exceptions\MailDeliveryFailed;
 use App\Mail\PasswordResetCodeMail;
 use App\Models\User;
+use App\Services\MailSender;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -12,7 +14,6 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 
 class SendPasswordResetCode implements ShouldQueue
 {
@@ -35,7 +36,12 @@ class SendPasswordResetCode implements ShouldQueue
         );
         Cache::put($this->attemptKey($user->email), 0, now()->addMinutes(15));
 
-        Mail::to($user->email)->send(new PasswordResetCodeMail($code));
+        if (! app(MailSender::class)->send($user->email, new PasswordResetCodeMail($code), 'password_reset')) {
+            // The code never reached the user, so it must not stay usable.
+            DB::table('password_reset_tokens')->where('email', $user->email)->delete();
+
+            throw new MailDeliveryFailed('The password reset email could not be sent.');
+        }
     }
 
     private function attemptKey(string $email): string

@@ -145,6 +145,65 @@ it('allows a verified user to log in and access their dashboard', function () {
 	$this->get('/student/dashboard')->assertOk();
 });
 
+it('normalizes email on registration, persistence, and login', function () {
+	Mail::fake();
+	$institution = Institution::create([
+		'name' => "St. Cecilia's College-Cebu, Inc.",
+		'address' => null,
+	]);
+
+	$this->post('/register', [
+		'name' => 'Normalized Student',
+		'email' => '  Student.Login@Example.Test ',
+		'password' => 'Password',
+		'password_confirmation' => 'Password',
+		'institution_id' => $institution->id,
+		'program' => 'Bachelor of Science in Information Technology',
+	])->assertRedirect('/email/verify')
+		->assertSessionHasNoErrors();
+
+	$user = User::query()->where('email', 'student.login@example.test')->firstOrFail();
+	expect($user->email)->toBe('student.login@example.test');
+
+	Auth::logout();
+	$this->post('/login', [
+		'email' => ' STUDENT.LOGIN@EXAMPLE.TEST ',
+		'password' => 'Password',
+	])->assertRedirect('/email/verify')
+		->assertSessionHas('status', 'Account not activated yet. Enter the 6-digit code sent to your email, or request a new one.');
+
+	$this->assertAuthenticatedAs($user);
+	$this->get('/student/dashboard')->assertRedirect('/email/verify');
+});
+
+it('returns distinct login errors and blocks archived accounts', function () {
+	$user = User::factory()->create([
+		'email' => 'archived.login@example.test',
+		'password' => 'Password',
+		'archived_at' => now(),
+	]);
+
+	$this->from('/login')->post('/login', [
+		'email' => 'missing.login@example.test',
+		'password' => 'Password',
+	])->assertRedirect('/login')
+		->assertSessionHasErrors(['email' => 'Email not found.']);
+
+	$this->from('/login')->post('/login', [
+		'email' => $user->email,
+		'password' => 'WrongPassword',
+	])->assertRedirect('/login')
+		->assertSessionHasErrors(['email' => 'Wrong password.']);
+
+	$this->from('/login')->post('/login', [
+		'email' => $user->email,
+		'password' => 'Password',
+	])->assertRedirect('/login')
+		->assertSessionHasErrors(['email' => 'This account has been archived. Please contact the administrator.']);
+
+	$this->assertGuest();
+});
+
 it('loads role-based dashboards for authenticated users', function () {
 	$institution = Institution::create(['name' => 'Test Institution', 'address' => 'Cebu City']);
 

@@ -23,17 +23,18 @@ class EmployerProfileRequest extends FormRequest
             'company_size' => ['nullable', 'string', 'in:1-10,11-50,51-200,201-500,500+'],
             'website' => ['nullable', 'url', 'max:255'],
 
-            // Contact Information
-            'contact_person' => ['required', 'string', 'max:255'],
-            'position' => ['required', 'string', 'max:100'],
-            'email' => ['required', 'email', 'unique:users,email,' . auth()->id()],
-            'phone' => ['required', 'regex:/^(\+?\d{1,3}[-.\s]?)?\d{7,14}$/'],
+            // Contact Information and Business Address are optional on this
+            // form: the company profile page only posts company fields, so
+            // they are validated only when sent.
+            'contact_person' => ['sometimes', 'required', 'string', 'max:255'],
+            'position' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'email' => ['sometimes', 'required', 'email', 'unique:users,email,' . auth()->id()],
+            'phone' => ['sometimes', 'nullable', 'regex:/^(\+?\d{1,3}[-.\s]?)?\d{7,14}$/'],
 
-            // Business Address
-            'street' => ['required', 'string', 'max:255'],
-            'city' => ['required', 'string', 'max:100'],
-            'province' => ['required', 'string', 'max:100'],
-            'zip_code' => ['required', 'string', 'max:20'],
+            'street' => ['sometimes', 'required_with:city,province,zip_code', 'nullable', 'string', 'max:255'],
+            'city' => ['sometimes', 'required_with:street', 'nullable', 'string', 'max:100'],
+            'province' => ['sometimes', 'required_with:street', 'nullable', 'string', 'max:100'],
+            'zip_code' => ['sometimes', 'required_with:street', 'nullable', 'string', 'max:20'],
         ];
     }
 

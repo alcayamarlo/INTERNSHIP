@@ -19,6 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Support\UploadDisks;
 
 class PortfolioController extends Controller
 {
@@ -126,7 +127,7 @@ class PortfolioController extends Controller
         );
 
         try {
-            DB::transaction(function () use ($student, $deploymentRequirement, $existing, $path): void {
+            DB::transaction(function () use ($student, $deploymentRequirement, $existing, $path, $oldPath): void {
                 $portfolio = $existing ?? new Portfolio([
                     'student_id' => $student->id,
                     'type' => 'transcript',
@@ -137,7 +138,7 @@ class PortfolioController extends Controller
                     'title' => $deploymentRequirement->name,
                     'description' => 'Deployment requirement document.',
                     'file_path' => $path,
-                    'verification_status' => 'submitted',
+                    'verification_status' => $oldPath ? 'resubmitted' : 'submitted',
                     'review_notes' => null,
                     'reviewed_at' => null,
                     'reviewed_by_user_id' => null,
@@ -387,15 +388,16 @@ class PortfolioController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($portfolio, $validated, $newPath) {
+            DB::transaction(function () use ($portfolio, $validated, $newPath, $previousPath) {
                 $updates = collect($validated)->except('file')->all();
                 $updates['category'] = $this->categoryForType($updates['type'] ?? $portfolio->type->value);
 
                 if ($newPath) {
                     $category = $this->categoryForType($updates['type'] ?? $portfolio->type->value);
-                    $updates['verification_status'] = $category === PortfolioCategory::DeploymentDocument
-                        ? 'submitted'
-                        : 'evidence_submitted';
+                    $updates['verification_status'] = $previousPath
+                        ? 'resubmitted'
+                        : ($category === PortfolioCategory::DeploymentDocument ? 'submitted' : 'evidence_submitted');
+                    $updates['uploaded_by_user_id'] = Auth::id();
                     $updates['review_notes'] = null;
                     $updates['reviewed_at'] = null;
                     $updates['reviewed_by_user_id'] = null;
@@ -418,7 +420,11 @@ class PortfolioController extends Controller
         }
 
         if ($request->expectsJson()) {
-            return response()->json(['success' => true, 'message' => 'Portfolio item updated successfully!']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Portfolio item updated successfully!',
+                'redirect_url' => route('student.profile.edit').'#portfolio',
+            ]);
         }
 
         return redirect()->to(route('student.profile.edit').'#portfolio')
@@ -506,7 +512,7 @@ class PortfolioController extends Controller
     {
         abort_unless($path, 404, 'File not found.');
 
-        foreach (['private', 'public'] as $disk) {
+        foreach (UploadDisks::search() as $disk) {
             if (Storage::disk($disk)->exists($path)) {
                 return $disk;
             }

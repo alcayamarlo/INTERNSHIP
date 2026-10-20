@@ -367,6 +367,10 @@
                                     <button type="submit" class="btn btn-sm btn-outline-primary">Mark read</button>
                                 </form>
                             @endif
+                            <form action="{{ route('notifications.archive', $notification) }}" method="POST" class="mt-2" data-ajax-notification="archive" data-confirm="Delete this notification? It will be moved to your archive." data-confirm-title="Delete notification">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Delete (archive)</button>
+                            </form>
                         </div>
                     @empty
                         <div class="sb-empty">

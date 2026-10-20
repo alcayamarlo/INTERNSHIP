@@ -6,24 +6,15 @@ use App\Jobs\SendNotification;
 use App\Mail\SystemNotificationMail;
 use App\Models\AppNotification;
 use App\Models\User;
-use Illuminate\Support\Facades\Mail;
 
 class NotificationService
 {
+    /**
+     * The in-app notification is always written immediately so the bell never
+     * depends on a queue worker; $queue only controls how the email is sent.
+     */
     public function send(User $user, string $type, string $title, string $message, array $data = [], bool $queue = true): AppNotification
     {
-        if ($queue) {
-            SendNotification::dispatch($user->id, $type, $title, $message, $data);
-
-            return new AppNotification([
-                'user_id' => $user->id,
-                'type' => $type,
-                'title' => $title,
-                'message' => $message,
-                'data' => $data,
-            ]);
-        }
-
         $notification = AppNotification::create([
             'user_id' => $user->id,
             'type' => $type,
@@ -31,6 +22,16 @@ class NotificationService
             'message' => $message,
             'data' => $data,
         ]);
+
+        if ($queue) {
+            try {
+                SendNotification::dispatch($user->id, $type, $title, $message, $data, $notification->id);
+            } catch (\Throwable $exception) {
+                report($exception);
+            }
+
+            return $notification;
+        }
 
         $this->sendEmail($user, $title, $message, $data);
 
@@ -47,11 +48,7 @@ class NotificationService
             return;
         }
 
-        try {
-            Mail::to($user->email)->send(new SystemNotificationMail($title, $message, $data));
-        } catch (\Throwable $e) {
-            report($e);
-        }
+        app(MailSender::class)->send($user->email, new SystemNotificationMail($title, $message, $data), 'notification');
     }
 
     public function unreadCount(User $user): int

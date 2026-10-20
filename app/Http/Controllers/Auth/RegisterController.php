@@ -106,7 +106,11 @@ class RegisterController extends Controller
 
         Auth::login($user);
 
-        $user->sendEmailVerificationNotification();
+        if (! $user->sendEmailVerificationNotification()) {
+            return redirect()->route('verification.notice')->withErrors([
+                'code' => 'Your account was created, but we could not send the verification code. Use "Resend code" in a minute or contact your administrator.',
+            ]);
+        }
 
         return redirect()->route('verification.notice')
             ->with('status', 'A 6-digit verification code has been sent to your email address.');

@@ -1094,10 +1094,13 @@
             <h1 class="co-title">My competencies</h1>
             <p class="co-hint">Your skills, evidence, and verified progress at a glance.</p>
         </div>
-        <div class="co-segment" id="competencyViewToggle" role="group" aria-label="Competency view" data-view="{{ $initialView }}">
-            <span class="co-segment-pill" aria-hidden="true"></span>
-            <button type="button" class="co-segment-button" data-view-option="verified" aria-pressed="{{ $initialView === 'verified' ? 'true' : 'false' }}">Verified only</button>
-            <button type="button" class="co-segment-button" data-view-option="all" aria-pressed="{{ $initialView === 'all' ? 'true' : 'false' }}">All submitted</button>
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <a class="co-primary" href="{{ route('student.competencies.create') }}">Add another competency</a>
+            <div class="co-segment" id="competencyViewToggle" role="group" aria-label="Competency view" data-view="{{ $initialView }}">
+                <span class="co-segment-pill" aria-hidden="true"></span>
+                <button type="button" class="co-segment-button" data-view-option="verified" aria-pressed="{{ $initialView === 'verified' ? 'true' : 'false' }}">Verified only</button>
+                <button type="button" class="co-segment-button" data-view-option="all" aria-pressed="{{ $initialView === 'all' ? 'true' : 'false' }}">All submitted</button>
+            </div>
         </div>
     </header>
 

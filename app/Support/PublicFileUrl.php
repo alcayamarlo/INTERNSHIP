@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use Illuminate\Support\Facades\Storage;
+use App\Support\UploadDisks;
 
 final class PublicFileUrl
 {
@@ -26,10 +27,17 @@ final class PublicFileUrl
 
         $path = implode('/', $segments);
 
-        if (! Storage::disk('public')->exists($path)) {
+        $disk = UploadDisks::public();
+        if (! Storage::disk($disk)->exists($path)) {
             return null;
         }
 
-        return '/storage/'.implode('/', array_map('rawurlencode', $segments));
+        // Local disks stay relative so a wrong APP_URL (e.g. on Railway) cannot
+        // break images; the /storage fallback route serves them without a symlink.
+        if (config("filesystems.disks.{$disk}.driver") === 'local') {
+            return '/storage/'.implode('/', array_map('rawurlencode', $segments));
+        }
+
+        return Storage::disk($disk)->url($path);
     }
 }

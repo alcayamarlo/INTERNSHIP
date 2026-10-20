@@ -149,7 +149,7 @@
         const title = create('strong', 'submission-title', item.title);
         const typeTag = create('span', `type-tag type-${item.type}`, getTypeLabel(item.type));
         const subtype = create('span', 'submission-subtype', item.subtype || '');
-        const submitted = create('span', 'submission-time', `Submitted ${item.submitted || 'recently'}`);
+        const submitted = create('span', 'submission-time', `${item.status_label || 'Submitted'} ${item.submitted || 'recently'}`);
         description.append(title, typeTag, subtype, submitted);
 
         const actions = create('div', 'submission-actions');
@@ -249,6 +249,31 @@
             refreshDrawer();
         }
     };
+
+    let lastQueueRefresh = Date.now();
+    window.addEventListener('focus', async () => {
+        if (Date.now() - lastQueueRefresh < 5000) return;
+        lastQueueRefresh = Date.now();
+
+        try {
+            const response = await fetch(page.dataset.baseUrl, {
+                credentials: 'same-origin',
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+            const payload = await response.json().catch(() => ({ message: response.status === 413 ? 'The file is too large to upload.' : `Request failed (HTTP ${response.status}). Please try again.` }));
+            if (!response.ok || !Array.isArray(payload.students)) {
+                throw new Error(payload.message || 'Unable to refresh the verification queue.');
+            }
+
+            state.students = payload.students;
+            render();
+        } catch (error) {
+            showToast(error.message || 'Unable to refresh the verification queue.');
+        }
+    });
 
     const showToast = (message, undoable = false) => {
         window.clearTimeout(state.undoTimer);
@@ -540,7 +565,7 @@
                 credentials: 'same-origin',
                 headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             });
-            const payload = await response.json();
+            const payload = await response.json().catch(() => ({ message: response.status === 413 ? 'The file is too large to upload.' : `Request failed (HTTP ${response.status}). Please try again.` }));
             if (!response.ok) {
                 const firstError = payload.errors ? Object.values(payload.errors).flat()[0] : null;
                 throw new Error(firstError || payload.message || 'Unable to upload deployment document.');

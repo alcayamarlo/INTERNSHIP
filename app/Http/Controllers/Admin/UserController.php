@@ -25,7 +25,10 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        $query = User::with('student');
+        $view = $request->query('view') === 'archived' ? 'archived' : 'active';
+        $query = User::with('student')
+            ->when($view === 'archived', fn ($query) => $query->whereNotNull('archived_at'))
+            ->when($view === 'active', fn ($query) => $query->whereNull('archived_at'));
 
         if ($role = $request->get('role')) {
             $query->where('role', $role);
@@ -40,6 +43,7 @@ class UserController extends Controller
 
         return view('admin.users.index', [
             'users' => $query->latest()->paginate(15)->withQueryString(),
+            'view' => $view,
             'roles' => UserRole::all(),
             'assignableRoles' => UserRole::assignable(),
             'studentIdPattern' => StudentIdFormat::pattern(),
@@ -66,6 +70,9 @@ class UserController extends Controller
                 'role' => $validated['role'],
                 'phone' => $validated['phone'] ?? null,
             ]);
+            // Admin-created accounts never receive a verification code, so
+            // leaving them unverified locks the user out at the verify page.
+            $user->forceFill(['email_verified_at' => now()])->save();
 
             if ($validated['role'] === UserRole::Employer->value) {
                 Employer::create([
@@ -150,31 +157,80 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        $this->authorize('delete', $user);
+        return $this->archive($user);
+    }
+
+    public function archive(User $user)
+    {
+        $this->authorize('archive', $user);
 
         $actor = Auth::user();
         DB::transaction(function () use ($user, $actor) {
             $user = User::query()->lockForUpdate()->findOrFail($user->id);
 
-            if ($user->role === UserRole::Admin) {
+            if ($user->role === UserRole::Admin && $user->is_active) {
                 $activeAdmins = User::query()
                     ->where('role', UserRole::Admin->value)
                     ->where('is_active', true)
+                    ->whereNull('archived_at')
                     ->lockForUpdate()
                     ->get();
 
                 if ($activeAdmins->count() <= 1) {
                     throw ValidationException::withMessages([
-                        'role' => 'The last active administrator cannot be removed.',
+                        'role' => 'The last active administrator cannot be archived.',
                     ]);
                 }
             }
 
-            $user->delete();
-            $this->activityLog->log($actor, 'admin_delete_user', ['user_id' => $user->id]);
+            $user->update(['archived_at' => now()]);
+            $this->activityLog->log($actor, 'admin_archive_user', ['user_id' => $user->id]);
         });
 
-        return back()->with('success', 'User deleted successfully.');
+        return back()->with('success', 'User archived successfully.');
+    }
+
+    public function verifyEmail(User $user)
+    {
+        $this->authorize('update', $user);
+
+        if (! $user->hasVerifiedEmail()) {
+            $user->forceFill([
+                'email_verified_at' => now(),
+                'verification_code' => null,
+                'verification_code_expires_at' => null,
+                'verification_attempts' => 0,
+            ])->save();
+            $this->activityLog->log(Auth::user(), 'admin_verify_user_email', ['user_id' => $user->id]);
+        }
+
+        return back()->with('success', "{$user->name}'s email is now verified and they can sign in.");
+    }
+
+    public function restore(User $user)
+    {
+        $this->authorize('restore', $user);
+
+        $user->update(['archived_at' => null]);
+        $this->activityLog->log(Auth::user(), 'admin_restore_user', ['user_id' => $user->id]);
+
+        return back()->with('success', 'User restored successfully.');
+    }
+
+    public function forceDelete(User $user)
+    {
+        $this->authorize('forceDelete', $user);
+
+        $actor = Auth::user();
+        DB::transaction(function () use ($user, $actor): void {
+            $user = User::query()->lockForUpdate()->findOrFail($user->id);
+            abort_unless($user->archived_at, 404);
+            $userId = $user->id;
+            $user->forceDelete();
+            $this->activityLog->log($actor, 'admin_permanently_delete_user', ['user_id' => $userId]);
+        });
+
+        return back()->with('success', 'Archived user permanently deleted.');
     }
 
     private function ensureRoleProfile(User $user, UserRole $role): void

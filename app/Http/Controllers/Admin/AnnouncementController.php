@@ -40,7 +40,7 @@ class AnnouncementController extends Controller
                 'published_at' => now(),
             ]);
 
-            $usersQuery = User::query();
+            $usersQuery = User::query()->whereNull('archived_at');
             if ($targetRole !== null) {
                 $usersQuery->where('role', $targetRole);
             }
@@ -57,11 +57,29 @@ class AnnouncementController extends Controller
                 'announcement',
                 $announcement->title,
                 str($announcement->content)->limit(120)->value(),
-                ['announcement_id' => $announcement->id]
+                ['announcement_id' => $announcement->id],
+                queue: false
             );
         }
 
         return back()->with('success', 'Announcement published successfully.');
+    }
+
+    public function update(StoreAnnouncementRequest $request, Announcement $announcement)
+    {
+        $validated = $request->validated();
+        $validated['target_role'] = $validated['target_role'] === 'all'
+            ? null
+            : $validated['target_role'];
+
+        DB::transaction(function () use ($announcement, $validated): void {
+            $announcement->update($validated);
+            $this->activityLog->log(Auth::user(), 'announcement_update', [
+                'announcement_id' => $announcement->id,
+            ]);
+        });
+
+        return back()->with('success', 'Announcement updated successfully.');
     }
 
     public function destroy(Announcement $announcement)

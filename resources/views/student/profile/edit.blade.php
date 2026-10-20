@@ -466,7 +466,7 @@
                                     <a class="icon-action" href="{{ $item['edit_url'] }}" aria-label="Edit {{ $item['title'] }}" title="Edit"><i class="bi bi-pencil" aria-hidden="true"></i></a>
                                 @endif
                                 @if($item['can_delete'])
-                                    <form method="POST" action="{{ $item['delete_url'] }}" onsubmit="return confirm(@js($item['delete_confirmation']));">
+                                    <form method="POST" action="{{ $item['delete_url'] }}" data-confirm="{{ $item['delete_confirmation'] }}" data-confirm-title="Delete file">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="icon-action" aria-label="Delete {{ $item['title'] }}" title="Delete"><i class="bi bi-trash" aria-hidden="true"></i></button>
@@ -752,7 +752,7 @@
                 body: new FormData(form),
                 headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
             });
-            const payload = await response.json();
+            const payload = await response.json().catch(() => ({ message: response.status === 413 ? 'The file is too large to upload.' : `Request failed (HTTP ${response.status}). Please try again.` }));
             if (response.status === 422 && payload.errors) {
                 showErrors(payload.errors);
                 return;
@@ -814,10 +814,13 @@
             body: new FormData(photoForm),
             headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
         }).then(async (response) => {
-            const payload = await response.json();
+            const payload = await response.json().catch(() => ({ message: response.status === 413 ? 'The file is too large to upload.' : `Request failed (HTTP ${response.status}). Please try again.` }));
             if (!response.ok) {
                 const firstError = payload.errors ? Object.values(payload.errors).flat()[0] : null;
                 throw new Error(firstError || payload.message || 'Unable to upload profile photo.');
+            }
+            if (!payload.profile_picture_url) {
+                throw new Error('The photo was saved but could not be displayed. Please refresh the page.');
             }
 
             const avatar = page.querySelector('.avatar');
