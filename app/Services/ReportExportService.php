@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\UserRole;
 use App\Models\Employer;
 use App\Models\Internship;
 use App\Models\InternshipApplication;
@@ -10,6 +11,7 @@ use App\Models\Report;
 use App\Models\Student;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
 use App\Support\UploadDisks;
@@ -22,13 +24,18 @@ class ReportExportService
 {
     public function generate(User $user, string $type, string $format = 'pdf', ?callable $afterCreate = null): Report
     {
+        // Coordinators only export their own students; admins see everything.
+        $studentIds = $user->isRole(UserRole::Coordinator)
+            ? ($user->coordinator?->scopedStudentsQuery()->pluck('id') ?? collect())
+            : null;
+
         $data = match ($type) {
-            'placement' => $this->placementData(),
-            'student' => $this->studentData(),
-            'competency' => $this->competencyData(),
+            'placement' => $this->placementData($studentIds),
+            'student' => $this->studentData($studentIds),
+            'competency' => $this->competencyData($studentIds),
             'employer' => $this->employerData(),
             'internship' => $this->internshipData(),
-            'ojt' => $this->ojtData(),
+            'ojt' => $this->ojtData($studentIds),
             default => throw new InvalidArgumentException("Unsupported report type: {$type}."),
         };
 
@@ -81,9 +88,10 @@ class ReportExportService
         }, basename($report->file_path), ['Content-Type' => $mime]);
     }
 
-    private function placementData(): array
+    private function placementData(?Collection $studentIds): array
     {
         return InternshipApplication::with(['student.user', 'internship.employer'])
+            ->when($studentIds !== null, fn ($query) => $query->whereIn('student_id', $studentIds))
             ->latest()
             ->get()
             ->map(fn ($app) => [
@@ -96,9 +104,10 @@ class ReportExportService
             ->all();
     }
 
-    private function studentData(): array
+    private function studentData(?Collection $studentIds): array
     {
         return Student::with(['user', 'institution'])
+            ->when($studentIds !== null, fn ($query) => $query->whereIn('id', $studentIds))
             ->get()
             ->map(fn ($student) => [
                 'name' => $student->user->name,
@@ -111,9 +120,10 @@ class ReportExportService
             ->all();
     }
 
-    private function competencyData(): array
+    private function competencyData(?Collection $studentIds): array
     {
         return Student::with(['user', 'competencies'])
+            ->when($studentIds !== null, fn ($query) => $query->whereIn('id', $studentIds))
             ->get()
             ->flatMap(fn ($student) => $student->competencies->map(fn ($comp) => [
                 'student' => $student->user->name,
@@ -151,9 +161,10 @@ class ReportExportService
             ->all();
     }
 
-    private function ojtData(): array
+    private function ojtData(?Collection $studentIds): array
     {
         return Placement::with(['student.user', 'employer', 'internship', 'evaluation'])
+            ->when($studentIds !== null, fn ($query) => $query->whereIn('student_id', $studentIds))
             ->withApprovedHours()
             ->latest()
             ->get()

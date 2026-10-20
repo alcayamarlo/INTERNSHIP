@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\ApplicationStatus;
 use App\Models\AcademicSetting;
+use App\Models\Coordinator;
 use App\Models\InternshipApplication;
 use App\Models\Placement;
 use App\Models\User;
@@ -79,6 +80,8 @@ class PlacementService
             );
         }
 
+        $this->notifyCoordinators($placement);
+
         return true;
     }
 
@@ -103,6 +106,27 @@ class PlacementService
                 ['placement_id' => $placement->id]
             );
         }
+    }
+
+    private function notifyCoordinators(Placement $placement): void
+    {
+        $student = $placement->student;
+        if (! $student?->institution_id) {
+            return;
+        }
+
+        Coordinator::query()
+            ->where('institution_id', $student->institution_id)
+            ->with('user')
+            ->get()
+            ->filter(fn (Coordinator $coordinator) => $coordinator->user && $coordinator->canAccessStudent($student))
+            ->each(fn (Coordinator $coordinator) => $this->notificationService->send(
+                $coordinator->user,
+                'ojt_update',
+                'OJT ready for clearance',
+                ($student->user?->name ?? 'A student').' completed the OJT for '.$placement->internship->title.' and is ready for clearance.',
+                ['placement_id' => $placement->id]
+            ));
     }
 
     private function certificateNumber(Placement $placement): string

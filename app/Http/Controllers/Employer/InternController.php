@@ -90,6 +90,11 @@ class InternController extends Controller
             'reviewer_remarks.required_if' => 'Add a remark so the student knows why the entry was rejected.',
         ]);
 
+        // Approved hours of a completed OJT back its completion; they stay fixed.
+        if ($placement->isCompleted() && $attendanceLog->isApproved()) {
+            return back()->with('error', 'This OJT is already complete; approved entries can no longer be changed.');
+        }
+
         $attendanceLog->update([
             ...$validated,
             'reviewed_by_user_id' => Auth::id(),
@@ -115,6 +120,10 @@ class InternController extends Controller
     public function approveAllAttendance(Placement $placement)
     {
         $this->authorize('supervise', $placement);
+
+        if ($placement->isCleared()) {
+            return back()->with('error', 'This OJT is already cleared by the coordinator; time entries are locked.');
+        }
 
         $count = $placement->attendanceLogs()
             ->where('status', AttendanceLog::STATUS_PENDING)

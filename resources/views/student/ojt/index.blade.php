@@ -27,7 +27,12 @@
 
     @include('ojt.partials.progress', ['placement' => $placement])
 
-    @if($placement->isActive())
+    @if($placement->isActive() && $placement->start_date->isFuture())
+        <div class="alert alert-info">
+            <i class="bi bi-calendar-event" aria-hidden="true"></i>
+            Your OJT starts on {{ $placement->start_date->format('F d, Y') }}. You can log time and submit journals from that date.
+        </div>
+    @elseif($placement->isActive())
         <div class="row g-4 mb-4">
             <div class="col-lg-6">
                 <div class="card h-100">

@@ -14,7 +14,7 @@ class PlacementPolicy
             UserRole::Admin => true,
             UserRole::Student => $this->isStudentOwner($user, $placement),
             UserRole::Employer => $this->isEmployerOwner($user, $placement),
-            UserRole::Coordinator => (bool) $user->coordinator?->canAccessStudent($placement->student),
+            UserRole::Coordinator => $this->coordinatorCanAccess($user, $placement),
             default => false,
         };
     }
@@ -38,12 +38,20 @@ class PlacementPolicy
         return $user->isRole(UserRole::Coordinator)
             && $placement->isCompleted()
             && ! $placement->isCleared()
-            && (bool) $user->coordinator?->canAccessStudent($placement->student);
+            && $this->coordinatorCanAccess($user, $placement);
     }
 
     public function downloadCertificate(User $user, Placement $placement): bool
     {
         return $placement->isCleared() && $this->view($user, $placement);
+    }
+
+    private function coordinatorCanAccess(User $user, Placement $placement): bool
+    {
+        // The student may be soft-deleted; without it there is nothing to scope against.
+        return $user->coordinator !== null
+            && $placement->student !== null
+            && $user->coordinator->canAccessStudent($placement->student);
     }
 
     private function isStudentOwner(User $user, Placement $placement): bool

@@ -48,7 +48,7 @@
                             </td>
                         @elseif($mode === 'employer')
                             <td class="text-nowrap">
-                                @unless($placement->isCleared())
+                                @unless($placement->isCleared() || ($placement->isCompleted() && $log->isApproved()))
                                     <form method="POST" action="{{ route('employer.interns.attendance.review', [$placement, $log]) }}" class="d-flex flex-column gap-1" style="min-width: 190px;">
                                         @csrf @method('PATCH')
                                         <input type="text" name="reviewer_remarks" class="form-control form-control-sm" placeholder="Remarks (required to reject)" maxlength="1000" aria-label="Remarks">

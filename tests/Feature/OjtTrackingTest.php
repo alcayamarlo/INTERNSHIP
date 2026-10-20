@@ -242,6 +242,97 @@ it('blocks other users from viewing or changing a placement', function () {
     $this->actingAs($fixture['studentUser'])->get(route('admin.placements.index'))->assertForbidden();
 });
 
+it('locks hours after completion and clearance', function () {
+    $fixture = ojtFixture();
+    $placement = ojtPlacement($fixture, 8);
+    $approved = $placement->attendanceLogs()->create([
+        'work_date' => now()->subDays(2)->toDateString(), 'time_in' => '08:00', 'time_out' => '17:00', 'break_minutes' => 60,
+        'hours' => 8, 'task_summary' => 'Day one', 'status' => AttendanceLog::STATUS_APPROVED,
+    ]);
+
+    $this->actingAs($fixture['employerUser'])
+        ->post(route('employer.interns.evaluation.store', $placement), ['scores' => ojtScores()])
+        ->assertSessionHas('success');
+    expect($placement->fresh()->isCompleted())->toBeTrue();
+
+    // Completed: approved entries cannot be rejected, so hours never drop below the target.
+    $this->actingAs($fixture['employerUser'])
+        ->patch(route('employer.interns.attendance.review', [$placement, $approved]), ['status' => 'rejected', 'reviewer_remarks' => 'Oops'])
+        ->assertSessionHas('error');
+    expect($approved->fresh()->isApproved())->toBeTrue();
+
+    // Cleared: bulk approve is locked too, even when posted directly.
+    $placement->update(['cleared_at' => now(), 'certificate_number' => 'OJT-TEST-1']);
+    $pending = $placement->attendanceLogs()->create([
+        'work_date' => now()->subDay()->toDateString(), 'time_in' => '08:00', 'time_out' => '12:00',
+        'hours' => 4, 'task_summary' => 'Late entry', 'status' => AttendanceLog::STATUS_PENDING,
+    ]);
+    $this->actingAs($fixture['employerUser'])
+        ->post(route('employer.interns.attendance.approve-all', $placement))
+        ->assertSessionHas('error');
+    expect($pending->fresh()->status)->toBe(AttendanceLog::STATUS_PENDING);
+});
+
+it('notifies the coordinator when an OJT completes', function () {
+    $fixture = ojtFixture();
+    $placement = ojtPlacement($fixture, 8);
+    $placement->attendanceLogs()->create([
+        'work_date' => now()->subDay()->toDateString(), 'time_in' => '08:00', 'time_out' => '17:00', 'break_minutes' => 60,
+        'hours' => 8, 'task_summary' => 'Day', 'status' => AttendanceLog::STATUS_APPROVED,
+    ]);
+
+    $this->actingAs($fixture['employerUser'])
+        ->post(route('employer.interns.evaluation.store', $placement), ['scores' => ojtScores()]);
+
+    $this->assertDatabaseHas('notifications', [
+        'user_id' => $fixture['coordinatorUser']->id,
+        'type' => 'ojt_update',
+        'title' => 'OJT ready for clearance',
+    ]);
+});
+
+it('denies instead of crashing when the placement student was deleted', function () {
+    $fixture = ojtFixture();
+    $placement = ojtPlacement($fixture);
+    $fixture['student']->delete();
+
+    $this->actingAs($fixture['coordinatorUser'])
+        ->get(route('coordinator.placements.show', $placement->fresh()))
+        ->assertForbidden();
+});
+
+it('shows a start-date notice instead of the DTR form before the OJT starts', function () {
+    $fixture = ojtFixture();
+    $placement = ojtPlacement($fixture);
+    $placement->update(['start_date' => now()->addWeek()->toDateString()]);
+
+    $this->actingAs($fixture['studentUser'])
+        ->get(route('student.ojt.index'))
+        ->assertOk()
+        ->assertSee('Your OJT starts on')
+        ->assertDontSee('Submit time entry');
+});
+
+it('limits coordinator OJT and student reports to their own students', function () {
+    Storage::fake('private');
+    $mine = ojtFixture();
+    ojtPlacement($mine);
+    $theirs = ojtFixture();
+    $theirs['studentUser']->update(['name' => 'Other School Student']);
+    ojtPlacement($theirs);
+
+    $service = app(\App\Services\ReportExportService::class);
+    $read = fn ($report) => Storage::disk(\App\Support\UploadDisks::private())->get($report->file_path);
+
+    foreach (['ojt', 'student', 'placement'] as $type) {
+        $csv = $read($service->generate($mine['coordinatorUser'], $type, 'csv'));
+        expect($csv)->toContain('Olivia Intern')->not->toContain('Other School Student');
+    }
+
+    $admin = User::factory()->create(['role' => UserRole::Admin]);
+    expect($read($service->generate($admin, 'ojt', 'csv')))->toContain('Other School Student');
+});
+
 it('seeds demo OJT data that renders for every role', function () {
     Storage::fake('private');
     Storage::fake('public');
