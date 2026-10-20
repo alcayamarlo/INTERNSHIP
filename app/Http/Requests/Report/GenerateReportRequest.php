@@ -14,7 +14,7 @@ class GenerateReportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type' => ['required', 'in:placement,student,competency,employer,internship'],
+            'type' => ['required', 'in:placement,student,competency,employer,internship,ojt'],
             'format' => ['required', 'in:pdf,csv'],
         ];
     }

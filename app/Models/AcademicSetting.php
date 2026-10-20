@@ -27,12 +27,14 @@ class AcademicSetting extends Model
         'summer_start_day',
         'summer_end_month',
         'summer_end_day',
+        'required_ojt_hours',
     ];
 
     protected function casts(): array
     {
         return [
             'academic_year_start_month' => 'integer',
+            'required_ojt_hours' => 'integer',
             'summer_enabled' => 'boolean',
             'require_fourth_year_standing' => 'boolean',
             'require_major_subjects_passed' => 'boolean',

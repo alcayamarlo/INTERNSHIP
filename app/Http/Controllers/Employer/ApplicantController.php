@@ -10,6 +10,7 @@ use App\Mail\InterviewInvitationMail;
 use App\Models\InternshipApplication;
 use App\Services\ActivityLogService;
 use App\Services\NotificationService;
+use App\Services\PlacementService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -20,7 +21,8 @@ class ApplicantController extends Controller
 {
     public function __construct(
         private NotificationService $notificationService,
-        private ActivityLogService $activityLog
+        private ActivityLogService $activityLog,
+        private PlacementService $placementService
     ) {}
 
     public function index()
@@ -121,6 +123,10 @@ class ApplicantController extends Controller
                 'notes' => $validated['employer_notes'] ?? null,
                 'interview_at' => $validated['interview_at'] ?? null,
             ]);
+
+            if ($status === ApplicationStatus::Accepted) {
+                $this->placementService->openForApplication($application);
+            }
 
             $this->activityLog->log(Auth::user(), 'application_status_update', [
                 'application_id' => $application->id,

@@ -51,8 +51,8 @@ enum ApplicationStatus: string
             self::Submitted => [self::Reviewed, self::Rejected, self::Withdrawn],
             self::Reviewed => [self::Interview, self::Accepted, self::Rejected, self::Withdrawn],
             self::Interview => [self::Accepted, self::Rejected, self::Withdrawn],
-            self::Accepted => [self::Completed],
-            self::Rejected, self::Completed, self::Withdrawn => [],
+            // Accepted -> Completed happens through OJT tracking (PlacementService), not by hand.
+            self::Accepted, self::Rejected, self::Completed, self::Withdrawn => [],
         };
     }
 

@@ -273,7 +273,8 @@ it('allows every configured employer status transition and records each change i
         }
     }
 
-    expect($allowedTransitionCount)->toBe(15);
+    // Accepted -> Completed is driven by OJT tracking, not the employer dropdown.
+    expect($allowedTransitionCount)->toBe(14);
 });
 
 it('rejects every employer status transition not present in the configured map', function () {
@@ -345,7 +346,9 @@ it('updates hire and reject decisions asynchronously and notifies students', fun
         ->assertJsonPath('success', true)
         ->assertJsonPath('status', ApplicationStatus::Accepted->value)
         ->assertJsonPath('status_label', ApplicationStatus::Accepted->label())
-        ->assertJsonPath('available_statuses.0.value', ApplicationStatus::Completed->value);
+        ->assertJsonPath('available_statuses', []);
+
+    expect($hireApplication->placement()->exists())->toBeTrue();
 
     expect($hireApplication->fresh()->status)->toBe(ApplicationStatus::Accepted);
     $this->assertDatabaseHas('notifications', [

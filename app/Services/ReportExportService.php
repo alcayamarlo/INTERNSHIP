@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Employer;
 use App\Models\Internship;
 use App\Models\InternshipApplication;
+use App\Models\Placement;
 use App\Models\Report;
 use App\Models\Student;
 use App\Models\User;
@@ -27,6 +28,7 @@ class ReportExportService
             'competency' => $this->competencyData(),
             'employer' => $this->employerData(),
             'internship' => $this->internshipData(),
+            'ojt' => $this->ojtData(),
             default => throw new InvalidArgumentException("Unsupported report type: {$type}."),
         };
 
@@ -145,6 +147,24 @@ class ReportExportService
                 'location' => $internship->location,
                 'status' => $internship->status,
                 'applications' => $internship->applications()->count(),
+            ])
+            ->all();
+    }
+
+    private function ojtData(): array
+    {
+        return Placement::with(['student.user', 'employer', 'internship', 'evaluation'])
+            ->withApprovedHours()
+            ->latest()
+            ->get()
+            ->map(fn (Placement $placement) => [
+                'student' => $placement->student?->user?->name,
+                'company' => $placement->employer?->company_name,
+                'internship' => $placement->internship?->title,
+                'start_date' => $placement->start_date?->toDateString(),
+                'hours' => number_format($placement->approvedHours(), 2).' / '.$placement->required_hours,
+                'evaluation' => $placement->evaluation ? number_format((float) $placement->evaluation->average_score, 2) : '—',
+                'status' => $placement->statusLabel(),
             ])
             ->all();
     }

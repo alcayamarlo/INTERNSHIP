@@ -114,6 +114,9 @@
                 ['student.applications.index', 'student.applications.*', 'bi-send', 'My Applications'],
                 ['student.resume.index', 'student.resume.*', 'bi-file-earmark-person', 'Resume'],
             ],
+            'OJT' => [
+                ['student.ojt.index', 'student.ojt.*', 'bi-clock-history', 'My OJT'],
+            ],
         ],
         (bool) $currentUser?->isRole(UserRole::Employer) => [
             'Overview' => [
@@ -125,6 +128,9 @@
                 ['employer.skills.index', 'employer.skills.*', 'bi-tags', 'Skills Catalog'],
                 ['employer.applicants.index', 'employer.applicants.*', 'bi-people', 'Applicants'],
             ],
+            'OJT' => [
+                ['employer.interns.index', 'employer.interns.*', 'bi-person-workspace', 'Interns'],
+            ],
         ],
         (bool) $currentUser?->isRole(UserRole::Coordinator) => [
             'Overview' => [
@@ -133,6 +139,7 @@
             'Manage' => [
                 ['coordinator.students.index', 'coordinator.students.*', 'bi-mortarboard', 'Students'],
                 ['coordinator.verification.index', 'coordinator.verification.*', 'bi-shield-check', 'Verification'],
+                ['coordinator.placements.index', 'coordinator.placements.*', 'bi-clock-history', 'OJT Monitoring'],
                 ['coordinator.reports.index', 'coordinator.reports.*', 'bi-bar-chart', 'Reports'],
             ],
         ],
@@ -143,6 +150,7 @@
             'Management' => [
                 ['admin.academics.index', 'admin.academics.*', 'bi-mortarboard', 'Academic settings'],
                 ['admin.users.index', 'admin.users.*', 'bi-people', 'Users'],
+                ['admin.placements.index', 'admin.placements.*', 'bi-clock-history', 'OJT Placements'],
                 ['admin.announcements.index', 'admin.announcements.*', 'bi-megaphone', 'Announcements'],
                 ['admin.skill-categories.index', 'admin.skill-categories.*', 'bi-tags', 'Skill Categories'],
             ],

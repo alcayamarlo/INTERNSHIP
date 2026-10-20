@@ -10,6 +10,8 @@
     <a href="{{ route('admin.skill-categories.index') }}" class="btn btn-outline-primary">Manage Skill Categories</a>
 </x-page-header>
 
+<x-dashboard-ojt />
+
 
 {{-- Platform statistics --}}
 

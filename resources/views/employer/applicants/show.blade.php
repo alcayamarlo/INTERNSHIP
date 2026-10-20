@@ -151,6 +151,11 @@
                 @else
                     <p class="text-muted mb-0">No further status changes are available.</p>
                 @endif
+                @if($application->placement)
+                    <a href="{{ route('employer.interns.show', $application->placement) }}" class="btn btn-outline-primary w-100 mt-3">
+                        <i class="bi bi-clock-history" aria-hidden="true"></i> Open OJT record (DTR, journal, evaluation)
+                    </a>
+                @endif
             </div>
         </div>
     </div>

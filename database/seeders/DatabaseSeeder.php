@@ -337,6 +337,8 @@ class DatabaseSeeder extends Seeder
         // Recalculate profile completion
         $student->calculateProfileCompletion();
         $student->calculateProfileCompletion();
+
+        $this->call(OjtDemoSeeder::class);
     }
     private function placeholderPdf(): string
     {
