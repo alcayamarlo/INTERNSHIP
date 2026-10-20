@@ -128,7 +128,7 @@
             <div class="card-header"><h2>Update Status</h2></div>
             <div class="card-body">
                 @if($availableStatuses !== [])
-                <form method="POST" action="{{ route('employer.applicants.status', $application) }}" data-ajax-form data-application-status-form>
+                <form method="POST" action="{{ route('employer.applicants.status', $application) }}" data-ajax-form data-application-status-form data-ajax-redirect>
                     @csrf @method('PUT')
                     <div class="mb-3">
                         <label class="form-label" for="statusSelect">Status</label>

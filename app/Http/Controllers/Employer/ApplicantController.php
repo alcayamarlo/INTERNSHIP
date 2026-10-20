@@ -176,10 +176,12 @@ class ApplicantController extends Controller
                     ],
                     $application->status->allowedNextStatuses()
                 ),
+                'redirect_url' => route('employer.applicants.index'),
             ]);
         }
 
-        return back()->with($invitationSent ? 'success' : 'error', $statusMessage);
+        return redirect()->route('employer.applicants.index')
+            ->with($invitationSent ? 'success' : 'error', $statusMessage);
     }
 
     public function downloadResume(InternshipApplication $application)

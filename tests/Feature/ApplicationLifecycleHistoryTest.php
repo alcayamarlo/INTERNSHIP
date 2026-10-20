@@ -384,6 +384,21 @@ it('updates hire and reject decisions asynchronously and notifies students', fun
         ->assertSee(ApplicationStatus::Rejected->label());
 });
 
+it('sends the employer back to the applicants list after updating a status', function () {
+    [$employerUser, $application] = createApplicationStatusTransitionFixture(ApplicationStatus::Applied);
+
+    $this->actingAs($employerUser)
+        ->put(route('employer.applicants.status', $application), ['status' => ApplicationStatus::Reviewed->value])
+        ->assertRedirect(route('employer.applicants.index'));
+
+    [$employerUser2, $jsonApplication] = createApplicationStatusTransitionFixture(ApplicationStatus::Applied);
+
+    $this->actingAs($employerUser2)
+        ->putJson(route('employer.applicants.status', $jsonApplication), ['status' => ApplicationStatus::Reviewed->value])
+        ->assertOk()
+        ->assertJsonPath('redirect_url', route('employer.applicants.index'));
+});
+
 it('does not allow another employer to change the application status', function () {
     $owner = User::factory()->create(['role' => UserRole::Employer]);
     $ownerEmployer = Employer::create([
