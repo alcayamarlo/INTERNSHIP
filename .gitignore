@@ -25,3 +25,5 @@ Thumbs.db
 backups/
 database/nexus_backup_*.sql
 database/nexus_backup_*.sql
+.env.*
+!.env.example
