@@ -21,11 +21,11 @@
 
 <div class="auth-pane">
 
-    @include('admin.users.auth.partials.top', ['secure' => 'Secure Reset'])
+    @include('auth.partials.top', ['secure' => 'Secure Reset'])
 
     <section class="auth-card" aria-labelledby="auth-title">
 
-        @include('admin.users.auth.partials.mobile-brand')
+        @include('auth.partials.mobile-brand')
 
         <header class="auth-heading">
             <span class="auth-step-tag">

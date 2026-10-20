@@ -33,7 +33,7 @@ class ApplicantController extends Controller
             ->latest('applied_at')
             ->paginate(15);
 
-        return view('coordinator.employer.applicants.index', compact('applications'));
+        return view('employer.applicants.index', compact('applications'));
     }
 
     public function show(InternshipApplication $application)

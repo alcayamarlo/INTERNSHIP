@@ -14,11 +14,11 @@
 
 <div class="auth-pane auth-pane--wide">
 
-    @include('admin.users.auth.partials.top', ['secure' => 'Secure Registration'])
+    @include('auth.partials.top', ['secure' => 'Secure Registration'])
 
     <section class="auth-card" aria-labelledby="auth-title">
 
-        @include('admin.users.auth.partials.mobile-brand')
+        @include('auth.partials.mobile-brand')
 
         <header class="auth-heading">
             <h1 id="auth-title">
