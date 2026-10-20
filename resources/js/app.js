@@ -431,6 +431,121 @@ document.querySelectorAll('#sbContent table').forEach((table) => {
     });
 });
 
+// ---------------------------------------------------------------------------
+// Live notifications and messages (Pusher via window.Echo). window.Echo is
+// only set when VITE_PUSHER_APP_KEY is configured (see resources/js/bootstrap.js);
+// everything below is a no-op otherwise, so the app degrades to normal
+// page-load-only updates with no Pusher app set up.
+// ---------------------------------------------------------------------------
+
+const showLiveToast = (title, body, href) => {
+    const container = document.getElementById('toastContainer');
+    if (!container || typeof bootstrap === 'undefined') return;
+
+    const toastEl = document.createElement('div');
+    toastEl.className = 'toast';
+    toastEl.setAttribute('role', 'status');
+    toastEl.setAttribute('aria-live', 'polite');
+    toastEl.setAttribute('aria-atomic', 'true');
+    toastEl.innerHTML = `
+        <div class="toast-header">
+            <strong class="me-auto">${title}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body"></div>
+    `;
+    const bodyEl = toastEl.querySelector('.toast-body');
+    if (href) {
+        const link = document.createElement('a');
+        link.href = href;
+        link.textContent = body;
+        link.className = 'stretched-link';
+        bodyEl.append(link);
+    } else {
+        bodyEl.textContent = body;
+    }
+
+    container.append(toastEl);
+    const toast = new bootstrap.Toast(toastEl, { delay: 8000 });
+    toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
+    toast.show();
+};
+
+const currentUserId = document.querySelector('meta[name="current-user-id"]')?.content;
+
+if (window.Echo && currentUserId) {
+    const channel = window.Echo.private(`App.Models.User.${currentUserId}`);
+
+    channel.listen('.notification.created', (payload) => {
+        document.querySelectorAll('[data-unread-badge]').forEach((badge) => {
+            const next = (Number(badge.textContent === '9+' ? 10 : badge.textContent) || 0) + 1;
+            badge.textContent = next > 9 ? '9+' : String(next);
+            badge.hidden = false;
+        });
+        document.querySelectorAll('.sb-top-action[aria-label^="Notifications"]').forEach((button) => {
+            if (!button.querySelector('.sb-notification-badge')) {
+                const badge = document.createElement('span');
+                badge.className = 'sb-notification-badge';
+                badge.dataset.unreadBadge = '';
+                badge.textContent = '1';
+                button.append(badge);
+            }
+        });
+
+        const menu = document.querySelector('.sb-notification-menu');
+        const emptyState = menu?.querySelector('.sb-empty');
+        if (menu) {
+            emptyState?.remove();
+            const item = document.createElement('div');
+            item.className = 'sb-notification-item is-unread';
+            item.dataset.notificationItem = '';
+            item.dataset.notificationId = payload.id;
+            const link = document.createElement('a');
+            link.className = 'notification-open-link';
+            link.href = payload.show_url;
+            link.dataset.notificationOpen = '';
+            link.dataset.readUrl = payload.read_url;
+            const title = document.createElement('strong');
+            title.textContent = payload.title;
+            const body = document.createElement('span');
+            body.textContent = payload.message;
+            const time = document.createElement('time');
+            time.textContent = 'just now';
+            link.append(title, body, time);
+            item.append(link);
+            menu.insertBefore(item, menu.querySelector('.dropdown-header').nextSibling);
+        }
+
+        showLiveToast(payload.title, payload.message, payload.show_url);
+    });
+
+    channel.listen('.message.sent', (payload) => {
+        const thread = document.getElementById('messageThread');
+        const onThisThread = thread && thread.dataset.threadUserId === String(payload.sender_id);
+
+        if (onThisThread) {
+            const emptyState = thread.querySelector('.messenger-empty');
+            if (emptyState) emptyState.remove();
+            const row = document.createElement('div');
+            row.className = 'messenger-row incoming';
+            const bubble = document.createElement('div');
+            bubble.className = 'messenger-bubble';
+            const message = document.createElement('p');
+            message.className = 'messenger-message';
+            message.textContent = payload.body;
+            const time = document.createElement('span');
+            time.className = 'messenger-time';
+            time.textContent = payload.created_at;
+            bubble.append(message, time);
+            row.append(bubble);
+            thread.append(row);
+            thread.scrollTop = thread.scrollHeight;
+        } else {
+            showLiveToast(`New message from ${payload.sender_name}`, payload.body, payload.thread_url);
+        }
+    });
+}
+
 document.querySelectorAll('[data-count-up]').forEach((element) => {
     const endValue = Number(element.dataset.countUp);
     if (!Number.isFinite(endValue)) return;

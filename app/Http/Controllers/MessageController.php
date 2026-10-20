@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
+use App\Events\MessageSent;
 use App\Http\Requests\Messaging\StoreMessageRequest;
 use App\Models\Message;
 use App\Models\User;
@@ -75,18 +76,28 @@ class MessageController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($request, $user) {
-                Message::create([
+            $message = DB::transaction(function () use ($request, $user) {
+                $message = Message::create([
                     'sender_id' => Auth::id(),
                     'receiver_id' => $user->id,
                     'body' => $request->validated('body'),
                 ]);
 
                 $this->activityLog->log(Auth::user(), 'message_send', ['receiver_id' => $user->id]);
+
+                return $message;
             });
         } catch (\Throwable $exception) {
             Cache::forget($cacheKey);
             throw $exception;
+        }
+
+        try {
+            broadcast(new MessageSent($message))->toOthers();
+        } catch (\Throwable $exception) {
+            // Broadcasting is additive; the message is already saved regardless
+            // of whether a live push succeeds (e.g. no Pusher keys configured).
+            report($exception);
         }
 
         if ($request->wantsJson()) {

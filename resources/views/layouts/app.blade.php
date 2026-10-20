@@ -16,6 +16,10 @@
         content="{{ csrf_token() }}"
     >
 
+    @auth
+        <meta name="current-user-id" content="{{ auth()->id() }}">
+    @endauth
+
     <title>
         @yield('title', 'Dashboard') — SKILL BRIDGE
     </title>

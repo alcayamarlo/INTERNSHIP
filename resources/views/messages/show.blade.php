@@ -18,7 +18,7 @@
         </div>
     </div>
 
-    <div class="messenger-thread" id="messageThread">
+    <div class="messenger-thread" id="messageThread" data-thread-user-id="{{ $contact->id }}">
         @forelse($messages as $message)
             <div class="messenger-row {{ $message->sender_id === auth()->id() ? 'outgoing' : 'incoming' }}">
                 <div class="messenger-bubble">
