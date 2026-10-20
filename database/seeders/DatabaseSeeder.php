@@ -338,6 +338,7 @@ class DatabaseSeeder extends Seeder
         $student->calculateProfileCompletion();
         $student->calculateProfileCompletion();
 
+        $this->call(InternshipCatalogSeeder::class);
         $this->call(OjtDemoSeeder::class);
     }
     private function placeholderPdf(): string
