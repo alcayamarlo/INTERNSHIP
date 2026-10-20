@@ -74,10 +74,10 @@
                     <tbody>
                         @foreach($recentApplications as $application)
                             <tr>
-                                <td><strong>{{ $application->student->user->name }}</strong></td>
-                                <td>{{ $application->internship->title }}</td>
+                                <td><strong>{{ $application->student?->user?->name ?? 'N/A' }}</strong></td>
+                                <td>{{ $application->internship?->title ?? 'N/A' }}</td>
                                 <td><x-status-badge :status="$application->status->value" :label="$application->status->label()" /></td>
-                                <td class="text-nowrap">{{ $application->applied_at->format('M d, Y') }}</td>
+                                <td class="text-nowrap">{{ $application->applied_at?->format('M d, Y') ?? 'N/A' }}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -144,7 +144,7 @@
                     <tbody>
                         @foreach($recentStudents as $student)
                             <tr>
-                                <td><strong>{{ $student->user->name }}</strong></td>
+                                <td><strong>{{ $student->user?->name ?? 'N/A' }}</strong></td>
                                 <td>{{ $student->program ?? 'N/A' }}</td>
                                 <td><span class="sb-tag sb-tag--brand">{{ $student->competencies()->count() }}</span></td>
                                 <td class="text-end">
