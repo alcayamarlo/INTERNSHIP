@@ -88,7 +88,9 @@ class InternshipController extends Controller
     {
         $internship->load('employer', 'requirementsList');
         $student = Auth::user()->student;
-        $matchPercentage = $this->matchingService->calculateMatch($student, $internship);
+        $matchResult = $this->matchingService->calculateMatchWithDetails($student, $internship);
+        $matchPercentage = $matchResult['match_percentage'];
+        $matchDetails = $matchResult['details'];
         $hasApplied = InternshipApplication::withTrashed()->where('internship_id', $internship->id)
             ->where('student_id', $student->id)
             ->exists();
@@ -98,7 +100,7 @@ class InternshipController extends Controller
         $eligibilityReasons = $this->eligibility->reasons($student);
         $resumes = $student->resumes()->latest()->get();
 
-        return view('student.internships.show', compact('internship', 'matchPercentage', 'hasApplied', 'recommendationFeedback', 'eligibilityReasons', 'resumes'));
+        return view('student.internships.show', compact('internship', 'matchPercentage', 'matchDetails', 'hasApplied', 'recommendationFeedback', 'eligibilityReasons', 'resumes'));
     }
 
     public function storeRecommendationFeedback(Request $request, Internship $internship)

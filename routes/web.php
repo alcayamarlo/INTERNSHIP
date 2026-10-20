@@ -95,7 +95,9 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
-    Route::get('/api/analytics/charts', [AnalyticsController::class, 'chartData'])->name('analytics.charts');
+    Route::get('/api/analytics/charts', [AnalyticsController::class, 'chartData'])
+        ->middleware('role:admin,coordinator')
+        ->name('analytics.charts');
     Route::get('/ojt/placements/{placement}/certificate', OjtCertificateController::class)->name('ojt.certificate');
 
     Route::prefix('student')->name('student.')->middleware('role:student')->group(function () {
@@ -210,6 +212,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/verification/portfolios/{portfolio}', [VerificationController::class, 'reviewPortfolio'])->name('verification.reviewPortfolio');
         Route::get('/reports', [CoordinatorReportController::class, 'index'])->name('reports.index');
         Route::post('/reports/generate', [CoordinatorReportController::class, 'generate'])->name('reports.generate');
+        Route::get('/analytics', fn () => view('coordinator.analytics'))->name('analytics');
         Route::get('/placements', [CoordinatorPlacementController::class, 'index'])->name('placements.index');
         Route::get('/placements/{placement}', [CoordinatorPlacementController::class, 'show'])->name('placements.show');
         Route::post('/placements/{placement}/clear', [CoordinatorPlacementController::class, 'clear'])->name('placements.clear');

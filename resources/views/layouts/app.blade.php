@@ -141,6 +141,7 @@
                 ['coordinator.verification.index', 'coordinator.verification.*', 'bi-shield-check', 'Verification'],
                 ['coordinator.placements.index', 'coordinator.placements.*', 'bi-clock-history', 'OJT Monitoring'],
                 ['coordinator.reports.index', 'coordinator.reports.*', 'bi-bar-chart', 'Reports'],
+                ['coordinator.analytics', 'coordinator.analytics', 'bi-graph-up', 'Analytics'],
             ],
         ],
         (bool) $currentUser?->isRole(UserRole::Admin) => [

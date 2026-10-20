@@ -88,8 +88,9 @@ it('weights verified evidence and exposes explainable recommendation details', f
     expect($recommendations)->toHaveCount(1)
         ->and($recommendations[0]->match_percentage)->toBe(50)
         ->and($recommendations[0]->recommendation_details)->toBeArray()
-        ->and($recommendations[0]->recommendation_details['matched_requirements'])->toContain('PHP Development')
-        ->and($recommendations[0]->recommendation_details['missing_requirements'])->toContain('Communication')
+        ->and($recommendations[0]->recommendation_details['matched_requirements'])->toContain(['name' => 'PHP Development', 'required_level' => 'Intermediate'])
+        ->and(collect($recommendations[0]->recommendation_details['missing_requirements'])->pluck('name'))->toContain('Communication')
+        ->and(collect($recommendations[0]->recommendation_details['missing_requirements'])->firstWhere('name', 'Communication')['reason'])->toBe('not_verified')
         ->and($recommendations[0]->recommendation_details['verified_match_count'])->toBe(1);
 });
 
