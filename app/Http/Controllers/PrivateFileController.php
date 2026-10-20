@@ -7,6 +7,7 @@ use App\Models\Certificate;
 use App\Models\Portfolio;
 use App\Models\Resume;
 use Illuminate\Support\Facades\Storage;
+use App\Support\UploadDisks;
 
 class PrivateFileController extends Controller
 {
@@ -140,9 +141,10 @@ class PrivateFileController extends Controller
     {
         $this->authorize('download', $resume);
 
-        return Storage::disk($this->diskWithFile($resume->file_path))->download(
+        return Storage::disk(app(\App\Services\ResumeBuilderService::class)->diskFor($resume))->download(
             $resume->file_path,
-            'resume-'.$resume->student_id.'.pdf'
+            'resume-'.$resume->student_id.'.pdf',
+            ['Content-Type' => 'application/pdf', 'X-Content-Type-Options' => 'nosniff']
         );
     }
 
@@ -150,7 +152,7 @@ class PrivateFileController extends Controller
     {
         $this->authorize('view', $resume);
 
-        return Storage::disk($this->diskWithFile($resume->file_path))->response($resume->file_path, null, [
+        return Storage::disk(app(\App\Services\ResumeBuilderService::class)->diskFor($resume))->response($resume->file_path, null, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline',
             'X-Content-Type-Options' => 'nosniff',
@@ -168,7 +170,7 @@ class PrivateFileController extends Controller
         abort_unless($resume && $resume->file_path, 404, 'Resume not found.');
         $this->authorize('downloadForApplication', [$resume, $application]);
 
-        return Storage::disk($this->diskWithFile($resume->file_path))->download($resume->file_path);
+        return Storage::disk(app(\App\Services\ResumeBuilderService::class)->diskFor($resume))->download($resume->file_path, 'resume-'.$resume->student_id.'.pdf', ['Content-Type' => 'application/pdf', 'X-Content-Type-Options' => 'nosniff']);
     }
 
     public function previewApplicantResume(InternshipApplication $application)
@@ -181,7 +183,7 @@ class PrivateFileController extends Controller
         abort_unless($resume && $resume->file_path, 404, 'Resume not found.');
         $this->authorize('viewForApplication', [$resume, $application]);
 
-        return Storage::disk($this->diskWithFile($resume->file_path))->response($resume->file_path, null, [
+        return Storage::disk(app(\App\Services\ResumeBuilderService::class)->diskFor($resume))->response($resume->file_path, null, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline',
             'X-Content-Type-Options' => 'nosniff',
@@ -192,14 +194,14 @@ class PrivateFileController extends Controller
     private function authorizeResume(Resume $resume): void
     {
         $this->authorize('view', $resume);
-        $this->diskWithFile($resume->file_path);
+        app(\App\Services\ResumeBuilderService::class)->diskFor($resume);
     }
 
     private function diskWithFile(?string $path): string
     {
         abort_unless($path, 404, 'File not found.');
 
-        foreach (['private', 'public'] as $disk) {
+        foreach (UploadDisks::search() as $disk) {
             if (Storage::disk($disk)->exists($path)) {
                 return $disk;
             }

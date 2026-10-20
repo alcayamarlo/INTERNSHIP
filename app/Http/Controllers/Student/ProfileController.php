@@ -24,6 +24,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Support\UploadDisks;
 
 class ProfileController extends Controller
 {
@@ -87,6 +88,7 @@ class ProfileController extends Controller
                 } else {
                     $status = match ($document?->verification_status) {
                         'submitted', 'pending' => 'Submitted',
+                        'resubmitted' => 'Resubmitted',
                         'approved', 'verified' => 'Approved',
                         'rejected' => 'Rejected',
                         default => 'Missing',
@@ -354,7 +356,7 @@ class ProfileController extends Controller
             ->filter()
             ->unique();
         $totalBytes = $paths->sum(function ($path) {
-            foreach (['private', 'public'] as $disk) {
+            foreach (UploadDisks::search() as $disk) {
                 if (Storage::disk($disk)->exists($path)) {
                     return Storage::disk($disk)->size($path);
                 }
@@ -372,7 +374,7 @@ class ProfileController extends Controller
             return 0;
         }
 
-        foreach (['private', 'public'] as $disk) {
+        foreach (UploadDisks::search() as $disk) {
             if (Storage::disk($disk)->exists($path)) {
                 return Storage::disk($disk)->size($path);
             }

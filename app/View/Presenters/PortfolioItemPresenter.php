@@ -60,6 +60,7 @@ class PortfolioItemPresenter
             'uploaded_at' => $item->created_at?->format('M d, Y') ?? 'Unknown',
             'file_status' => ucfirst(match ($item->verification_status) {
                 'evidence_submitted' => 'pending',
+                'resubmitted' => 'Resubmitted',
                 default => $item->verification_status ?? 'pending',
             }),
             'reviewer' => $item->reviewerUser?->name ?? 'Not reviewed',
@@ -115,6 +116,7 @@ class PortfolioItemPresenter
             return match ($item->verification_status) {
                 'approved' => ['label' => 'Approved', 'class' => 'status-verified'],
                 'rejected' => ['label' => 'Rejected', 'class' => 'status-rejected'],
+                'resubmitted' => ['label' => 'Resubmitted', 'class' => 'status-pending'],
                 default => ['label' => 'Submitted', 'class' => 'status-pending'],
             };
         }
@@ -122,6 +124,7 @@ class PortfolioItemPresenter
         return match ($item->verification_status) {
             'verified' => ['label' => 'Verified', 'class' => 'status-verified'],
             'rejected' => ['label' => 'Rejected', 'class' => 'status-rejected'],
+            'resubmitted' => ['label' => 'Resubmitted', 'class' => 'status-pending'],
             default => ['label' => 'Pending', 'class' => 'status-pending'],
         };
     }

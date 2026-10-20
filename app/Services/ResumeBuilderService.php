@@ -7,6 +7,7 @@ use App\Models\Student;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Support\UploadDisks;
 use RuntimeException;
 
 class ResumeBuilderService
@@ -44,10 +45,10 @@ class ResumeBuilderService
             ])->all(),
         ];
 
-        $pdf = Pdf::loadView('student.resume.pdf', ['content' => $content, 'student' => $student]);
         $filename = 'resumes/student_'.$student->id.'_'.time().'.pdf';
 
-        if (! Storage::disk('private')->put($filename, $pdf->output())) {
+        $disk = UploadDisks::private();
+        if (! Storage::disk($disk)->put($filename, $this->render($content, $student))) {
             throw new RuntimeException('Unable to store the generated resume.');
         }
 
@@ -64,8 +65,38 @@ class ResumeBuilderService
 
             return $resume;
         } catch (\Throwable $exception) {
-            Storage::disk('private')->delete($filename);
+            Storage::disk($disk)->delete($filename);
             throw $exception;
         }
+    }
+
+    /**
+     * Returns the disk holding the resume PDF, re-rendering it from the stored
+     * content when the file is gone (e.g. wiped by an ephemeral redeploy).
+     */
+    public function diskFor(Resume $resume): string
+    {
+        abort_unless($resume->file_path, 404, 'Resume file not found. Please regenerate it.');
+
+        foreach (UploadDisks::search() as $disk) {
+            if (Storage::disk($disk)->exists($resume->file_path)) {
+                return $disk;
+            }
+        }
+
+        $student = $resume->student;
+        abort_unless($student && is_array($resume->content), 404, 'Resume file not found. Please regenerate it.');
+
+        $disk = UploadDisks::private();
+        if (! Storage::disk($disk)->put($resume->file_path, $this->render($resume->content, $student))) {
+            abort(404, 'Resume file not found. Please regenerate it.');
+        }
+
+        return $disk;
+    }
+
+    private function render(array $content, Student $student): string
+    {
+        return Pdf::loadView('student.resume.pdf', ['content' => $content, 'student' => $student])->output();
     }
 }

@@ -35,6 +35,9 @@
                             <td>{{ $announcement->author?->name ?? '—' }}</td>
                             <td class="text-nowrap">{{ $announcement->published_at?->format('M d, Y') ?? $announcement->created_at->format('M d, Y') }}</td>
                             <td class="text-end">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editAnnouncement{{ $announcement->id }}" title="Edit announcement" aria-label="Edit announcement {{ $announcement->title }}">
+                                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                                </button>
                                 <form action="{{ route('admin.announcements.destroy', $announcement) }}" method="POST" class="d-inline" data-confirm="Delete this announcement? It will no longer be shown to users." data-confirm-title="Delete announcement">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete announcement" aria-label="Delete announcement {{ $announcement->title }}">
@@ -58,6 +61,45 @@
     @endif
 
 </div>
+
+@foreach($announcements as $announcement)
+    <div class="modal fade" id="editAnnouncement{{ $announcement->id }}" tabindex="-1" aria-labelledby="editAnnouncementTitle{{ $announcement->id }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <form method="POST" action="{{ route('admin.announcements.update', $announcement) }}">
+                    @csrf @method('PUT')
+                    <div class="modal-header">
+                        <h2 class="modal-title" id="editAnnouncementTitle{{ $announcement->id }}">Edit Announcement</h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label" for="editAnnouncementTitleInput{{ $announcement->id }}">Title</label>
+                            <input id="editAnnouncementTitleInput{{ $announcement->id }}" type="text" class="form-control" name="title" value="{{ $announcement->title }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="editAnnouncementTarget{{ $announcement->id }}">Target Role</label>
+                            <select class="form-select" id="editAnnouncementTarget{{ $announcement->id }}" name="target_role" required>
+                                <option value="all" @selected(!$announcement->target_role)>All Users</option>
+                                @foreach($roles as $role)
+                                    <option value="{{ $role->value }}" @selected($announcement->target_role === $role->value)>{{ $role->pluralLabel() }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="editAnnouncementContent{{ $announcement->id }}">Content</label>
+                            <textarea id="editAnnouncementContent{{ $announcement->id }}" class="form-control" name="content" rows="6" required>{{ $announcement->content }}</textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+@endforeach
 
 <div class="modal fade" id="createAnnouncement" tabindex="-1" aria-labelledby="createAnnouncementTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">

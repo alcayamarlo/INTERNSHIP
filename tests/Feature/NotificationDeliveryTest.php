@@ -55,16 +55,16 @@ it('persists and emails a queued notification exactly once when the job runs', f
         ['application_id' => 43]
     );
 
-    $this->assertDatabaseCount('notifications', 0);
-    Queue::assertPushed(SendNotification::class);
+    // The bell entry exists immediately, without waiting for a queue worker.
+    $this->assertDatabaseCount('notifications', 1);
+    $pushed = null;
+    Queue::assertPushed(SendNotification::class, function (SendNotification $job) use (&$pushed) {
+        $pushed = $job;
 
-    (new SendNotification(
-        $user->id,
-        'application_update',
-        'Application status updated',
-        'Your application has been reviewed.',
-        ['application_id' => 43]
-    ))->handle($service);
+        return $job->notificationId !== null;
+    });
+
+    $pushed->handle($service);
 
     $this->assertDatabaseCount('notifications', 1);
     Mail::assertSent(SystemNotificationMail::class, fn (SystemNotificationMail $mail) => $mail->hasTo($user->email));
@@ -130,6 +130,38 @@ it('delivers announcements to each selected user role and to all users', functio
             ->assertSee('Announcement for '.$role)
             ->assertSee('This notification is for '.$role.'.');
     }
+});
+
+it('allows administrators to edit existing announcements without duplicating notifications', function () {
+    config([
+        'queue.default' => 'sync',
+        'mail.default' => 'log',
+    ]);
+
+    $admin = User::factory()->create(['role' => UserRole::Admin]);
+    $recipient = User::factory()->create(['role' => UserRole::Student]);
+
+    $this->actingAs($admin)
+        ->post(route('admin.announcements.store'), [
+            'title' => 'Initial notice',
+            'content' => 'Initial content.',
+            'target_role' => UserRole::Student->value,
+        ])->assertRedirect();
+
+    $announcement = \App\Models\Announcement::query()->firstOrFail();
+    $this->put(route('admin.announcements.update', $announcement), [
+        'title' => 'Updated notice',
+        'content' => 'Updated content.',
+        'target_role' => 'all',
+    ])->assertRedirect();
+
+    expect($announcement->fresh()->title)->toBe('Updated notice')
+        ->and($announcement->fresh()->target_role)->toBeNull();
+    $this->assertDatabaseCount('notifications', 1);
+    $this->assertDatabaseHas('notifications', [
+        'user_id' => $recipient->id,
+        'title' => 'Initial notice',
+    ]);
 });
 
 it('requires an announcement audience and rejects administrator as a target', function () {

@@ -46,7 +46,7 @@
                     <form method="POST" action="{{ route('employer.profile.delete-logo') }}" class="d-inline">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Remove company logo?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" data-confirm="Remove company logo?" data-confirm-title="Remove company logo" data-confirm-label="Remove">
                             <i class="bi bi-trash"></i> Remove
                         </button>
                     </form>

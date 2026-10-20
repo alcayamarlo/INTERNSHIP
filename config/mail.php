@@ -111,7 +111,9 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+        // No fallback: the sender must be an address on a domain verified in
+        // the mail provider (Resend rejects anything else).
+        'address' => env('MAIL_FROM_ADDRESS'),
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 

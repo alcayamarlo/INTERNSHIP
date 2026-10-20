@@ -9,7 +9,7 @@
     <div class="col-lg-8">
         <div class="card">
             <div class="card-body">
-                <form method="POST" action="{{ route('student.portfolio.update', $portfolio) }}" enctype="multipart/form-data" data-ajax-form>
+                <form method="POST" action="{{ route('student.portfolio.update', $portfolio) }}" enctype="multipart/form-data" data-ajax-form data-ajax-redirect>
                     @csrf
                     @method('PUT')
 

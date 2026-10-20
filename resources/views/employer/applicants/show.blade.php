@@ -7,7 +7,7 @@
     <a href="{{ route('employer.applicants.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to Applicants</a>
 </x-page-header>
 
-<div class="row g-4">
+<div class="row g-4" data-refresh-on-focus>
     <div class="col-lg-8">
         <div class="card mb-4">
             <div class="card-body">

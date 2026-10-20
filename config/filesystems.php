@@ -33,7 +33,10 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Must stay off: serving this disk registers a signed /storage/{path}
+            // route that shadows routes/public-files.php and 403s profile images
+            // whenever the public/storage symlink is missing (e.g. on Railway).
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],
@@ -67,6 +70,39 @@ return [
             'report' => false,
         ],
 
+        's3_public' => [
+            'driver' => 's3',
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'url' => env('AWS_URL'),
+            'endpoint' => env('AWS_ENDPOINT'),
+            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'visibility' => 'public',
+            'throw' => true,
+            'report' => false,
+        ],
+
+        's3_private' => [
+            'driver' => 's3',
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION'),
+            'bucket' => env('AWS_BUCKET'),
+            'url' => env('AWS_URL'),
+            'endpoint' => env('AWS_ENDPOINT'),
+            'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'visibility' => 'private',
+            'throw' => true,
+            'report' => false,
+        ],
+
+    ],
+
+    'uploads' => [
+        'public_disk' => env('PUBLIC_UPLOAD_DISK', 'public'),
+        'private_disk' => env('PRIVATE_UPLOAD_DISK', 'private'),
     ],
 
     /*

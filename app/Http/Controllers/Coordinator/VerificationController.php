@@ -23,6 +23,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Support\UploadDisks;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
@@ -114,7 +115,7 @@ class VerificationController extends Controller
         return back()->with('success', 'Deployment document uploaded.');
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $coordinator = $this->coordinator();
         $students = $coordinator->scopedStudentsQuery()
@@ -123,7 +124,6 @@ class VerificationController extends Controller
                 'competencies',
                 'certificates.reviewerUser:id,name',
                 'portfolios.reviewerUser:id,name',
-                'resumes.reviewerUser:id,name',
                 'resumes.reviewerUser:id,name',
             ])
             ->orderBy('id')
@@ -134,7 +134,6 @@ class VerificationController extends Controller
                     ->concat($student->certificates->map(fn (Certificate $item) => $this->formatSubmission('certificates', $item, $student)))
                     ->concat($student->portfolios->map(fn (Portfolio $item) => $this->formatSubmission('portfolio', $item, $student)))
                     ->concat($student->resumes->filter(fn (Resume $item) => filled($item->file_path))->map(fn (Resume $item) => $this->formatSubmission('resumes', $item, $student)))
-                    ->concat($student->resumes->filter(fn (Resume $item) => filled($item->file_path))->map(fn (Resume $item) => $this->formatSubmission('resumes', $item, $student)))
                     ->sortByDesc('created_at')
                     ->values();
 
@@ -142,6 +141,10 @@ class VerificationController extends Controller
             })
             ->filter(fn (array $student) => $student['items'] !== [])
             ->values();
+
+        if ($request->expectsJson()) {
+            return response()->json(['students' => $students]);
+        }
 
         $programs = $coordinator->scopedStudentsQuery()
             ->whereNotNull('program')
@@ -471,6 +474,9 @@ class VerificationController extends Controller
             'title' => $this->submissionTitle($type, $item),
             'subtype' => $this->submissionSubtype($type, $item),
             'status' => $item instanceof Resume ? 'verified' : $this->normalizeStatus($item->verification_status),
+            'status_label' => $item instanceof Resume
+                ? 'Generated'
+                : ($item->verification_status === 'resubmitted' ? 'Resubmitted' : 'Submitted'),
             'reviewer_note' => $item->review_notes,
             'reviewed_by_user_id' => $item->reviewed_by_user_id,
             'reviewer_name' => method_exists($item, 'reviewerUser') ? $item->reviewerUser?->name : null,
@@ -533,7 +539,7 @@ class VerificationController extends Controller
             ->filter()
             ->unique();
         $bytes = $paths->sum(function (string $path): int {
-            foreach (['private', 'public'] as $disk) {
+            foreach (UploadDisks::search() as $disk) {
                 if (Storage::disk($disk)->exists($path)) {
                     return Storage::disk($disk)->size($path);
                 }
@@ -645,7 +651,7 @@ class VerificationController extends Controller
 
     private function diskWithFile(string $path): string
     {
-        foreach (['private', 'public'] as $disk) {
+        foreach (UploadDisks::search() as $disk) {
             if (Storage::disk($disk)->exists($path)) {
                 return $disk;
             }
@@ -660,7 +666,7 @@ class VerificationController extends Controller
             return 'Unavailable';
         }
 
-        foreach (['private', 'public'] as $disk) {
+        foreach (UploadDisks::search() as $disk) {
             if (Storage::disk($disk)->exists($path)) {
                 return number_format(Storage::disk($disk)->size($path) / 1024, 1).' KB';
             }

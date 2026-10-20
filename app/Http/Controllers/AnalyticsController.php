@@ -56,9 +56,9 @@ class AnalyticsController extends Controller
             'verified_evidence' => StudentCompetency::where('verification_status', 'verified')->count()
                 + Certificate::where('verification_status', 'verified')->count()
                 + Portfolio::where('verification_status', 'verified')->count(),
-            'pending_reviews' => StudentCompetency::whereIn('verification_status', ['evidence_submitted', 'rejected'])->count()
-                + Certificate::whereIn('verification_status', ['evidence_submitted', 'rejected'])->count()
-                + Portfolio::whereIn('verification_status', ['evidence_submitted', 'rejected'])->count(),
+            'pending_reviews' => StudentCompetency::whereIn('verification_status', ['evidence_submitted', 'resubmitted', 'rejected'])->count()
+                + Certificate::whereIn('verification_status', ['evidence_submitted', 'resubmitted', 'rejected'])->count()
+                + Portfolio::whereIn('verification_status', ['evidence_submitted', 'resubmitted', 'rejected'])->count(),
             'helpful_feedback' => RecommendationFeedback::where('feedback', 'helpful')->count(),
             'not_helpful_feedback' => RecommendationFeedback::where('feedback', 'not_helpful')->count(),
         ];

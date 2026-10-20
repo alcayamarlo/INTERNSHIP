@@ -171,7 +171,7 @@ class Student extends Model
                 $approvedDocumentCount++;
             } else {
                 $missingSteps->push(match ($document?->verification_status) {
-                    'submitted', 'pending' => 'Await approval for '.$requirement->name,
+                    'submitted', 'resubmitted', 'pending' => 'Await approval for '.$requirement->name,
                     'rejected' => 'Replace rejected '.$requirement->name,
                     default => $requirement->upload_source === DeploymentRequirement::SOURCE_SYSTEM
                         ? 'Complete '.$requirement->name

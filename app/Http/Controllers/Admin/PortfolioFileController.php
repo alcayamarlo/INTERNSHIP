@@ -12,6 +12,7 @@ use App\Models\Student;
 use App\Services\ActivityLogService;
 use App\Services\FileUploadService;
 use App\Services\NotificationService;
+use App\Support\UploadDisks;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -50,7 +51,7 @@ class PortfolioFileController extends Controller
             ->values();
         $paths = $files->pluck('file_path')->filter()->unique();
         $storageBytes = $paths->sum(function (string $path): int {
-            foreach (['private', 'public'] as $disk) {
+            foreach (UploadDisks::search() as $disk) {
                 if (\Illuminate\Support\Facades\Storage::disk($disk)->exists($path)) {
                     return \Illuminate\Support\Facades\Storage::disk($disk)->size($path);
                 }
@@ -203,7 +204,7 @@ class PortfolioFileController extends Controller
         if (! $path) {
             return 'Unavailable';
         }
-        foreach (['private', 'public'] as $disk) {
+        foreach (UploadDisks::search() as $disk) {
             if (\Illuminate\Support\Facades\Storage::disk($disk)->exists($path)) {
                 return number_format(\Illuminate\Support\Facades\Storage::disk($disk)->size($path) / 1024, 1).' KB';
             }

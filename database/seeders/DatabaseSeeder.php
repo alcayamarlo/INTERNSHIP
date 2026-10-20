@@ -24,6 +24,7 @@ use App\Models\StudentCompetency;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
+use App\Support\UploadDisks;
 
 class DatabaseSeeder extends Seeder
 {
@@ -106,7 +107,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($portfolioPaths as $path) {
-            Storage::disk('private')->put($path, $this->placeholderPdf());
+            Storage::disk(UploadDisks::private())->put($path, $this->placeholderPdf());
         }
 
         $technicalCategory = SkillCategory::create(['name' => 'technical']);

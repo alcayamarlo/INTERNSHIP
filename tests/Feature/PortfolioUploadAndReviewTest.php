@@ -106,3 +106,37 @@ it('stores a real portfolio file and allows a coordinator to review it', functio
         ->assertSee('Verified Student Skill')
         ->assertSee('bi-patch-check-fill');
 });
+
+it('marks a replaced portfolio as resubmitted and redirects to the refreshed profile', function () {
+    Storage::fake('private');
+    $studentUser = User::factory()->create(['role' => UserRole::Student]);
+    $student = Student::create(['user_id' => $studentUser->id]);
+    $oldPath = Storage::disk('private')->putFile('portfolios/'.$student->id, UploadedFile::fake()->create('old.pdf', 10, 'application/pdf'));
+    $portfolio = Portfolio::create([
+        'student_id' => $student->id,
+        'title' => 'Portfolio project',
+        'type' => 'project',
+        'file_path' => $oldPath,
+        'verification_status' => 'verified',
+        'review_notes' => 'Previous review.',
+        'reviewed_at' => now(),
+    ]);
+
+    $this->actingAs($studentUser)
+        ->putJson(route('student.portfolio.update', $portfolio), [
+            'title' => 'Updated portfolio project',
+            'type' => 'project',
+            'file' => UploadedFile::fake()->create('replacement.pdf', 15, 'application/pdf'),
+        ])
+        ->assertOk()
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('redirect_url', route('student.profile.edit').'#portfolio');
+
+    expect($portfolio->fresh()->verification_status)->toBe('resubmitted')
+        ->and($portfolio->fresh()->reviewed_at)->toBeNull()
+        ->and($portfolio->fresh()->review_notes)->toBeNull();
+
+    $this->get(route('student.profile.edit'))
+        ->assertOk()
+        ->assertSee('Resubmitted');
+});

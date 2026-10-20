@@ -161,7 +161,7 @@
                 body: data,
                 headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
             });
-            const payload = await response.json();
+            const payload = await response.json().catch(() => ({ message: response.status === 413 ? 'The file is too large to upload.' : `Request failed (HTTP ${response.status}). Please try again.` }));
             if (!response.ok) {
                 const firstError = payload.errors ? Object.values(payload.errors).flat()[0] : null;
                 throw new Error(firstError || payload.message || 'Unable to upload profile photo.');

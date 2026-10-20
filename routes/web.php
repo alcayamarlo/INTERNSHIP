@@ -222,12 +222,17 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/users/create', [AdminUserController::class, 'create'])->name('users.create');
         Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
         Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+        Route::post('/users/{user}/archive', [AdminUserController::class, 'archive'])->name('users.archive');
+        Route::post('/users/{user}/restore', [AdminUserController::class, 'restore'])->name('users.restore');
+        Route::post('/users/{user}/verify-email', [AdminUserController::class, 'verifyEmail'])->name('users.verify-email');
+        Route::delete('/users/{user}/permanent', [AdminUserController::class, 'forceDelete'])->name('users.force-delete');
         Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
         Route::resource('skill-categories', AdminSkillCategoryController::class)
             ->except(['show'])
             ->parameters(['skill-categories' => 'skill_category']);
         Route::get('/announcements', [AdminAnnouncementController::class, 'index'])->name('announcements.index');
         Route::post('/announcements', [AdminAnnouncementController::class, 'store'])->name('announcements.store');
+        Route::put('/announcements/{announcement}', [AdminAnnouncementController::class, 'update'])->name('announcements.update');
         Route::delete('/announcements/{announcement}', [AdminAnnouncementController::class, 'destroy'])->name('announcements.destroy');
         Route::get('/logs', [AdminSystemController::class, 'logs'])->name('logs');
         Route::match(['get', 'post'], '/reports', [AdminSystemController::class, 'reports'])->name('reports');

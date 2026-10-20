@@ -320,7 +320,7 @@ class DashboardController extends Controller
 
         DB::transaction(function () use ($modelClass, $validated, $coordinator) {
             $items = $modelClass::whereIn('id', $validated['ids'])
-                ->whereIn('verification_status', ['evidence_submitted', 'rejected'])
+                ->whereIn('verification_status', ['evidence_submitted', 'resubmitted', 'rejected'])
                 ->get();
 
             foreach ($items as $item) {

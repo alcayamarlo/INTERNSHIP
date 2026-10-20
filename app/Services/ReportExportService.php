@@ -11,6 +11,7 @@ use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
+use App\Support\UploadDisks;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use RuntimeException;
@@ -33,9 +34,9 @@ class ReportExportService
 
         if ($format === 'pdf') {
             $pdf = Pdf::loadView('reports.pdf', ['type' => $type, 'data' => $data, 'title' => ucfirst($type).' Report']);
-            $stored = Storage::disk('private')->put($filename, $pdf->output());
+            $stored = Storage::disk(UploadDisks::private())->put($filename, $pdf->output());
         } else {
-            $stored = Storage::disk('private')->put($filename, $this->toCsv($data));
+            $stored = Storage::disk(UploadDisks::private())->put($filename, $this->toCsv($data));
         }
 
         if (! $stored) {
@@ -59,7 +60,7 @@ class ReportExportService
                 return $report;
             });
         } catch (\Throwable $exception) {
-            Storage::disk('private')->delete($filename);
+            Storage::disk(UploadDisks::private())->delete($filename);
             throw $exception;
         }
     }
@@ -67,8 +68,8 @@ class ReportExportService
     public function download(Report $report): StreamedResponse
     {
         $mime = $report->format === 'pdf' ? 'application/pdf' : 'text/csv';
-        $disk = $report->file_path && Storage::disk('private')->exists($report->file_path)
-            ? 'private'
+        $disk = $report->file_path && Storage::disk(UploadDisks::private())->exists($report->file_path)
+            ? UploadDisks::private()
             : 'public';
 
         abort_unless($report->file_path && Storage::disk($disk)->exists($report->file_path), 404, 'Report file not found.');

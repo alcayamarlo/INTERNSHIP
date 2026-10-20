@@ -51,9 +51,9 @@
                                 <button type="submit" class="btn btn-sm btn-outline-secondary">Restore</button>
                             </form>
                         @else
-                            <form action="{{ route('notifications.archive', $notification) }}" method="POST" data-ajax-notification="archive">
+                            <form action="{{ route('notifications.archive', $notification) }}" method="POST" data-ajax-notification="archive" data-confirm="Delete this notification? It will be moved to your archive." data-confirm-title="Delete notification">
                                 @csrf
-                                <button type="submit" class="btn btn-sm btn-outline-secondary">Archive</button>
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Delete (archive)</button>
                             </form>
                         @endif
                     </div>

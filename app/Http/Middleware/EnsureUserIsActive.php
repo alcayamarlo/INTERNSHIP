@@ -13,12 +13,12 @@ class EnsureUserIsActive
     {
         $user = $request->user();
 
-        if ($user && ! $user->is_active) {
+        if ($user && (! $user->is_active || $user->archived_at)) {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            abort(403, 'Your account has been deactivated.');
+            abort(403, 'Your account is inactive or archived. Please contact support.');
         }
 
         return $next($request);

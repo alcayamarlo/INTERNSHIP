@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Exceptions\MailDeliveryFailed;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Jobs\SendPasswordResetCode;
@@ -43,13 +44,12 @@ class ForgotPasswordController extends Controller
 
         try {
             Bus::dispatchSync(new SendPasswordResetCode($email));
-        } catch (TransportExceptionInterface $exception) {
-            report($exception);
-
+        } catch (MailDeliveryFailed|TransportExceptionInterface $exception) {
+            // MailSender has already logged the transport error.
             return redirect()
                 ->route('password.request')
                 ->withInput(['email' => $email])
-                ->withErrors(['email' => 'We could not send the reset code. Please try again.']);
+                ->withErrors(['email' => "We couldn't send the email. Please try again later."]);
         }
 
         $request->session()->put([

@@ -63,7 +63,7 @@ class RegisterRequest extends FormRequest
             'name.required' => 'Full name is required.',
             'email.required' => 'Email address is required.',
             'email.email' => 'Please enter a valid email address.',
-            'email.unique' => 'This email is already registered.',
+            'email.unique' => 'This email is already registered. Sign in, use "Forgot password", or contact the administrator if your account was archived.',
             'password.required' => 'Password is required.',
             'password.confirmed' => 'Passwords do not match.',
             'password.min' => 'Password must be at least 8 characters.',

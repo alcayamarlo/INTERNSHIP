@@ -112,6 +112,28 @@ certificates, and portfolios on the private disk and serve them through the
 authorized application routes. Do not publish `.env`, credentials, or private
 backups.
 
+Profile images and uploaded documents default to the local `public` and
+`private` disks. On Railway, local files are ephemeral unless a persistent
+volume is mounted at Laravel's storage directory. Alternatively, configure
+object storage with `PUBLIC_UPLOAD_DISK=s3_public` and
+`PRIVATE_UPLOAD_DISK=s3_private`, plus the `AWS_*` credentials and bucket
+settings. Keep private objects private; the app serves them through authorized
+routes. Existing files are not copied automatically when changing disks.
+
+Railway checklist:
+
+- Variables: `APP_KEY`, `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL`
+  (the public https URL), `DB_*`, `MAIL_*` (or Resend), and
+  `LOG_STACK=single,stderr` so stack traces show in the deploy logs.
+- Run `php artisan migrate --force` on every deploy (the 2026-10-20
+  migrations normalize emails, archive previously deleted users, and verify
+  admin-created accounts).
+- Mount a volume at `/app/storage` or use the `s3_*` disks above. Without
+  `storage:link`, profile pictures are still served by `routes/public-files.php`.
+- In-app notifications no longer need a queue worker; only notification
+  emails are queued, so run `php artisan queue:work` if you want them sent.
+- `/health` reports database, cache and queue status.
+
 Generate `APP_KEY` once for a new installation and preserve it across
 deployments; changing it can invalidate encrypted data and sessions. Build
 frontend assets with `npm ci` and `npm run build` as part of deployment:

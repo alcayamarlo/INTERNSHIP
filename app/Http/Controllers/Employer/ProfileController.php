@@ -65,21 +65,32 @@ class ProfileController extends Controller
 
         try {
             DB::transaction(function () use ($user, $employer, $validated, $newLogo) {
-                $user->update([
-                    'name' => $validated['contact_person'],
-                    'email' => $validated['email'],
-                    'phone' => $validated['phone'],
-                ]);
+                $userUpdates = array_filter([
+                    'name' => $validated['contact_person'] ?? null,
+                    'email' => $validated['email'] ?? null,
+                ], fn ($value) => filled($value));
+                if (array_key_exists('phone', $validated)) {
+                    $userUpdates['phone'] = $validated['phone'];
+                }
+                if ($userUpdates !== []) {
+                    $user->update($userUpdates);
+                }
 
-                $employer->update([
+                $employerUpdates = [
                     'company_name' => $validated['company_name'],
                     'industry' => $validated['industry'],
                     'description' => $validated['description'] ?? null,
                     'website' => $validated['website'] ?? null,
                     'logo' => $newLogo ?? $employer->logo,
-                    'contact_person' => $validated['contact_person'],
-                    'address' => "{$validated['street']}, {$validated['city']}, {$validated['province']} {$validated['zip_code']}",
-                ]);
+                ];
+                if (filled($validated['contact_person'] ?? null)) {
+                    $employerUpdates['contact_person'] = $validated['contact_person'];
+                }
+                if (filled($validated['street'] ?? null)) {
+                    $employerUpdates['address'] = "{$validated['street']}, {$validated['city']}, {$validated['province']} {$validated['zip_code']}";
+                }
+
+                $employer->update($employerUpdates);
                 $this->activityLog->log($user, 'profile_update', ['role' => 'employer']);
             });
         } catch (\Throwable $exception) {

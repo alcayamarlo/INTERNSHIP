@@ -11,6 +11,12 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Sends the email copy of an in-app notification. The in-app row is written
+ * synchronously by NotificationService, so the bell works even when no queue
+ * worker is running. Jobs queued before that change carry no notificationId
+ * and still create the row here.
+ */
 class SendNotification implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -24,20 +30,23 @@ class SendNotification implements ShouldQueue
         public string $type,
         public string $title,
         public string $message,
-        public array $data = []
+        public array $data = [],
+        public ?int $notificationId = null,
     ) {}
 
     public function handle(\App\Services\NotificationService $notificationService): void
     {
         $user = User::findOrFail($this->userId);
 
-        AppNotification::create([
-            'user_id' => $user->id,
-            'type' => $this->type,
-            'title' => $this->title,
-            'message' => $this->message,
-            'data' => $this->data,
-        ]);
+        if ($this->notificationId === null) {
+            AppNotification::create([
+                'user_id' => $user->id,
+                'type' => $this->type,
+                'title' => $this->title,
+                'message' => $this->message,
+                'data' => $this->data,
+            ]);
+        }
 
         $notificationService->sendEmail(
             $user,

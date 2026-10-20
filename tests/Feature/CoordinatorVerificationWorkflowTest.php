@@ -150,6 +150,26 @@ it('shows pending evidence for coordinators and allows reviewing it', function (
     ]);
 });
 
+it('returns resubmitted portfolio evidence as pending and labels it for coordinator refreshes', function () {
+    $institution = Institution::create(['name' => 'Resubmission Test Institution']);
+    $coordinator = createCoordinatorForVerification($institution);
+    $student = createStudentForVerification($institution);
+    $portfolio = Portfolio::create([
+        'student_id' => $student->id,
+        'title' => 'Updated project',
+        'type' => 'project',
+        'file_path' => 'portfolios/1/replacement.pdf',
+        'verification_status' => 'resubmitted',
+    ]);
+
+    $this->actingAs($coordinator)
+        ->getJson(route('coordinator.verification.index'))
+        ->assertOk()
+        ->assertJsonPath('students.0.items.0.id', $portfolio->id)
+        ->assertJsonPath('students.0.items.0.status', 'pending')
+        ->assertJsonPath('students.0.items.0.status_label', 'Resubmitted');
+});
+
 it('lets coordinators upload approved deployment documents only for students in their institution', function () {
     Storage::fake('private');
     $institution = Institution::create([

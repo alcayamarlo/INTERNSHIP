@@ -148,7 +148,7 @@
                 },
                 signal: requestController.signal,
             });
-            const result = await response.json();
+            const result = await response.json().catch(() => ({ message: response.status === 413 ? 'The file is too large to upload.' : `Request failed (HTTP ${response.status}). Please try again.` }));
             if (!response.ok) {
                 throw new Error(result.message || 'Unable to load students.');
             }

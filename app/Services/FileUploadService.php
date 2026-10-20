@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Certificate;
 use App\Models\Portfolio;
 use App\Models\Resume;
+use App\Support\UploadDisks;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -63,7 +64,7 @@ class FileUploadService
         return $required ? array_merge(['required'], $rules) : array_merge(['nullable'], $rules);
     }
 
-    public function upload(UploadedFile $file, string $directory, string $prefix = '', string $disk = 'private'): string
+    public function upload(UploadedFile $file, string $directory, string $prefix = '', ?string $disk = null): string
     {
         $extension = strtolower($file->extension() ?: 'bin');
 
@@ -71,10 +72,10 @@ class FileUploadService
             throw new FileException('Unsupported file type.');
         }
 
-        return $this->storeFile($file, $directory, $prefix, $extension, $disk);
+        return $this->storeFile($file, $directory, $prefix, $extension, $disk ?? UploadDisks::private());
     }
 
-    public function uploadImage(UploadedFile $file, string $directory, string $prefix = '', string $disk = 'public'): string
+    public function uploadImage(UploadedFile $file, string $directory, string $prefix = '', ?string $disk = null): string
     {
         $extension = strtolower($file->extension() ?: 'bin');
 
@@ -82,7 +83,7 @@ class FileUploadService
             throw new FileException('Unsupported image type.');
         }
 
-        return $this->storeFile($file, $directory, $prefix, $extension, $disk);
+        return $this->storeFile($file, $directory, $prefix, $extension, $disk ?? UploadDisks::public());
     }
 
     private function storeFile(UploadedFile $file, string $directory, string $prefix, string $extension, string $disk): string
@@ -102,8 +103,8 @@ class FileUploadService
         $disks = $disk
             ? [$disk]
             : (\Illuminate\Support\Str::startsWith($path ?? '', ['profiles/', 'logos/'])
-                ? ['public']
-                : ['private', 'public']);
+                ? [UploadDisks::public(), 'public']
+                : UploadDisks::search());
 
         foreach ($disks as $storageDisk) {
             if ($path && Storage::disk($storageDisk)->exists($path)) {
