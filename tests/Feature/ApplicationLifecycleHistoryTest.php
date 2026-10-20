@@ -273,7 +273,8 @@ it('allows every configured employer status transition and records each change i
         }
     }
 
-    expect($allowedTransitionCount)->toBe(15);
+    // Accepted -> Completed is driven by OJT tracking, not the employer dropdown.
+    expect($allowedTransitionCount)->toBe(14);
 });
 
 it('rejects every employer status transition not present in the configured map', function () {
@@ -345,7 +346,9 @@ it('updates hire and reject decisions asynchronously and notifies students', fun
         ->assertJsonPath('success', true)
         ->assertJsonPath('status', ApplicationStatus::Accepted->value)
         ->assertJsonPath('status_label', ApplicationStatus::Accepted->label())
-        ->assertJsonPath('available_statuses.0.value', ApplicationStatus::Completed->value);
+        ->assertJsonPath('available_statuses', []);
+
+    expect($hireApplication->placement()->exists())->toBeTrue();
 
     expect($hireApplication->fresh()->status)->toBe(ApplicationStatus::Accepted);
     $this->assertDatabaseHas('notifications', [
@@ -379,6 +382,21 @@ it('updates hire and reject decisions asynchronously and notifies students', fun
         ->get(route('student.applications.index'))
         ->assertOk()
         ->assertSee(ApplicationStatus::Rejected->label());
+});
+
+it('sends the employer back to the applicants list after updating a status', function () {
+    [$employerUser, $application] = createApplicationStatusTransitionFixture(ApplicationStatus::Applied);
+
+    $this->actingAs($employerUser)
+        ->put(route('employer.applicants.status', $application), ['status' => ApplicationStatus::Reviewed->value])
+        ->assertRedirect(route('employer.applicants.index'));
+
+    [$employerUser2, $jsonApplication] = createApplicationStatusTransitionFixture(ApplicationStatus::Applied);
+
+    $this->actingAs($employerUser2)
+        ->putJson(route('employer.applicants.status', $jsonApplication), ['status' => ApplicationStatus::Reviewed->value])
+        ->assertOk()
+        ->assertJsonPath('redirect_url', route('employer.applicants.index'));
 });
 
 it('does not allow another employer to change the application status', function () {

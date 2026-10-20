@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\WorkSetup;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -37,6 +38,23 @@ class Internship extends Model
     public function employer(): BelongsTo
     {
         return $this->belongsTo(Employer::class);
+    }
+
+    /** Programs this internship is open to; none means every program. */
+    public function programs(): BelongsToMany
+    {
+        return $this->belongsToMany(Program::class);
+    }
+
+    public function scopeForProgram($query, ?int $programId)
+    {
+        return $query->where(function ($query) use ($programId) {
+            $query->whereDoesntHave('programs');
+
+            if ($programId) {
+                $query->orWhereHas('programs', fn ($programs) => $programs->whereKey($programId));
+            }
+        });
     }
 
     public function requirementsList(): HasMany

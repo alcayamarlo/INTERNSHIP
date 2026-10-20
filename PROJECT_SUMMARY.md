@@ -5,7 +5,9 @@
 Skill-Bridge is a role-based internship and student-development system built
 with Laravel 12 and PHP 8.2+. It supports students, employers, institution
 coordinators, and administrators. The core workflow is internship opportunity
-posting, student application, employer status progression, and coordinator
+posting, student application, employer status progression, OJT tracking after
+acceptance (daily time record, weekly journal, supervisor evaluation,
+coordinator clearance and certificate of completion), and coordinator
 monitoring.
 
 The system is not a freelance marketplace. Its matching feature is rule-based,
@@ -21,6 +23,9 @@ not machine-learning or AI-powered.
 - Generate PDF resumes.
 - Browse internship opportunities, receive deterministic rule-based matching
   recommendations, submit applications, and view application progress.
+- After acceptance, log daily time (DTR), submit weekly journals, follow
+  progress toward the required hours, view the supervisor evaluation, and
+  download the certificate of completion once cleared.
 
 ### Employers
 
@@ -28,16 +33,24 @@ not machine-learning or AI-powered.
 - Review applicants and access applicant documents subject to authorization.
 - Update application statuses using the application's allowed transition map;
   valid changes are recorded in status history.
+- Accepting an applicant opens an OJT placement. Act as on-site supervisor:
+  approve or reject DTR entries, acknowledge journals, and submit a 1–5 rubric
+  evaluation. The OJT completes automatically when approved hours meet the
+  target and the evaluation is in.
 
 ### Coordinators
 
 - Review competency, certificate, and portfolio evidence for students within
   their institution.
-- View student and placement information and generate PDF/CSV reports.
+- View student and placement information and generate PDF/CSV reports,
+  including an OJT hours and evaluation report.
+- Monitor OJT progress for their students and clear completed OJTs, which
+  issues the certificate of completion.
 
 ### Administrators
 
 - Manage users and role profiles, announcements, activity logs, and reports.
+- Set the required OJT hours (default 300) and view all placements.
 - Create users and change roles while retaining existing role-profile data.
 - Protect the last active administrator from removal or deactivation.
 
@@ -73,9 +86,10 @@ with `files:secure-existing`; public copies are retained unless the explicit
 
 ## Verification snapshot
 
-At the time this summary was updated, the full Pest suite passed **58 tests
-with 623 assertions**. The suite covers core authentication, role access,
-application transitions, ownership checks, private document access, reports,
+At the time this summary was updated, the full Pest suite passed **254 tests
+with 2187 assertions**. The suite covers core authentication, role access,
+application transitions, OJT tracking (DTR, journals, evaluation, clearance and
+certificate access), ownership checks, private document access, reports,
 cache invalidation, atomic writes, and shared-file lifecycle behavior.
 
 Passing tests are not a substitute for a production security assessment or

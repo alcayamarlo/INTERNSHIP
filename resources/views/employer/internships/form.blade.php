@@ -34,6 +34,22 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="col-12">
+                    @php $selectedPrograms = collect(old('program_ids', $internship->exists ? $internship->programs->pluck('id')->all() : []))->map(fn ($id) => (int) $id); @endphp
+                    <fieldset>
+                        <legend class="form-label fs-6">Open to programs</legend>
+                        <div class="d-flex flex-wrap gap-3">
+                            @foreach($programs as $program)
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="program_ids[]" value="{{ $program->id }}" id="program-{{ $program->id }}" @checked($selectedPrograms->contains($program->id))>
+                                    <label class="form-check-label" for="program-{{ $program->id }}">{{ $program->display_name }}</label>
+                                </div>
+                            @endforeach
+                        </div>
+                        <div class="form-text">Students of the selected programs see this internship first. Leave all unticked to open it to every program. Students can still find it by searching.</div>
+                        @error('program_ids.*')<div class="text-danger small">{{ $message }}</div>@enderror
+                    </fieldset>
+                </div>
                 <div class="col-md-4">
                     <label class="form-label">Location</label>
                     <input type="text" class="form-control" name="location" value="{{ old('location', $internship->location) }}">

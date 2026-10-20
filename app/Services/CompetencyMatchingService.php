@@ -15,10 +15,20 @@ class CompetencyMatchingService
 
     public function calculateMatch(Student $student, Internship $internship): int
     {
-        $cacheKey = "match_{$student->id}_{$internship->id}";
+        return $this->calculateMatchWithDetails($student, $internship)['match_percentage'];
+    }
+
+    /**
+     * Same score as calculateMatch(), plus the breakdown of which requirements
+     * matched and why each unmatched one is missing (no evidence, not yet
+     * verified, or below the required proficiency level).
+     */
+    public function calculateMatchWithDetails(Student $student, Internship $internship): array
+    {
+        $cacheKey = "match_details_{$student->id}_{$internship->id}";
 
         return Cache::remember($cacheKey, 3600, function () use ($student, $internship) {
-            return $this->buildRecommendationResult($student, $internship)['match_percentage'];
+            return $this->buildRecommendationResult($student, $internship);
         });
     }
 
@@ -27,8 +37,10 @@ class CompetencyMatchingService
         $cacheKey = "recommendations_{$student->id}_{$limit}";
 
         return Cache::remember($cacheKey, 1800, function () use ($student, $limit) {
+            // Recommendations stay within the student's program; searching covers every program.
             $internships = Internship::query()
                 ->open()
+                ->forProgram($student->program_id)
                 ->with(['employer', 'requirementsList'])
                 ->latest()
                 ->get();
@@ -56,7 +68,7 @@ class CompetencyMatchingService
         }
 
         foreach (Internship::query()->pluck('id') as $internshipId) {
-            Cache::forget("match_{$student->id}_{$internshipId}");
+            Cache::forget("match_details_{$student->id}_{$internshipId}");
         }
     }
 
@@ -93,6 +105,10 @@ class CompetencyMatchingService
             $weight = $requirement->is_required ? 2 : 1;
             $totalWeight += $weight;
 
+            $requiredLevelLabel = $requirement->required_level instanceof ProficiencyLevel
+                ? $requirement->required_level->label()
+                : ProficiencyLevel::from($requirement->required_level)->label();
+
             $studentMatch = $studentCompetencies->first(function ($competency) use ($requirement) {
                 $name = strtolower($requirement->requirement_name);
 
@@ -101,7 +117,12 @@ class CompetencyMatchingService
             });
 
             if (! $studentMatch) {
-                $missingRequirements[] = $requirement->requirement_name;
+                $missingRequirements[] = [
+                    'name' => $requirement->requirement_name,
+                    'required_level' => $requiredLevelLabel,
+                    'reason' => 'no_evidence',
+                    'reason_label' => 'No evidence added for this skill yet.',
+                ];
                 continue;
             }
 
@@ -112,13 +133,31 @@ class CompetencyMatchingService
             $isVerified = strtolower((string) ($studentMatch->verification_status ?? '')) === 'verified';
 
             if ($isVerified && $studentScore >= $requiredScore) {
-                $matchedRequirements[] = $requirement->requirement_name;
+                $matchedRequirements[] = [
+                    'name' => $requirement->requirement_name,
+                    'required_level' => $requiredLevelLabel,
+                ];
                 $verifiedMatchCount++;
                 $weightedScore += $weight * min($studentScore / $requiredScore, 1.0);
                 continue;
             }
 
-            $missingRequirements[] = $requirement->requirement_name;
+            if (! $isVerified) {
+                $missingRequirements[] = [
+                    'name' => $requirement->requirement_name,
+                    'required_level' => $requiredLevelLabel,
+                    'reason' => 'not_verified',
+                    'reason_label' => 'Added, but your coordinator has not verified it yet.',
+                ];
+                continue;
+            }
+
+            $missingRequirements[] = [
+                'name' => $requirement->requirement_name,
+                'required_level' => $requiredLevelLabel,
+                'reason' => 'below_required_level',
+                'reason_label' => 'Your verified level is below the required '.$requiredLevelLabel.' level.',
+            ];
         }
 
         $matchPercentage = $totalWeight > 0

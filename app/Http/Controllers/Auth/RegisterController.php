@@ -29,7 +29,7 @@ class RegisterController extends Controller
             ['address' => null]
         );
 
-        return view('admin.users.auth.register', [
+        return view('auth.register', [
             'institution' => $institution,
             'programs' => Program::orderBy('code')->get(),
             'roles' => [

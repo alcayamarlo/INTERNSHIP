@@ -24,6 +24,7 @@
                             <option value="competency">Competency Report</option>
                             <option value="employer">Employer Report</option>
                             <option value="internship">Internship Report</option>
+                            <option value="ojt">OJT Hours &amp; Evaluation Report</option>
                         </select>
                         @error('type')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>

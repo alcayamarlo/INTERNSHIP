@@ -53,6 +53,7 @@ class AcademicSettingsRequest extends FormRequest
             'summer_start_day' => ['required', 'integer', 'between:1,31'],
             'summer_end_month' => ['required', 'integer', 'between:1,12'],
             'summer_end_day' => ['required', 'integer', 'between:1,31'],
+            'required_ojt_hours' => ['sometimes', 'required', 'integer', 'between:1,2000'],
         ];
     }
 

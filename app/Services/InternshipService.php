@@ -18,6 +18,7 @@ class InternshipService
         return DB::transaction(function () use ($employer, $data, $request) {
             $internship = $employer->internships()->create($this->internshipAttributes($data));
             $this->syncRequirements($request, $internship);
+            $internship->programs()->sync($data['program_ids'] ?? []);
 
             $this->activityLog->log($employer->user, 'internship_create', [
                 'internship_id' => $internship->id,
@@ -32,6 +33,7 @@ class InternshipService
         return DB::transaction(function () use ($internship, $data, $request) {
             $internship->update($this->internshipAttributes($data));
             $this->syncRequirements($request, $internship);
+            $internship->programs()->sync($data['program_ids'] ?? []);
 
             $this->activityLog->log($internship->employer->user, 'internship_update', [
                 'internship_id' => $internship->id,

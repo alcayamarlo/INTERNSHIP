@@ -3,6 +3,11 @@
 use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncementController;
 use App\Http\Controllers\Admin\AcademicCatalogController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\PlacementController as AdminPlacementController;
+use App\Http\Controllers\Coordinator\PlacementController as CoordinatorPlacementController;
+use App\Http\Controllers\Employer\InternController as EmployerInternController;
+use App\Http\Controllers\OjtCertificateController;
+use App\Http\Controllers\Student\OjtController as StudentOjtController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
 use App\Http\Controllers\Admin\SystemController as AdminSystemController;
 use App\Http\Controllers\Admin\SkillCategoryController as AdminSkillCategoryController;
@@ -90,7 +95,10 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
-    Route::get('/api/analytics/charts', [AnalyticsController::class, 'chartData'])->name('analytics.charts');
+    Route::get('/api/analytics/charts', [AnalyticsController::class, 'chartData'])
+        ->middleware('role:admin,coordinator')
+        ->name('analytics.charts');
+    Route::get('/ojt/placements/{placement}/certificate', OjtCertificateController::class)->name('ojt.certificate');
 
     Route::prefix('student')->name('student.')->middleware('role:student')->group(function () {
         Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
@@ -142,6 +150,13 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/applications/{application}/edit', [StudentInternshipController::class, 'editApplication'])->name('applications.edit');
         Route::put('/applications/{application}', [StudentInternshipController::class, 'updateApplication'])->name('applications.update');
         Route::delete('/applications/{application}', [StudentInternshipController::class, 'destroyApplication'])->name('applications.destroy');
+
+        // OJT tracking
+        Route::get('/ojt', [StudentOjtController::class, 'index'])->name('ojt.index');
+        Route::post('/ojt/{placement}/attendance', [StudentOjtController::class, 'storeAttendance'])->name('ojt.attendance.store');
+        Route::delete('/ojt/{placement}/attendance/{attendanceLog}', [StudentOjtController::class, 'destroyAttendance'])->name('ojt.attendance.destroy');
+        Route::post('/ojt/{placement}/journals', [StudentOjtController::class, 'storeJournal'])->name('ojt.journals.store');
+        Route::delete('/ojt/{placement}/journals/{journalEntry}', [StudentOjtController::class, 'destroyJournal'])->name('ojt.journals.destroy');
     });
 
     Route::prefix('employer')->name('employer.')->middleware('role:employer')->group(function () {
@@ -155,6 +170,15 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/applicants', [ApplicantController::class, 'index'])->name('applicants.index');
         Route::get('/applicants/{application}', [ApplicantController::class, 'show'])->name('applicants.show');
         Route::put('/applicants/{application}/status', [ApplicantController::class, 'updateStatus'])->name('applicants.status');
+
+        // OJT supervision
+        Route::get('/interns', [EmployerInternController::class, 'index'])->name('interns.index');
+        Route::get('/interns/{placement}', [EmployerInternController::class, 'show'])->name('interns.show');
+        Route::put('/interns/{placement}/schedule', [EmployerInternController::class, 'updateSchedule'])->name('interns.schedule');
+        Route::patch('/interns/{placement}/attendance/{attendanceLog}', [EmployerInternController::class, 'reviewAttendance'])->name('interns.attendance.review');
+        Route::post('/interns/{placement}/attendance/approve-all', [EmployerInternController::class, 'approveAllAttendance'])->name('interns.attendance.approve-all');
+        Route::patch('/interns/{placement}/journals/{journalEntry}', [EmployerInternController::class, 'reviewJournal'])->name('interns.journals.review');
+        Route::post('/interns/{placement}/evaluation', [EmployerInternController::class, 'storeEvaluation'])->name('interns.evaluation.store');
     });
 
     Route::prefix('coordinator')->name('coordinator.')->middleware('role:coordinator')->group(function () {
@@ -188,6 +212,10 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/verification/portfolios/{portfolio}', [VerificationController::class, 'reviewPortfolio'])->name('verification.reviewPortfolio');
         Route::get('/reports', [CoordinatorReportController::class, 'index'])->name('reports.index');
         Route::post('/reports/generate', [CoordinatorReportController::class, 'generate'])->name('reports.generate');
+        Route::get('/analytics', fn () => view('coordinator.analytics'))->name('analytics');
+        Route::get('/placements', [CoordinatorPlacementController::class, 'index'])->name('placements.index');
+        Route::get('/placements/{placement}', [CoordinatorPlacementController::class, 'show'])->name('placements.show');
+        Route::post('/placements/{placement}/clear', [CoordinatorPlacementController::class, 'clear'])->name('placements.clear');
     });
 
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
@@ -234,6 +262,8 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('/announcements', [AdminAnnouncementController::class, 'store'])->name('announcements.store');
         Route::put('/announcements/{announcement}', [AdminAnnouncementController::class, 'update'])->name('announcements.update');
         Route::delete('/announcements/{announcement}', [AdminAnnouncementController::class, 'destroy'])->name('announcements.destroy');
+        Route::get('/placements', [AdminPlacementController::class, 'index'])->name('placements.index');
+        Route::get('/placements/{placement}', [AdminPlacementController::class, 'show'])->name('placements.show');
         Route::get('/logs', [AdminSystemController::class, 'logs'])->name('logs');
         Route::match(['get', 'post'], '/reports', [AdminSystemController::class, 'reports'])->name('reports');
         Route::post('/backup', [AdminSystemController::class, 'backup'])->name('backup');

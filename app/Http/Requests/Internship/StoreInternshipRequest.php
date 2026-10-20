@@ -35,6 +35,8 @@ class StoreInternshipRequest extends FormRequest
             'work_setup' => ['required', Rule::enum(WorkSetup::class)],
             'location' => ['nullable', 'string', 'max:255'],
             'status' => ['required', 'in:open,closed'],
+            'program_ids' => ['nullable', 'array'],
+            'program_ids.*' => ['integer', 'exists:programs,id'],
             'requirement_names' => ['nullable', 'array'],
             'requirement_names.*' => ['nullable', 'string', 'max:255'],
             'requirement_levels' => ['nullable', 'array'],

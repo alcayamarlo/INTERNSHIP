@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\NotificationCreated;
 use App\Jobs\SendNotification;
 use App\Mail\SystemNotificationMail;
 use App\Models\AppNotification;
@@ -22,6 +23,14 @@ class NotificationService
             'message' => $message,
             'data' => $data,
         ]);
+
+        try {
+            broadcast(new NotificationCreated($notification))->toOthers();
+        } catch (\Throwable $exception) {
+            // Broadcasting is additive; the in-app row above already exists
+            // regardless of whether a live push succeeds (e.g. no Pusher keys).
+            report($exception);
+        }
 
         if ($queue) {
             try {

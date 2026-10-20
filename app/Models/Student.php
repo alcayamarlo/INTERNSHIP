@@ -70,6 +70,11 @@ class Student extends Model
         return $this->belongsTo(Major::class);
     }
 
+    public function placements(): HasMany
+    {
+        return $this->hasMany(Placement::class);
+    }
+
     public function competencies(): HasMany
     {
         return $this->hasMany(StudentCompetency::class);

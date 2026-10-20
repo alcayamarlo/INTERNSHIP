@@ -13,6 +13,9 @@
     </a>
 </x-page-header>
 
+<x-dashboard-announcements />
+<x-dashboard-ojt />
+
 
 <div class="sb-stat-grid">
 

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Internship\StoreInternshipRequest;
 use App\Http\Requests\Internship\UpdateInternshipRequest;
 use App\Models\Internship;
+use App\Models\Program;
 use App\Services\InternshipService;
 use Illuminate\Support\Facades\Auth;
 
@@ -31,6 +32,7 @@ class InternshipController extends Controller
             'internship' => new Internship,
             'workSetups' => WorkSetup::cases(),
             'levels' => ProficiencyLevel::cases(),
+            'programs' => Program::orderBy('name')->get(),
         ]);
     }
 
@@ -51,9 +53,10 @@ class InternshipController extends Controller
         $this->authorize('update', $internship);
 
         return view('employer.internships.form', [
-            'internship' => $internship->load('requirementsList'),
+            'internship' => $internship->load('requirementsList', 'programs'),
             'workSetups' => WorkSetup::cases(),
             'levels' => ProficiencyLevel::cases(),
+            'programs' => Program::orderBy('name')->get(),
         ]);
     }
 

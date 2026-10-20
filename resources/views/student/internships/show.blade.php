@@ -53,6 +53,30 @@
                 </div>
                 <p class="text-muted small">Based on your competencies</p>
             </div>
+
+            @if($matchDetails['total_requirements'] > 0)
+                <div class="card-body border-top pt-3" id="matchBreakdown">
+                    <h3 class="h6">Why this score</h3>
+                    <p class="text-muted small mb-3">{{ $matchDetails['explanation'] }}</p>
+
+                    @if(count($matchDetails['matched_requirements']))
+                        <ul class="list-unstyled small mb-3">
+                            @foreach($matchDetails['matched_requirements'] as $item)
+                                <li class="mb-1 text-success"><i class="bi bi-check-circle-fill"></i> {{ $item['name'] }} <span class="text-muted">({{ $item['required_level'] }} required — met)</span></li>
+                            @endforeach
+                        </ul>
+                    @endif
+
+                    @if(count($matchDetails['missing_requirements']))
+                        <ul class="list-unstyled small mb-3">
+                            @foreach($matchDetails['missing_requirements'] as $item)
+                                <li class="mb-1 text-secondary"><i class="bi bi-x-circle"></i> {{ $item['name'] }} <span class="text-muted">({{ $item['required_level'] }} required)</span><br><span class="ms-4 text-muted">{{ $item['reason_label'] }}</span></li>
+                            @endforeach
+                        </ul>
+                        <a href="{{ route('student.competencies.create') }}" class="btn btn-outline-primary btn-sm w-100"><i class="bi bi-plus-lg"></i> Add or update a competency</a>
+                    @endif
+                </div>
+            @endif
         </div>
 
         <div class="card mb-4">

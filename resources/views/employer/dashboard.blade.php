@@ -57,6 +57,9 @@
 
 </div>
 
+<x-dashboard-announcements />
+<x-dashboard-ojt />
+
 
 <div class="sb-layout-2">
 

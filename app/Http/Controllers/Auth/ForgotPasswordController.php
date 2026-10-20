@@ -24,7 +24,7 @@ class ForgotPasswordController extends Controller
             ]);
         }
 
-        return view('admin.users.auth.forgot-password', [
+        return view('auth.forgot-password', [
             'showResetFields' => (bool) $request->session()->get('password_reset_code_requested'),
             'resetCodeExpiresAt' => $request->session()->get('password_reset_code_expires_at'),
         ]);

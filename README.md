@@ -123,11 +123,24 @@ routes. Existing files are not copied automatically when changing disks.
 Railway checklist:
 
 - Variables: `APP_KEY`, `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL`
-  (the public https URL), `DB_*`, `MAIL_*` (or Resend), and
-  `LOG_STACK=single,stderr` so stack traces show in the deploy logs.
+  (the public https URL), `DB_*`, `MAIL_MAILER=resend` + `RESEND_API_KEY` +
+  `MAIL_FROM_ADDRESS` (a verified Resend domain -- do not use a personal
+  Gmail/SMTP account in production), and `LOG_STACK=single,stderr` so stack
+  traces show in the deploy logs.
+- For live notifications and messaging: `BROADCAST_CONNECTION=pusher` plus
+  `PUSHER_APP_ID`, `PUSHER_APP_KEY`, `PUSHER_APP_SECRET`, `PUSHER_APP_CLUSTER`,
+  and the matching `VITE_PUSHER_APP_KEY`/`VITE_PUSHER_APP_CLUSTER` (these two
+  must also be set wherever `npm run build` runs during deploy, since Vite
+  bakes them into the compiled JS at build time, not at runtime). Leaving
+  `BROADCAST_CONNECTION=log` is safe and simply disables live updates.
 - Run `php artisan migrate --force` on every deploy (the 2026-10-20
   migrations normalize emails, archive previously deleted users, and verify
   admin-created accounts).
+- Run `php artisan db:health` after migrating (safe, read-only) to catch a
+  table whose `id` column lost its `AUTO_INCREMENT` -- this happened on this
+  project's own database from what looked like a SQL dump/restore, and every
+  insert into an affected table fails until it's fixed. The command prints
+  the exact `ALTER TABLE` statement for anything it finds.
 - Mount a volume at `/app/storage` or use the `s3_*` disks above. Without
   `storage:link`, profile pictures are still served by `routes/public-files.php`.
 - In-app notifications no longer need a queue worker; only notification

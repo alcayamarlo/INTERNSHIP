@@ -10,6 +10,7 @@ use App\Mail\InterviewInvitationMail;
 use App\Models\InternshipApplication;
 use App\Services\ActivityLogService;
 use App\Services\NotificationService;
+use App\Services\PlacementService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -20,7 +21,8 @@ class ApplicantController extends Controller
 {
     public function __construct(
         private NotificationService $notificationService,
-        private ActivityLogService $activityLog
+        private ActivityLogService $activityLog,
+        private PlacementService $placementService
     ) {}
 
     public function index()
@@ -33,7 +35,7 @@ class ApplicantController extends Controller
             ->latest('applied_at')
             ->paginate(15);
 
-        return view('coordinator.employer.applicants.index', compact('applications'));
+        return view('employer.applicants.index', compact('applications'));
     }
 
     public function show(InternshipApplication $application)
@@ -122,6 +124,10 @@ class ApplicantController extends Controller
                 'interview_at' => $validated['interview_at'] ?? null,
             ]);
 
+            if ($status === ApplicationStatus::Accepted) {
+                $this->placementService->openForApplication($application);
+            }
+
             $this->activityLog->log(Auth::user(), 'application_status_update', [
                 'application_id' => $application->id,
                 'from_status' => $previousStatus->value,
@@ -170,10 +176,12 @@ class ApplicantController extends Controller
                     ],
                     $application->status->allowedNextStatuses()
                 ),
+                'redirect_url' => route('employer.applicants.index'),
             ]);
         }
 
-        return back()->with($invitationSent ? 'success' : 'error', $statusMessage);
+        return redirect()->route('employer.applicants.index')
+            ->with($invitationSent ? 'success' : 'error', $statusMessage);
     }
 
     public function downloadResume(InternshipApplication $application)
