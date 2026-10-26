@@ -1,391 +1,291 @@
+@php
+    // Photo for the CTA background (public/images/landing/cta-bg.*). Other slots use partials.landing-media.
+    $ctaImg = null;
+    foreach (['images/landing', 'images'] as $dir) {
+        foreach (['webp', 'jpg', 'jpeg', 'png'] as $ext) {
+            if (file_exists(public_path("{$dir}/cta-bg.{$ext}"))) {
+                $ctaImg = asset("{$dir}/cta-bg.{$ext}");
+                break 2;
+            }
+        }
+    }
+
+    // Community numbers. Show ONLY real figures. While this stays null the whole section is hidden.
+    // Pass real numbers from your controller, e.g.:
+    //   return view('landing', ['communityStats' => ['students' => 0, 'employers' => 0, 'placed' => 0]]);
+    $communityStats = $communityStats ?? null;
+@endphp
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="SkillBridge connects students, coordinators, and employers around internship readiness and verified competencies.">
     <title>SkillBridge — St. Cecilia's College</title>
-    <link rel="icon" type="image/svg+xml" href="{{ asset('images/brand/favicon.svg') }}">
-    <link rel="icon" href="{{ asset('images/brand/favicon.ico') }}" sizes="any">
-    <link rel="apple-touch-icon" href="{{ asset('images/brand/apple-touch-icon.png') }}">
+    <meta name="description" content="SkillBridge connects students, coordinators, and employers around internship readiness and verified competencies.">
+    <meta name="theme-color" content="#E11D2E">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="SkillBridge — St. Cecilia's College">
+    <meta property="og:description" content="Internship readiness and verified competencies for students, coordinators, and employers.">
+    <meta property="og:image" content="{{ asset('images/brand/skillbridge-logo-icon-512.png') }}?v=2">
+    <meta name="twitter:card" content="summary">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/brand/favicon.svg') }}?v=2">
+    <link rel="icon" href="{{ asset('images/brand/favicon.ico') }}?v=2" sizes="any">
+    <link rel="apple-touch-icon" href="{{ asset('images/brand/apple-touch-icon.png') }}?v=2">
     <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}"></script>
-    <style>
-        body.skillbridge-public { margin: 0; }
-        .public-page { --public-gutter: clamp(22px, 6vw, 88px); color: var(--sb-ink); }
-        .public-announcement { padding: 9px 18px; text-align: center; color: #fff; background: var(--sb-brand-deep); font-size: 13px; }
-        .public-nav { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--sb-border); background: color-mix(in srgb, var(--sb-surface) 92%, transparent); backdrop-filter: blur(16px); }
-        .public-nav-inner { min-height: 76px; padding-inline: var(--public-gutter); }
-        .public-brand { display: inline-flex; align-items: center; gap: 11px; color: var(--sb-ink); text-decoration: none; }
-        .public-brand-mark { display: block; flex: 0 0 auto; width: 42px; height: 42px; }
-        .public-brand-mark img { display: block; width: 100%; height: 100%; }
-        .public-brand-copy { display: grid; line-height: 1.05; }
-        .public-brand-copy strong { font-family: 'Bricolage Grotesque', sans-serif; font-size: 17px; }
-        .public-brand-copy small { margin-top: 5px; color: var(--sb-muted); font-size: 10px; }
-        .public-nav-links { display: flex; align-items: center; gap: clamp(14px, 2vw, 30px); }
-        .public-nav-links a { color: var(--sb-muted); text-decoration: none; font-size: 14px; }
-        .public-nav-links a:hover { color: var(--sb-brand-content); }
-        .public-nav-actions { display: flex; align-items: center; gap: 10px; }
-        .public-button { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 8px; padding: 0 20px; border: 1px solid var(--sb-border); border-radius: 999px; color: var(--sb-ink); background: var(--sb-surface); font-size: 14px; font-weight: 600; text-decoration: none; transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 160ms ease; }
-        .public-button:hover { border-color: var(--sb-brand); color: var(--sb-brand-content); background: var(--sb-brand-soft); }
-        .public-button-primary { border-color: var(--sb-brand); color: #fff; background: var(--sb-brand); }
-        .public-button-primary:hover { border-color: var(--sb-brand-deep); color: #fff; background: var(--sb-brand-deep); box-shadow: 0 10px 24px rgba(225,29,46,.18); }
-        .public-hero { position: relative; overflow: hidden; padding: clamp(80px, 12vw, 150px) var(--public-gutter) clamp(64px, 9vw, 104px); background: radial-gradient(ellipse at 74% 2%, var(--sb-brand-soft), transparent 45%), var(--sb-canvas); }
-        .public-hero::after { position: absolute; top: 55px; right: -85px; width: 320px; height: 320px; border: 1px solid var(--sb-border); border-radius: 50%; content: ""; pointer-events: none; }
-        .public-hero-content { position: relative; z-index: 1; max-width: 980px; margin: auto; text-align: center; }
-        .public-eyebrow { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 23px; padding: 8px 13px; border: 1px solid var(--sb-border); border-radius: 999px; color: var(--sb-brand-content); background: var(--sb-surface); font-size: 12px; font-weight: 600; }
-        .public-eyebrow i { color: var(--sb-brand); }
-        .public-hero h1 { margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: clamp(42px, 5.3vw, 70px); font-weight: 600; letter-spacing: -.06em; line-height: .99; }
-        .public-hero h1 span { color: var(--sb-brand); }
-        .public-hero p { max-width: 690px; margin: 24px auto 0; color: var(--sb-muted); font-size: clamp(16px, 1.6vw, 19px); line-height: 1.7; }
-        .public-hero-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 11px; margin-top: 30px; }
-        .public-hero-note { margin-top: 15px !important; font-size: 13px !important; }
-        .public-hero-note a { color: var(--sb-brand-content); font-weight: 600; }
-        .public-strip { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 26px; padding: 21px var(--public-gutter); border-top: 1px solid var(--sb-border); border-bottom: 1px solid var(--sb-border); color: var(--sb-muted); background: var(--sb-surface); font-size: 13px; }
-        .public-strip span { display: inline-flex; align-items: center; gap: 8px; }
-        .public-strip i { color: var(--sb-brand); }
-        .public-section { padding: clamp(64px, 8vw, 104px) var(--public-gutter); }
-        .public-section-heading { max-width: 720px; margin: 0 auto 38px; text-align: center; }
-        .public-section-heading .eyebrow { margin-bottom: 11px; color: var(--sb-brand); font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
-        .public-section-heading h2 { margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: clamp(32px, 4.5vw, 52px); font-weight: 600; letter-spacing: -.04em; }
-        .public-section-heading p { margin: 14px auto 0; color: var(--sb-muted); line-height: 1.7; }
-        .public-step-card, .public-role-card, .public-faq-item { height: 100%; padding: 25px; border: 1px solid var(--sb-border); border-radius: 20px; background: var(--sb-surface); box-shadow: var(--sb-shadow); }
-        .public-step-index { display: grid; width: 42px; height: 42px; margin-bottom: 23px; place-items: center; border-radius: 14px; color: var(--sb-brand-content); background: var(--sb-brand-soft); font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; }
-        .public-step-card h3, .public-role-card h3 { margin: 0 0 9px; font-family: 'Bricolage Grotesque', sans-serif; font-size: 21px; font-weight: 600; }
-        .public-step-card p, .public-role-card p { margin: 0; color: var(--sb-muted); line-height: 1.65; }
-        .public-roles { background: var(--sb-surface-soft); }
-        .public-role-card { display: flex; flex-direction: column; align-items: flex-start; }
-        .public-role-card .role-icon { display: grid; width: 48px; height: 48px; margin-bottom: 20px; place-items: center; border-radius: 15px; color: var(--sb-brand); background: var(--sb-brand-soft); font-size: 20px; }
-        .public-role-card .public-button { margin-top: auto; }
-        .public-faq-item { height: auto; padding: 19px 21px; }
-        .public-faq-item h3 { margin: 0 0 8px; font-size: 17px; font-weight: 600; }
-        .public-faq-item p { margin: 0; color: var(--sb-muted); line-height: 1.6; }
-        .public-cta { padding: clamp(55px, 8vw, 92px) var(--public-gutter); color: #fff; background: linear-gradient(120deg, var(--sb-brand-deep), var(--sb-brand)); }
-        .public-cta h2 { max-width: 760px; margin: 0 auto; font-family: 'Bricolage Grotesque', sans-serif; font-size: clamp(34px, 5vw, 58px); font-weight: 600; letter-spacing: -.04em; }
-        .public-cta p { max-width: 650px; margin: 15px auto 24px; color: rgba(255,255,255,.84); line-height: 1.7; }
-        .public-cta .public-button { border-color: #fff; color: var(--sb-brand-deep); background: #fff; }
-        .public-footer { padding: 38px var(--public-gutter) 24px; background: var(--sb-surface); }
-        .public-footer-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--sb-border); color: var(--sb-muted); font-size: 12px; }
-        .public-theme-toggle { width: 42px; height: 42px; }
-        .public-nav-links a { position: relative; padding-block: 8px; }
-        .public-nav-links a::after { position: absolute; right: 0; bottom: 0; left: 0; height: 2px; border-radius: 2px; background: var(--sb-red); content: ""; transform: scaleX(0); transform-origin: left; transition: transform 200ms cubic-bezier(.16, 1, .3, 1); }
-        .public-nav-links a:hover::after, .public-nav-links a:focus-visible::after { transform: scaleX(1); }
-        .public-nav-toggle { display: none; width: 42px; height: 42px; place-items: center; border: 1px solid var(--sb-border); border-radius: 12px; color: var(--sb-ink); background: var(--sb-surface); }
-        .public-nav-toggle svg, .public-icon { width: 18px; height: 18px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
-        .public-icon-fill { fill: currentColor; stroke: none; }
-        .public-hero-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr); align-items: center; gap: clamp(30px, 6vw, 84px); max-width: 1180px; margin: auto; }
-        .public-hero-content { max-width: 660px; margin: 0; text-align: left; }
-        .public-hero-content .public-hero-note { margin-inline: 0; }
-        .public-hero-content .public-hero-actions { justify-content: flex-start; }
-        .public-hero-art { position: relative; min-height: 380px; display: grid; place-items: center; }
-        .public-bridge-card { position: relative; width: min(100%, 430px); padding: 24px; overflow: hidden; border: 1px solid var(--sb-border); border-radius: 28px; background: color-mix(in srgb, var(--sb-surface) 90%, transparent); box-shadow: var(--sb-shadow); }
-        .public-bridge-card::before { position: absolute; top: -80px; right: -60px; width: 220px; height: 220px; border-radius: 50%; background: var(--sb-brand-soft); content: ""; }
-        .public-bridge-head { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--sb-ink); font-size: 13px; font-weight: 600; }
-        .public-bridge-illustration { position: relative; display: block; width: 100%; margin: 14px 0 4px; }
-        .public-bridge-illustration .bridge-stroke { stroke-dasharray: 440; stroke-dashoffset: 440; animation: public-bridge-draw 1200ms cubic-bezier(.16, 1, .3, 1) 200ms forwards; }
-        .public-bridge-illustration .bridge-path { stroke: var(--sb-red); }
-        .public-bridge-illustration .bridge-rail { stroke: var(--sb-border); }
-        .public-bridge-steps { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-        .public-bridge-step { display: grid; gap: 6px; padding: 12px 10px; border: 1px solid var(--sb-border); border-radius: 14px; color: var(--sb-muted); background: var(--sb-surface); font-size: 11px; line-height: 1.35; }
-        .public-bridge-step strong { color: var(--sb-ink); font-size: 12px; font-weight: 600; }
-        .public-bridge-step svg { width: 17px; height: 17px; color: var(--sb-red); }
-        .public-announce-dot { display: inline-block; width: 7px; height: 7px; margin-right: 8px; border-radius: 50%; background: #fff; vertical-align: 1px; }
-        #publicNavigation { display: flex; align-items: center; }
-        .public-page .row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; }
-        .public-page .row:has(.col-md-6) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .public-col { min-width: 0; }
-        .public-faq-item { padding: 0; overflow: hidden; }
-        .public-faq-item summary { position: relative; min-height: 58px; padding: 19px 52px 19px 21px; color: var(--sb-ink); font-size: 16px; font-weight: 600; cursor: pointer; list-style: none; }
-        .public-faq-item summary::-webkit-details-marker { display: none; }
-        .public-faq-item summary::after { position: absolute; top: 50%; right: 20px; color: var(--sb-red); content: "+"; font-size: 24px; font-weight: 400; transform: translateY(-50%); transition: transform 200ms cubic-bezier(.16, 1, .3, 1); }
-        .public-faq-item[open] summary::after { transform: translateY(-50%) rotate(45deg); }
-        .public-faq-item p { padding: 0 21px 20px; }
-        .public-icon-line { display: inline-flex; align-items: center; gap: 8px; }
-        .public-announcement { font-weight: 500; }
-        .public-announcement .public-icon { width: 15px; height: 15px; vertical-align: -3px; }
-        .public-button svg { width: 16px; height: 16px; }
-        .public-role-card, .public-step-card { transition: border-color 200ms ease, background-color 200ms ease, box-shadow 200ms ease; }
-        .public-role-card:hover, .public-step-card:hover { border-color: var(--sb-border); background: var(--sb-surface); box-shadow: var(--sb-shadow); }
-        .public-theme-toggle { display: inline-grid; place-items: center; border: 1px solid var(--sb-border); border-radius: 50%; color: var(--sb-ink); background: var(--sb-surface); cursor: pointer; }
-        .public-theme-toggle svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
-        .public-theme-toggle:hover { border-color: var(--sb-red); color: var(--sb-brand-content); background: var(--sb-red-soft); }
-        .public-bridge-step svg { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
-        .public-nav-actions { flex-wrap: wrap; }
-        .public-roles { background: var(--sb-surface-raised); }
-        .public-announce-dot { animation: public-dot-pulse 1800ms ease-in-out infinite; }
-        @keyframes public-dot-pulse { 50% { box-shadow: 0 0 0 5px rgba(255,255,255,.14); } }
-        .public-page .d-flex { display: flex; }
-        .public-page .container-fluid { width: 100%; }
-        .public-page .align-items-center { align-items: center; }
-        .public-page .justify-content-between { justify-content: space-between; }
-        .public-page .flex-wrap { flex-wrap: wrap; }
-        .public-page .gap-3 { gap: 12px; }
-        .public-page .text-center { text-align: center; }
-        .public-page .mt-4 { margin-top: 24px; }
-        @keyframes public-bridge-draw { to { stroke-dashoffset: 0; } }
-        @media (max-width: 767px) {
-            .public-nav-inner { position: relative; min-height: 66px; flex-wrap: wrap; }
-            .public-nav-toggle { display: grid; margin-left: auto; }
-            .public-nav-links { display: none; width: 100%; flex-direction: column; align-items: stretch; gap: 0; padding: 8px 0; }
-            .public-nav-links a { padding: 10px 0; }
-            .public-nav-links a::after { display: none; }
-            .public-nav-actions { display: none; width: 100%; padding: 0 0 12px; }
-            #publicNavigation { display: block; width: 100%; }
-            #publicNavigation .public-nav-links, #publicNavigation .public-nav-actions { display: none; }
-            #publicNavigation.is-open .public-nav-links, #publicNavigation.is-open .public-nav-actions { display: flex; }
-            .public-brand-mark { width: 38px; height: 38px; }
-            .public-section { padding-inline: 20px; }
-            .public-hero { padding-inline: 20px; }
-            .public-hero-actions .public-button { width: min(100%, 320px); }
-            .public-hero-layout { grid-template-columns: 1fr; }
-            .public-hero-content { text-align: center; }
-            .public-hero-content .public-hero-actions { justify-content: center; }
-            .public-hero-content .public-hero-note { margin-inline: auto; }
-            .public-hero-art { min-height: 0; }
-            .public-page .row, .public-page .row:has(.col-md-6) { grid-template-columns: 1fr; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-            .public-bridge-illustration .bridge-stroke { animation: none; stroke-dashoffset: 0; }
-            .public-announce-dot { animation: none; }
-        }
-
-        /* ---- Navigation spacing + footer refinement (presentation only) ---- */
-        @media (min-width: 768px) {
-            .public-nav-inner { gap: 24px; }
-            #publicNavigation { display: flex; align-items: center; justify-content: flex-end; gap: clamp(28px, 3.4vw, 60px); }
-            .public-nav-links { margin: 0; gap: clamp(22px, 2.6vw, 40px); }
-            .public-nav-links a { padding: 10px 2px; white-space: nowrap; }
-            .public-nav-actions { flex-wrap: nowrap; gap: 12px; }
-            .public-nav-actions .public-button { white-space: nowrap; }
-        }
-        @media (min-width: 768px) and (max-width: 1100px) {
-            .public-nav-actions .public-button { padding: 0 14px; font-size: 13.5px; }
-            .public-nav-actions { gap: 8px; }
-        }
-        .public-footer { padding: 0; border-top: 1px solid var(--sb-border); background: var(--sb-surface); }
-        .public-footer-main { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, .7fr)); gap: clamp(28px, 5vw, 72px); padding: 48px var(--public-gutter) 36px; }
-        .public-footer-about p { max-width: 360px; margin: 16px 0 0; color: var(--sb-muted); font-size: 14px; line-height: 1.7; }
-        .public-footer-col h3 { margin: 0 0 14px; color: var(--sb-ink); font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
-        .public-footer-col ul { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
-        .public-footer-col a { color: var(--sb-muted); font-size: 14px; text-decoration: none; }
-        .public-footer-col a:hover { color: var(--sb-brand-content); }
-        .public-footer-bottom { margin: 0; padding: 18px var(--public-gutter); border-top: 1px solid var(--sb-border); }
-        @media (max-width: 767px) {
-            .public-footer-main { grid-template-columns: 1fr 1fr; padding-block: 36px 28px; padding-inline: 20px; }
-            .public-footer-about { grid-column: 1 / -1; }
-            .public-footer-bottom { padding-inline: 20px; }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/skillbridge-public.css') }}?v=1">
+    @include('partials.public-theme-head')
 </head>
 <body class="skillbridge-public">
-    <main class="public-page">
-        <div class="public-announcement">
-            <span class="public-announce-dot" aria-hidden="true"></span>
-            Internship readiness and verified competencies, in one place.
-        </div>
+    <a class="public-skip" href="#main-content">Skip to main content</a>
+    <div class="public-page">
+        @include('partials.public-nav', ['base' => ''])
+        @include('partials.public-theme-toggle')
 
-        <nav class="public-nav" aria-label="Main navigation">
-            <div class="public-nav-inner d-flex align-items-center justify-content-between">
-                <a class="public-brand" href="{{ route('home') }}" aria-label="SkillBridge home">
-                    <span class="public-brand-mark" aria-hidden="true"><img src="{{ asset('images/brand/skillbridge-logo-icon.svg') }}" alt="" width="42" height="42"></span>
-                    <span class="public-brand-copy"><strong>SkillBridge</strong><small>St. Cecilia's College</small></span>
-                </a>
-                <button class="public-nav-toggle" type="button" data-public-nav-toggle aria-controls="publicNavigation" aria-expanded="false" aria-label="Toggle navigation">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
-                </button>
-                <div id="publicNavigation">
-                    <div class="public-nav-links me-md-4">
-                        <a href="#how-it-works">How it works</a>
-                        <a href="#audiences">Who it's for</a>
-                        <a href="#questions">FAQs</a>
-                    </div>
-                    <div class="public-nav-actions">
-                        <button type="button" class="sb-theme-toggle public-theme-toggle" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false">
-                            <svg data-theme-icon viewBox="0 0 24 24" aria-hidden="true"></svg>
-                        </button>
-                        <a class="public-button" href="{{ route('login') }}">Log in</a>
-                        <a class="public-button public-button-primary" href="{{ route('register') }}">Student registration <svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg></a>
-                    </div>
-                </div>
-            </div>
-        </nav>
-
-        <section class="public-hero" aria-labelledby="hero-heading">
-            <div class="public-hero-layout">
-                <div class="public-hero-content">
-                    <div class="public-eyebrow">Student development and internship placement</div>
-                    <h1 id="hero-heading">Build your skills.<br>Move toward <span>what's next.</span></h1>
-                    <p>Track competencies, prepare your internship profile, and connect with opportunities through a shared workspace for students, coordinators, and employers.</p>
-                    <div class="public-hero-actions">
-                        <a class="public-button public-button-primary" href="{{ route('register') }}">Create a student account <svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
-                        <a class="public-button" href="{{ route('login') }}">Sign in to your workspace</a>
-                    </div>
-                    <p class="public-hero-note">Already have an account? <a href="{{ route('login') }}">Continue to SkillBridge</a></p>
-                </div>
-                <div class="public-hero-art" aria-hidden="true">
-                    <div class="public-bridge-card">
-                        <div class="public-bridge-head">
-                            <span class="public-icon-line">A connected pathway</span>
-                            <span>SkillBridge</span>
-                        </div>
-                        <svg class="public-bridge-illustration" viewBox="0 0 440 190" fill="none">
-                            <path class="bridge-stroke bridge-rail" d="M36 142H404M54 128C114 128 133 50 220 50S326 128 386 128"></path>
-                            <path class="bridge-stroke bridge-path" d="M54 144C120 144 138 78 220 78S320 144 386 144"></path>
-                            <path class="bridge-stroke bridge-rail" d="M108 125V92M166 100V70M220 84V54M274 100V70M332 125V92"></path>
-                            <circle cx="54" cy="144" r="7" fill="var(--sb-red)"></circle>
-                            <circle cx="386" cy="144" r="7" fill="var(--sb-red)"></circle>
-                        </svg>
-                        <div class="public-bridge-steps">
-                            <span class="public-bridge-step"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"></path></svg><strong>Build skills</strong>Record your experience</span>
-                            <span class="public-bridge-step"><svg viewBox="0 0 24 24"><path d="M9 12 11 14 15 10M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"></path></svg><strong>Verify progress</strong>Submit evidence for review</span>
-                            <span class="public-bridge-step"><svg viewBox="0 0 24 24"><path d="M3 7h18M5 7l1 13h12l1-13M9 7V4h6v3"></path></svg><strong>Find opportunities</strong>Track your applications</span>
+        <main id="main-content">
+            <section class="public-hero" aria-labelledby="hero-heading">
+                <div class="public-hero-layout">
+                    <div class="public-hero-content">
+                        <div class="public-eyebrow">Student Development and Internship Placement</div>
+                        <h1 id="hero-heading">Build your skills.<br>Move toward <span>what's next.</span></h1>
+                        <p class="public-hero-lead">Track competencies, prepare your internship profile, and connect with opportunities through a shared workspace for students, coordinators, and employers.</p>
+                        <div class="public-hero-actions">
+                            <a class="public-button public-button-primary public-button-lg" href="{{ route('register') }}">Create a student account <svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+                            <a class="public-button public-button-lg" href="{{ route('login') }}">Sign in to your workspace</a>
                         </div>
                     </div>
+                    <div class="public-hero-art">
+                        @include('partials.landing-media', ['name' => 'hero', 'icon' => 'cap', 'ratio' => 'hero', 'eager' => true, 'alt' => 'Filipino college students collaborating around a laptop on campus'])
+                        <span class="hero-float hero-float-a" aria-hidden="true"><i><svg viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"></path></svg></i>Competency verified</span>
+                        <span class="hero-float hero-float-b" aria-hidden="true"><i><svg viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z"></path></svg></i>Application submitted</span>
+                        <span class="hero-float hero-float-c" aria-hidden="true"><i><svg viewBox="0 0 24 24"><path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7Z"></path></svg></i>New internship match</span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="public-strip-wrap">
+                <div class="public-strip" aria-label="Platform capabilities">
+                    <span><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path><circle cx="12" cy="12" r="10"></circle></svg> Competency tracking</span>
+                    <span><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 12 2 2 4-4M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"></path></svg> Coordinator review</span>
+                    <span><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V4h8v3M3 12h18"></path></svg> Internship applications</span>
+                    <span><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM8 8h8M8 12h8M8 16h5"></path></svg> Portfolio evidence</span>
                 </div>
             </div>
-        </section>
 
-        <div class="public-strip" aria-label="Platform capabilities">
-            <span><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6"></path><circle cx="12" cy="12" r="10"></circle></svg> Competency tracking</span>
-            <span><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 12 2 2 4-4M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"></path></svg> Coordinator review</span>
-            <span><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V4h8v3M3 12h18"></path></svg> Internship applications</span>
-            <span><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM8 8h8M8 12h8M8 16h5"></path></svg> Portfolio evidence</span>
-        </div>
-
-        <section class="public-section" id="how-it-works">
-            <div class="public-section-heading">
-                <div class="eyebrow">A connected workflow</div>
-                <h2>From preparation to placement.</h2>
-                <p>SkillBridge brings the key steps of internship preparation into one role-aware platform.</p>
-            </div>
-            <div class="row g-3 g-lg-4">
-                <div class="col-md-4">
-                    <article class="public-step-card">
-                        <div class="public-step-index">01</div>
+            <section class="public-section" id="how-it-works">
+                <div class="public-section-heading reveal">
+                    <div class="eyebrow">A connected workflow</div>
+                    <h2>From preparation to placement.</h2>
+                    <p>SkillBridge brings the key steps of internship preparation into one role-aware platform.</p>
+                </div>
+                <div class="public-grid-3">
+                    <article class="public-step-card reveal">
+                        <span class="public-step-index" aria-hidden="true">01</span>
+                        @include('partials.landing-media', ['name' => 'step-profile', 'icon' => 'profile', 'ratio' => 'wide', 'alt' => 'Students working on laptops and desktop computers in a campus computer lab'])
                         <h3>Build your profile</h3>
                         <p>Record academic and contact details, describe your goals, and keep your resume and portfolio evidence together.</p>
                     </article>
-                </div>
-                <div class="col-md-4">
-                    <article class="public-step-card">
-                        <div class="public-step-index">02</div>
+                    <article class="public-step-card reveal" style="--reveal-delay: 100ms">
+                        <span class="public-step-index" aria-hidden="true">02</span>
+                        @include('partials.landing-media', ['name' => 'step-skills', 'icon' => 'growth', 'ratio' => 'wide', 'alt' => 'Students at rows of computers in a campus computer laboratory'])
                         <h3>Develop competencies</h3>
                         <p>Review skill categories, document your experience, and submit evidence for coordinator review.</p>
                     </article>
-                </div>
-                <div class="col-md-4">
-                    <article class="public-step-card">
-                        <div class="public-step-index">03</div>
+                    <article class="public-step-card reveal" style="--reveal-delay: 200ms">
+                        <span class="public-step-index" aria-hidden="true">03</span>
+                        @include('partials.landing-media', ['name' => 'step-opportunities', 'icon' => 'search', 'ratio' => 'wide', 'alt' => 'Two students working side by side at a computer in a campus lab'])
                         <h3>Explore opportunities</h3>
                         <p>Browse internships, submit applications, and follow application updates from your student workspace.</p>
                     </article>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <section class="public-section public-roles" id="audiences">
-            <div class="public-section-heading">
-                <div class="eyebrow">One platform, distinct workspaces</div>
-                <h2>Made for the people who move internships forward.</h2>
-                <p>Each account sees tools aligned to its role and responsibilities.</p>
-            </div>
-            <div class="row g-3 g-lg-4">
-                <div class="col-md-4">
-                    <article class="public-role-card">
+            <section class="public-section" id="internships">
+                <div class="public-section-heading reveal">
+                    <div class="eyebrow">Open now</div>
+                    <h2>Browse internships.</h2>
+                    <p>See what is open right now. Log in as a student to apply.</p>
+                </div>
+                @php $openInternships = $openInternships ?? collect(); @endphp
+                @if($openInternships->isNotEmpty())
+                    <div class="public-job-grid">
+                        @foreach($openInternships as $internship)
+                            @include('partials.public-internship-card', ['internship' => $internship])
+                        @endforeach
+                    </div>
+                    <div class="text-center mt-4 reveal">
+                        <a class="public-button" href="{{ route('internships.index') }}">View all internships</a>
+                    </div>
+                @else
+                    <p class="public-empty">No open internships right now. Check back soon.</p>
+                @endif
+            </section>
+
+            <section class="public-section public-roles" id="audiences">
+                <div class="public-section-heading reveal">
+                    <div class="eyebrow">One platform, distinct workspaces</div>
+                    <h2>Made for the people who move internships forward.</h2>
+                    <p>Each account sees tools aligned to its role and responsibilities.</p>
+                </div>
+                <div class="public-grid-3">
+                    <article class="public-role-card reveal">
+                        @include('partials.landing-media', ['name' => 'role-student', 'icon' => 'cap', 'ratio' => 'wide', 'alt' => 'Graduates in white caps and gowns seated together at a graduation ceremony'])
                         <span class="role-icon"><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m2 10 10-5 10 5-10 5-10-5ZM6 12v5c3.5 3 8.5 3 12 0v-5M22 10v6"></path></svg></span>
                         <h3>Students</h3>
-                        <p>Manage your profile, competencies, portfolio, internship applications, and readiness checklist.</p>
-                        <a class="public-button public-button-primary mt-4" href="{{ route('register') }}">Register as a student</a>
+                        <ul class="public-checks">
+                            <li><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7"></path></svg>Manage your profile, competencies, and portfolio</li>
+                            <li><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7"></path></svg>Submit and follow internship applications</li>
+                            <li><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7"></path></svg>Track your readiness checklist</li>
+                        </ul>
+                        <a class="public-button public-button-primary" href="{{ route('register') }}">Register as a student</a>
                     </article>
-                </div>
-                <div class="col-md-4">
-                    <article class="public-role-card">
+                    <article class="public-role-card reveal" style="--reveal-delay: 100ms">
+                        @include('partials.landing-media', ['name' => 'role-coordinator', 'icon' => 'shield', 'ratio' => 'wide', 'alt' => 'St. Cecilia\'s College faculty and students posing together in a computer lab in front of an I-Tech Society screen'])
                         <span class="role-icon"><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M5 21V5l7-3v19M19 21V9l-7-4M8 8v.01M8 12v.01M8 16v.01M15 12v.01M15 16v.01"></path></svg></span>
                         <h3>Coordinators</h3>
-                        <p>Review student profiles and evidence, follow assigned students, and generate placement reports.</p>
-                        <a class="public-button mt-4" href="{{ route('login') }}">Coordinator sign in</a>
+                        <ul class="public-checks">
+                            <li><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7"></path></svg>Review student profiles and evidence</li>
+                            <li><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7"></path></svg>Follow your assigned students</li>
+                            <li><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7"></path></svg>Generate placement reports</li>
+                        </ul>
+                        <a class="public-button" href="{{ route('login') }}">Coordinator sign in</a>
                     </article>
-                </div>
-                <div class="col-md-4">
-                    <article class="public-role-card">
+                    <article class="public-role-card reveal" style="--reveal-delay: 200ms">
+                        @include('partials.landing-media', ['name' => 'role-employer', 'icon' => 'building', 'ratio' => 'wide', 'alt' => 'Smiling professionals in business attire shaking hands in a bright office'])
                         <span class="role-icon"><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V4h8v3M3 12h18"></path></svg></span>
                         <h3>Employers</h3>
-                        <p>Manage internship postings and review submitted applicants from your employer workspace.</p>
-                        <a class="public-button mt-4" href="{{ route('login') }}">Employer sign in</a>
+                        <ul class="public-checks">
+                            <li><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7"></path></svg>Manage your internship postings</li>
+                            <li><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7"></path></svg>Review submitted applicants from your employer workspace</li>
+                        </ul>
+                        <a class="public-button" href="{{ route('login') }}">Employer sign in</a>
                     </article>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <section class="public-section" id="questions">
-            <div class="public-section-heading">
-                <div class="eyebrow">Frequently asked</div>
-                <h2>Good to know before you begin.</h2>
-            </div>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <details class="public-faq-item">
+            @if (!empty($communityStats))
+                <section class="public-section" id="community">
+                    <div class="public-section-heading reveal">
+                        <div class="eyebrow">Our community</div>
+                        <h2>Growing together, one placement at a time.</h2>
+                    </div>
+                    <div class="public-stats">
+                        <div class="public-stat reveal"><strong data-count="{{ (int) ($communityStats['students'] ?? 0) }}" data-suffix="+">{{ number_format((int) ($communityStats['students'] ?? 0)) }}+</strong><span>Students</span></div>
+                        <div class="public-stat reveal" style="--reveal-delay: 100ms"><strong data-count="{{ (int) ($communityStats['employers'] ?? 0) }}" data-suffix="+">{{ number_format((int) ($communityStats['employers'] ?? 0)) }}+</strong><span>Partner employers</span></div>
+                        <div class="public-stat reveal" style="--reveal-delay: 200ms"><strong data-count="{{ (int) ($communityStats['placed'] ?? 0) }}" data-suffix="+">{{ number_format((int) ($communityStats['placed'] ?? 0)) }}+</strong><span>Internships placed</span></div>
+                    </div>
+                </section>
+            @endif
+
+            <section class="public-section" id="questions">
+                <div class="public-section-heading reveal">
+                    <div class="eyebrow">Frequently asked</div>
+                    <h2>Good to know before you begin.</h2>
+                </div>
+                <div class="public-faq-list">
+                    <details class="public-faq-item reveal">
                         <summary>Who can register from this page?</summary>
                         <p>Public registration is for students. Coordinator, employer, and administrator access is provided through existing accounts.</p>
                     </details>
-                </div>
-                <div class="col-md-6">
-                    <details class="public-faq-item">
+                    <details class="public-faq-item reveal">
                         <summary>Where can I see current internship openings?</summary>
-                        <p>Sign in to access the opportunities available to your account. Public listings are not shown on this landing page.</p>
+                        <p>You can browse current openings right here on this page and in the full internships list. Logging in as a student is required to apply.</p>
                     </details>
-                </div>
-                <div class="col-md-6">
-                    <details class="public-faq-item">
+                    <details class="public-faq-item reveal">
                         <summary>How are competency submissions reviewed?</summary>
                         <p>Submitted evidence is routed to the coordinator review workflow. Status and review notes are available in your workspace.</p>
                     </details>
-                </div>
-                <div class="col-md-6">
-                    <details class="public-faq-item">
+                    <details class="public-faq-item reveal">
                         <summary>Can I track my applications?</summary>
                         <p>Yes. Student accounts include an applications area where you can review submitted applications and their current status.</p>
                     </details>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <section class="public-cta text-center">
-            <h2>Take the next step in your internship journey.</h2>
-            <p>Set up your student account to start building a profile and tracking your progress.</p>
-            <a class="public-button" href="{{ route('register') }}">Get started <svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
-        </section>
+            <section class="public-cta text-center {{ $ctaImg ? 'public-cta-image' : '' }}" @if ($ctaImg) style="--cta-bg: url('{{ $ctaImg }}')" @endif>
+                <h2>Take the next step in your internship journey.</h2>
+                <p>Set up your student account to start building a profile and tracking your progress.</p>
+                <a class="public-button public-button-lg" href="{{ route('register') }}">Get started <svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+                <p class="public-cta-note">Coordinator or employer? <a href="{{ route('login') }}">Sign in to your workspace</a></p>
+            </section>
+        </main>
 
-        <footer class="public-footer">
-            <div class="public-footer-main">
-                <div class="public-footer-about">
-                    <a class="public-brand" href="{{ route('home') }}">
-                        <span class="public-brand-mark" aria-hidden="true"><img src="{{ asset('images/brand/skillbridge-logo-icon.svg') }}" alt="" width="42" height="42"></span>
-                        <span class="public-brand-copy"><strong>SkillBridge</strong><small>St. Cecilia's College</small></span>
-                    </a>
-                    <p>Internship readiness and verified competencies for students, coordinators, and employers, in one shared workspace.</p>
-                </div>
-                <nav class="public-footer-col" aria-label="Explore">
-                    <h3>Explore</h3>
-                    <ul>
-                        <li><a href="#how-it-works">How it works</a></li>
-                        <li><a href="#audiences">Who it's for</a></li>
-                        <li><a href="#questions">FAQs</a></li>
-                    </ul>
-                </nav>
-                <nav class="public-footer-col" aria-label="Account">
-                    <h3>Account</h3>
-                    <ul>
-                        <li><a href="{{ route('login') }}">Log in</a></li>
-                        <li><a href="{{ route('register') }}">Student registration</a></li>
-                    </ul>
-                </nav>
-            </div>
-            <div class="public-footer-bottom">
-                <span>&copy; {{ date('Y') }} SkillBridge &middot; St. Cecilia's College</span>
-                <span>Student development and internship placement</span>
-            </div>
-        </footer>
-    </main>
+        @include('partials.public-footer', ['base' => ''])
+
+        <div class="public-mobile-cta" data-mobile-cta>
+            <a class="public-button" href="{{ route('login') }}">Log in</a>
+            <a class="public-button public-button-primary" href="{{ route('register') }}">Create a student account</a>
+        </div>
+    </div>
+    <script>
+        (function () {
+            var nav = document.querySelector('.public-nav');
+            function onScroll() { if (nav) nav.classList.toggle('is-scrolled', window.scrollY > 8); }
+            onScroll();
+            window.addEventListener('scroll', onScroll, { passive: true });
+
+            if (!('IntersectionObserver' in window)) return;
+
+            // Highlight the nav link of the section being read.
+            var links = [].slice.call(document.querySelectorAll('.public-nav-links a[href^="#"]'));
+            var byId = {};
+            links.forEach(function (a) { byId[a.getAttribute('href').slice(1)] = a; });
+            var spy = new IntersectionObserver(function (entries) {
+                entries.forEach(function (e) {
+                    var a = byId[e.target.id];
+                    if (!a) return;
+                    if (e.isIntersecting) {
+                        links.forEach(function (l) { l.classList.remove('is-active'); });
+                        a.classList.add('is-active');
+                    } else {
+                        a.classList.remove('is-active');
+                    }
+                });
+            }, { rootMargin: '-45% 0px -50% 0px' });
+            Object.keys(byId).forEach(function (id) {
+                var s = document.getElementById(id);
+                if (s) spy.observe(s);
+            });
+
+            // Mobile sticky buttons: hidden over the hero, the final CTA, and the footer.
+            var bar = document.querySelector('[data-mobile-cta]');
+            if (bar) {
+                var seen = new Map();
+                var guard = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (e) { seen.set(e.target, e.isIntersecting); });
+                    var any = false;
+                    seen.forEach(function (v) { if (v) any = true; });
+                    bar.classList.toggle('is-visible', !any);
+                });
+                [].forEach.call(document.querySelectorAll('.public-hero, .public-cta, .public-footer'), function (el) { guard.observe(el); });
+            }
+
+            // Scroll reveal + count-up (skipped when the visitor prefers reduced motion).
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            document.documentElement.classList.add('js');
+            var fmt = new Intl.NumberFormat();
+            function count(el) {
+                var target = +el.dataset.count, suffix = el.dataset.suffix || '', start = null;
+                function tick(t) {
+                    start = start || t;
+                    var p = Math.min((t - start) / 1400, 1);
+                    el.textContent = fmt.format(Math.round(target * (1 - Math.pow(1 - p, 3)))) + suffix;
+                    if (p < 1) requestAnimationFrame(tick);
+                }
+                requestAnimationFrame(tick);
+            }
+            var io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (e) {
+                    if (!e.isIntersecting) return;
+                    e.target.classList.add('is-visible');
+                    var c = e.target.querySelector('[data-count]');
+                    if (c) count(c);
+                    io.unobserve(e.target);
+                });
+            }, { threshold: 0.15 });
+            [].forEach.call(document.querySelectorAll('[data-count]'), function (c) { c.textContent = '0' + (c.dataset.suffix || ''); });
+            [].forEach.call(document.querySelectorAll('.reveal'), function (el) { io.observe(el); });
+        })();
+    </script>
 </body>
 </html>

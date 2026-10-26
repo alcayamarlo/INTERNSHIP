@@ -257,7 +257,6 @@
                 </div>
             @else
                 <button type="submit" class="auth-btn" data-loading-text="Sending code...">
-                    <i class="bi bi-envelope-arrow-up" aria-hidden="true"></i>
                     <span class="auth-btn-label">Send Reset Code</span>
                 </button>
             @endif

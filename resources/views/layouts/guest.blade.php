@@ -14,7 +14,10 @@
         content="{{ csrf_token() }}"
     >
 
-    <link rel="icon" type="image/svg+xml" href="{{ asset('images/brand/favicon.svg') }}">
+    <link rel="icon" type="image/svg+xml" href="{ asset('images/brand/favicon.svg') }?v=2">
+    <link rel="icon" href="{ asset('images/brand/favicon.ico') }?v=2" sizes="any">
+    <link rel="apple-touch-icon" href="{ asset('images/brand/apple-touch-icon.png') }?v=2">
+    <meta name="theme-color" content="#E11D2E">
 
     <title>
         @yield('title', 'Authentication') — SKILL BRIDGE
@@ -890,7 +893,7 @@
 
                 <div class="auth-brand">
 
-                    <img class="auth-brand-logo" src="{{ asset('images/brand/skillbridge-logo-icon.svg') }}" width="48" height="48" alt="" aria-hidden="true">
+                    <img class="auth-brand-logo" src="{{ asset('images/brand/skillbridge-logo-icon.svg') }}?v=2" width="48" height="48" alt="" aria-hidden="true">
 
                     <div class="auth-brand-name">
 

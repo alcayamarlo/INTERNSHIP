@@ -10,17 +10,19 @@
 @endphp
 
 <x-page-header
-    :title="'Welcome, '.Auth::user()->name.'!'"
+    title="Employer Dashboard"
     subtitle="Manage your internship listings and applicants"
+    eyebrow="Employer workspace"
 >
     <span class="sb-status sb-status--success">Recruitment workspace ready</span>
+    <span class="sb-tag"><i class="bi bi-calendar3" aria-hidden="true"></i> {{ now()->format('M d, Y') }}</span>
     <a href="{{ route('employer.internships.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Post Internship</a>
 </x-page-header>
 
 
 {{-- Dashboard statistics --}}
 
-<div class="sb-stat-grid">
+<div class="sb-stat-grid sb-stat-grid--3">
 
     <x-dashboard-stat-card
         title="Pending Review"

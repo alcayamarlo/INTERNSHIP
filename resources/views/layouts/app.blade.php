@@ -2,7 +2,10 @@
 <html lang="en" data-theme="light">
 
 <head>
-    <link rel="icon" type="image/svg+xml" href="{{ asset('images/brand/favicon.svg') }}">
+    <link rel="icon" type="image/svg+xml" href="{ asset('images/brand/favicon.svg') }?v=2">
+    <link rel="icon" href="{ asset('images/brand/favicon.ico') }?v=2" sizes="any">
+    <link rel="apple-touch-icon" href="{ asset('images/brand/apple-touch-icon.png') }?v=2">
+    <meta name="theme-color" content="#E11D2E">
 
     <meta charset="UTF-8">
 
@@ -67,6 +70,7 @@
 
     @stack('styles')
     <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/skillbridge-dashboard.css') }}?v=1">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}"></script>
     @vite('resources/js/app.js')
 
@@ -114,8 +118,7 @@
             ],
             'Career' => [
                 ['student.competencies.index', 'student.competencies.*', 'bi-award', 'Competencies'],
-                ['student.internships.index', 'student.internships.*', 'bi-briefcase', 'Internships'],
-                ['student.applications.index', 'student.applications.*', 'bi-send', 'My Applications'],
+                ['student.internships.index', ['student.internships.*', 'student.applications.*'], 'bi-briefcase', 'Internships'],
                 ['student.resume.index', 'student.resume.*', 'bi-file-earmark-person', 'Resume'],
             ],
             'OJT' => [
@@ -200,7 +203,7 @@
 
     <div class="sb-brand">
 
-        <img class="sb-brand-logo" src="{{ asset('images/brand/skillbridge-logo-icon.svg') }}" width="36" height="36" alt="" aria-hidden="true">
+        <img class="sb-brand-logo" src="{{ asset('images/brand/skillbridge-logo-icon.svg') }}?v=2" width="36" height="36" alt="" aria-hidden="true">
 
         <div class="sb-brand-text">
             <span class="sb-brand-title">SkillBridge</span>
@@ -250,7 +253,7 @@
 
             @foreach($groupItems as [$routeName, $routePattern, $icon, $label])
 
-                @php $isActive = request()->routeIs($routePattern); @endphp
+                @php $isActive = request()->routeIs(...(array) $routePattern); @endphp
 
                 <a
                     class="sb-nav-link {{ $isActive ? 'active' : '' }}"
@@ -336,7 +339,11 @@
                     type="search"
                     name="q"
                     class="form-control"
-                    placeholder="Search students, companies, skills..."
+                    placeholder="{{ match (true) {
+                        (bool) $currentUser?->isRole(UserRole::Student) => 'Search internships, companies, skills...',
+                        (bool) $currentUser?->isRole(UserRole::Employer) => 'Search students, internships, skills...',
+                        default => 'Search students, companies, skills...',
+                    } }}"
                     value="{{ request('q') }}"
                     aria-label="Search the platform"
                 >
@@ -348,10 +355,6 @@
         {{-- TOP ACTIONS --}}
 
         <div class="sb-top-actions">
-
-            <button type="button" class="sb-theme-toggle" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false">
-                <i class="bi bi-moon-stars" aria-hidden="true"></i>
-            </button>
 
             {{-- NOTIFICATIONS --}}
 
@@ -1130,6 +1133,19 @@
 {{-- =========================================================
      PAGE-SPECIFIC SCRIPTS
 ========================================================== --}}
+
+<script>
+    (function () {
+        var form = document.querySelector('.sb-search');
+        var icon = form && form.querySelector('.input-group-text');
+        if (!icon) return;
+        icon.addEventListener('click', function () {
+            if (window.innerWidth > 767) return;
+            form.classList.toggle('is-open');
+            if (form.classList.contains('is-open')) form.querySelector('input').focus();
+        });
+    })();
+</script>
 
 @stack('scripts')
 

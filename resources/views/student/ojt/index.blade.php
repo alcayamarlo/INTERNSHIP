@@ -37,9 +37,34 @@
             <div class="col-lg-6">
                 <div class="card h-100">
                     <div class="card-header"><h2 class="h6 mb-0"><i class="bi bi-plus-circle" aria-hidden="true"></i> Log today's time</h2></div>
-                    <div class="card-body">
-                        <form method="POST" action="{{ route('student.ojt.attendance.store', $placement) }}">
+                    <div class="card-body d-flex flex-column align-items-start gap-3">
+                        <p class="text-muted mb-0">Record the hours you worked and the tasks you completed today.</p>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#dailyEntryModal"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add daily entry</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header"><h2 class="h6 mb-0"><i class="bi bi-pencil-square" aria-hidden="true"></i> Weekly journal</h2></div>
+                    <div class="card-body d-flex flex-column align-items-start gap-3">
+                        <p class="text-muted mb-0">Summarise your accomplishments, learnings and challenges for the week.</p>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#weeklyJournalModal"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add weekly journal</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <div class="modal fade" id="dailyEntryModal" tabindex="-1" aria-labelledby="dailyEntryModalLabel" aria-hidden="true" data-sb-form-modal @if(old('_modal') === 'daily') data-sb-open-on-load @endif>
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title h5" id="dailyEntryModalLabel">Add daily entry</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="dailyEntryForm" method="POST" action="{{ route('student.ojt.attendance.store', $placement) }}">
                             @csrf
+<input type="hidden" name="_modal" value="daily">
                             <div class="row g-2">
                                 <div class="col-12">
                                     <label class="form-label" for="work_date">Date</label>
@@ -67,17 +92,27 @@
                                     @error('task_summary')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary mt-3">Submit time entry</button>
+                            
                         </form>
-                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" form="dailyEntryForm">Submit time entry</button>
                 </div>
             </div>
-            <div class="col-lg-6">
-                <div class="card h-100">
-                    <div class="card-header"><h2 class="h6 mb-0"><i class="bi bi-pencil-square" aria-hidden="true"></i> Weekly journal</h2></div>
-                    <div class="card-body">
-                        <form method="POST" action="{{ route('student.ojt.journals.store', $placement) }}">
+        </div>
+    </div>
+    <div class="modal fade" id="weeklyJournalModal" tabindex="-1" aria-labelledby="weeklyJournalModalLabel" aria-hidden="true" data-sb-form-modal @if(old('_modal') === 'weekly') data-sb-open-on-load @endif>
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title h5" id="weeklyJournalModalLabel">Add weekly journal</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="weeklyJournalForm" method="POST" action="{{ route('student.ojt.journals.store', $placement) }}">
                             @csrf
+<input type="hidden" name="_modal" value="weekly">
                             <div class="row g-2">
                                 <div class="col-md-5">
                                     <label class="form-label" for="week_start">Any day in the week</label>
@@ -103,12 +138,20 @@
                                     <textarea id="challenges" name="challenges" rows="2" class="form-control">{{ old('challenges') }}</textarea>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary mt-3">Submit journal</button>
+                            
                         </form>
-                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" form="weeklyJournalForm">Submit journal</button>
                 </div>
             </div>
         </div>
+    </div>
+
+    @push('scripts')
+        <script src="{{ asset('js/sb-modals.js') }}"></script>
+    @endpush
     @endif
 
     @include('ojt.partials.attendance', ['placement' => $placement, 'mode' => 'student'])

@@ -3,6 +3,7 @@
 @section('title', $internship->title)
 
 @section('content')
+<x-breadcrumbs :items="[['label' => 'Dashboard', 'url' => route('student.dashboard')], ['label' => 'Internships', 'url' => route('student.internships.index')], ['label' => $internship->title]]" />
 <x-page-header :title="$internship->title" :subtitle="$internship->employer->company_name">
     <x-status-badge :status="$internship->status" :label="ucfirst($internship->status)" />
     <a href="{{ route('student.internships.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to Internships</a>

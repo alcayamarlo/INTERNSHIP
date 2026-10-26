@@ -1095,7 +1095,7 @@
             <p class="co-hint">Your skills, evidence, and verified progress at a glance.</p>
         </div>
         <div class="d-flex flex-wrap align-items-center gap-3">
-            <a class="co-primary" href="{{ route('student.competencies.create') }}">Add another competency</a>
+            <button type="button" class="co-primary" data-bs-toggle="modal" data-bs-target="#addCompetencyModal">Add another competency</button>
             <div class="co-segment" id="competencyViewToggle" role="group" aria-label="Competency view" data-view="{{ $initialView }}">
                 <span class="co-segment-pill" aria-hidden="true"></span>
                 <button type="button" class="co-segment-button" data-view-option="verified" aria-pressed="{{ $initialView === 'verified' ? 'true' : 'false' }}">Verified only</button>
@@ -1257,6 +1257,106 @@
         </div>
     </div>
 </main>
+
+<div class="modal fade" id="addCompetencyModal" tabindex="-1" aria-labelledby="addCompetencyModalLabel" aria-hidden="true" data-sb-form-modal @if(old('_modal') === 'competency') data-sb-open-on-load @endif>
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title h5" id="addCompetencyModalLabel">Add another competency</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if($errors->any() && old('_modal') === 'competency')
+                    <div class="alert alert-danger" role="alert">Please fix the highlighted fields and try again.</div>
+                @endif
+                <form id="addCompetencyForm" method="POST" action="{{ route('student.competencies.store') }}" enctype="multipart/form-data">
+                    @csrf
+<input type="hidden" name="_modal" value="competency">
+
+                    <div class="mb-3">
+                        <label class="form-label">Competency Name <span class="text-danger" aria-hidden="true">*</span></label>
+                        <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" placeholder="e.g., JavaScript, Leadership, Project Management" required>
+                        @error('name')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Category <span class="text-danger" aria-hidden="true">*</span></label>
+                            <select class="form-select @error('category') is-invalid @enderror" name="category" required>
+                                <option value="">Select a category</option>
+                                @foreach(\App\Enums\CompetencyCategory::cases() as $category)
+                                    <option value="{{ $category->value }}" {{ old('category') === $category->value ? 'selected' : '' }}>
+                                        {{ $category->label() }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('category')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Earned Level <span class="text-danger" aria-hidden="true">*</span></label>
+                            <select class="form-select @error('proficiency_level') is-invalid @enderror" name="proficiency_level" required>
+                                <option value="">Select a level</option>
+                                @foreach(\App\Enums\ProficiencyLevel::cases() as $level)
+                                    <option value="{{ $level->value }}" {{ old('proficiency_level') === $level->value ? 'selected' : '' }}>
+                                        {{ $level->label() }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('proficiency_level')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info small">Skills must be earned through an assessment, certification, or verified training. Self-declared skills are not accepted.</div>
+                    <div class="row g-3 mb-3"><div class="col-md-6"><label class="form-label">Assessment / credential <span class="text-danger" aria-hidden="true">*</span></label><input name="assessment_name" class="form-control" value="{{ old('assessment_name') }}" required placeholder="e.g. Python Skills Assessment"></div><div class="col-md-6"><label class="form-label">Evidence document <span class="text-danger" aria-hidden="true">*</span></label><input type="file" name="evidence" class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required><small class="text-muted">Pending verification until reviewed.</small></div></div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control @error('description') is-invalid @enderror" name="description" rows="4" placeholder="Describe your experience with this competency...">{{ old('description') }}</textarea>
+                        <small class="text-muted">Optional. Max 1000 characters.</small>
+                        @error('description')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Date Obtained</label>
+                            <input type="date" class="form-control @error('obtained_at') is-invalid @enderror" name="obtained_at" value="{{ old('obtained_at') }}">
+                            <small class="text-muted">Optional. When did you acquire this competency?</small>
+                            @error('obtained_at')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Issuing Organization</label>
+                            <input type="text" class="form-control @error('issuing_organization') is-invalid @enderror" name="issuing_organization" value="{{ old('issuing_organization') }}" placeholder="e.g., Coursera, Google, Your Company">
+                            <small class="text-muted">Optional. Organization that issued certification.</small>
+                            @error('issuing_organization')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+</form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary" form="addCompetencyForm"><i class="bi bi-check-circle" aria-hidden="true"></i> Add Competency</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script src="{{ asset('js/sb-modals.js') }}"></script>
+@endpush
 @endsection
 
 @push('scripts')

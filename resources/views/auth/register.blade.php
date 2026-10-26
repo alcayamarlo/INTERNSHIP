@@ -44,12 +44,7 @@
         >
             @csrf
 
-            {{-- ACCOUNT TYPE + INSTITUTION --}}
-            <div class="auth-chip" aria-label="Selected account type">
-                <i class="bi bi-mortarboard-fill" aria-hidden="true"></i>
-                <span>Student account</span>
-                <span class="auth-chip-note">For {{ $institution->name }} students</span>
-            </div>
+            {{-- INSTITUTION --}}
 
             <input
                 type="hidden"
@@ -325,18 +320,6 @@
                 </div>
 
                 <div class="auth-pw-meta" id="passwordRules">
-                    <div class="password-rules">
-                        <span id="ruleLength" class="password-rule">
-                            <i class="bi bi-circle-fill" aria-hidden="true"></i>
-                            8+ characters
-                        </span>
-
-                        <span id="ruleUpper" class="password-rule">
-                            <i class="bi bi-circle-fill" aria-hidden="true"></i>
-                            One uppercase letter
-                        </span>
-                    </div>
-
                     <div class="password-strength">
                         <div id="passwordStrengthBar" class="password-strength-bar"></div>
                     </div>
@@ -379,7 +362,6 @@
                 id="submitBtn"
                 data-loading-text="Creating account..."
             >
-                <i class="bi bi-person-check-fill" aria-hidden="true"></i>
                 <span class="auth-btn-label" id="submitText">Create Account</span>
             </button>
         </form>

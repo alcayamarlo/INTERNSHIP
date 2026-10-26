@@ -161,8 +161,7 @@
                 id="loginButton"
                 data-loading-text="Signing in..."
             >
-                <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
-                <span class="auth-btn-label">Sign In to SkillBridge</span>
+                <span class="auth-btn-label">Sign In</span>
             </button>
         </form>
 

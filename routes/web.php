@@ -30,6 +30,7 @@ use App\Http\Controllers\Employer\SkillController as EmployerSkillController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileCompletionController;
+use App\Http\Controllers\PublicInternshipController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Student\CompetencyController;
 use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
@@ -40,9 +41,13 @@ use App\Http\Controllers\Student\StudentChangeRequestController;
 use App\Http\Controllers\Student\ResumeController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+Route::get('/', [PublicInternshipController::class, 'home'])->name('home');
+
+// Public, read-only internship listings. "Apply" is only an entry point: guests are sent to login
+// (and back afterwards); the real apply flow stays behind auth + role:student under /student.
+Route::get('/internships', [PublicInternshipController::class, 'index'])->name('internships.index');
+Route::get('/internships/{internship}', [PublicInternshipController::class, 'show'])->name('internships.show');
+Route::get('/internships/{internship}/apply', [PublicInternshipController::class, 'apply'])->name('internships.apply');
 
 Route::middleware('guest')->group(function () {
     // LOGIN

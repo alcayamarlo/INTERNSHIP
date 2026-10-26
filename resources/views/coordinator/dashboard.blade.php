@@ -7,7 +7,10 @@
 <x-page-header
     title="Coordinator Dashboard"
     subtitle="Manage students and track placements at St. Cecilia’s College-Cebu, Inc."
+    eyebrow="Coordinator workspace"
 >
+    <span class="sb-status sb-status--success">Verification workspace ready</span>
+    <span class="sb-tag"><i class="bi bi-calendar3" aria-hidden="true"></i> {{ now()->format('M d, Y') }}</span>
     <a href="{{ route('coordinator.verification.index') }}" class="btn btn-primary">
         <i class="bi bi-shield-check" aria-hidden="true"></i> Review verification queue
     </a>
@@ -17,7 +20,7 @@
 <x-dashboard-ojt />
 
 
-<div class="sb-stat-grid">
+<div class="sb-stat-grid sb-stat-grid--3">
 
     <x-dashboard-stat-card
         title="Active Students"

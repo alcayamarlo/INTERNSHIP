@@ -21,23 +21,17 @@
 @endphp
 
 <x-page-header
-    :title="'Welcome, '.Auth::user()->name.'!'"
-    subtitle="Monitor your progress and explore internship opportunities"
+    title="Student Dashboard"
+    subtitle="Track your profile, competencies, and internship applications"
+    eyebrow="My workspace"
 >
-    <form class="sb-inline-search" action="{{ route('student.internships.index') }}" method="GET" role="search">
-        <label class="visually-hidden" for="dashboardInternshipSearch">Search internships</label>
-        <input
-            class="form-control"
-            id="dashboardInternshipSearch"
-            name="search"
-            type="search"
-            value="{{ request('search') }}"
-            placeholder="Search internships..."
-        >
-        <button type="submit" class="btn btn-primary" aria-label="Search internships">
-            <i class="bi bi-search" aria-hidden="true"></i>
-        </button>
-    </form>
+    @if($profileCompletion >= 80)
+        <span class="sb-status sb-status--success">Profile complete</span>
+    @else
+        <span class="sb-status sb-status--brand">Profile {{ $profileCompletion }}% complete</span>
+    @endif
+    <span class="sb-tag"><i class="bi bi-calendar3" aria-hidden="true"></i> {{ now()->format('M d, Y') }}</span>
+    <a href="{{ route('student.internships.index') }}" class="btn btn-primary"><i class="bi bi-search" aria-hidden="true"></i> Browse Internships</a>
 </x-page-header>
 
 <x-dashboard-announcements />
@@ -48,7 +42,7 @@
     DASHBOARD STATISTICS
 ========================================================= --}}
 
-<div class="sb-stat-grid">
+<div class="sb-stat-grid sb-stat-grid--3">
 
     <x-dashboard-stat-card
         title="Profile Completion"

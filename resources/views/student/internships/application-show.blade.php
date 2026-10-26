@@ -3,6 +3,7 @@
 @section('title', 'Application Details')
 
 @section('content')
+<x-breadcrumbs :items="[['label' => 'Dashboard', 'url' => route('student.dashboard')], ['label' => 'Internships', 'url' => route('student.internships.index')], ['label' => 'My Applications', 'url' => route('student.applications.index')], ['label' => $application->internship->title]]" />
 <x-page-header title="Application Details" :subtitle="$application->internship->title">
     <a href="{{ route('student.applications.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to applications</a>
 </x-page-header>

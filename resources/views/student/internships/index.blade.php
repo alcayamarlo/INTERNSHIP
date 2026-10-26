@@ -3,11 +3,14 @@
 @section('title', 'Internships')
 
 @section('content')
+<x-breadcrumbs :items="[['label' => 'Dashboard', 'url' => route('student.dashboard')], ['label' => 'Internships']]" />
 
 <x-page-header
     title="Browse Internships"
     subtitle="Find opportunities matched to your competencies"
 />
+
+@include('student.internships.partials.tabs', ['active' => 'browse'])
 
 @if(count($recommendations) > 0)
 <div class="card mb-4">

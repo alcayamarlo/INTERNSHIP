@@ -57,6 +57,13 @@ class LoginController extends Controller
                 ->with('status', 'Account not activated yet. Enter the 6-digit code sent to your email, or request a new one.');
         }
 
+        // Only the public "Apply" entry point is resumed after login; any other stored URL is ignored
+        // so a user always lands on their own role dashboard.
+        $intended = (string) $request->session()->get('url.intended', '');
+        if (preg_match('#^/internships/\d+/apply$#', (string) parse_url($intended, PHP_URL_PATH))) {
+            return redirect()->intended(route($user->dashboardRoute()));
+        }
+
         return redirect()->route($user->dashboardRoute());
     }
 

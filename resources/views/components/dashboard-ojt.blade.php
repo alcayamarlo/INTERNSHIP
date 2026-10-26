@@ -56,10 +56,21 @@
             @if($card['type'] === 'student')
                 @if($placement = $card['placement'])
                     @php $percent = $placement->progressPercent(); @endphp
-                    <div class="d-flex justify-content-between small mb-1">
-                        <span>{{ $placement->internship?->title }} · {{ $placement->employer?->company_name }}</span>
-                        <span><strong>{{ number_format($placement->approvedHours(), 1) }}</strong> / {{ $placement->required_hours }} h ({{ $percent }}%)</span>
+                    <div class="row text-center g-3 mb-3">
+                        <div class="col-4">
+                            <div class="fs-4 fw-bold">{{ number_format($placement->approvedHours(), 1) }}</div>
+                            <div class="small text-muted">Hours approved</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="fs-4 fw-bold">{{ $placement->required_hours }}</div>
+                            <div class="small text-muted">Hours required</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="fs-4 fw-bold">{{ $percent }}%</div>
+                            <div class="small text-muted">Progress</div>
+                        </div>
                     </div>
+                    <div class="small text-muted mb-1">{{ $placement->internship?->title }} · {{ $placement->employer?->company_name }}</div>
                     <div class="progress" style="height: 10px;" role="progressbar" aria-label="OJT hours progress" aria-valuenow="{{ $percent }}" aria-valuemin="0" aria-valuemax="100">
                         <div class="progress-bar {{ $percent >= 100 ? 'bg-success' : '' }}" style="width: {{ $percent }}%"></div>
                     </div>
