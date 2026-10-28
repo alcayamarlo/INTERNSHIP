@@ -250,3 +250,179 @@
 .public-page .text-center { text-align: center; }
 @media (max-width: 960px) { .public-job-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .public-filter { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 600px) { .public-job-grid { grid-template-columns: 1fr; } .public-filter { grid-template-columns: 1fr; } .public-detail-body { padding: 20px; } }
+
+/* =====================================================================
+   Job board redesign (landing page). Everything below is scoped to .skillbridge-public.
+   Palette rule: red only for CTAs, highlights and active states; white surfaces; near-black text.
+   ===================================================================== */
+.skillbridge-public { --jb-radius: 20px; --jb-shadow: 0 1px 2px rgba(26, 26, 26, .05), 0 10px 28px rgba(26, 26, 26, .06); --jb-shadow-hover: 0 1px 2px rgba(26, 26, 26, .06), 0 16px 36px rgba(26, 26, 26, .1); }
+.skillbridge-public [hidden] { display: none !important; }
+
+/* Clean white page in light mode (dark mode keeps its own tokens) */
+html:not([data-theme="dark"]) body.skillbridge-public { --sb-canvas: #fff; --sb-bg: #fff; --sb-surface-raised: #fff; background: #fff; }
+html:not([data-theme="dark"]) .skillbridge-public .public-hero { background: #fff; }
+html:not([data-theme="dark"]) .skillbridge-public .public-roles { background: #fff; border-block: 1px solid var(--sb-border); }
+html:not([data-theme="dark"]) .skillbridge-public .public-nav { background: rgba(255, 255, 255, .94); }
+
+/* One card scale: same radius, shadow and padding rhythm everywhere */
+.skillbridge-public :is(.public-step-card, .public-role-card, .public-faq-item, .public-stat, .jb-card, .jb-detail, .jb-empty, .jb-nomatch) { border-radius: var(--jb-radius); box-shadow: var(--jb-shadow); }
+.skillbridge-public :is(.public-step-card, .public-role-card) { padding: 24px; }
+.skillbridge-public :is(.public-step-card, .public-role-card):hover { box-shadow: var(--jb-shadow-hover); border-color: color-mix(in srgb, var(--sb-brand) 28%, var(--sb-border)); }
+.skillbridge-public :is(.public-step-card, .public-role-card) .lm { border-radius: 14px; box-shadow: none; }
+.skillbridge-public .public-step-index { top: 36px; left: 36px; }
+.skillbridge-public .public-section-heading h2 { font-weight: 600; }
+.skillbridge-public .public-section { padding-block: clamp(56px, 7vw, 88px); }
+
+/* ---- Navigation: stronger text, red underline on the current link, clean hamburger ---- */
+.skillbridge-public .public-nav-links a { color: var(--sb-ink); font-weight: 500; }
+.skillbridge-public .public-nav-links a:hover, .skillbridge-public .public-nav-links a.is-active { color: var(--sb-brand-content); }
+.skillbridge-public .public-nav-toggle { cursor: pointer; transition: background-color 160ms ease, border-color 160ms ease; }
+.skillbridge-public .public-nav-toggle:hover { border-color: var(--sb-brand); }
+.skillbridge-public .public-nav-toggle .icon-x { display: none; }
+.skillbridge-public .public-nav-toggle[aria-expanded="true"] .icon-bars { display: none; }
+.skillbridge-public .public-nav-toggle[aria-expanded="true"] .icon-x { display: inline; }
+@media (max-width: 767px) {
+    .skillbridge-public #publicNavigation.is-open { padding: 4px 0 14px; border-top: 1px solid var(--sb-border); }
+    .skillbridge-public #publicNavigation.is-open .public-nav-links { display: flex; padding: 6px 0; }
+    .skillbridge-public .public-nav-links a { padding: 13px 4px; border-bottom: 1px solid var(--sb-border); font-size: 16px; }
+    .skillbridge-public .public-nav-links a::after { display: block; bottom: -1px; }
+    .skillbridge-public #publicNavigation.is-open .public-nav-actions { display: grid; grid-template-columns: auto 1fr 1fr; gap: 10px; padding-top: 14px; }
+    .skillbridge-public .public-nav-actions .public-button { min-width: 0; padding-inline: 12px; font-size: 14px; }
+}
+
+/* ---- Search bar (hero + board) ---- */
+.skillbridge-public .jb-search { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto; align-items: center; gap: 0; max-width: 920px; margin: 0 auto; padding: 6px; border: 1px solid var(--sb-border); border-radius: 999px; background: var(--sb-surface); box-shadow: var(--jb-shadow); transition: border-color 140ms ease, box-shadow 140ms ease; }
+.skillbridge-public .jb-search:focus-within { border-color: var(--sb-brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sb-brand) 18%, transparent); }
+.skillbridge-public .jb-field { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 4px 18px; }
+.skillbridge-public .jb-field + .jb-field { border-left: 1px solid var(--sb-border); }
+.skillbridge-public .jb-field > .public-icon { color: var(--sb-muted); }
+.skillbridge-public .jb-field > div { min-width: 0; flex: 1; }
+.skillbridge-public .jb-field label { display: block; color: var(--sb-muted); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.skillbridge-public .jb-field input { display: block; width: 100%; min-width: 0; min-height: 28px; padding: 0; border: 0; outline: none; box-shadow: none; background: transparent; color: var(--sb-ink); font: inherit; font-size: 15px; }
+.skillbridge-public .jb-field input::placeholder { color: var(--sb-muted); opacity: 1; }
+.skillbridge-public .jb-field input:focus, .skillbridge-public .jb-field input:focus-visible { outline: none; box-shadow: none; }
+.skillbridge-public .jb-search-btn { min-height: 48px; padding-inline: 28px; }
+.skillbridge-public .jb-search-hero { max-width: 600px; margin: 28px 0 0; }
+
+/* ---- Filters + results ---- */
+.skillbridge-public .jb-filters { display: flex; flex-wrap: wrap; gap: 14px 28px; max-width: var(--public-max); margin: 22px auto 0; }
+.skillbridge-public .jb-chip-group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.skillbridge-public .jb-chip-label { color: var(--sb-muted); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.skillbridge-public .jb-chip { min-height: 38px; padding: 0 14px; border: 1px solid var(--sb-border); border-radius: 999px; background: var(--sb-surface); color: var(--sb-ink); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; transition: border-color 140ms ease, background-color 140ms ease, color 140ms ease; }
+.skillbridge-public .jb-chip:hover { border-color: var(--sb-brand); }
+.skillbridge-public .jb-chip[aria-pressed="true"] { border-color: var(--sb-brand); background: var(--sb-brand-soft); color: var(--sb-brand-content); font-weight: 600; }
+.skillbridge-public .jb-results { display: flex; align-items: center; justify-content: space-between; gap: 12px; max-width: var(--public-max); margin: 18px auto 14px; }
+.skillbridge-public .jb-count { margin: 0; color: var(--sb-ink); font-size: 15px; font-weight: 600; }
+.skillbridge-public .jb-clear { padding: 6px 4px; border: 0; background: none; color: var(--sb-brand-content); font: inherit; font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+/* ---- Two-pane board ---- */
+.skillbridge-public .jb-board { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; gap: 20px; max-width: var(--public-max); margin: 0 auto; }
+.skillbridge-public .jb-list-wrap { max-height: min(78vh, 780px); overflow-y: auto; padding: 3px 6px 3px 3px; scrollbar-width: thin; }
+.skillbridge-public .jb-list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.skillbridge-public .jb-card { position: relative; display: flex; gap: 14px; min-width: 0; padding: 18px 18px 16px; border: 1px solid var(--sb-border); border-left: 4px solid transparent; background: var(--sb-surface); cursor: pointer; transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease; }
+.skillbridge-public .jb-card:hover { border-color: color-mix(in srgb, var(--sb-brand) 30%, var(--sb-border)); border-left-color: color-mix(in srgb, var(--sb-brand) 30%, transparent); box-shadow: var(--jb-shadow-hover); }
+.skillbridge-public .jb-card.is-selected { border-color: color-mix(in srgb, var(--sb-brand) 35%, var(--sb-border)); border-left-color: var(--sb-brand); box-shadow: var(--jb-shadow-hover); }
+.skillbridge-public .jb-card-body { min-width: 0; flex: 1; }
+.skillbridge-public .jb-card h3 { margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 19px; font-weight: 600; letter-spacing: -.01em; line-height: 1.25; }
+.skillbridge-public .jb-card-btn { padding: 0; border: 0; background: none; color: var(--sb-ink); font: inherit; text-align: left; cursor: pointer; }
+.skillbridge-public .jb-card-btn::after { position: absolute; inset: 0; border-radius: var(--jb-radius); content: ""; }
+.skillbridge-public .jb-card-btn:focus-visible { outline: none; }
+.skillbridge-public .jb-card:has(.jb-card-btn:focus-visible) { outline: 2px solid color-mix(in srgb, var(--sb-brand) 55%, transparent); outline-offset: 2px; }
+.skillbridge-public .jb-card.is-selected .jb-card-btn { color: var(--sb-brand-content); }
+.skillbridge-public .jb-avatar { display: grid; flex: 0 0 auto; width: 44px; height: 44px; place-items: center; border-radius: 50%; background: var(--sb-brand-soft); color: var(--sb-brand-content); font-family: 'Bricolage Grotesque', sans-serif; font-size: 18px; font-weight: 700; }
+.skillbridge-public .jb-avatar-lg { width: 56px; height: 56px; font-size: 22px; }
+.skillbridge-public .jb-company { margin: 3px 0 0; color: var(--sb-ink); font-size: 14px; font-weight: 500; }
+.skillbridge-public .jb-loc { display: flex; align-items: center; gap: 6px; margin: 6px 0 0; color: var(--sb-muted); font-size: 13.5px; }
+.skillbridge-public .jb-loc .public-icon { width: 15px; height: 15px; color: var(--sb-brand); }
+.skillbridge-public .jb-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.skillbridge-public .jb-tag { padding: 3px 10px; border-radius: 999px; background: color-mix(in srgb, var(--sb-ink) 7%, transparent); color: var(--sb-ink); font-size: 12.5px; font-weight: 600; }
+.skillbridge-public .jb-snippet { display: -webkit-box; margin: 10px 0 0; overflow: hidden; color: var(--sb-muted); font-size: 14px; line-height: 1.55; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+.skillbridge-public .jb-posted { margin: 10px 0 0; color: var(--sb-muted); font-size: 12.5px; }
+
+/* ---- Detail pane ---- */
+.skillbridge-public .jb-detail { position: sticky; top: 92px; max-height: calc(100vh - 112px); overflow-y: auto; padding: 28px; border: 1px solid var(--sb-border); background: var(--sb-surface); scrollbar-width: thin; }
+.skillbridge-public .jb-detail:focus { outline: none; }
+.skillbridge-public .jb-detail-head { display: flex; align-items: center; gap: 16px; }
+.skillbridge-public .jb-detail h3 { margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: clamp(22px, 2.4vw, 28px); font-weight: 600; letter-spacing: -.02em; line-height: 1.15; }
+.skillbridge-public .jb-facts { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 18px 0 0; padding: 0; color: var(--sb-ink); font-size: 14px; list-style: none; }
+.skillbridge-public .jb-facts li { display: inline-flex; align-items: center; gap: 7px; }
+.skillbridge-public .jb-facts .public-icon { width: 16px; height: 16px; color: var(--sb-brand); }
+.skillbridge-public .jb-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 22px 0 6px; padding-bottom: 22px; border-bottom: 1px solid var(--sb-border); }
+.skillbridge-public .jb-detail h4 { margin: 22px 0 8px; font-family: 'Bricolage Grotesque', sans-serif; font-size: 17px; font-weight: 600; }
+.skillbridge-public .jb-detail p, .skillbridge-public .jb-detail li { color: var(--sb-text-soft); font-size: 15px; line-height: 1.7; }
+.skillbridge-public .jb-detail p { margin: 0; }
+.skillbridge-public .jb-req, .skillbridge-public .jb-steps { margin: 8px 0 0; padding-left: 20px; }
+.skillbridge-public .jb-detail-placeholder { display: grid; justify-items: center; gap: 10px; padding: 64px 20px; color: var(--sb-muted); text-align: center; }
+.skillbridge-public .jb-close { display: none; position: absolute; top: 14px; right: 14px; z-index: 2; width: 40px; height: 40px; place-items: center; border: 1px solid var(--sb-border); border-radius: 50%; background: var(--sb-surface); color: var(--sb-ink); cursor: pointer; }
+.skillbridge-public .jb-backdrop { display: none; }
+
+/* ---- Empty states ---- */
+.skillbridge-public .jb-empty, .skillbridge-public .jb-nomatch { display: grid; justify-items: center; gap: 10px; max-width: 560px; margin: 0 auto; padding: 44px 24px; border: 1px dashed var(--sb-border); background: var(--sb-surface); text-align: center; }
+.skillbridge-public .jb-nomatch { max-width: none; margin-top: 4px; }
+.skillbridge-public .jb-empty h3, .skillbridge-public .jb-nomatch h3 { margin: 6px 0 0; font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; font-weight: 600; }
+.skillbridge-public .jb-empty p, .skillbridge-public .jb-nomatch p { margin: 0 0 8px; color: var(--sb-muted); line-height: 1.6; }
+.skillbridge-public .jb-empty-icon { display: grid; width: 64px; height: 64px; place-items: center; border-radius: 50%; background: var(--sb-brand-soft); color: var(--sb-brand-content); }
+.skillbridge-public .jb-empty-icon .public-icon { width: 28px; height: 28px; stroke-width: 1.6; }
+.skillbridge-public .jb-viewall { margin-top: 36px; text-align: center; }
+
+/* ---- Tablet / mobile: stacked list + bottom sheet ---- */
+@media (max-width: 991.98px) {
+    .skillbridge-public .jb-board { grid-template-columns: minmax(0, 1fr); }
+    .skillbridge-public .jb-list-wrap { max-height: none; overflow: visible; padding: 3px; }
+    .skillbridge-public .jb-detail { position: fixed; right: 0; bottom: 0; left: 0; top: auto; z-index: 70; max-height: 88vh; padding: 28px 20px calc(24px + env(safe-area-inset-bottom)); border-radius: 22px 22px 0 0; box-shadow: 0 -18px 48px rgba(0, 0, 0, .28); visibility: hidden; transform: translateY(100%); transition: transform 260ms cubic-bezier(.16, 1, .3, 1), visibility 0s linear 260ms; }
+    .skillbridge-public .jb-detail.is-open { visibility: visible; transform: none; transition: transform 260ms cubic-bezier(.16, 1, .3, 1); }
+    .skillbridge-public .jb-detail-head { padding-right: 44px; }
+    .skillbridge-public .jb-close { display: grid; }
+    .skillbridge-public .jb-backdrop { position: fixed; inset: 0; z-index: 65; display: block; background: rgba(0, 0, 0, .5); }
+    .skillbridge-public .jb-detail-placeholder { display: none; }
+    html.jb-lock { overflow: hidden; }
+}
+@media (max-width: 767px) {
+    .skillbridge-public .jb-search { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 8px; border-radius: 20px; }
+    .skillbridge-public .jb-field { padding: 10px 12px; }
+    .skillbridge-public .jb-field + .jb-field { border-top: 1px solid var(--sb-border); border-left: 0; }
+    .skillbridge-public .jb-search-btn { width: 100%; margin-top: 6px; }
+    .skillbridge-public .jb-search-hero { max-width: none; margin-inline: auto; text-align: left; }
+    .skillbridge-public .jb-filters { gap: 12px; }
+    .skillbridge-public .jb-chip-group { flex-wrap: nowrap; width: 100%; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+    .skillbridge-public .jb-chip-group::-webkit-scrollbar { display: none; }
+    .skillbridge-public .jb-chip { flex: 0 0 auto; }
+    .skillbridge-public .jb-chip-label { flex: 0 0 auto; }
+    .skillbridge-public .jb-card { padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .skillbridge-public .jb-card, .skillbridge-public .jb-chip, .skillbridge-public .jb-search, .skillbridge-public .jb-detail, .skillbridge-public .jb-detail.is-open { transition: none; }
+}
+
+/* ---- Navigation collapses to the hamburger up to 899px (the logo, 4 links, theme switch and 2 buttons do not fit on a tablet) ---- */
+@media (max-width: 899.98px) {
+    .skillbridge-public .public-nav-inner { position: relative; min-height: 66px; flex-wrap: wrap; }
+    .skillbridge-public .public-nav-toggle { display: grid; margin-left: auto; }
+    .skillbridge-public #publicNavigation { display: block; width: 100%; }
+    .skillbridge-public #publicNavigation .public-nav-links, .skillbridge-public #publicNavigation .public-nav-actions { display: none; width: 100%; }
+    .skillbridge-public #publicNavigation.is-open { padding: 4px 0 14px; border-top: 1px solid var(--sb-border); }
+    .skillbridge-public #publicNavigation.is-open .public-nav-links { display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 6px 0; }
+    .skillbridge-public .public-nav-links a { padding: 13px 4px; border-bottom: 1px solid var(--sb-border); font-size: 16px; white-space: normal; }
+    .skillbridge-public .public-nav-links a::after { display: block; bottom: -1px; }
+    .skillbridge-public #publicNavigation.is-open .public-nav-actions { display: grid; grid-template-columns: auto 1fr 1fr; gap: 10px; padding-top: 14px; }
+    .skillbridge-public .public-nav-actions .public-button { min-width: 0; padding-inline: 12px; font-size: 14px; white-space: normal; }
+    .skillbridge-public .public-nav-actions { flex-wrap: wrap; }
+}
+
+/* The site-wide section reveal leaves a transform on the section, which would make the fixed bottom sheet
+   position itself inside the section instead of the screen. Remove the transform once the section is shown. */
+.skillbridge-public #internships.sb-reveal, .skillbridge-public #internships.sb-reveal.is-visible { transform: none; }
+
+/* Hero search: compact so the placeholders are not clipped in the narrow hero column */
+.skillbridge-public .jb-search-hero .jb-field { padding: 4px 14px; gap: 10px; }
+.skillbridge-public .jb-search-hero .jb-search-btn { padding-inline: 22px; }
+.skillbridge-public .jb-search-hero { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) auto; }
+
+.skillbridge-public .jb-detail { box-sizing: border-box; }
+
+/* Palette rule: red only, no extra accent colours */
+.skillbridge-public .hero-float-b i, .skillbridge-public .hero-float-c i { background: var(--sb-brand); }
+
+/* Step and role cards no longer carry a photo: badges sit in normal flow */
+.skillbridge-public .public-step-index { position: static; margin-bottom: 18px; }
+.skillbridge-public .public-role-card .role-icon { margin: 0 0 16px; border: 0; }

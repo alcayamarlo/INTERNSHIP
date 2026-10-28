@@ -15,7 +15,7 @@ class PublicInternshipController extends Controller
 {
     public function home()
     {
-        $openInternships = $this->publicQuery()->latest()->take(6)->get();
+        $openInternships = $this->publicQuery()->with('requirementsList')->latest()->take(12)->get();
 
         return view('welcome', compact('openInternships'));
     }

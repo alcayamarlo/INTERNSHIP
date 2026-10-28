@@ -10,12 +10,12 @@
                     <span class="public-brand-copy"><strong>SkillBridge</strong><small>St. Cecilia's College</small></span>
                 </a>
                 <button class="public-nav-toggle" type="button" data-public-nav-toggle aria-controls="publicNavigation" aria-expanded="false" aria-label="Toggle navigation">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path class="icon-bars" d="M4 7h16M4 12h16M4 17h16"></path><path class="icon-x" d="M6 6l12 12M18 6 6 18"></path></svg>
                 </button>
                 <div id="publicNavigation">
                     <div class="public-nav-links">
                         <a href="{{ $base ?? '' }}#how-it-works">How it works</a>
-                        <a href="{{ route('internships.index') }}">Internships</a>
+                        <a href="{{ route('internships.index') }}" @if(request()->routeIs('internships.*')) class="is-active" aria-current="page" @endif>Internships</a>
                         <a href="{{ $base ?? '' }}#audiences">Who it's for</a>
                         <a href="{{ $base ?? '' }}#questions">FAQs</a>
                     </div>

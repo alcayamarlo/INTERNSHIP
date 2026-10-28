@@ -135,7 +135,7 @@ it('shows only open internships, with public-safe fields, to guests on the landi
 });
 
 it('shows a friendly empty state when nothing is open', function () {
-    $this->get(route('home'))->assertOk()->assertSee('No open internships right now. Check back soon.');
+    $this->get(route('home'))->assertOk()->assertSee('No open internships right now')->assertSee('Create a student account to get updates')->assertDontSee('data-jb-card', false);
 });
 
 it('sends a guest to login with a message and returns them to the apply page afterwards', function () {

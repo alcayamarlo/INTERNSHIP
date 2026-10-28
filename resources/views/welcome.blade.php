@@ -33,7 +33,8 @@
     <link rel="apple-touch-icon" href="{{ asset('images/brand/apple-touch-icon.png') }}?v=2">
     <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}"></script>
-    <link rel="stylesheet" href="{{ asset('css/skillbridge-public.css') }}?v=1">
+    <script defer src="{{ asset('js/sb-job-board.js') }}?v=1"></script>
+    <link rel="stylesheet" href="{{ asset('css/skillbridge-public.css') }}?v=7">
     @include('partials.public-theme-head')
 </head>
 <body class="skillbridge-public">
@@ -49,6 +50,23 @@
                         <div class="public-eyebrow">Student Development and Internship Placement</div>
                         <h1 id="hero-heading">Build your skills.<br>Move toward <span>what's next.</span></h1>
                         <p class="public-hero-lead">Track competencies, prepare your internship profile, and connect with opportunities through a shared workspace for students, coordinators, and employers.</p>
+                        <form class="jb-search jb-search-hero" role="search" aria-label="Search internships" method="get" action="{{ route('home') }}#internships" data-jb-hero-search>
+                            <div class="jb-field">
+                                <svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM21 21l-4.3-4.3"></path></svg>
+                                <div>
+                                    <label for="heroWhat">Search internships</label>
+                                    <input id="heroWhat" type="search" name="what" placeholder="Role or keyword" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="jb-field">
+                                <svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path></svg>
+                                <div>
+                                    <label for="heroWhere">Location</label>
+                                    <input id="heroWhere" type="search" name="where" placeholder="City or Remote" autocomplete="off">
+                                </div>
+                            </div>
+                            <button type="submit" class="public-button public-button-primary jb-search-btn">Search</button>
+                        </form>
                         <div class="public-hero-actions">
                             <a class="public-button public-button-primary public-button-lg" href="{{ route('register') }}">Create a student account <svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
                             <a class="public-button public-button-lg" href="{{ route('login') }}">Sign in to your workspace</a>
@@ -81,45 +99,23 @@
                 <div class="public-grid-3">
                     <article class="public-step-card reveal">
                         <span class="public-step-index" aria-hidden="true">01</span>
-                        @include('partials.landing-media', ['name' => 'step-profile', 'icon' => 'profile', 'ratio' => 'wide', 'alt' => 'Students working on laptops and desktop computers in a campus computer lab'])
                         <h3>Build your profile</h3>
                         <p>Record academic and contact details, describe your goals, and keep your resume and portfolio evidence together.</p>
                     </article>
                     <article class="public-step-card reveal" style="--reveal-delay: 100ms">
                         <span class="public-step-index" aria-hidden="true">02</span>
-                        @include('partials.landing-media', ['name' => 'step-skills', 'icon' => 'growth', 'ratio' => 'wide', 'alt' => 'Students at rows of computers in a campus computer laboratory'])
                         <h3>Develop competencies</h3>
                         <p>Review skill categories, document your experience, and submit evidence for coordinator review.</p>
                     </article>
                     <article class="public-step-card reveal" style="--reveal-delay: 200ms">
                         <span class="public-step-index" aria-hidden="true">03</span>
-                        @include('partials.landing-media', ['name' => 'step-opportunities', 'icon' => 'search', 'ratio' => 'wide', 'alt' => 'Two students working side by side at a computer in a campus lab'])
                         <h3>Explore opportunities</h3>
                         <p>Browse internships, submit applications, and follow application updates from your student workspace.</p>
                     </article>
                 </div>
             </section>
 
-            <section class="public-section" id="internships">
-                <div class="public-section-heading reveal">
-                    <div class="eyebrow">Open now</div>
-                    <h2>Browse internships.</h2>
-                    <p>See what is open right now. Log in as a student to apply.</p>
-                </div>
-                @php $openInternships = $openInternships ?? collect(); @endphp
-                @if($openInternships->isNotEmpty())
-                    <div class="public-job-grid">
-                        @foreach($openInternships as $internship)
-                            @include('partials.public-internship-card', ['internship' => $internship])
-                        @endforeach
-                    </div>
-                    <div class="text-center mt-4 reveal">
-                        <a class="public-button" href="{{ route('internships.index') }}">View all internships</a>
-                    </div>
-                @else
-                    <p class="public-empty">No open internships right now. Check back soon.</p>
-                @endif
-            </section>
+            @include('partials.job-board', ['openInternships' => $openInternships ?? collect()])
 
             <section class="public-section public-roles" id="audiences">
                 <div class="public-section-heading reveal">
@@ -129,7 +125,6 @@
                 </div>
                 <div class="public-grid-3">
                     <article class="public-role-card reveal">
-                        @include('partials.landing-media', ['name' => 'role-student', 'icon' => 'cap', 'ratio' => 'wide', 'alt' => 'Graduates in white caps and gowns seated together at a graduation ceremony'])
                         <span class="role-icon"><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m2 10 10-5 10 5-10 5-10-5ZM6 12v5c3.5 3 8.5 3 12 0v-5M22 10v6"></path></svg></span>
                         <h3>Students</h3>
                         <ul class="public-checks">
@@ -140,7 +135,6 @@
                         <a class="public-button public-button-primary" href="{{ route('register') }}">Register as a student</a>
                     </article>
                     <article class="public-role-card reveal" style="--reveal-delay: 100ms">
-                        @include('partials.landing-media', ['name' => 'role-coordinator', 'icon' => 'shield', 'ratio' => 'wide', 'alt' => 'St. Cecilia\'s College faculty and students posing together in a computer lab in front of an I-Tech Society screen'])
                         <span class="role-icon"><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M5 21V5l7-3v19M19 21V9l-7-4M8 8v.01M8 12v.01M8 16v.01M15 12v.01M15 16v.01"></path></svg></span>
                         <h3>Coordinators</h3>
                         <ul class="public-checks">
@@ -151,7 +145,6 @@
                         <a class="public-button" href="{{ route('login') }}">Coordinator sign in</a>
                     </article>
                     <article class="public-role-card reveal" style="--reveal-delay: 200ms">
-                        @include('partials.landing-media', ['name' => 'role-employer', 'icon' => 'building', 'ratio' => 'wide', 'alt' => 'Smiling professionals in business attire shaking hands in a bright office'])
                         <span class="role-icon"><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V4h8v3M3 12h18"></path></svg></span>
                         <h3>Employers</h3>
                         <ul class="public-checks">
