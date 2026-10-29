@@ -39,10 +39,8 @@ class CompetencyController extends Controller
 
     public function create()
     {
-        return view('student.competencies.create', [
-            'categories' => CompetencyCategory::cases(),
-            'levels' => ProficiencyLevel::cases(),
-        ]);
+        // Adding a competency is a modal on the index page.
+        return redirect()->route('student.competencies.index', ['add' => 1]);
     }
 
     public function store(StoreCompetencyRequest $request)

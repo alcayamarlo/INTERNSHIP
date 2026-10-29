@@ -1202,7 +1202,7 @@
                     <div class="co-empty" id="competencyEmptyState">
                         <h3 class="co-empty-title">Build your competency profile</h3>
                         <p>Add a skill or certification and attach evidence for coordinator review.</p>
-                        <a class="co-empty-action" href="{{ route('student.competencies.create') }}">Submit evidence</a>
+                        <button type="button" class="co-empty-action" data-bs-toggle="modal" data-bs-target="#addCompetencyModal">Submit evidence</button>
                     </div>
                     <div class="co-skill-list co-hidden" id="competencySkillList" aria-live="polite">
                         <div class="co-loading-skeletons" aria-hidden="true">
@@ -1258,7 +1258,7 @@
     </div>
 </main>
 
-<div class="modal fade" id="addCompetencyModal" tabindex="-1" aria-labelledby="addCompetencyModalLabel" aria-hidden="true" data-sb-form-modal @if(old('_modal') === 'competency') data-sb-open-on-load @endif>
+<div class="modal fade" id="addCompetencyModal" tabindex="-1" aria-labelledby="addCompetencyModalLabel" aria-hidden="true" data-sb-form-modal @if(old('_modal') === 'competency' || request()->boolean('add')) data-sb-open-on-load @endif>
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
         <div class="modal-content">
             <div class="modal-header">

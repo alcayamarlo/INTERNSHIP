@@ -8,9 +8,9 @@
 <x-page-header
     title="Browse Internships"
     subtitle="Find opportunities matched to your competencies"
-/>
-
-@include('student.internships.partials.tabs', ['active' => 'browse'])
+>
+    <a href="{{ route('student.applications.index') }}" class="btn btn-primary"><i class="bi bi-send" aria-hidden="true"></i> My Applications</a>
+</x-page-header>
 
 @if(count($recommendations) > 0)
 <div class="card mb-4">

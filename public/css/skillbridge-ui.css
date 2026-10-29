@@ -1358,6 +1358,42 @@ body.skillbridge-app .table tbody tr:last-child > * {
     background: var(--sb-surface);
 }
 
+/* Filter form: four equal columns; dates share the second row with the actions. */
+.sb-toolbar--filters {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: end;
+    gap: 16px;
+    padding: 16px;
+}
+
+.sb-toolbar--filters .sb-toolbar-actions {
+    grid-column: span 2;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+}
+
+.sb-toolbar--filters .sb-toolbar-actions .btn {
+    min-height: 40px;
+    white-space: nowrap;
+}
+
+@media (max-width: 991.98px) {
+    .sb-toolbar--filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 575.98px) {
+    .sb-toolbar--filters {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .sb-toolbar--filters .sb-toolbar-actions {
+        grid-column: auto;
+    }
+}
+
 .sb-row-actions {
     display: inline-flex;
     flex-wrap: wrap;
@@ -4074,6 +4110,18 @@ button.auth-link:disabled {
 
 .auth-btn--spaced {
     margin-top: clamp(10px, 1.8vh, 14px);
+}
+
+.auth-btn--ghost {
+    border-color: var(--sb-auth-input-border);
+    background: transparent;
+    color: var(--sb-auth-input-text);
+}
+
+.auth-btn--ghost:hover:not(:disabled) {
+    border-color: var(--sb-brand);
+    background: transparent;
+    color: var(--sb-brand-content);
 }
 
 .auth-footer-text {

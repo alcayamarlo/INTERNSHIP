@@ -2,8 +2,25 @@
 
 @section('title', 'My OJT')
 
+@push('styles')
+<style>
+    .ojt-anchor {
+        scroll-margin-top: 96px;
+    }
+</style>
+@endpush
+
 @section('content')
-<x-page-header title="My OJT" subtitle="Log your daily time, submit weekly journals and track your progress toward completion." />
+<x-page-header title="My OJT" subtitle="Log your daily time, submit weekly journals and track your progress toward completion.">
+    @if($placement)
+        <nav class="d-flex flex-wrap gap-2" aria-label="Jump to section">
+            <a href="#ojt-progress" class="btn btn-outline-secondary btn-sm"><i class="bi bi-speedometer2" aria-hidden="true"></i> Progress</a>
+            <a href="#ojt-time-record" class="btn btn-outline-secondary btn-sm"><i class="bi bi-clock-history" aria-hidden="true"></i> Time Record</a>
+            <a href="#ojt-journal" class="btn btn-outline-secondary btn-sm"><i class="bi bi-journal-text" aria-hidden="true"></i> Weekly Journal</a>
+            <a href="#ojt-evaluation" class="btn btn-outline-secondary btn-sm"><i class="bi bi-clipboard-check" aria-hidden="true"></i> Evaluation</a>
+        </nav>
+    @endif
+</x-page-header>
 
 @if(! $placement)
     <div class="card">
@@ -25,7 +42,9 @@
         </form>
     @endif
 
-    @include('ojt.partials.progress', ['placement' => $placement])
+    <div id="ojt-progress" class="ojt-anchor">
+        @include('ojt.partials.progress', ['placement' => $placement])
+    </div>
 
     @if($placement->isActive() && $placement->start_date->isFuture())
         <div class="alert alert-info">
@@ -154,8 +173,14 @@
     @endpush
     @endif
 
-    @include('ojt.partials.attendance', ['placement' => $placement, 'mode' => 'student'])
-    @include('ojt.partials.journals', ['placement' => $placement, 'mode' => 'student'])
-    @include('ojt.partials.evaluation', ['placement' => $placement])
+    <div id="ojt-time-record" class="ojt-anchor">
+        @include('ojt.partials.attendance', ['placement' => $placement, 'mode' => 'student'])
+    </div>
+    <div id="ojt-journal" class="ojt-anchor">
+        @include('ojt.partials.journals', ['placement' => $placement, 'mode' => 'student'])
+    </div>
+    <div id="ojt-evaluation" class="ojt-anchor">
+        @include('ojt.partials.evaluation', ['placement' => $placement])
+    </div>
 @endif
 @endsection

@@ -172,7 +172,6 @@
 
     $navGroups['Communication'] = [
         ['messages.index', 'messages.*', 'bi-chat-dots', 'Messages'],
-        ['notifications.index', 'notifications.*', 'bi-bell', 'Notifications'],
     ];
 
 @endphp

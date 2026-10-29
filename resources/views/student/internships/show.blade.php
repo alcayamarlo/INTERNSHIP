@@ -74,7 +74,7 @@
                                 <li class="mb-1 text-secondary"><i class="bi bi-x-circle"></i> {{ $item['name'] }} <span class="text-muted">({{ $item['required_level'] }} required)</span><br><span class="ms-4 text-muted">{{ $item['reason_label'] }}</span></li>
                             @endforeach
                         </ul>
-                        <a href="{{ route('student.competencies.create') }}" class="btn btn-outline-primary btn-sm w-100"><i class="bi bi-plus-lg"></i> Add or update a competency</a>
+                        <a href="{{ route('student.competencies.index', ['add' => 1]) }}" class="btn btn-outline-primary btn-sm w-100"><i class="bi bi-plus-lg"></i> Add or update a competency</a>
                     @endif
                 </div>
             @endif

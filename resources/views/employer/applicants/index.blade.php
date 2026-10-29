@@ -6,7 +6,7 @@
 <style>
     .employer-page-shell {
         padding: 8px 0 0;
-        color: #edf8ff;
+        color: var(--sb-text);
     }
 
     .employer-page-header {
@@ -15,46 +15,46 @@
 
     .employer-page-title {
         margin: 0 0 8px;
-        color: #f4f9ff;
-        font-size: clamp(2.8rem, 3.2vw, 5rem);
-        line-height: 1.02;
-        font-weight: 900;
-        letter-spacing: -0.055em;
+        color: var(--sb-text);
+        font-size: clamp(2rem, 2.6vw, 3rem);
+        line-height: 1.1;
+        font-weight: 800;
+        letter-spacing: -0.03em;
     }
 
     .employer-page-subtitle {
         margin: 0;
-        color: rgba(186, 211, 228, 0.82);
-        font-size: 1.05rem;
+        color: var(--sb-muted);
+        font-size: 1rem;
         font-weight: 500;
     }
 
     .employer-page-shell .card {
         overflow: hidden;
-        border: 1px solid rgba(140, 167, 192, 0.18);
-        border-radius: 18px;
-        background: rgba(14, 31, 45, 0.84);
-        box-shadow: 0 10px 28px rgba(2, 9, 20, 0.18);
+        border: 1px solid var(--sb-border);
+        border-radius: 16px;
+        background: var(--sb-surface);
+        box-shadow: 0 6px 20px rgba(120, 20, 30, 0.06);
     }
 
     .employer-page-shell .table-responsive {
-        border-radius: 18px;
+        border-radius: 16px;
         overflow: hidden;
     }
 
     .employer-page-shell .table {
         --bs-table-bg: transparent;
-        --bs-table-color: rgba(216, 232, 243, 0.96);
-        --bs-table-border-color: rgba(140, 167, 192, 0.08);
+        --bs-table-color: var(--sb-text);
+        --bs-table-border-color: var(--sb-border);
         margin: 0;
         table-layout: fixed;
     }
 
     .employer-page-shell .table thead th {
-        background: rgba(9, 22, 35, 0.9) !important;
-        color: rgba(180, 207, 225, 0.78) !important;
-        border-color: rgba(140, 167, 192, 0.12) !important;
-        padding: 1rem 1rem;
+        background: var(--sb-surface-raised) !important;
+        color: var(--sb-muted) !important;
+        border-color: var(--sb-border) !important;
+        padding: 0.9rem 1rem;
         font-size: 0.72rem;
         font-weight: 800;
         letter-spacing: 0.08em;
@@ -62,19 +62,19 @@
     }
 
     .employer-page-shell .table td {
-        border-color: rgba(140, 167, 192, 0.08) !important;
-        padding: 1.2rem 1rem;
-        color: rgba(216, 232, 243, 0.92) !important;
+        border-color: var(--sb-border) !important;
+        padding: 1.1rem 1rem;
+        color: var(--sb-text) !important;
         vertical-align: middle;
-        font-size: 0.98rem;
+        font-size: 0.95rem;
     }
 
     .employer-page-shell .table tbody tr:hover {
-        background: rgba(148, 163, 184, 0.04);
+        background: var(--sb-brand-soft);
     }
 
     .employer-page-shell .student-name {
-        color: #f0f8ff;
+        color: var(--sb-text);
         font-weight: 700;
         line-height: 1.3;
     }
@@ -82,7 +82,7 @@
     .employer-page-shell .student-program {
         display: block;
         margin-top: 0.25rem;
-        color: rgba(180, 208, 228, 0.8);
+        color: var(--sb-muted);
         font-size: 0.82rem;
         line-height: 1.4;
     }
@@ -92,59 +92,54 @@
         align-items: center;
         justify-content: center;
         min-width: 70px;
-        padding: 0.5rem 0.8rem;
+        padding: 0.4rem 0.8rem;
         border-radius: 999px;
         font-size: 0.8rem;
         font-weight: 700;
     }
 
     .employer-page-shell .table-badge.match-blue {
-        background: rgba(73, 175, 232, 0.12);
-        color: #a7dbff;
-        border: 1px solid rgba(110, 179, 230, 0.34);
+        background: rgba(37, 99, 235, 0.10);
+        color: #1d4ed8;
+        border: 1px solid rgba(37, 99, 235, 0.28);
     }
 
-    .employer-page-shell .table-badge.match-green {
-        background: rgba(32, 201, 151, 0.12);
-        color: #97efc9;
-        border: 1px solid rgba(32, 201, 151, 0.4);
+    .employer-page-shell .table-badge.match-green,
+    .employer-page-shell .table-badge.status-reviewed {
+        background: rgba(22, 163, 74, 0.10);
+        color: #15803d;
+        border: 1px solid rgba(22, 163, 74, 0.32);
     }
 
     .employer-page-shell .table-badge.status-submitted {
-        background: rgba(148, 163, 184, 0.12);
-        color: #e5eef7;
-        border: 1px solid rgba(148, 163, 184, 0.24);
-    }
-
-    .employer-page-shell .table-badge.status-reviewed {
-        background: rgba(32, 201, 151, 0.12);
-        color: #97efc9;
-        border: 1px solid rgba(32, 201, 151, 0.4);
+        background: var(--sb-surface-raised);
+        color: var(--sb-muted);
+        border: 1px solid var(--sb-border);
     }
 
     .employer-page-shell .review-btn {
         min-height: 36px;
-        padding: 0.55rem 1rem;
-        border: 0;
+        padding: 0.5rem 1.1rem;
+        border: 1px solid var(--sb-brand);
         border-radius: 10px;
-        background: linear-gradient(135deg, #5ec9f5, #3c9bdf) !important;
-        color: #ffffff !important;
+        background: var(--sb-brand) !important;
+        color: #fff !important;
         font-size: 0.86rem;
         font-weight: 700;
-        box-shadow: 0 8px 18px rgba(44, 164, 222, 0.22);
+    }
+
+    .employer-page-shell .review-btn:hover {
+        border-color: var(--sb-brand-deep);
+        background: var(--sb-brand-deep) !important;
     }
 
     .employer-page-shell .card-footer {
-        border-top: 1px solid rgba(140, 167, 192, 0.12);
-        background: rgba(10, 24, 34, 0.8);
+        border-top: 1px solid var(--sb-border);
+        background: var(--sb-surface-raised);
         padding: 0.9rem 1rem;
     }
 
     @media (max-width: 767.98px) {
-        .employer-page-title {
-            font-size: 2.5rem;
-        }
-
         .employer-page-shell .table {
             min-width: 760px;
         }

@@ -12,6 +12,8 @@ use RuntimeException;
 
 class ResumeBuilderService
 {
+    public const MAX_GENERATED_RESUMES = 3;
+
     public function build(Student $student): Resume
     {
         $student->load(['user', 'institution', 'competencies', 'certificates', 'portfolios']);
@@ -61,12 +63,39 @@ class ResumeBuilderService
                 'uploaded_by_user_id' => auth()->id(),
                 'generated_at' => now(),
             ]));
+            $this->pruneOldest($student);
             $student->calculateProfileCompletion();
 
             return $resume;
         } catch (\Throwable $exception) {
             Storage::disk($disk)->delete($filename);
             throw $exception;
+        }
+    }
+
+    /**
+     * Permanently deletes the student's oldest generated resumes (archived ones
+     * included) so only the most recent MAX_GENERATED_RESUMES remain.
+     * Uploaded resumes are left alone.
+     */
+    private function pruneOldest(Student $student): void
+    {
+        $stale = Resume::withArchived()
+            ->where('student_id', $student->id)
+            ->whereNotNull('generated_at')
+            ->orderByDesc('generated_at')
+            ->orderByDesc('id')
+            ->get()
+            ->slice(self::MAX_GENERATED_RESUMES);
+
+        foreach ($stale as $resume) {
+            if ($resume->file_path) {
+                foreach (UploadDisks::search() as $disk) {
+                    Storage::disk($disk)->delete($resume->file_path);
+                }
+            }
+
+            $resume->delete();
         }
     }
 

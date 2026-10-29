@@ -6,12 +6,10 @@
 <x-breadcrumbs :items="[['label' => 'Dashboard', 'url' => route('student.dashboard')], ['label' => 'Internships', 'url' => route('student.internships.index')], ['label' => 'My Applications']]" />
 
 <x-page-header title="My Applications" subtitle="Track your internship application status">
-    <a href="{{ route('student.internships.index') }}" class="btn btn-primary"><i class="bi bi-search" aria-hidden="true"></i> Browse Internships</a>
+    <a href="{{ route('student.applications.index') }}" class="btn btn-primary"><i class="bi bi-send" aria-hidden="true"></i> My Applications</a>
 </x-page-header>
 
-@include('student.internships.partials.tabs', ['active' => 'applications'])
-
-<form method="GET" class="sb-toolbar" aria-label="Filter applications">
+<form method="GET" class="sb-toolbar sb-toolbar--filters" aria-label="Filter applications">
     <div class="sb-field">
         <label class="form-label" for="filter-status">Status</label>
         <select id="filter-status" name="status" class="form-select">
