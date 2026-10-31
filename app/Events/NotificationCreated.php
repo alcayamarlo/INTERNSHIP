@@ -39,6 +39,8 @@ class NotificationCreated implements ShouldBroadcastNow
             'created_at' => $this->notification->created_at->toIso8601String(),
             'show_url' => route('notifications.show', $this->notification),
             'read_url' => route('notifications.read', $this->notification),
+            // User id of the company whose chat just opened, so an open chat page can unlock live.
+            'messaging_open_with' => $this->notification->data['messaging_open_with'] ?? null,
         ];
     }
 }

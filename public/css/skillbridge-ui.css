@@ -1920,6 +1920,90 @@ body.skillbridge-app .list-group-item.is-unread {
     opacity: 1;
 }
 
+.student-profile-page .photo-field-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+}
+
+.student-profile-page .photo-field-preview {
+    flex: 0 0 96px;
+    width: 96px;
+    height: 96px;
+    font-size: 32px;
+}
+
+.student-profile-page .id-photo-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.student-profile-page .id-photo-preview {
+    display: grid;
+    flex: 0 0 120px;
+    place-items: center;
+    width: 120px;
+    height: 120px;
+    overflow: hidden;
+    border: 1px dashed var(--sb-border);
+    border-radius: 8px;
+    background: var(--sb-surface);
+    text-align: center;
+}
+
+.student-profile-page .id-photo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.student-profile-page .id-photo-empty {
+    padding: 8px;
+    color: var(--sb-muted);
+    font-size: 12px;
+}
+
+.student-profile-page .id-photo-dialog {
+    width: min(92vw, 380px);
+    padding: 20px;
+    border: 1px solid var(--sb-border);
+    border-radius: 12px;
+    background: var(--sb-surface);
+    color: var(--sb-text);
+}
+
+.student-profile-page .id-photo-dialog::backdrop {
+    background: rgba(26, 11, 13, .55);
+}
+
+/* The square shown here is exactly the part that is saved. */
+.student-profile-page .id-photo-crop-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #1a0b0d;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+
+.student-profile-page .id-photo-crop-frame:active {
+    cursor: grabbing;
+}
+
+.student-profile-page .id-photo-crop-frame img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    max-width: none;
+    pointer-events: none;
+}
+
 .student-profile-page .profile-name {
     margin: 0;
     font-size: clamp(22px, 2.2vw, 26px);
@@ -2616,6 +2700,357 @@ body.skillbridge-app .list-group-item.is-unread {
 
     .student-profile-page .identity {
         align-items: flex-start;
+    }
+}
+
+/* ---------- Student profile: bio-data tabs ---------- */
+
+.student-profile-page .required-mark {
+    margin-left: 2px;
+    color: var(--sb-danger-ink);
+}
+
+.student-profile-page .panel-tag {
+    display: inline-flex;
+    margin-left: 6px;
+    padding: 2px 8px;
+    border: 1px solid var(--sb-border);
+    border-radius: 999px;
+    color: var(--sb-muted);
+    font-size: 11px;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+.student-profile-page .panel-subheading {
+    margin: 20px 0 12px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.student-profile-page .profile-panel > .portfolio-description,
+.student-profile-page form > .portfolio-description {
+    margin-bottom: 16px;
+}
+
+.student-profile-page .tab-optional {
+    color: var(--sb-muted);
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.student-profile-page .tab-complete-icon {
+    display: none;
+    color: var(--sb-success-ink);
+    font-size: 12px;
+}
+
+.student-profile-page .tab.is-complete .tab-complete-icon {
+    display: inline;
+}
+
+.student-profile-page .tab:not(.is-complete) .tab-complete-text {
+    display: none;
+}
+
+.student-profile-page .privacy-consent-card {
+    margin-top: 16px;
+    padding: 20px 24px;
+    border: 1px solid var(--sb-brand-ring);
+    border-radius: var(--sb-radius-md);
+    background: var(--sb-brand-soft);
+    transition: box-shadow var(--sb-motion-base) var(--sb-ease);
+}
+
+.student-profile-page .privacy-consent-card.needs-attention {
+    box-shadow: 0 0 0 3px var(--sb-brand-ring);
+}
+
+.student-profile-page .privacy-consent-card .panel-heading {
+    margin-bottom: 8px;
+}
+
+.student-profile-page .visibility-toggle {
+    margin-top: 8px;
+    font-size: 13px;
+}
+
+/* Skills tag input */
+.student-profile-page .skill-input-row {
+    display: flex;
+    gap: 8px;
+    max-width: 560px;
+}
+
+.student-profile-page .skill-combobox {
+    position: relative;
+    flex: 1 1 auto;
+}
+
+.student-profile-page .skill-suggestions {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    left: 0;
+    z-index: 10;
+    max-height: 260px;
+    margin: 0;
+    padding: 4px;
+    overflow-y: auto;
+    list-style: none;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-md);
+    background: var(--sb-surface);
+    box-shadow: var(--sb-shadow);
+}
+
+.student-profile-page .skill-suggestions [role="option"] {
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.student-profile-page .skill-suggestions [role="option"]:hover,
+.student-profile-page .skill-suggestions [role="option"][aria-selected="true"] {
+    background: var(--sb-brand-soft);
+    color: var(--sb-brand-content);
+}
+
+.student-profile-page .skill-counter {
+    margin: 8px 0 0;
+    color: var(--sb-muted);
+    font-size: 13px;
+}
+
+.student-profile-page .skill-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 20px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.student-profile-page .skill-chip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--sb-brand-ring);
+    border-radius: 999px;
+    background: var(--sb-brand-soft);
+    color: var(--sb-brand-content);
+}
+
+.student-profile-page .skill-chip form {
+    margin: 0;
+}
+
+.student-profile-page .skill-chip-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 0 4px 0 14px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.student-profile-page .skill-chip-level {
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--sb-surface);
+    color: var(--sb-text-soft);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.student-profile-page .skill-chip-certificate {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--sb-success-ink);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.student-profile-page .skill-chip-certificate[hidden] {
+    display: none;
+}
+
+.student-profile-page .skill-chip-remove {
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 36px;
+    padding: 0 10px 0 4px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.student-profile-page .skill-chip-label:focus-visible,
+.student-profile-page .skill-chip-remove:focus-visible {
+    outline: 2px solid var(--sb-brand);
+    outline-offset: -2px;
+    border-radius: 999px;
+}
+
+.student-profile-page .skill-level-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 10;
+    min-width: 180px;
+    padding: 12px;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-md);
+    background: var(--sb-surface);
+    color: var(--sb-ink);
+    box-shadow: var(--sb-shadow);
+}
+
+.student-profile-page .skill-level-menu[hidden] {
+    display: none;
+}
+
+.student-profile-page .skill-level-menu fieldset {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.student-profile-page .skill-level-legend {
+    margin-bottom: 4px;
+    color: var(--sb-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.student-profile-page .skill-level-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 2px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.student-profile-page .skill-level-save {
+    margin-top: 8px;
+}
+
+.student-profile-page.js-enhanced .skill-level-save {
+    display: none;
+}
+
+/* Experience, project and reference lists */
+.student-profile-page .collection-list {
+    display: grid;
+    gap: 12px;
+    margin: 0 0 8px;
+    padding: 0;
+    list-style: none;
+}
+
+.student-profile-page .collection-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-md);
+    background: var(--sb-surface-raised);
+}
+
+.student-profile-page .collection-item-title {
+    display: block;
+    font-weight: 600;
+}
+
+.student-profile-page .collection-item-meta {
+    display: block;
+    margin-top: 2px;
+    color: var(--sb-muted);
+    font-size: 13px;
+}
+
+.student-profile-page .collection-item-body {
+    margin: 8px 0 0;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+}
+
+.student-profile-page .collection-item-link {
+    display: inline-flex;
+    gap: 6px;
+    margin-top: 8px;
+    color: var(--sb-brand-content);
+    font-size: 14px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.student-profile-page .collection-empty {
+    margin-bottom: 8px;
+}
+
+.student-profile-page .collection-form {
+    margin-top: 16px;
+    padding-top: 4px;
+    border-top: 1px solid var(--sb-border);
+}
+
+.student-profile-page .collection-form[hidden] {
+    display: none;
+}
+
+.student-profile-page .collection-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.student-profile-page .reference-prompt {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.student-profile-page .reference-prompt[hidden] {
+    display: none;
+}
+
+@media (max-width: 575.98px) {
+    .student-profile-page .privacy-consent-card {
+        padding: 16px;
+    }
+
+    .student-profile-page .skill-input-row {
+        max-width: none;
+    }
+
+    .student-profile-page .collection-item {
+        grid-template-columns: 1fr;
+    }
+
+    .student-profile-page .collection-item .portfolio-actions {
+        justify-content: flex-start;
+    }
+
+    .student-profile-page .collection-actions > * {
+        flex: 1 1 0;
     }
 }
 

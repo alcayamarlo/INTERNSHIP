@@ -41,11 +41,11 @@
 
     <section class="profile-stats" aria-label="Submission summary">
         <article class="profile-stat-card">
-            <span class="profile-stat-label">Competencies</span>
+            <span class="profile-stat-label">Certificates</span>
             <strong>{{ $competencies->count() }}</strong>
         </article>
         <article class="profile-stat-card">
-            <span class="profile-stat-label">Certificates</span>
+            <span class="profile-stat-label">Older certificate files</span>
             <strong>{{ $certificates->count() }}</strong>
         </article>
         <article class="profile-stat-card">
@@ -181,11 +181,11 @@
         <div class="profile-submissions">
             <section class="profile-card">
                 <div class="profile-section-heading">
-                    <h2>Competencies</h2>
+                    <h2>Certificates</h2>
                     <span class="profile-count">{{ $competencies->count() }}</span>
                 </div>
                 @if ($competencies->isEmpty())
-                    <p class="profile-empty">No competencies added yet.</p>
+                    <p class="profile-empty">No certificates added yet.</p>
                 @else
                     <div class="profile-skill-grid">
                         @foreach ($competencies as $competency)
@@ -200,7 +200,8 @@
                                 <div class="profile-item-heading">
                                     <div>
                                         <h3>{{ $competency['name'] }}</h3>
-                                        <p>{{ $competency['category'] }}</p>
+                                        <p>{{ $competency['category'] }}@if(! empty($competency['issuer'])) · {{ $competency['issuer'] }}@endif</p>
+                                        @if(! empty($competency['skills']))<p>Skills learned: {{ implode(', ', $competency['skills']) }}</p>@endif
                                     </div>
                                 </div>
                                 <div class="profile-level" aria-label="{{ $competency['level_label'] }} proficiency">
@@ -219,7 +220,23 @@
 
             <section class="profile-card">
                 <div class="profile-section-heading">
-                    <h2>Certificates</h2>
+                    <h2>Skills</h2>
+                    <span class="profile-count">{{ $skills->count() }}</span>
+                </div>
+                @if ($skills->isEmpty())
+                    <p class="profile-empty">No skills added yet.</p>
+                @else
+                    <div class="profile-chips" aria-label="Self-declared skills">
+                        @foreach ($skills as $skill)
+                            <span class="profile-chip">{{ $skill['name'] }}@if($skill['level_label']) · {{ $skill['level_label'] }}@endif @if($skill['has_certificate'])<i class="bi bi-file-earmark-check" aria-hidden="true" title="Has certificate"></i><span class="visually-hidden">(has certificate)</span>@endif</span>
+                        @endforeach
+                    </div>
+                @endif
+            </section>
+
+            <section class="profile-card">
+                <div class="profile-section-heading">
+                    <h2>Older certificate files</h2>
                     <span class="profile-count">{{ $certificates->count() }}</span>
                 </div>
                 @if ($certificates->isEmpty())

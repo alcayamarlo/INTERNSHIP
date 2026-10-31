@@ -105,6 +105,8 @@ class InternshipService
             'work_setup',
             'location',
             'status',
+            'requires_character_reference',
+            'requested_documents',
         ])->all();
     }
 }

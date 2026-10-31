@@ -29,7 +29,7 @@
                 @forelse($placements as $placement)
                     @php $percent = $placement->progressPercent(); @endphp
                     <tr>
-                        <td class="sb-stack-block"><strong>{{ $placement->student?->user?->name ?? '—' }}</strong><div class="small text-muted">{{ $placement->student?->program }}</div></td>
+                        <td class="sb-stack-block"><strong>{{ $placement->company_profile['name'] ?? '—' }}</strong><div class="small text-muted">{{ $placement->company_profile['program'] ?? '' }}</div></td>
                         <td data-label="Internship">{{ $placement->internship?->title }}</td>
                         <td data-label="Hours" class="sb-stack-block" style="min-width: 150px;">
                             <div class="small">{{ number_format($placement->approvedHours(), 1) }} / {{ $placement->required_hours }} h</div>

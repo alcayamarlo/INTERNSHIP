@@ -7,6 +7,7 @@ use App\Models\AttendanceLog;
 use App\Models\Evaluation;
 use App\Models\JournalEntry;
 use App\Models\Placement;
+use App\Services\CompanyVisibleProfile;
 use App\Services\ActivityLogService;
 use App\Services\NotificationService;
 use App\Services\PlacementService;
@@ -39,6 +40,9 @@ class InternController extends Controller
             ->latest()
             ->paginate(15)
             ->withQueryString();
+        $companyProfile = app(CompanyVisibleProfile::class);
+        $placements->getCollection()->each(fn (Placement $placement) => $placement
+            ->setAttribute('company_profile', $placement->student ? $companyProfile->summary($placement->student) : null));
 
         return view('employer.interns.index', compact('placements', 'status'));
     }
@@ -55,8 +59,11 @@ class InternController extends Controller
             'evaluation',
             'clearedBy:id,name',
         ]);
+        $profile = $placement->student
+            ? app(CompanyVisibleProfile::class)->for($placement->student, Auth::user())
+            : null;
 
-        return view('employer.interns.show', compact('placement'));
+        return view('employer.interns.show', compact('placement', 'profile'));
     }
 
     public function updateSchedule(Request $request, Placement $placement)

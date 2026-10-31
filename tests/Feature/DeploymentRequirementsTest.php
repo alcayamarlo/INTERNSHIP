@@ -37,7 +37,7 @@ function deploymentRequirementCoordinator(Institution $institution): User
     return $user;
 }
 
-it('seeds six database-managed deployment requirements and displays their checklist to students', function () {
+it('seeds the database-managed deployment requirements and displays the required ones to students', function () {
     Storage::fake('private');
     $institution = Institution::create([
         'name' => 'St Cecilia College',
@@ -46,15 +46,21 @@ it('seeds six database-managed deployment requirements and displays their checkl
     ]);
     [$user, $student] = deploymentRequirementStudent($institution);
 
-    expect(DeploymentRequirement::query()->count())->toBe(6);
+    // Six original requirements plus the transcript and four on-request IDs.
+    expect(DeploymentRequirement::query()->count())->toBe(11)
+        ->and(DeploymentRequirement::query()->required()->count())->toBe(7)
+        ->and(DeploymentRequirement::query()->onRequest()->pluck('code')->all())->toBe(['nbi-clearance', 'tin-id', 'sss-id', 'passport']);
 
     $this->actingAs($user)
         ->get(route('student.profile.edit'))
         ->assertOk()
-        ->assertSee('Deployment requirements')
+        ->assertSee('Required documents')
         ->assertSee('Certificate of registration (COR)')
+        ->assertSee('Transcript of records')
         ->assertSee('Endorsement letter')
-        ->assertSee('Missing');
+        ->assertSee('Missing')
+        // IDs only appear once an internship the student applied to requests them.
+        ->assertDontSee('NBI clearance');
 });
 
 it('allows students to upload and replace their checklist documents, resetting rejected reviews', function () {
@@ -83,7 +89,7 @@ it('allows students to upload and replace their checklist documents, resetting r
         ->post(route('student.portfolio.deployment-requirements.store', $requirement), [
             'file' => UploadedFile::fake()->create('new-cor.pdf', 100, 'application/pdf'),
         ])
-        ->assertRedirect(route('student.profile.edit').'#portfolio')
+        ->assertRedirect(route('student.profile.edit').'#documents')
         ->assertSessionHasNoErrors();
 
     $document->refresh();

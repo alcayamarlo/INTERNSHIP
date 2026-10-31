@@ -171,8 +171,8 @@
                     @forelse($applications as $app)
                         <tr>
                             <td>
-                                <span class="student-name">{{ $app->student->user->name }}</span>
-                                <span class="student-program">{{ $app->student->program ?? '—' }}</span>
+                                <span class="student-name">{{ $app->company_profile['name'] }}</span>
+                                <span class="student-program">{{ $app->company_profile['program'] ?? '—' }}</span>
                             </td>
                             <td>{{ $app->internship->title }}</td>
                             <td>

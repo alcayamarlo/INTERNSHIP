@@ -2,27 +2,22 @@
 
 namespace App\Policies;
 
-use App\Enums\UserRole;
 use App\Models\User;
+use App\Services\MessagingEligibility;
 use Illuminate\Auth\Access\Response;
 
+/** Thin wrapper: the rules live in MessagingEligibility. */
 class MessagePolicy
 {
+    public function __construct(private MessagingEligibility $eligibility) {}
+
     public function view(User $user, User $recipient): Response
     {
-        return $this->send($user, $recipient);
+        return $this->eligibility->canView($user, $recipient);
     }
 
     public function send(User $user, User $recipient): Response
     {
-        if ($user->is($recipient)) {
-            return Response::deny('You cannot message yourself.');
-        }
-
-        if ($user->isRole(UserRole::Student) && $recipient->isRole(UserRole::Student)) {
-            return Response::deny('Students cannot message other students.');
-        }
-
-        return Response::allow();
+        return $this->eligibility->canSend($user, $recipient);
     }
 }

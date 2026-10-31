@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\UserRole;
 use App\Events\MessageSent;
 use App\Http\Requests\Messaging\StoreMessageRequest;
 use App\Models\Message;
 use App\Models\User;
 use App\Services\ActivityLogService;
+use App\Services\MessagingEligibility;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +16,10 @@ use Illuminate\Support\Str;
 
 class MessageController extends Controller
 {
-    public function __construct(private ActivityLogService $activityLog) {}
+    public function __construct(
+        private ActivityLogService $activityLog,
+        private MessagingEligibility $eligibility,
+    ) {}
 
     public function index()
     {
@@ -30,16 +33,48 @@ class MessageController extends Controller
             ->groupBy(fn ($message) => $message->sender_id === $userId
                 ? $message->receiver_id
                 : $message->sender_id);
+        $people = User::query()->whereIn('id', $conversations->keys())->get()->keyBy('id');
 
         return view('messages.index', [
             'conversations' => $conversations,
+            'people' => $people,
+            // Existing threads stay listed; ones the user can no longer send to show the reason.
+            'lockedReasons' => $people->map(fn (User $contact) => Gate::inspect('message.send', $contact))
+                ->reject(fn ($response) => $response->allowed())
+                ->map(fn ($response) => $response->message()),
             'contacts' => $this->allowedContacts(),
+            'lockedCompanies' => $this->lockedCompanies($people->keys()),
         ]);
+    }
+
+    /**
+     * For students: companies they applied to but cannot message yet (no thread yet), so the
+     * Messages list can show them with a lock and the reason.
+     */
+    private function lockedCompanies($threadUserIds)
+    {
+        $student = Auth::user()->student;
+        if (! Auth::user()->isRole(\App\Enums\UserRole::Student) || ! $student) {
+            return collect();
+        }
+
+        return $student->applications()
+            ->with('internship.employer.user')
+            ->get()
+            ->map(fn ($application) => $application->internship?->employer?->user)
+            ->filter()
+            ->unique('id')
+            ->reject(fn (User $company) => $threadUserIds->contains($company->id))
+            ->map(fn (User $company) => ['user' => $company, 'reason' => Gate::inspect('message.send', $company)])
+            ->reject(fn (array $row) => $row['reason']->allowed())
+            ->map(fn (array $row) => ['user' => $row['user'], 'reason' => $row['reason']->message()])
+            ->values();
     }
 
     public function show(User $user)
     {
-        Gate::authorize('message.send', $user);
+        Gate::authorize('message.view', $user);
+        $sendAccess = Gate::inspect('message.send', $user);
 
         $messages = Message::where(function ($query) use ($user) {
             $query->where('sender_id', Auth::id())->where('receiver_id', $user->id);
@@ -56,6 +91,8 @@ class MessageController extends Controller
             'contact' => $user,
             'messages' => $messages,
             'submissionId' => (string) Str::uuid(),
+            'canSend' => $sendAccess->allowed(),
+            'sendBlockedReason' => $sendAccess->message(),
         ]);
     }
 
@@ -112,14 +149,11 @@ class MessageController extends Controller
         return back()->with('success', 'Message sent.');
     }
 
+    /** People the user can start a conversation with (rules in MessagingEligibility). */
     private function allowedContacts()
     {
         return User::query()
-            ->where('id', '!=', Auth::id())
-            ->when(
-                Auth::user()->isRole(UserRole::Student),
-                fn ($query) => $query->where('role', '!=', UserRole::Student->value)
-            )
+            ->whereIn('id', $this->eligibility->startableContactIds(Auth::user()))
             ->orderBy('name')
             ->get();
     }

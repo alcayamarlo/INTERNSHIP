@@ -3,7 +3,7 @@
 @section('title', $portfolio->title)
 
 @section('content')
-<x-page-header :title="$portfolio->title" :subtitle="$portfolio->type->label().' · '.strtoupper(pathinfo($portfolio->file_path, PATHINFO_EXTENSION)).' file'">
+<x-page-header :title="$portfolio->title" :subtitle="$portfolio->type->label().' · '.strtoupper(pathinfo((string) $portfolio->file_path, PATHINFO_EXTENSION)).' file'">
     <a href="{{ route('student.profile.edit') }}#portfolio" class="btn btn-outline-secondary"><i class="bi bi-chevron-left" aria-hidden="true"></i> Back to Portfolio</a>
 </x-page-header>
 
@@ -24,10 +24,10 @@
                         <h3 class="mb-3"><i class="bi bi-info-circle" aria-hidden="true"></i> File Information</h3>
                         <dl class="row mb-0">
                             <dt class="col-sm-4">Filename:</dt>
-                            <dd class="col-sm-8"><code>{{ pathinfo($portfolio->file_path, PATHINFO_BASENAME) }}</code></dd>
+                            <dd class="col-sm-8"><code>{{ pathinfo((string) $portfolio->file_path, PATHINFO_BASENAME) }}</code></dd>
 
                             <dt class="col-sm-4">File Type:</dt>
-                            <dd class="col-sm-8">{{ strtoupper(pathinfo($portfolio->file_path, PATHINFO_EXTENSION)) }}</dd>
+                            <dd class="col-sm-8">{{ strtoupper(pathinfo((string) $portfolio->file_path, PATHINFO_EXTENSION)) }}</dd>
 
                             <dt class="col-sm-4">Uploaded On:</dt>
                             <dd class="col-sm-8">{{ $portfolio->created_at->format('M d, Y \a\t g:i A') }}</dd>
@@ -40,7 +40,7 @@
 
                 <!-- Preview (for PDFs and images) -->
                 @php
-                    $extension = strtolower(pathinfo($portfolio->file_path, PATHINFO_EXTENSION));
+                    $extension = strtolower(pathinfo((string) $portfolio->file_path, PATHINFO_EXTENSION));
                     $isPreviewable = in_array($extension, ['pdf', 'jpg', 'jpeg', 'png']);
                 @endphp
 

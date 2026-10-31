@@ -35,4 +35,9 @@ class Employer extends Model
     {
         return $this->hasMany(Internship::class);
     }
+
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(InternshipInvitation::class);
+    }
 }

@@ -18,6 +18,8 @@ class DeploymentRequirement extends Model
         'upload_source',
         'sort_order',
         'is_active',
+        'on_request',
+        'shared_with_employers',
     ];
 
     protected function casts(): array
@@ -25,6 +27,8 @@ class DeploymentRequirement extends Model
         return [
             'sort_order' => 'integer',
             'is_active' => 'boolean',
+            'on_request' => 'boolean',
+            'shared_with_employers' => 'boolean',
         ];
     }
 
@@ -36,5 +40,16 @@ class DeploymentRequirement extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    /** Requirements every student needs, excluding IDs that are only uploaded when an internship asks. */
+    public function scopeRequired(Builder $query): Builder
+    {
+        return $query->where('is_active', true)->where('on_request', false);
+    }
+
+    public function scopeOnRequest(Builder $query): Builder
+    {
+        return $query->where('is_active', true)->where('on_request', true);
     }
 }

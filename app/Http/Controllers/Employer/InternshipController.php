@@ -7,6 +7,7 @@ use App\Enums\WorkSetup;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Internship\StoreInternshipRequest;
 use App\Http\Requests\Internship\UpdateInternshipRequest;
+use App\Models\DeploymentRequirement;
 use App\Models\Internship;
 use App\Models\Program;
 use App\Services\InternshipService;
@@ -33,6 +34,7 @@ class InternshipController extends Controller
             'workSetups' => WorkSetup::cases(),
             'levels' => ProficiencyLevel::cases(),
             'programs' => Program::orderBy('name')->get(),
+            'onRequestDocuments' => DeploymentRequirement::onRequest()->orderBy('sort_order')->get(['code', 'name']),
         ]);
     }
 
@@ -57,6 +59,7 @@ class InternshipController extends Controller
             'workSetups' => WorkSetup::cases(),
             'levels' => ProficiencyLevel::cases(),
             'programs' => Program::orderBy('name')->get(),
+            'onRequestDocuments' => DeploymentRequirement::onRequest()->orderBy('sort_order')->get(['code', 'name']),
         ]);
     }
 

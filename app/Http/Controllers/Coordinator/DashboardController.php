@@ -196,9 +196,10 @@ class DashboardController extends Controller
             'user',
             'institution',
             'academicProgram',
-            'competencies',
+            'competencies.learnedSkills',
             'certificates',
             'portfolios',
+            'studentSkills.skill',
         ]);
         $requiredInternshipHours = $student->academicProgram?->required_internship_hours;
         $renderedInternshipHours = (int) $student->rendered_internship_hours;
@@ -206,9 +207,12 @@ class DashboardController extends Controller
             ? min(100, (int) round(($renderedInternshipHours / $requiredInternshipHours) * 100))
             : 0;
 
+        $certifiedNames = $student->certifiedCompetencyNames();
         $competencies = $student->competencies->map(fn ($item) => [
             'name' => $item->name,
-            'category' => $item->category?->label() ?? 'Competency',
+            'category' => collect([$item->certificate_type?->label() ?? $item->category?->label(), $item->skill_type?->label()])->filter()->implode(' · ') ?: 'Certificate',
+            'issuer' => $item->issuing_organization,
+            'skills' => $item->learnedSkills->pluck('name')->all(),
             'level' => $item->proficiency_level?->value ?? 'beginner',
             'level_label' => $item->proficiency_level?->label() ?? 'Beginner',
         ]);
@@ -280,6 +284,7 @@ class DashboardController extends Controller
             'internshipHoursProgress' => $internshipHoursProgress,
             'programs' => Program::orderBy('code')->get(),
             'competencies' => $competencies,
+            'skills' => $student->studentSkills->sortBy('id')->map(fn ($studentSkill) => $studentSkill->toChip($certifiedNames))->values(),
             'certificates' => $certificates,
             'portfolios' => $portfolios,
             'verificationCounts' => $verificationCounts,

@@ -83,17 +83,17 @@ it('rejects applications for closed and expired postings', function (array $attr
     'expired' => [['expires_at' => now()->subDay()], 'This internship posting has expired and is no longer accepting applications.'],
 ]);
 
-it('does not offer or accept an archived resume', function () {
+it('does not offer or accept another student\'s resume', function () {
     $fixture = studentApplicationFixture();
-    $fixture['resume']->archive();
+    $other = studentApplicationFixture();
 
     $this->actingAs($fixture['studentUser'])
         ->get(route('student.internships.show', $fixture['internship']))
         ->assertOk()
-        ->assertDontSee('value="'.$fixture['resume']->id.'"', false);
+        ->assertDontSee('value="'.$other['resume']->id.'"', false);
 
     $this->postJson(route('student.internships.apply', $fixture['internship']), [
-        'resume_id' => $fixture['resume']->id,
+        'resume_id' => $other['resume']->id,
     ])->assertUnprocessable()->assertJsonValidationErrors('resume_id');
 });
 

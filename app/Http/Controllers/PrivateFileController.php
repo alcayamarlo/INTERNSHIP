@@ -6,6 +6,7 @@ use App\Models\InternshipApplication;
 use App\Models\Certificate;
 use App\Models\Portfolio;
 use App\Models\Resume;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Support\UploadDisks;
 
@@ -137,58 +138,41 @@ class PrivateFileController extends Controller
         ]);
     }
 
+    // Resume files go through ResumeBuilderService::pdfResponse, which hides contact details from
+    // companies the student has not applied to.
     public function downloadResume(Resume $resume)
     {
         $this->authorize('download', $resume);
 
-        return Storage::disk(app(\App\Services\ResumeBuilderService::class)->diskFor($resume))->download(
-            $resume->file_path,
-            'resume-'.$resume->student_id.'.pdf',
-            ['Content-Type' => 'application/pdf', 'X-Content-Type-Options' => 'nosniff']
-        );
+        return app(\App\Services\ResumeBuilderService::class)->pdfResponse($resume, Auth::user(), download: true);
     }
 
     public function viewResume(Resume $resume)
     {
         $this->authorize('view', $resume);
 
-        return Storage::disk(app(\App\Services\ResumeBuilderService::class)->diskFor($resume))->response($resume->file_path, null, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
+        return app(\App\Services\ResumeBuilderService::class)->pdfResponse($resume, Auth::user(), download: false);
     }
 
     public function downloadApplicantResume(InternshipApplication $application)
     {
         $this->authorize('downloadResume', $application);
-        $resumeQuery = $application->student->resumes();
-        $resume = $application->status->isActive()
-            ? $resumeQuery->withArchived()->latest()->first()
-            : $resumeQuery->latest()->first();
+        $resume = $application->student->resumes()->latest('generated_at')->latest('id')->first();
 
         abort_unless($resume && $resume->file_path, 404, 'Resume not found.');
         $this->authorize('downloadForApplication', [$resume, $application]);
 
-        return Storage::disk(app(\App\Services\ResumeBuilderService::class)->diskFor($resume))->download($resume->file_path, 'resume-'.$resume->student_id.'.pdf', ['Content-Type' => 'application/pdf', 'X-Content-Type-Options' => 'nosniff']);
+        return app(\App\Services\ResumeBuilderService::class)->pdfResponse($resume, Auth::user(), download: true);
     }
 
     public function previewApplicantResume(InternshipApplication $application)
     {
         $this->authorize('view', $application);
-        $resumeQuery = $application->student->resumes();
-        $resume = $application->status->isActive()
-            ? $resumeQuery->withArchived()->latest()->first()
-            : $resumeQuery->latest()->first();
+        $resume = $application->student->resumes()->latest('generated_at')->latest('id')->first();
         abort_unless($resume && $resume->file_path, 404, 'Resume not found.');
         $this->authorize('viewForApplication', [$resume, $application]);
 
-        return Storage::disk(app(\App\Services\ResumeBuilderService::class)->diskFor($resume))->response($resume->file_path, null, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline',
-            'X-Content-Type-Options' => 'nosniff',
-            'Cache-Control' => 'private, no-store',
-        ]);
+        return app(\App\Services\ResumeBuilderService::class)->pdfResponse($resume, Auth::user(), download: false);
     }
 
     private function authorizeResume(Resume $resume): void

@@ -108,6 +108,29 @@
                 @endforeach
             </div>
 
+            <hr class="my-4">
+
+            <h2 class="h6">Applicant requirements</h2>
+            <div class="form-check mb-3">
+                <input type="hidden" name="requires_character_reference" value="0">
+                <input class="form-check-input" type="checkbox" name="requires_character_reference" value="1" id="requiresCharacterReference" @checked(old('requires_character_reference', $internship->requires_character_reference))>
+                <label class="form-check-label" for="requiresCharacterReference">Require at least one character reference before a student can apply</label>
+            </div>
+            @if($onRequestDocuments->isNotEmpty())
+                <fieldset>
+                    <legend class="form-label fs-6 mb-1">Request these IDs from applicants</legend>
+                    <p class="small text-muted mb-2">Students upload a file of each ID after they apply. Only ID files are collected, never ID numbers.</p>
+                    @php($requestedDocuments = old('requested_documents', $internship->requested_documents ?? []))
+                    @foreach($onRequestDocuments as $document)
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" name="requested_documents[]" value="{{ $document->code }}" id="requested-{{ $document->code }}" @checked(in_array($document->code, $requestedDocuments, true))>
+                            <label class="form-check-label" for="requested-{{ $document->code }}">{{ $document->name }}</label>
+                        </div>
+                    @endforeach
+                    @error('requested_documents.*')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                </fieldset>
+            @endif
+
             <div class="mt-4">
                 <button type="submit" class="btn btn-primary"><i class="bi bi-save" aria-hidden="true"></i> {{ $internship->exists ? 'Update' : 'Post' }} Internship</button>
             </div>

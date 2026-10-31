@@ -53,6 +53,15 @@ class NotificationController extends Controller
             }
         }
 
+        if (! $relatedUrl && isset($data['invitation_id']) && is_numeric($data['invitation_id'])) {
+            $invitation = \App\Models\InternshipInvitation::find($data['invitation_id']);
+            if ($invitation && Gate::allows('view', $invitation)) {
+                $relatedUrl = Auth::user()->isRole(UserRole::Student)
+                    ? route('student.invitations.index')
+                    : route('employer.invitations.index');
+            }
+        }
+
         if (! $relatedUrl) {
             $contactId = $data['contact_id'] ?? $data['sender_id'] ?? null;
             if (is_numeric($contactId)) {

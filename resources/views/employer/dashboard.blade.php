@@ -93,8 +93,8 @@
                         @foreach($recentApplications as $application)
                             <tr>
                                 <td>
-                                    <strong>{{ $application->student->user->name }}</strong>
-                                    <div class="text-muted small">{{ $application->student->user->email }}</div>
+                                    <strong>{{ $application->company_profile['name'] }}</strong>
+                                    <div class="text-muted small">{{ $application->company_profile['program'] ?? 'Program not set' }}</div>
                                 </td>
                                 <td>{{ $application->internship->title }}</td>
                                 <td><x-status-badge :status="$application->status->value" :label="$application->status->label()" /></td>

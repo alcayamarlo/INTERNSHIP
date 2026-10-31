@@ -45,17 +45,37 @@
                         @enderror
                     </div>
 
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label" for="tools_used">Tools used</label>
+                            <input id="tools_used" type="text" class="form-control @error('tools_used') is-invalid @enderror" name="tools_used" value="{{ old('tools_used', $portfolio->tools_used) }}" maxlength="255" placeholder="Laravel, MySQL, Figma">
+                            @error('tools_used')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="project_url">Project link</label>
+                            <input id="project_url" type="url" class="form-control @error('project_url') is-invalid @enderror" name="project_url" value="{{ old('project_url', $portfolio->project_url) }}" maxlength="2048" placeholder="https://">
+                            @error('project_url')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="achievements">Achievements</label>
+                            <textarea id="achievements" class="form-control @error('achievements') is-invalid @enderror" name="achievements" rows="2" maxlength="1000">{{ old('achievements', $portfolio->achievements) }}</textarea>
+                            @error('achievements')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                    </div>
+
+                    @if(filled($portfolio->file_path))
                     <!-- Current File Info -->
                     <div class="mb-3">
                         <h6 class="text-muted">Current File</h6>
                         <div class="alert alert-light">
                             <small>
                                 <i class="bi bi-file"></i>
-                                {{ pathinfo($portfolio->file_path, PATHINFO_BASENAME) }}
-                                <span class="badge bg-success ms-2">{{ strtoupper(pathinfo($portfolio->file_path, PATHINFO_EXTENSION)) }}</span>
+                                {{ pathinfo((string) $portfolio->file_path, PATHINFO_BASENAME) }}
+                                <span class="badge bg-success ms-2">{{ strtoupper(pathinfo((string) $portfolio->file_path, PATHINFO_EXTENSION)) }}</span>
                             </small>
                         </div>
                     </div>
+                    @endif
 
                     <!-- File Replacement -->
                     <div class="mb-3">

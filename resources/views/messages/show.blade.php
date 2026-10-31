@@ -27,12 +27,15 @@
                 </div>
             </div>
         @empty
-            <div class="messenger-empty">No messages yet. Start the conversation below.</div>
+            <div class="messenger-empty">{{ $canSend ? 'No messages yet. Start the conversation below.' : 'No messages yet.' }}</div>
         @endforelse
     </div>
 
     <div class="messenger-composer">
-        <form method="POST" action="{{ route('messages.store', $contact) }}" class="messenger-form" data-no-loading="true">
+        {{-- Locked chats keep old messages read-only. The form stays hidden until the chat opens
+             (live, when the application is marked Reviewed); the server checks every send anyway. --}}
+        <p class="text-muted small mb-0" role="status" data-chat-lock-note @if($canSend) hidden @endif><i class="bi bi-lock" aria-hidden="true"></i> {{ $sendBlockedReason }}</p>
+        <form method="POST" action="{{ route('messages.store', $contact) }}" class="messenger-form" data-no-loading="true" data-chat-contact-id="{{ $contact->id }}" @unless($canSend) hidden @endunless>
             @csrf
             <input type="hidden" name="submission_id" value="{{ $submissionId }}">
             <textarea class="messenger-input @error('body') is-invalid @enderror" name="body" rows="1" placeholder="Type your message..." required>{{ old('body') }}</textarea>
@@ -52,6 +55,16 @@
     if (thread) thread.scrollTop = thread.scrollHeight;
 
     const messageForm = document.querySelector('.messenger-form');
+
+    // A live "application reviewed" notification for this company unlocks the chat without a reload.
+    window.addEventListener('sb:messaging-opened', (event) => {
+        if (!messageForm || String(event.detail) !== messageForm.dataset.chatContactId) return;
+        messageForm.hidden = false;
+        document.querySelector('[data-chat-lock-note]')?.setAttribute('hidden', '');
+        const emptyState = document.querySelector('.messenger-empty');
+        if (emptyState) emptyState.textContent = 'No messages yet. Start the conversation below.';
+    });
+
     if (messageForm) {
         const input = messageForm.querySelector('.messenger-input');
         const sendButton = messageForm.querySelector('.messenger-send');

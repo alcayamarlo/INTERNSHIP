@@ -121,11 +121,17 @@ it('previews private certificate images and PDFs inline only for the owning stud
         ->assertHeader('Content-Disposition', 'inline; filename="Image Certificate.png"')
         ->assertHeaderMissing('X-Frame-Options');
 
+    // Certificates are listed on My Certificates, which opens the private preview route.
+    $this->get(route('student.competencies.index'))
+        ->assertOk()
+        ->assertSee(route('student.certificates.preview', $imageCertificate, false), false);
     $this->get(route('student.profile.edit'))
         ->assertOk()
-        ->assertSee('data-preview-url="'.route('student.certificates.preview', $imageCertificate, false).'"', false)
-        ->assertSee('image.src = data.previewUrl', false)
+        ->assertSee('js/student-profile.js', false)
         ->assertDontSee('URL.createObjectURL');
+    expect(file_get_contents(public_path('js/student-profile.js')))
+        ->toContain('viewer.src = data.previewUrl')
+        ->not->toContain('URL.createObjectURL');
 
     $this->get(route('student.certificates.preview', $pdfCertificate))
         ->assertOk()
@@ -162,8 +168,9 @@ it('returns a not-found response for a missing certificate preview and exposes m
 
     $this->get(route('student.profile.edit'))
         ->assertOk()
-        ->assertSee('Preview not available. The file could not be loaded.')
-        ->assertSee(route('student.certificates.download', $certificate, false), false);
+        ->assertSee('js/student-profile.js', false);
+    $this->get(route('student.competencies.index'))->assertOk()->assertSee(route('student.certificates.preview', $certificate, false), false);
+    expect(file_get_contents(public_path('js/student-profile.js')))->toContain('Preview not available. The file could not be loaded.');
 });
 
 it('denies a different student direct access to a private resume', function () {
@@ -289,7 +296,7 @@ it('allows an employer to preview an applicant project but not download it', fun
         ->assertForbidden();
 });
 
-it('restricts employer certificate and deployment-document access by category and status', function () {
+it('lets an applied-to employer view certificates and shared documents but never private deployment documents', function () {
     Storage::fake('private');
 
     $studentUser = User::factory()->create(['role' => UserRole::Student]);
@@ -347,9 +354,24 @@ it('restricts employer certificate and deployment-document access by category an
     $this->actingAs($employerUser)
         ->get(route('student.certificates.preview', $verified))
         ->assertOk();
+    // Certificate verification was removed, so an applied-to company sees every certificate.
     $this->actingAs($employerUser)
         ->get(route('student.certificates.preview', $pending))
-        ->assertForbidden();
+        ->assertOk();
+    $transcriptPath = 'portfolios/'.$student->id.'/tor.pdf';
+    Storage::disk('private')->put($transcriptPath, '%PDF-1.4 transcript');
+    $transcript = Portfolio::create([
+        'student_id' => $student->id,
+        'title' => 'Transcript of records',
+        'type' => 'transcript',
+        'category' => 'deployment_document',
+        'deployment_requirement_id' => \App\Models\DeploymentRequirement::where('code', 'transcript-of-records')->value('id'),
+        'file_path' => $transcriptPath,
+        'verification_status' => 'submitted',
+    ]);
+    $this->actingAs($employerUser)
+        ->get(route('student.portfolio.preview', $transcript))
+        ->assertOk();
     $this->actingAs($employerUser)
         ->get(route('student.portfolio.preview', $document))
         ->assertForbidden();
@@ -406,7 +428,7 @@ it('prevents students from removing protected files and resets certificate revie
         'issuer' => 'Test issuer',
         'file' => UploadedFile::fake()->create('replacement.pdf', 10, 'application/pdf'),
     ]);
-    $response->assertRedirect(route('student.profile.edit').'#portfolio');
+    $response->assertRedirect(route('student.profile.edit').'#documents');
     expect($certificate->fresh()->verification_status)->toBe('evidence_submitted')
         ->and($certificate->fresh()->file_path)->not->toBe($verifiedPath);
 });
@@ -443,7 +465,7 @@ it('resets certificate review metadata after file replacement and metadata-only 
             'issuer' => 'Amazon Web Services',
             'file' => UploadedFile::fake()->create('aws-certificate-replacement.pdf', 10, 'application/pdf'),
         ])
-        ->assertRedirect(route('student.profile.edit').'#portfolio');
+        ->assertRedirect(route('student.profile.edit').'#documents');
 
     expect($certificate->fresh()->verification_status)->toBe('evidence_submitted')
         ->and($certificate->fresh()->review_notes)->toBeNull()
@@ -461,7 +483,7 @@ it('resets certificate review metadata after file replacement and metadata-only 
     $this->put(route('student.certificates.update', $certificate), [
         'title' => 'AWS Certified Cloud Practitioner - Updated',
         'issuer' => 'Amazon Web Services',
-    ])->assertRedirect(route('student.profile.edit').'#portfolio');
+    ])->assertRedirect(route('student.profile.edit').'#documents');
 
     expect($certificate->fresh()->verification_status)->toBe('evidence_submitted')
         ->and($certificate->fresh()->review_notes)->toBeNull()

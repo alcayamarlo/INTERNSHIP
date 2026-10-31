@@ -45,20 +45,30 @@ it('hides the verification status badge for certificates but keeps it for other 
     expect($projectPresented['is_certificate'])->toBeFalse()
         ->and($projectPresented['status_label'])->toBe('Verified');
 
-    $response = $this->actingAs($user)->get(route('student.profile.edit'))->assertOk();
-    $response->assertSee('Badge Visible Project')->assertSee('status-badge status-verified', false);
+    Portfolio::create([
+        'student_id' => $student->id,
+        'title' => 'Badge Visible Document',
+        'type' => 'transcript',
+        'category' => 'deployment_document',
+        'file_path' => 'portfolios/'.$student->id.'/document.pdf',
+        'verification_status' => 'approved',
+    ]);
 
-    // The certificate row renders with no status badge markup at all.
-    $html = $response->getContent();
-    $certificateRowStart = strpos($html, 'Badge Hidden Certificate');
-    $nextStatusCell = strpos($html, 'data-label="Status"', $certificateRowStart);
-    $nextRowEnd = strpos($html, '</tr>', $certificateRowStart);
-    expect($nextStatusCell)->toBeLessThan($nextRowEnd);
-    $statusCellContent = substr($html, $nextStatusCell, $nextRowEnd - $nextStatusCell);
-    expect($statusCellContent)->not->toContain('status-badge');
+    $response = $this->actingAs($user)->get(route('student.profile.edit'))->assertOk();
+    // Projects moved to the Portfolio tab list; other files keep their badge in the Documents table.
+    $response->assertSee('Badge Visible Project')
+        ->assertSee('Badge Visible Document')
+        ->assertSee('status-badge status-verified', false);
+
+    // Certificates moved to My Certificates, where they show with no verification badge.
+    $response->assertDontSee('Badge Hidden Certificate');
+    $this->get(route('student.competencies.index'))
+        ->assertOk()
+        ->assertSee('Badge Hidden Certificate')
+        ->assertDontSee('status-verified', false);
 });
 
-it('counts a certificate and its portfolio mirror once in the profile summary', function () {
+it('moves a certificate and its portfolio mirror off the Documents tab and lists it once in My Certificates', function () {
     $user = User::factory()->create(['role' => UserRole::Student]);
     $student = Student::create(['user_id' => $user->id]);
 
@@ -80,18 +90,17 @@ it('counts a certificate and its portfolio mirror once in the profile summary', 
     $response = $this->actingAs($user)->get(route('student.profile.edit'));
 
     $response->assertOk()
-        ->assertSee('data-total-files="1">1', false)
-        ->assertSee('data-total-certificates="1">1', false)
-        ->assertSee('data-portfolio-count="1">1', false)
-        ->assertSee('id="profileSaveBar"', false)
+        ->assertSee('data-total-files="0">0', false)
+        ->assertSee('Go to My Certificates')
+        ->assertSee('data-profile-section="personal"', false)
         ->assertSee('Cancel')
-        ->assertSee('Save changes')
-        ->assertSee('AWS Certified Cloud Practitioner')
-        ->assertSee('Amazon Web Services');
+        ->assertSee('Save changes');
 
     $content = $response->getContent();
+    $certificatesPage = $this->get(route('student.competencies.index'))->assertOk()->assertSee('Amazon Web Services')->getContent();
 
-    expect(substr_count($content, '<tr data-portfolio-row'))->toBe(1)
+    expect(substr_count($content, '<tr data-portfolio-row'))->toBe(0)
+        ->and(substr_count($certificatesPage, 'data-legacy-id='))->toBe(1)
         ->and($content)->toContain('name="first_name"')
         ->and($content)->not->toContain('Edit profile')
         ->and(preg_match('/<input[^>]*name="first_name"[^>]*\bdisabled\b/i', $content))->toBe(0);
@@ -132,11 +141,10 @@ it('includes generated resumes in portfolio file totals without counting them as
         ->get(route('student.profile.edit'))
         ->assertOk()
         ->assertSee('data-total-files="1">1', false)
-        ->assertSee('data-total-certificates="0">0', false)
         ->assertSee('Resume');
 });
 
-it('shows missing profile and checklist steps and scores only approved deployment documents', function () {
+it('lists incomplete tabs as steps and counts a submitted required document toward Documents', function () {
     $user = User::factory()->create([
         'role' => UserRole::Student,
         'name' => 'Alex Student',
@@ -153,6 +161,7 @@ it('shows missing profile and checklist steps and scores only approved deploymen
         'city' => 'Cebu City',
         'province' => 'Cebu',
         'zip_code' => '6000',
+        'gender' => 'Male',
         'date_of_birth' => '2004-01-15',
     ]);
     $requirement = DeploymentRequirement::query()
@@ -169,17 +178,20 @@ it('shows missing profile and checklist steps and scores only approved deploymen
 
     $summary = $student->profileCompletionSummary();
 
-    expect($summary['percentage'])->toBe(61)
+    // Only Personal (15%) is complete; the COR leaves Documents needing just the resume.
+    expect($summary['percentage'])->toBe(15)
+        ->and($summary['remaining_steps'])->toBe(6)
         ->and($summary['remaining_steps'])->toBe(count($summary['missing_steps']))
-        ->and($summary['missing_steps'])->toContain('Upload a profile photo')
-        ->and($summary['missing_steps'])->not->toContain('Upload '.$requirement->name);
+        ->and($summary['missing_steps'])->toContain('Documents: add your resume')
+        ->and($summary['missing_steps'])->toContain('Contact: add emergency contact name, emergency contact relationship, emergency contact address, emergency contact phone')
+        ->and($summary['sections']['personal']['complete'])->toBeTrue();
 
     $this->actingAs($user)
         ->get(route('student.profile.edit'))
         ->assertOk()
-        ->assertSee('aria-valuenow="61"', false)
-        ->assertSee('9 steps left')
-        ->assertSee('Upload a profile photo');
+        ->assertSee('aria-valuenow="15"', false)
+        ->assertSee('6 steps left')
+        ->assertSee('Documents: add your resume');
 });
 
 it('saves profile changes asynchronously and returns refreshed completion steps', function () {
@@ -191,6 +203,7 @@ it('saves profile changes asynchronously and returns refreshed completion steps'
 
     $response = $this->actingAs($user)
         ->putJson(route('student.profile.update'), [
+            ...bioDataDefaults(),
             'first_name' => 'Alex',
             'last_name' => 'Student',
             'email' => $user->email,
@@ -291,7 +304,7 @@ it('renders the profile for certificate, resume, portfolio, uncategorized-defaul
         $response->assertOk();
 
         if ($case === 'portfolio') {
-            $response->assertSee('data-type="project"', false);
+            $response->assertSee('Profile Test Project');
         }
 
         if ($case === 'resume') {
@@ -339,9 +352,12 @@ it('renders existing public photos and private file actions as same-origin urls'
 
     $response = $this->actingAs($user)->get(route('student.profile.edit'));
     $response->assertOk()
-        ->assertSee('src="/storage/profiles/grace-cruz.jpg"', false)
-        ->assertSee('data-preview-url="'.route('student.certificates.preview', $certificate, false).'"', false)
-        ->assertSee('data-download-url="'.route('student.certificates.download', $certificate, false).'"', false);
+        // Relative URL plus a ?v= cache-buster so a new upload shows at once.
+        ->assertSee('src="/storage/profiles/grace-cruz.jpg?v=', false);
+    // Certificate files are opened from My Certificates through the private, same-origin route.
+    $this->get(route('student.competencies.index'))
+        ->assertOk()
+        ->assertSee('href="'.route('student.certificates.preview', $certificate, false).'"', false);
 
     expect($response->getContent())
         ->not->toContain('http://localhost:8000/storage/')

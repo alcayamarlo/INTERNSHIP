@@ -45,3 +45,25 @@ function something()
 {
     // ..
 }
+
+/** Fields the student profile form now requires (plus privacy consent); spread before a test's own payload. */
+function bioDataDefaults(): array
+{
+    return [
+        'privacy_consent' => '1',
+        'gender' => 'Female',
+        'date_of_birth' => '2003-05-14',
+        'emergency_contact_name' => 'Maria Santos',
+        'emergency_contact_relationship' => 'Mother',
+        'emergency_contact_address' => '12 Mango Ave, Cebu City',
+        'emergency_contact_phone' => '09171234567',
+        'department' => 'College of Computer Studies',
+        'program' => 'BS Information Technology',
+        'year_level' => '3rd Year',
+        'expected_graduation' => '2027-05',
+        'elementary_school' => 'Cebu Central School',
+        'elementary_year_graduated' => 2015,
+        'high_school' => 'Cebu City National Science High School',
+        'high_school_year_graduated' => 2021,
+    ];
+}

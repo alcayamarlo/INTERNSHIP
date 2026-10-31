@@ -20,13 +20,7 @@ class ResumePolicy
         return app(PortfolioFileAccess::class)->download($user, $resume);
     }
 
-    public function archive(User $user, Resume $resume): bool
-    {
-        return $user->isRole(UserRole::Student)
-            && (int) $user->student?->id === (int) $resume->student_id;
-    }
-
-    public function restore(User $user, Resume $resume): bool
+    public function delete(User $user, Resume $resume): bool
     {
         return $user->isRole(UserRole::Student)
             && (int) $user->student?->id === (int) $resume->student_id;

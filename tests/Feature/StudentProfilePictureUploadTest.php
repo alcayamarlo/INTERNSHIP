@@ -3,8 +3,25 @@
 use App\Enums\UserRole;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\ImageProcessor;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+
+beforeEach(function () {
+    if (! extension_loaded('gd')) {
+        $this->markTestSkipped('Needs the GD extension.');
+    }
+});
+
+/** A real (decodable) PNG; photos are now decoded and re-encoded with GD. */
+function validProfilePng(string $name = 'profile.png'): UploadedFile
+{
+    $image = imagecreatetruecolor(8, 8);
+    ob_start();
+    imagepng($image);
+
+    return UploadedFile::fake()->createWithContent($name, (string) ob_get_clean());
+}
 
 it('stores a valid student profile picture on the public disk', function () {
     Storage::fake('public');
@@ -15,10 +32,7 @@ it('stores a valid student profile picture on the public disk', function () {
     $this->actingAs($user)
         ->from(route('student.profile.edit'))
         ->post(route('student.profile.update-picture'), [
-            'profile_picture' => UploadedFile::fake()->createWithContent(
-                'profile.png',
-                base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=')
-            ),
+            'profile_picture' => validProfilePng(),
         ])
         ->assertRedirect(route('student.profile.edit'))
         ->assertSessionHasNoErrors();
@@ -34,18 +48,14 @@ it('rejects profile pictures larger than the configured upload limit', function 
 
     $user = User::factory()->create(['role' => UserRole::Student]);
     Student::create(['user_id' => $user->id]);
-    $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=');
 
     $this->actingAs($user)
         ->from(route('student.profile.edit'))
         ->post(route('student.profile.update-picture'), [
-            'profile_picture' => UploadedFile::fake()->createWithContent(
-                'profile.png',
-                $png.str_repeat("\0", (2048 * 1024) + 1 - strlen($png))
-            ),
+            'profile_picture' => UploadedFile::fake()->create('profile.png', ImageProcessor::MAX_KB + 1, 'image/png'),
         ])
         ->assertRedirect(route('student.profile.edit'))
-        ->assertSessionHasErrors('profile_picture');
+        ->assertSessionHasErrors(['profile_picture' => ImageProcessor::SIZE_MESSAGE]);
 });
 
 it('returns the new profile picture URL for an asynchronous upload', function () {
@@ -56,10 +66,7 @@ it('returns the new profile picture URL for an asynchronous upload', function ()
 
     $response = $this->actingAs($user)
         ->postJson(route('student.profile.update-picture'), [
-            'profile_picture' => UploadedFile::fake()->createWithContent(
-                'profile.png',
-                base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=')
-            ),
+            'profile_picture' => validProfilePng(),
         ]);
 
     $response->assertOk()

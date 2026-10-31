@@ -198,93 +198,6 @@ document.addEventListener('submit', async (event) => {
 
 document.addEventListener('submit', async (event) => {
     const form = event.target;
-    if (!(form instanceof HTMLFormElement) || !form.dataset.ajaxResume) return;
-
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    const submitButton = event.submitter instanceof HTMLButtonElement
-        ? event.submitter
-        : form.querySelector('button[type="submit"]');
-    if (submitButton?.disabled) return;
-
-    const originalContent = submitButton?.innerHTML;
-    const feedback = document.getElementById('resumeActionFeedback');
-    const actionName = form.dataset.ajaxResume;
-    if (submitButton) {
-        submitButton.disabled = true;
-        submitButton.setAttribute('aria-busy', 'true');
-        submitButton.innerHTML = '<span class="sb-submit-spinner" aria-hidden="true"></span>Working…';
-    }
-    if (feedback) {
-        feedback.className = 'alert d-none';
-        feedback.textContent = '';
-    }
-
-    const sendRequest = async () => {
-        const response = await fetch(form.action, {
-            method: 'POST',
-            body: new FormData(form),
-            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-        });
-        const payload = await response.json().catch(() => ({ message: response.status === 413 ? 'The file is too large to upload.' : `Request failed (HTTP ${response.status}). Please try again.` }));
-        return { response, payload };
-    };
-
-    try {
-        let { response, payload } = await sendRequest();
-
-        if (response.status === 409 && payload.confirmation_required) {
-            if (!window.confirm(payload.message)) {
-                if (feedback) {
-                    feedback.className = 'alert alert-secondary';
-                    feedback.textContent = 'Archive cancelled.';
-                }
-                return;
-            }
-
-            form.elements.namedItem('confirmed_active_applications').value = '1';
-            ({ response, payload } = await sendRequest());
-        }
-
-        if (!response.ok) {
-            throw new Error(payload.message || 'Unable to update this resume.');
-        }
-
-        if (feedback) {
-            feedback.className = 'alert alert-success';
-            feedback.textContent = payload.message || 'Resume updated.';
-        }
-
-        const row = form.closest('[data-resume-row]');
-        const list = form.closest('[data-resume-list]');
-        row?.remove();
-        if (list && !list.querySelector('[data-resume-row]')) {
-            const emptyRow = document.createElement('tr');
-            emptyRow.dataset.resumeEmpty = '';
-            const emptyCell = document.createElement('td');
-            emptyCell.colSpan = 2;
-            emptyCell.className = 'text-center text-muted py-4';
-            emptyCell.textContent = list.dataset.emptyMessage || 'No resumes found.';
-            emptyRow.append(emptyCell);
-            list.append(emptyRow);
-        }
-    } catch (error) {
-        if (feedback) {
-            feedback.className = 'alert alert-danger';
-            feedback.textContent = error.message || 'Unable to update this resume.';
-        }
-    } finally {
-        if (submitButton?.isConnected) {
-            submitButton.disabled = false;
-            submitButton.removeAttribute('aria-busy');
-            submitButton.innerHTML = originalContent;
-            submitButton.querySelectorAll('.sb-submit-spinner').forEach((spinner) => spinner.remove());
-        }
-    }
-}, true);
-
-document.addEventListener('submit', async (event) => {
-    const form = event.target;
     if (!(form instanceof HTMLFormElement) || !form.hasAttribute('data-ajax-form')) return;
 
     event.preventDefault();
@@ -517,6 +430,11 @@ if (window.Echo && currentUserId) {
         }
 
         showLiveToast(payload.title, payload.message, payload.show_url);
+
+        // Lets an open chat with that company unlock in place (messages/show.blade.php).
+        if (payload.messaging_open_with) {
+            window.dispatchEvent(new CustomEvent('sb:messaging-opened', { detail: payload.messaging_open_with }));
+        }
     });
 
     channel.listen('.message.sent', (payload) => {

@@ -1,14 +1,45 @@
 <?php
 
+use App\Enums\ApplicationStatus;
 use App\Enums\UserRole;
+use App\Models\Coordinator;
+use App\Models\Employer;
+use App\Models\Institution;
+use App\Models\Internship;
+use App\Models\InternshipApplication;
 use App\Models\Message;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
+/** Employer–student messaging opens once the company has reviewed an application. */
+function openMessaging(User $employerUser, User $studentUser, ApplicationStatus $status = ApplicationStatus::Reviewed): void
+{
+    $employer = $employerUser->employer ?? Employer::create(['user_id' => $employerUser->id, 'company_name' => 'Messaging Co', 'contact_person' => 'HR']);
+    $student = $studentUser->student ?? Student::create(['user_id' => $studentUser->id]);
+    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Messaging Internship', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open']);
+    InternshipApplication::create(['internship_id' => $internship->id, 'student_id' => $student->id, 'status' => $status, 'match_percentage' => 0, 'applied_at' => now()]);
+    $employerUser->unsetRelation('employer');
+    $studentUser->unsetRelation('student');
+}
+
+/** Puts the student under the coordinator: same institution, no other coordinator on the program. */
+function assignCoordinator(User $coordinatorUser, User $studentUser): void
+{
+    $institution = Institution::firstOrCreate(['name' => 'Messaging College']);
+    $coordinator = $coordinatorUser->coordinator ?? Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
+    $coordinator->update(['institution_id' => $institution->id]);
+    $student = $studentUser->student ?? Student::create(['user_id' => $studentUser->id]);
+    $student->update(['institution_id' => $institution->id]);
+    $coordinatorUser->unsetRelation('coordinator');
+    $studentUser->unsetRelation('student');
+}
+
 it('prevents duplicate messages when the same submission is retried', function () {
     $sender = User::factory()->create(['role' => UserRole::Student]);
     $recipient = User::factory()->create(['role' => UserRole::Coordinator]);
+    assignCoordinator($recipient, $sender);
     $submissionId = (string) Str::uuid();
     $payload = [
         'body' => 'Please review my latest update.',
@@ -36,6 +67,7 @@ it('prevents duplicate messages when the same submission is retried', function (
 it('renders a submission key and disables the send button while submitting', function () {
     $sender = User::factory()->create(['role' => UserRole::Student]);
     $recipient = User::factory()->create(['role' => UserRole::Coordinator]);
+    assignCoordinator($recipient, $sender);
 
     $this->actingAs($sender)
         ->get(route('messages.show', $recipient))
@@ -51,6 +83,8 @@ it('renders Enter-to-send behavior for every messaging role', function () {
     foreach (UserRole::all() as $role) {
         $users[$role->value] = User::factory()->create(['role' => $role]);
     }
+    openMessaging($users[UserRole::Employer->value], $users[UserRole::Student->value]);
+    assignCoordinator($users[UserRole::Coordinator->value], $users[UserRole::Student->value]);
 
     foreach ($users as $sender) {
         $recipient = $sender->isRole(UserRole::Student)
@@ -70,6 +104,7 @@ it('renders Enter-to-send behavior for every messaging role', function () {
 it('sends a message asynchronously and rotates the retry token', function () {
     $sender = User::factory()->create(['role' => UserRole::Student]);
     $recipient = User::factory()->create(['role' => UserRole::Coordinator]);
+    assignCoordinator($recipient, $sender);
     $submissionId = (string) Str::uuid();
 
     $this->actingAs($sender)
@@ -89,6 +124,7 @@ it('allows students to message employers but excludes students from the new-cont
     $student = User::factory()->create(['role' => UserRole::Student]);
     $otherStudent = User::factory()->create(['role' => UserRole::Student]);
     $employer = User::factory()->create(['role' => UserRole::Employer]);
+    openMessaging($employer, $student);
 
     $this->actingAs($student)
         ->get(route('messages.index'))
@@ -122,9 +158,10 @@ it('blocks student-to-student start and send routes with a clear error', functio
     expect(Message::where('sender_id', $student->id)->where('receiver_id', $otherStudent->id)->exists())->toBeFalse();
 });
 
-it('allows employers to message students', function () {
+it('allows employers to message students once an application is reviewed', function () {
     $employer = User::factory()->create(['role' => UserRole::Employer]);
     $student = User::factory()->create(['role' => UserRole::Student]);
+    openMessaging($employer, $student);
 
     $this->actingAs($employer)
         ->postJson(route('messages.store', $student), [
@@ -158,6 +195,8 @@ it('allows non-student roles to message every other role', function () {
             'role' => $role,
         ]);
     }
+    openMessaging($users[UserRole::Employer->value], $users[UserRole::Student->value]);
+    assignCoordinator($users[UserRole::Coordinator->value], $users[UserRole::Student->value]);
 
     foreach ($users as $sender) {
         if ($sender->isRole(UserRole::Student)) {

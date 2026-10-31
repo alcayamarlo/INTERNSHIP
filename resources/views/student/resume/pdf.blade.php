@@ -2,205 +2,229 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Resume — {{ $content['personal']['name'] ?? $student->user->name }}</title>
+    <title>Resume — {{ $content['name'] }}</title>
     <style>
-        @page { margin: 36px 40px; }
+        :root {
+            --resume-sidebar: #B3001B;
+            --resume-accent: #E31B2D;
+            --resume-name: #B3001B;
+            --resume-text: #2B2B2B;
+            --resume-muted: #666666;
+            --resume-rule: #DDDDDD;
+            --resume-on-red: #FFFFFF;
+        }
+
+        /* The page margin is applied to the flow only; the sidebar band below bleeds past it. */
+        @page { size: A4 portrait; margin: 14mm 0 16mm 0; }
+
+        html, body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
 
         body {
             margin: 0;
-            color: #1f1f1f;
-            font-family: DejaVu Sans, sans-serif;
-            font-size: 10px;
-            line-height: 1.6;
+            color: var(--resume-text);
+            /* DejaVu Sans ships with DomPDF and covers ñ / Ñ and other Filipino characters. */
+            font-family: "DejaVu Sans", sans-serif;
+            font-size: 9pt;
+            line-height: 1.4;
         }
 
-        .resume-header {
+        /* Full-height red band, repeated on every page. */
+        .sidebar-band {
+            position: fixed;
+            top: -14mm;
+            bottom: -16mm;
+            left: 0;
+            width: 37%;
+            background: var(--resume-sidebar);
+        }
+
+        /* Sidebar content sits on page 1 over the band. */
+        .sidebar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 37%;
+            color: var(--resume-on-red);
+        }
+        .sidebar-inner { margin: 0 7mm; }
+
+        .photo {
+            width: 38mm;
+            height: 38mm;
+            margin: 0 auto 6mm;
+            background: var(--resume-accent);
+            border: 1mm solid var(--resume-on-red);
             text-align: center;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #1f1f1f;
-            margin-bottom: 14px;
+            overflow: hidden;
         }
+        .photo img { width: 38mm; height: 38mm; }
+        .photo-initials { display: block; padding-top: 11mm; font-size: 26pt; font-weight: bold; letter-spacing: 1px; }
 
-        .resume-name {
-            margin: 0;
-            font-size: 26px;
-            line-height: 1.15;
-            letter-spacing: 0.06em;
+        .side-heading {
+            margin: 5mm 0 2mm;
+            padding-bottom: 1mm;
+            border-bottom: 0.3mm solid var(--resume-on-red);
+            font-size: 9.5pt;
+            font-weight: bold;
+            letter-spacing: 1px;
             text-transform: uppercase;
-            font-weight: 700;
+        }
+        .side-row { margin: 0 0 2mm; word-wrap: break-word; }
+        .side-label { display: block; font-size: 8pt; opacity: 0.85; }
+        .side-list { margin: 0; padding-left: 4mm; }
+        .side-list li { margin-bottom: 1mm; word-wrap: break-word; }
+
+        .main { margin-left: 37%; padding: 0 12mm 0 8mm; }
+
+        .name { margin: 0; color: var(--resume-name); font-size: 22pt; font-weight: bold; line-height: 1.15; word-wrap: break-word; }
+        .headline { margin: 1.5mm 0 0; color: var(--resume-muted); font-size: 10pt; }
+        .summary { margin: 3mm 0 0; }
+
+        /* A header bar is wrapped with its first entry so it never ends a page alone. */
+        .keep { page-break-inside: avoid; }
+
+        .bar {
+            margin: 6mm 0 2.5mm;
+            padding: 1.5mm 3mm;
+            background: var(--resume-accent);
+            color: var(--resume-on-red);
+            font-size: 10pt;
+            font-weight: bold;
         }
 
-        .resume-role {
-            margin: 4px 0 12px;
-            font-size: 12px;
-            color: #333333;
-        }
+        .entry { margin: 0 0 3mm; page-break-inside: avoid; }
+        .entry-title { margin: 0; font-size: 10pt; font-weight: bold; word-wrap: break-word; }
+        .entry-meta { margin: 0.5mm 0 0; color: var(--resume-muted); font-size: 9pt; word-wrap: break-word; }
+        .entry-note { margin: 1mm 0 0; word-wrap: break-word; }
+        .entry-skills { margin: 1mm 0 0; padding-left: 4.5mm; }
+        .entry-skills li { margin-bottom: 0.5mm; }
 
-        .resume-contact-row {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 9px;
-            color: #444444;
-        }
+        .rows { width: 100%; border-collapse: collapse; }
+        .rows td { padding: 0.6mm 0; vertical-align: top; }
+        .rows .label { width: 34%; color: var(--resume-muted); }
+        .rows .colon { width: 3%; color: var(--resume-muted); }
+        .rows .value { width: 63%; word-wrap: break-word; }
 
-        .resume-contact-row td {
-            width: 33.33%;
-            padding: 0 4px;
-            vertical-align: top;
-        }
+        .award-group { margin: 0 0 1mm; color: var(--resume-name); font-size: 9.5pt; font-weight: bold; }
+        /* The old one-paragraph honors text, one plain line at a time. */
+        .award-line { margin: 0 0 0.8mm; page-break-inside: avoid; word-wrap: break-word; }
 
-        .resume-section {
-            margin: 0 0 12px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #555555;
-        }
-
-        .resume-section.is-last {
-            border-bottom: none;
-        }
-
-        .resume-section h2 {
-            margin: 0 0 8px;
-            font-size: 12px;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            font-weight: 700;
-        }
-
-        .resume-summary {
-            margin: 0;
-            color: #333333;
-        }
-
-        .resume-item {
-            margin-bottom: 8px;
-            page-break-inside: avoid;
-        }
-
-        .resume-item-meta {
-            display: block;
-            color: #666666;
-            font-size: 9px;
-        }
-
-        .resume-item-title {
-            display: block;
-            font-weight: 700;
-            font-size: 10px;
-        }
-
-        .resume-item p {
-            margin: 0;
-            color: #333333;
-        }
-
-        .resume-skill-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .resume-skill-table td {
-            width: 33.33%;
-            padding: 0 6px 3px 0;
-            vertical-align: top;
-        }
+        .certify { margin-top: 8mm; page-break-inside: avoid; }
+        .certify p { margin: 0 0 12mm; }
+        .signature { width: 60mm; margin-left: auto; text-align: center; }
+        .signature-line { border-top: 0.3mm solid var(--resume-text); padding-top: 1mm; }
+        .generated { margin-top: 5mm; color: var(--resume-muted); font-size: 8pt; }
     </style>
 </head>
 <body>
     @php
-        $studentName = $content['personal']['name'] ?? $student->user->name;
-        $personal = $content['personal'] ?? [];
-        $roleLine = trim(implode(' ', array_filter([$personal['program'] ?? null, $personal['year_level'] ?? null])));
-        $skillColumns = collect($content['competencies'] ?? [])->values();
-        $skillRows = $skillColumns->chunk(3);
+        $headline = collect([$content['course'] ?? null, $content['school'] ?? null])->filter()->implode(' · ');
+        $generatedAt = filled($content['generated_at'] ?? null)
+            ? \Illuminate\Support\Carbon::parse($content['generated_at'])->timezone('Asia/Manila')
+            : null;
+        // Entry sections after Certificates and Honors / awards, in resume order.
+        $entrySections = [
+            'projects' => 'Projects',
+            'experiences' => 'Experience',
+            'references' => 'Character reference',
+        ];
     @endphp
 
-    <header class="resume-header">
-        <h1 class="resume-name">{{ $studentName }}</h1>
-        @if($roleLine !== '')
-            <div class="resume-role">{{ $roleLine }}</div>
+    <div class="sidebar-band"></div>
+
+    <div class="sidebar">
+        <div class="sidebar-inner">
+            <div class="photo">
+                @if($photo)
+                    <img src="{{ $photo }}" alt="">
+                @elseif(filled($content['initials'] ?? null))
+                    <span class="photo-initials">{{ $content['initials'] }}</span>
+                @endif
+            </div>
+
+            @if(! empty($content['contact']))
+                <div class="side-heading">Contact</div>
+                @foreach($content['contact'] as $label => $value)
+                    <p class="side-row"><span class="side-label">{{ $label }}</span>{{ $value }}</p>
+                @endforeach
+            @endif
+
+            @if(! empty($content['education']))
+                <div class="side-heading">Education</div>
+                @foreach($content['education'] as $label => $value)
+                    <p class="side-row"><span class="side-label">{{ $label }}</span>{{ $value }}</p>
+                @endforeach
+            @endif
+
+            @if(! empty($content['skills']))
+                <div class="side-heading">Skills</div>
+                <ul class="side-list">
+                    @foreach($content['skills'] as $skill)
+                        <li>{{ $skill }}</li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
+    </div>
+
+    <div class="main">
+        <h1 class="name">{{ $content['name'] }}</h1>
+        @if($headline !== '')<p class="headline">{{ $headline }}</p>@endif
+        @if(filled($content['summary'] ?? null))<p class="summary">{{ $content['summary'] }}</p>@endif
+
+        @if(! empty($content['personal']))
+            <div class="keep">
+                <div class="bar">Personal data</div>
+                @include('student.resume.partials.pdf-rows', ['rows' => $content['personal']])
+            </div>
         @endif
 
-        <table class="resume-contact-row">
-            <tr>
-                <td style="text-align: left;">{{ $personal['phone'] ?? '' }}</td>
-                <td style="text-align: center;">{{ $personal['email'] ?? '' }}</td>
-                <td style="text-align: right;">{{ $personal['address'] ?? '' }}</td>
-            </tr>
-        </table>
-    </header>
+        @include('student.resume.partials.pdf-entries', ['items' => $content['certificates'] ?? [], 'heading' => 'Certificates'])
 
-    @php
-        $sections = array_values(array_filter([
-            ! empty($content['objectives']) ? 'about' : null,
-            ! empty($personal['institution']) || $roleLine !== '' ? 'education' : null,
-            ! empty($content['certificates']) ? 'certificates' : null,
-            ! empty($content['portfolios']) ? 'projects' : null,
-            $skillColumns->isNotEmpty() ? 'skills' : null,
-        ]));
-        $lastSection = end($sections);
-    @endphp
-
-    @foreach($sections as $section)
-        <section class="resume-section {{ $section === $lastSection ? 'is-last' : '' }}">
-            @if($section === 'about')
-                <h2>About Me</h2>
-                <p class="resume-summary">{{ $content['objectives'] }}</p>
-
-            @elseif($section === 'education')
-                <h2>Education</h2>
-                <div class="resume-item">
-                    @if(! empty($personal['year_level']))
-                        <span class="resume-item-meta">{{ $personal['institution'] ?? 'Institution' }} | {{ $personal['year_level'] }}</span>
-                    @else
-                        <span class="resume-item-meta">{{ $personal['institution'] ?? 'Institution' }}</span>
-                    @endif
-                    @if(! empty($personal['program']))
-                        <span class="resume-item-title">{{ $personal['program'] }}</span>
-                    @endif
-                </div>
-
-            @elseif($section === 'certificates')
-                <h2>Certifications</h2>
-                @foreach($content['certificates'] as $certificate)
-                    <div class="resume-item">
-                        <span class="resume-item-meta">
-                            {{ $certificate['issuer'] ?? '' }}@if(! empty($certificate['issuer']) && ! empty($certificate['issue_date'])) | @endif{{ $certificate['issue_date'] ?? '' }}
-                        </span>
-                        <span class="resume-item-title">{{ $certificate['title'] }}</span>
-                    </div>
-                @endforeach
-
-            @elseif($section === 'projects')
-                <h2>Projects</h2>
-                @foreach($content['portfolios'] as $project)
-                    <div class="resume-item">
-                        @if(! empty($project['type']))
-                            <span class="resume-item-meta">{{ $project['type'] }}</span>
-                        @endif
-                        <span class="resume-item-title">{{ $project['title'] }}</span>
-                        @if(! empty($project['description']))
-                            <p>{{ $project['description'] }}</p>
-                        @endif
-                    </div>
-                @endforeach
-
-            @elseif($section === 'skills')
-                <h2>Skills</h2>
-                <table class="resume-skill-table">
-                    @foreach($skillRows as $row)
-                        <tr>
-                            @foreach($row as $competency)
-                                <td>&bull; {{ $competency['name'] }}@if(! empty($competency['level'])) <span style="color: #666666;">({{ $competency['level'] }})</span>@endif</td>
-                            @endforeach
-                            @for($i = $row->count(); $i < 3; $i++)
-                                <td></td>
-                            @endfor
-                        </tr>
+        @foreach($content['awards'] ?? [] as $groupIndex => $group)
+            @foreach($group['awards'] as $awardIndex => $award)
+                @php
+                    // A multi-line title is the old honors paragraph: shown as plain lines that may flow
+                    // across pages, instead of one block that cannot split.
+                    $lines = array_values(array_filter(array_map('trim', preg_split('/\R/u', (string) $award['title'])), 'strlen'));
+                    $isParagraph = count($lines) > 1;
+                @endphp
+                @if($groupIndex === 0 && $awardIndex === 0)<div class="keep"><div class="bar">Honors / awards</div>@endif
+                @if($isParagraph)
+                    @if($awardIndex === 0)<p class="award-group">{{ $group['label'] }}</p>@endif
+                    <p class="award-line">{{ $lines[0] }}</p>
+                    @if($groupIndex === 0 && $awardIndex === 0)</div>@endif
+                    @foreach(array_slice($lines, 1) as $line)
+                        <p class="award-line">{{ $line }}</p>
                     @endforeach
-                </table>
+                    @if(($award['meta'] ?? '') !== '')<p class="entry-meta">{{ $award['meta'] }}</p>@endif
+                @else
+                    <div class="entry">
+                        @if($awardIndex === 0)<p class="award-group">{{ $group['label'] }}</p>@endif
+                        <p class="entry-title">{{ $award['title'] }}</p>
+                        @if(($award['meta'] ?? '') !== '')<p class="entry-meta">{{ $award['meta'] }}</p>@endif
+                    </div>
+                    @if($groupIndex === 0 && $awardIndex === 0)</div>@endif
+                @endif
+            @endforeach
+        @endforeach
+
+        @foreach($entrySections as $key => $heading)
+            @include('student.resume.partials.pdf-entries', ['items' => $content[$key] ?? [], 'heading' => $heading])
+        @endforeach
+
+        <div class="certify">
+            <p>I hereby certify that the above information is true and correct to the best of my knowledge.</p>
+            <div class="signature">
+                <div class="signature-line">Applicant's signature</div>
+            </div>
+            @if($generatedAt)
+                <p class="generated">Generated {{ $generatedAt->format('M d, Y h:i A') }} (Philippine time)</p>
             @endif
-        </section>
-    @endforeach
+        </div>
+    </div>
 </body>
 </html>

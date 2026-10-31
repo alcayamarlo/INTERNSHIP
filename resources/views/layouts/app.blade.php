@@ -90,22 +90,7 @@
 
     $userName = $currentUser?->name ?? 'User';
 
-    $userInitial = collect(preg_split('/\s+/', trim($userName)))
-        ->filter()
-        ->map(fn ($part) => mb_substr($part, 0, 1))
-        ->take(2)
-        ->implode('');
-    $userInitial = strtoupper($userInitial ?: 'U');
-
-    $profilePicture = match ($userRole) {
-        UserRole::Student => $currentUser?->student?->profile_picture,
-        UserRole::Coordinator => $currentUser?->coordinator?->profile_picture,
-        UserRole::Employer => $currentUser?->employer?->logo,
-        UserRole::Admin => $currentUser?->avatar,
-        default => null,
-    };
-
-    $profilePictureUrl = \App\Support\PublicFileUrl::relative($profilePicture);
+    $avatar = \App\Support\Avatar::for($currentUser);
 
     $unread = $currentUser?->appNotifications()->whereNull('read_at')->whereNull('archived_at')->count() ?? 0;
 
@@ -117,8 +102,9 @@
                 ['student.profile.edit', 'student.profile.*', 'bi-person-vcard', 'My Profile'],
             ],
             'Career' => [
-                ['student.competencies.index', 'student.competencies.*', 'bi-award', 'Competencies'],
+                ['student.competencies.index', 'student.competencies.*', 'bi-award', 'My Certificates'],
                 ['student.internships.index', ['student.internships.*', 'student.applications.*'], 'bi-briefcase', 'Internships'],
+                ['student.invitations.index', 'student.invitations.*', 'bi-envelope-paper', 'Invitations'],
                 ['student.resume.index', 'student.resume.*', 'bi-file-earmark-person', 'Resume'],
             ],
             'OJT' => [
@@ -134,6 +120,8 @@
                 ['employer.internships.index', 'employer.internships.*', 'bi-briefcase', 'Internships'],
                 ['employer.skills.index', 'employer.skills.*', 'bi-tags', 'Skills Catalog'],
                 ['employer.applicants.index', 'employer.applicants.*', 'bi-people', 'Applicants'],
+                ['employer.students.index', 'employer.students.*', 'bi-search', 'Browse Students'],
+                ['employer.invitations.index', 'employer.invitations.*', 'bi-envelope-paper', 'Sent Invitations'],
             ],
             'OJT' => [
                 ['employer.interns.index', 'employer.interns.*', 'bi-person-workspace', 'Interns'],
@@ -225,13 +213,8 @@
 
     <div class="sb-user-card">
 
-        <div class="sb-user-avatar">
-            @if($profilePictureUrl)
-                <img src="{{ $profilePictureUrl }}" alt="{{ $userName }}" onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
-                <span hidden>{{ $userInitial }}</span>
-            @else
-                {{ $userInitial }}
-            @endif
+        <div class="sb-user-avatar" data-avatar>
+            <x-avatar :avatar="$avatar" :alt="$userName" />
         </div>
 
         <div class="sb-user-info">
@@ -417,13 +400,8 @@
                     aria-label="Account menu for {{ $userName }}"
                 >
 
-                    <span class="sb-profile-avatar">
-                        @if($profilePictureUrl)
-                            <img src="{{ $profilePictureUrl }}" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
-                            <span hidden>{{ $userInitial }}</span>
-                        @else
-                            {{ $userInitial }}
-                        @endif
+                    <span class="sb-profile-avatar" data-avatar>
+                        <x-avatar :avatar="$avatar" />
                     </span>
 
                     <span class="sb-profile-info">

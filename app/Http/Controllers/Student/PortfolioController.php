@@ -64,11 +64,9 @@ class PortfolioController extends Controller
         $student = $this->getStudentProfile();
         $validated = $request->validated();
 
-        $path = $this->fileUpload->upload(
-            $request->file('file'),
-            'portfolios/'.$student->id,
-            (string) $student->id
-        );
+        $path = $request->hasFile('file')
+            ? $this->fileUpload->upload($request->file('file'), 'portfolios/'.$student->id, (string) $student->id)
+            : null;
 
         try {
             $portfolio = DB::transaction(function () use ($student, $validated, $path) {
@@ -78,6 +76,9 @@ class PortfolioController extends Controller
                     'type' => $validated['type'],
                     'category' => $this->categoryForType($validated['type']),
                     'description' => $validated['description'] ?? null,
+                    'tools_used' => $validated['tools_used'] ?? null,
+                    'project_url' => $validated['project_url'] ?? null,
+                    'achievements' => $validated['achievements'] ?? null,
                     'file_path' => $path,
                     'verification_status' => $this->categoryForType($validated['type']) === PortfolioCategory::DeploymentDocument
                         ? 'submitted'
@@ -90,16 +91,41 @@ class PortfolioController extends Controller
                 return $portfolio;
             });
         } catch (\Throwable $exception) {
-            $this->fileUpload->delete($path);
+            if ($path) {
+                $this->fileUpload->delete($path);
+            }
             throw $exception;
         }
+        $student->calculateProfileCompletion();
 
         if ($request->expectsJson()) {
-            return response()->json(['success' => true, 'message' => 'Portfolio item uploaded successfully.']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Portfolio item uploaded successfully.',
+                ...$this->projectListPayload($student),
+            ]);
         }
 
-        return redirect()->to(route('student.profile.edit').'#portfolio')
+        return redirect()->to(route('student.profile.edit').'#'.$this->tabFor($portfolio))
             ->with('success', 'Portfolio item uploaded successfully!');
+    }
+
+    /**
+     * Refreshed Portfolio-tab markup so the profile page can update the project list without a reload.
+     */
+    private function projectListPayload(Student $student): array
+    {
+        return [
+            'html' => view('student.profile.partials.project-list', [
+                'projects' => $student->portfolios()->projects()->latest()->get(),
+            ])->render(),
+            ...ProfileController::completionPayload($student->profileCompletionSummary()),
+        ];
+    }
+
+    private function tabFor(Portfolio $portfolio): string
+    {
+        return $portfolio->category === PortfolioCategory::Project ? 'portfolio' : 'documents';
     }
 
     public function storeDeploymentRequirement(Request $request, DeploymentRequirement $deploymentRequirement)
@@ -111,10 +137,16 @@ class PortfolioController extends Controller
         );
 
         $request->validate([
-            'file' => FileUploadService::documentRules(),
-        ]);
+            'file' => FileUploadService::profileDocumentRules(),
+        ], FileUploadService::profileDocumentMessages());
 
         $student = $this->getStudentProfile();
+        abort_if(
+            $deploymentRequirement->on_request
+                && ! $student->requestedDocuments()->has($deploymentRequirement->code),
+            403,
+            'Upload this ID only when an internship you applied to asks for it.'
+        );
         $existing = $student->deploymentDocuments()
             ->where('deployment_requirement_id', $deploymentRequirement->id)
             ->latest('updated_at')
@@ -158,7 +190,7 @@ class PortfolioController extends Controller
             return response()->json(['success' => true, 'message' => $deploymentRequirement->name.' submitted successfully.']);
         }
 
-        return redirect()->to(route('student.profile.edit').'#portfolio')
+        return redirect()->to(route('student.profile.edit').'#documents')
             ->with('success', $deploymentRequirement->name.' submitted successfully.');
     }
 
@@ -274,7 +306,7 @@ class PortfolioController extends Controller
             return response()->json(['success' => true, 'message' => 'Certificate uploaded successfully.']);
         }
 
-        return redirect()->to(route('student.profile.edit').'#portfolio')
+        return redirect()->to(route('student.profile.edit').'#documents')
             ->with('success', 'Certificate uploaded successfully!');
     }
 
@@ -348,7 +380,7 @@ class PortfolioController extends Controller
             return response()->json(['success' => true, 'message' => 'Certificate updated.']);
         }
 
-        return redirect()->to(route('student.profile.edit').'#portfolio')
+        return redirect()->to(route('student.profile.edit').'#documents')
             ->with('success', 'Certificate updated.');
     }
 
@@ -419,15 +451,18 @@ class PortfolioController extends Controller
             $this->fileUpload->deleteIfUnreferenced($previousPath);
         }
 
+        $portfolio->student->calculateProfileCompletion();
+        $tab = $this->tabFor($portfolio->fresh());
+
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => 'Portfolio item updated successfully!',
-                'redirect_url' => route('student.profile.edit').'#portfolio',
+                'redirect_url' => route('student.profile.edit').'#'.$tab,
             ]);
         }
 
-        return redirect()->to(route('student.profile.edit').'#portfolio')
+        return redirect()->to(route('student.profile.edit').'#'.$tab)
             ->with('success', 'Portfolio item updated successfully!');
     }
 
@@ -437,6 +472,8 @@ class PortfolioController extends Controller
 
         $portfolioId = $portfolio->id;
         $path = $portfolio->file_path;
+        $tab = $this->tabFor($portfolio);
+        $student = $portfolio->student;
 
         DB::transaction(function () use ($portfolio, $portfolioId) {
             $portfolio->delete();
@@ -444,12 +481,17 @@ class PortfolioController extends Controller
         });
 
         $this->fileUpload->deleteIfUnreferenced($path);
+        $student->calculateProfileCompletion();
 
         if (request()->expectsJson()) {
-            return response()->json(['success' => true, 'message' => 'Portfolio item deleted successfully!']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Portfolio item deleted successfully!',
+                ...($tab === 'portfolio' ? $this->projectListPayload($student) : []),
+            ]);
         }
 
-        return redirect()->to(route('student.profile.edit').'#portfolio')
+        return redirect()->to(route('student.profile.edit').'#'.$tab)
             ->with('success', 'Portfolio item deleted successfully!');
     }
 
@@ -470,7 +512,7 @@ class PortfolioController extends Controller
             return response()->json(['success' => true, 'message' => 'Certificate deleted successfully!']);
         }
 
-        return redirect()->to(route('student.profile.edit').'#portfolio')
+        return redirect()->to(route('student.profile.edit').'#documents')
             ->with('success', 'Certificate deleted successfully!');
     }
 

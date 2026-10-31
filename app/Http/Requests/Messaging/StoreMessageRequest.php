@@ -2,10 +2,10 @@
 
 namespace App\Http\Requests\Messaging;
 
-use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 
 class StoreMessageRequest extends FormRequest
 {
@@ -35,16 +35,17 @@ class StoreMessageRequest extends FormRequest
         ];
     }
 
+    /** 403 with the specific reason from MessagingEligibility (e.g. the application is not Reviewed yet). */
     protected function failedAuthorization(): void
     {
         $recipient = $this->route('user');
         $sender = $this->user();
 
-        if ($recipient instanceof User
-            && $sender instanceof User
-            && $sender->isRole(UserRole::Student)
-            && $recipient->isRole(UserRole::Student)) {
-            throw new AuthorizationException('Students cannot message other students.');
+        if ($recipient instanceof User && $sender instanceof User) {
+            $reason = Gate::forUser($sender)->inspect('message.send', $recipient)->message();
+            if ($reason) {
+                throw new AuthorizationException($reason);
+            }
         }
 
         parent::failedAuthorization();

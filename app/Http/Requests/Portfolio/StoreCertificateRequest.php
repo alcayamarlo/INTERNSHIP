@@ -20,7 +20,7 @@ class StoreCertificateRequest extends FormRequest
             'issuer' => ['nullable', 'string', 'max:255'],
             'issue_date' => ['nullable', 'date', 'before_or_equal:today'],
             'expiration_date' => ['nullable', 'date', 'after_or_equal:issue_date'],
-            'file' => FileUploadService::documentRules(),
+            'file' => FileUploadService::profileDocumentRules(),
         ];
     }
 
@@ -29,8 +29,9 @@ class StoreCertificateRequest extends FormRequest
         return [
             'title.required' => 'Certificate title is required.',
             'file.required' => 'Please upload a certificate file.',
-            'file.mimes' => 'Allowed file types: PDF, DOC, DOCX, JPG, JPEG, PNG.',
-            'file.max' => 'File size must not exceed 10MB.',
+            'file.mimes' => 'Upload a PDF, JPG, or PNG file.',
+            'file.mimetypes' => 'Upload a PDF, JPG, or PNG file.',
+            'file.max' => 'The file must be 5 MB or smaller.',
         ];
     }
 }

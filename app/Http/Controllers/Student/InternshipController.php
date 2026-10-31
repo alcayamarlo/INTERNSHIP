@@ -99,8 +99,13 @@ class InternshipController extends Controller
             ->first();
         $eligibilityReasons = $this->eligibility->reasons($student);
         $resumes = $student->resumes()->latest()->get();
+        $requestedDocumentNames = \App\Models\DeploymentRequirement::onRequest()
+            ->whereIn('code', $internship->requested_documents ?? [])
+            ->orderBy('sort_order')
+            ->pluck('name');
+        $needsCharacterReference = $internship->requires_character_reference && ! $student->characterReferences()->exists();
 
-        return view('student.internships.show', compact('internship', 'matchPercentage', 'matchDetails', 'hasApplied', 'recommendationFeedback', 'eligibilityReasons', 'resumes'));
+        return view('student.internships.show', compact('internship', 'matchPercentage', 'matchDetails', 'hasApplied', 'recommendationFeedback', 'eligibilityReasons', 'resumes', 'requestedDocumentNames', 'needsCharacterReference'));
     }
 
     public function storeRecommendationFeedback(Request $request, Internship $internship)
@@ -197,7 +202,7 @@ class InternshipController extends Controller
     public function showApplication(InternshipApplication $application)
     {
         $this->authorize('view', $application);
-        $application->load(['internship.employer', 'statusHistory.actor']);
+        $application->load(['internship.employer.user', 'statusHistory.actor']);
         return view('student.internships.application-show', compact('application'));
     }
 

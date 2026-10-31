@@ -12,9 +12,10 @@ class NotificationService
 {
     /**
      * The in-app notification is always written immediately so the bell never
-     * depends on a queue worker; $queue only controls how the email is sent.
+     * depends on a queue worker; $queue only controls how the email is sent,
+     * and $email: false keeps it to the bell only.
      */
-    public function send(User $user, string $type, string $title, string $message, array $data = [], bool $queue = true): AppNotification
+    public function send(User $user, string $type, string $title, string $message, array $data = [], bool $queue = true, bool $email = true): AppNotification
     {
         $notification = AppNotification::create([
             'user_id' => $user->id,
@@ -30,6 +31,10 @@ class NotificationService
             // Broadcasting is additive; the in-app row above already exists
             // regardless of whether a live push succeeds (e.g. no Pusher keys).
             report($exception);
+        }
+
+        if (! $email) {
+            return $notification;
         }
 
         if ($queue) {

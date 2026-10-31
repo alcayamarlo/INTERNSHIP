@@ -99,7 +99,7 @@ it('stores a real portfolio file and allows a coordinator to review it', functio
     // Certificates and competencies no longer show a verification status badge to
     // students at all (precisely covered in StudentProfilePortfolioSummaryTest);
     // here we just confirm they still display.
-    $this->get(route('student.profile.edit'))
+    $this->get(route('student.competencies.index'))
         ->assertOk()
         ->assertSee('Verified Student Certificate');
 

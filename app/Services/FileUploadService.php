@@ -46,6 +46,30 @@ class FileUploadService
         return $required ? array_merge(['required'], $rules) : array_merge(['nullable'], $rules);
     }
 
+    /** Documents-tab uploads (requirements, IDs, certificates): PDF, JPG or PNG up to 5 MB. */
+    public const MAX_PROFILE_DOCUMENT_KB = 5120;
+
+    public static function profileDocumentRules(bool $required = true): array
+    {
+        return [
+            $required ? 'required' : 'nullable',
+            'file',
+            'mimes:pdf,jpg,jpeg,png',
+            'mimetypes:application/pdf,image/jpeg,image/png',
+            'max:'.self::MAX_PROFILE_DOCUMENT_KB,
+        ];
+    }
+
+    public static function profileDocumentMessages(string $field = 'file'): array
+    {
+        return [
+            $field.'.required' => 'Choose a file to upload.',
+            $field.'.mimes' => 'Upload a PDF, JPG, or PNG file.',
+            $field.'.mimetypes' => 'Upload a PDF, JPG, or PNG file.',
+            $field.'.max' => 'The file must be 5 MB or smaller.',
+        ];
+    }
+
     /**
      * Validation rules for image uploads (profile pictures, logos).
      *
@@ -120,6 +144,7 @@ class FileUploadService
         }
 
         if (Certificate::where('file_path', $path)->exists()
+            || \App\Models\StudentCompetency::where('evidence_path', $path)->exists()
             || Portfolio::where('file_path', $path)->exists()
             || Resume::where('file_path', $path)->exists()) {
             return;

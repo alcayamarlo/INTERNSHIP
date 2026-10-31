@@ -40,6 +40,10 @@ class DashboardController extends Controller
                 ->get();
         });
 
+        $companyProfile = app(\App\Services\CompanyVisibleProfile::class);
+        $recentApplications->each(fn (InternshipApplication $application) => $application
+            ->setAttribute('company_profile', $companyProfile->summary($application->student)));
+
         $applicationStats = [
             'total' => $allApplications->count(),
             'submitted' => $allApplications->whereIn('status', [ApplicationStatus::Applied, ApplicationStatus::Submitted])->count(),

@@ -2,63 +2,52 @@
 
 namespace App\Services;
 
-use App\Enums\CompetencyCategory;
 use App\Enums\ProficiencyLevel;
 use App\Models\Student;
 use App\Models\StudentCompetency;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Data for the My Certificates page (stored as student_competencies). The chart axes come
+ * from config('competencies.groups'): Technical / Soft skills by skill type, Certificates by type.
+ */
 class StudentCompetencyOverviewService
 {
     public function forStudent(Student $student, ?string $categoryFilter = null): array
     {
-        $competencies = $student->competencies()->orderBy('name')->get();
+        $competencies = $student->competencies()->with('learnedSkills')->orderBy('name')->get();
         $groups = config('competencies.groups', []);
-        $categoryGroups = $this->categoryGroups($groups);
         $skills = $competencies
-            ->map(fn (StudentCompetency $competency) => $this->presentSkill($competency, $categoryGroups))
+            ->map(fn (StudentCompetency $competency) => $this->presentSkill($competency, $groups))
             ->values();
 
-        $unmappedCategorySkills = $skills->filter(fn (array $skill) => $skill['group_key'] === null);
-        $unmappedCategories = $unmappedCategorySkills
-            ->pluck('category_key')
-            ->unique()
-            ->values()
-            ->all();
-
-        foreach ($unmappedCategorySkills as $skill) {
-            Log::warning('Unmapped student competency category in overview scoring.', [
+        $unmappedSkills = $skills->filter(fn (array $skill) => $skill['group_keys'] === []);
+        foreach ($unmappedSkills as $skill) {
+            Log::warning('Certificate has no chart group in overview scoring.', [
                 'student_id' => $student->id,
                 'skill_id' => $skill['id'],
-                'category' => $skill['category_key'],
+                'skill_type' => $skill['skill_type_key'],
+                'category' => $skill['legacy_category'],
             ]);
         }
 
         $defaultTarget = (int) config('competencies.default_target', 4);
         $targets = config('competencies.targets', []);
         $groupStats = collect($groups)
-            ->mapWithKeys(function (array $group, string $key) use ($skills, $targets, $defaultTarget): array {
-                $members = $skills
-                    ->where('group_key', $key)
-                    ->values();
-
-                return [
-                    $key => $this->scoreSet(
-                        $key,
-                        $group['label'],
-                        $members,
-                        (int) ($targets[$key] ?? $defaultTarget)
-                    ),
-                ];
-            })
+            ->mapWithKeys(fn (array $group, string $key): array => [
+                $key => $this->scoreSet(
+                    $key,
+                    $group['label'],
+                    $skills->filter(fn (array $skill) => in_array($key, $skill['group_keys'], true))->values(),
+                    (int) ($targets[$key] ?? $defaultTarget)
+                ),
+            ])
             ->all();
 
-        $selectedSkills = $skills->filter(function (array $skill) use ($categoryFilter): bool {
-            return ! $categoryFilter
-                || $skill['category_key'] === $categoryFilter
-                || $skill['group_key'] === $categoryFilter;
-        })->values();
+        $selectedSkills = $skills->filter(fn (array $skill): bool => ! $categoryFilter
+            || in_array($categoryFilter, $skill['group_keys'], true)
+            || ($categoryFilter === '__other' && $skill['group_keys'] === []))->values();
 
         $averagePoints = $selectedSkills->isEmpty()
             ? null
@@ -75,33 +64,62 @@ class StudentCompetencyOverviewService
                 'level_label' => $this->levelLabel($averagePoints),
                 'counted_skill_count' => $selectedSkills->count(),
             ],
-            'unmapped_categories' => $unmappedCategories,
+            'unmapped_categories' => $unmappedSkills->pluck('legacy_category')->unique()->values()->all(),
         ];
     }
 
-    private function presentSkill(StudentCompetency $competency, array $categoryGroups): array
+    private function presentSkill(StudentCompetency $competency, array $groups): array
     {
-        $categoryKey = (string) $competency->getRawOriginal('category');
-        $category = CompetencyCategory::tryFrom($categoryKey);
-        $proficiencyKey = (string) $competency->getRawOriginal('proficiency_level');
-        $proficiency = ProficiencyLevel::tryFrom($proficiencyKey);
-        $categoryLabel = $category?->label() ?? ($categoryKey === '' ? 'Other' : ucfirst(str_replace('_', ' ', $categoryKey)));
+        $proficiency = $competency->proficiency_level;
+        $groupKeys = collect($groups)
+            ->filter(fn (array $group) => in_array(
+                (string) $competency->getRawOriginal($group['field'] ?? ''),
+                $group['values'] ?? [],
+                true
+            ))
+            ->keys()
+            ->values()
+            ->all();
+        $learnedSkills = $competency->learnedSkills->pluck('name')->values()->all();
 
         return [
             'id' => $competency->id,
             'name' => $competency->name,
-            'category_key' => $categoryKey,
-            'category_label' => $categoryLabel,
-            'group_key' => $categoryGroups[$categoryKey] ?? null,
+            'type_key' => $competency->certificate_type?->value,
+            'type_label' => $competency->certificate_type?->label() ?? 'Certificate',
+            'skill_type_key' => $competency->skill_type?->value,
+            'skill_type_label' => $competency->skill_type?->label(),
+            // Kept for older readers of this payload.
+            'category_key' => $competency->certificate_type?->value,
+            'category_label' => $competency->certificate_type?->label() ?? 'Certificate',
+            'group_key' => $competency->skill_type?->value,
+            'legacy_category' => (string) $competency->getRawOriginal('category'),
+            'group_keys' => $groupKeys,
             'proficiency_key' => $proficiency?->value,
             'proficiency_label' => $proficiency?->label() ?? 'Unknown',
             'proficiency_points' => $proficiency?->score() ?? 0,
+            'learned_skills' => $learnedSkills,
             'evidence_filename' => $competency->evidence_name
                 ?: ($competency->evidence_path ? basename($competency->evidence_path) : null),
+            'file_url' => $competency->evidence_path ? route('student.competencies.file', $competency, false) : null,
+            'show_url' => route('student.competencies.show', $competency, false),
+            'update_url' => route('student.competencies.update', $competency, false),
+            'delete_url' => route('student.competencies.destroy', $competency, false),
             'description' => $competency->description,
-            'assessment_name' => $competency->assessment_name,
             'issuing_organization' => $competency->issuing_organization,
             'obtained_at' => $competency->obtained_at?->toDateString(),
+            // Prefills the wizard when editing.
+            'form' => [
+                'certificate_type' => $competency->certificate_type?->value,
+                'name' => $competency->name,
+                'skill_type' => $competency->skill_type?->value,
+                'proficiency_level' => $proficiency?->value,
+                'skills' => $learnedSkills,
+                'issuing_organization' => $competency->issuing_organization,
+                'obtained_at' => $competency->obtained_at?->toDateString(),
+                'description' => $competency->description,
+                'evidence_name' => $competency->evidence_name ?: ($competency->evidence_path ? basename($competency->evidence_path) : null),
+            ],
         ];
     }
 
@@ -115,6 +133,7 @@ class StudentCompetencyOverviewService
             'target' => $target,
             'score' => $this->percentage($skills, $safeTarget),
             'count' => $skills->count(),
+            'points' => (int) $skills->sum('proficiency_points'),
         ];
     }
 
@@ -125,18 +144,6 @@ class StudentCompetencyOverviewService
         }
 
         return min(1.0, (float) $skills->sum('proficiency_points') / ($target * 100)) * 100;
-    }
-
-    private function categoryGroups(array $groups): array
-    {
-        $categoryGroups = [];
-        foreach ($groups as $groupKey => $group) {
-            foreach ($group['categories'] ?? [] as $category) {
-                $categoryGroups[$category] = $groupKey;
-            }
-        }
-
-        return $categoryGroups;
     }
 
     private function levelLabel(?float $averagePoints): string

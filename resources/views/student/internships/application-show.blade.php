@@ -5,6 +5,12 @@
 @section('content')
 <x-breadcrumbs :items="[['label' => 'Dashboard', 'url' => route('student.dashboard')], ['label' => 'Internships', 'url' => route('student.internships.index')], ['label' => 'My Applications', 'url' => route('student.applications.index')], ['label' => $application->internship->title]]" />
 <x-page-header title="Application Details" :subtitle="$application->internship->title">
+    @php($companyUser = $application->internship->employer?->user)
+    @if($companyUser)
+        @can('message.send', $companyUser)
+            <a href="{{ route('messages.show', $companyUser) }}" class="btn btn-primary"><i class="bi bi-chat-dots" aria-hidden="true"></i> Message company</a>
+        @endcan
+    @endif
     <a href="{{ route('student.applications.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to applications</a>
 </x-page-header>
 <div class="card"><div class="card-body">

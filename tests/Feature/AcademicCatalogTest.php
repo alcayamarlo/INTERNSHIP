@@ -284,6 +284,7 @@ it('saves school academic fields against the selected program and major', functi
 
     $this->actingAs($user)
         ->putJson(route('student.profile.update'), [
+            ...bioDataDefaults(),
             'first_name' => 'Cecilia',
             'middle_name' => '',
             'last_name' => 'Student',
@@ -369,6 +370,7 @@ it('only accepts configured student ID patterns and majors belonging to the sele
 
     $this->actingAs($studentUser)
         ->putJson(route('student.profile.update'), [
+            ...bioDataDefaults(),
             'first_name' => 'Cecilia',
             'middle_name' => '',
             'last_name' => 'Student',
@@ -399,6 +401,7 @@ it('accepts the configured student ID example and rejects an incorrect digit cou
 
     $response = $this->actingAs($user)
         ->putJson(route('student.profile.update'), [
+            ...bioDataDefaults(),
             'first_name' => 'Cecilia',
             'last_name' => 'Student',
             'email' => $user->email,
@@ -427,6 +430,7 @@ it('accepts student IDs with any two-digit year and normalizes their case and wh
 
     $this->actingAs($user)
         ->putJson(route('student.profile.update'), [
+            ...bioDataDefaults(),
             'first_name' => 'Cecilia',
             'last_name' => 'Student',
             'email' => $user->email,
@@ -488,6 +492,7 @@ it('rejects student IDs with a wrong prefix or digit count', function (string $s
 
     $this->actingAs($user)
         ->putJson(route('student.profile.update'), [
+            ...bioDataDefaults(),
             'first_name' => 'Cecilia',
             'last_name' => 'Student',
             'email' => $user->email,
@@ -522,6 +527,7 @@ it('rejects a duplicate student ID with a clear validation message', function ()
 
     $this->actingAs($user)
         ->putJson(route('student.profile.update'), [
+            ...bioDataDefaults(),
             'first_name' => 'Cecilia',
             'last_name' => 'Student',
             'email' => $user->email,
@@ -542,6 +548,7 @@ it('saves blank GWA as null and renders the field empty', function (mixed $gwa) 
 
     $this->actingAs($user)
         ->putJson(route('student.profile.update'), [
+            ...bioDataDefaults(),
             'first_name' => 'Cecilia',
             'last_name' => 'Student',
             'email' => $user->email,
@@ -571,6 +578,7 @@ it('accepts GWA values on the confirmed 1-to-5 scale with at most two decimal pl
 
     $this->actingAs($user)
         ->putJson(route('student.profile.update'), [
+            ...bioDataDefaults(),
             'first_name' => 'Cecilia',
             'last_name' => 'Student',
             'email' => $user->email,
@@ -602,6 +610,7 @@ it('rejects GWA values outside the confirmed scale or with more than two decimal
 
     $this->actingAs($user)
         ->putJson(route('student.profile.update'), [
+            ...bioDataDefaults(),
             'first_name' => 'Cecilia',
             'last_name' => 'Student',
             'email' => $user->email,
@@ -634,6 +643,7 @@ it('allows a student to save other profile fields without changing an existing l
 
     $this->actingAs($user)
         ->putJson(route('student.profile.update'), [
+            ...bioDataDefaults(),
             'first_name' => 'Cecilia',
             'last_name' => 'Student',
             'email' => $user->email,
@@ -662,6 +672,7 @@ it('allows a student to replace a legacy ID with a valid normalized ID', functio
 
     $this->actingAs($user)
         ->putJson(route('student.profile.update'), [
+            ...bioDataDefaults(),
             'first_name' => 'Cecilia',
             'last_name' => 'Student',
             'email' => $user->email,
@@ -688,6 +699,7 @@ it('rejects changing a legacy ID to another invalid ID', function () {
 
     $this->actingAs($user)
         ->putJson(route('student.profile.update'), [
+            ...bioDataDefaults(),
             'first_name' => 'Cecilia',
             'last_name' => 'Student',
             'email' => $user->email,
@@ -719,6 +731,7 @@ it('shows and clears the correction notice as a student corrects a legacy ID', f
     expect($matches[0] ?? '')->not->toContain('hidden');
 
     $this->putJson(route('student.profile.update'), [
+            ...bioDataDefaults(),
         'first_name' => 'Cecilia',
         'last_name' => 'Student',
         'email' => $user->email,
@@ -755,6 +768,7 @@ it('does not show the correction notice for a valid earlier-year student ID', fu
     expect($matches[0] ?? '')->toContain('hidden');
 
     $this->putJson(route('student.profile.update'), [
+            ...bioDataDefaults(),
         'first_name' => 'Cecilia',
         'last_name' => 'Student',
         'email' => $user->email,

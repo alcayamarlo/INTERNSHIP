@@ -24,6 +24,8 @@ class Internship extends Model
         'location',
         'status',
         'expires_at',
+        'requires_character_reference',
+        'requested_documents',
     ];
 
     protected function casts(): array
@@ -32,6 +34,8 @@ class Internship extends Model
             'work_setup' => WorkSetup::class,
             'allowance' => 'decimal:2',
             'expires_at' => 'datetime',
+            'requires_character_reference' => 'boolean',
+            'requested_documents' => 'array',
         ];
     }
 

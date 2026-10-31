@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AcademicSetting;
 use App\Models\Student;
+use Illuminate\Database\Eloquent\Builder;
 
 class InternshipEligibility
 {
@@ -21,5 +22,15 @@ class InternshipEligibility
         }
 
         return $reasons;
+    }
+
+    /** The same rules as reasons(), as a query filter on students. */
+    public function constrain(Builder $students): Builder
+    {
+        $settings = AcademicSetting::current();
+
+        return $students
+            ->when($settings->require_fourth_year_standing, fn (Builder $query) => $query->where('year_level', '4th Year'))
+            ->when($settings->require_major_subjects_passed, fn (Builder $query) => $query->where('major_subjects_passed', true));
     }
 }

@@ -26,6 +26,7 @@ class UpdatePortfolioRequest extends FormRequest
             'type' => ['required', Rule::enum(PortfolioType::class)],
             'description' => ['nullable', 'string', 'max:1000'],
             'file' => FileUploadService::documentRules(required: false),
+            ...StorePortfolioRequest::projectRules(),
         ];
     }
 

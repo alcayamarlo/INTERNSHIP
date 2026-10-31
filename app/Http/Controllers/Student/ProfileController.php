@@ -8,17 +8,24 @@ use App\Enums\PortfolioType;
 use App\Enums\PortfolioCategory;
 use App\Models\Certificate;
 use App\Models\DeploymentRequirement;
+use App\Enums\AwardLevel;
+use App\Enums\SkillLevel;
 use App\Models\AcademicSetting;
+use App\Models\CharacterReference;
+use App\Models\StudentAward;
+use App\Models\StudentSkill;
 use App\Models\Portfolio;
 use App\Models\Program;
 use App\Models\Resume;
 use App\Models\Student;
 use App\Services\ActivityLogService;
 use App\Services\FileUploadService;
+use App\Services\ImageProcessor;
 use App\Services\ResumeBuilderService;
 use App\Services\AcademicCalendar;
+use App\Support\Avatar;
+use App\Support\PrivacyConsent;
 use App\Support\StudentIdFormat;
-use App\Support\PublicFileUrl;
 use App\View\Presenters\PortfolioItemPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,6 +35,9 @@ use App\Support\UploadDisks;
 
 class ProfileController extends Controller
 {
+    /** Profile photos are saved as square JPEGs of this size. */
+    public const PROFILE_PHOTO_SIZE = 400;
+
     public function __construct(
         private ActivityLogService $activityLog,
         private FileUploadService $fileUpload,
@@ -48,9 +58,9 @@ class ProfileController extends Controller
         $academicSettings = AcademicSetting::current();
         $academicCalendar = app(AcademicCalendar::class);
         $academicDefaults = $academicCalendar->defaults(settings: $academicSettings);
-        $program = $student->academicProgram;
-        $requiredInternshipHours = $program?->required_internship_hours;
-        $renderedInternshipHours = (int) $student->rendered_internship_hours;
+        $internshipHours = $student->internshipHours();
+        $requiredInternshipHours = $internshipHours['required'];
+        $renderedInternshipHours = $internshipHours['rendered'];
         $internshipHoursProgress = $requiredInternshipHours
             ? min(100, (int) round(($renderedInternshipHours / $requiredInternshipHours) * 100))
             : 0;
@@ -73,6 +83,7 @@ class ProfileController extends Controller
             ->orderByDesc('generated_at')
             ->get();
         $latestResume = $allResumes->first();
+        $requestedDocuments = $student->requestedDocuments();
         $deploymentRequirements = DeploymentRequirement::active()
             ->with(['portfolios' => fn ($query) => $query
                 ->where('student_id', $student->id)
@@ -80,7 +91,9 @@ class ProfileController extends Controller
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get()
-            ->map(function (DeploymentRequirement $requirement) use ($latestResume) {
+            ->reject(fn (DeploymentRequirement $requirement) => $requirement->on_request
+                && ! $requestedDocuments->has($requirement->code))
+            ->map(function (DeploymentRequirement $requirement) use ($latestResume, $requestedDocuments) {
                 $document = $requirement->portfolios->first();
                 if ($requirement->upload_source === DeploymentRequirement::SOURCE_SYSTEM) {
                     $document = $requirement->code === 'resume' ? $latestResume : null;
@@ -99,8 +112,10 @@ class ProfileController extends Controller
                     'requirement' => $requirement,
                     'document' => $document,
                     'status' => $status,
+                    'requested_by' => $requestedDocuments->get($requirement->code, collect()),
                 ];
-            });
+            })
+            ->values();
         $certificateFiles = $allCertificates
             ->filter(fn (Certificate $certificate) => filled($certificate->file_path))
             ->map(fn (Certificate $certificate) => $certificate->title.'|'.$certificate->file_path)
@@ -145,11 +160,33 @@ class ProfileController extends Controller
         return view('student.profile.edit', [
             'student' => $student,
             'profileCompletion' => $profileCompletion,
+            'hasPrivacyConsent' => $student->hasPrivacyConsent(),
+            'privacyStatement' => PrivacyConsent::STATEMENT,
+            'civilStatuses' => StudentProfileRequest::CIVIL_STATUSES,
+            'studentSkills' => $student->studentSkills()->with('skill')->orderBy('id')->get(),
+            'certifiedSkillNames' => $student->certifiedCompetencyNames(),
+            'maxSkills' => StudentSkill::MAX_PER_STUDENT,
+            'skillLevels' => SkillLevel::cases(),
+            'experiences' => $student->experiences()->orderByDesc('is_current')->orderByDesc('start_date')->get(),
+            'projects' => $student->portfolios()->projects()->latest()->get(),
+            'references' => $student->characterReferences()->orderBy('id')->get(),
+            'maxReferences' => CharacterReference::MAX_PER_STUDENT,
+            'awardGroups' => StudentAward::grouped($awards = $student->awards()->get()),
+            'awardLevels' => AwardLevel::selectable(),
+            'hasOtherAward' => $awards->contains(fn (StudentAward $award) => $award->level === AwardLevel::Other),
+            'latestResume' => $latestResume,
+            // Certificates now live in My Certificates; the Documents tab keeps resumes and required documents.
+            'documentItems' => $portfolioItems
+                ->reject(fn (array $item) => $item['type_key'] === PortfolioType::Project->value || $item['is_certificate'])
+                ->values(),
+            'profileCertificates' => $student->competencies()->with('learnedSkills')->orderBy('name')->get(),
+            'certificatesNeedingDetails' => $student->certificates()->whereNull('student_competency_id')->count(),
             'studentIdNeedsCorrection' => $student->studentIdNeedsCorrection(),
             'profileVerified' => $student->profile_verified_at !== null,
             'requiredInternshipHours' => $requiredInternshipHours,
             'renderedInternshipHours' => $renderedInternshipHours,
             'internshipHoursProgress' => $internshipHoursProgress,
+            'hoursFromOjt' => $internshipHours['from_ojt'],
             'studentChangeRequests' => $student->changeRequests()->latest()->get(),
             'user' => $user,
             'programs' => $programs,
@@ -187,68 +224,56 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the student's profile.
-     * Handles personal, contact, academic, career, and profile picture updates.
+     * Saves the tab named by profile_section (personal, contact, academic), or all three when it is absent.
      */
     public function update(StudentProfileRequest $request)
     {
         $student = Auth::user()->student()->firstOrCreate([], ['profile_completion' => 0]);
         $user = Auth::user();
         $validated = $request->validated();
-        $selectedProgram = ! empty($validated['program_id'])
-            ? Program::with('coordinator.user')->findOrFail($validated['program_id'])
-            : null;
-        $selectedProgramName = $selectedProgram?->display_name ?? ($validated['program'] ?? null);
+        $sections = $request->sections();
 
         $previousPicture = $student->profile_picture;
         $newPicture = null;
 
         if ($request->hasFile('profile_picture')) {
-            $newPicture = $this->fileUpload->uploadImage(
+            $newPicture = app(ImageProcessor::class)->storeSquare(
                 $request->file('profile_picture'),
+                'profile_picture',
                 'profiles/students',
-                (string) $student->id
+                UploadDisks::public(),
+                self::PROFILE_PHOTO_SIZE
             );
             $validated['profile_picture'] = $newPicture;
         }
 
         try {
-            DB::transaction(function () use ($validated, $user, $student, $newPicture, $selectedProgram, $selectedProgramName) {
-                $user->update([
-                    'name' => trim(implode(' ', array_filter([$validated['first_name'], $validated['middle_name'] ?? null, $validated['last_name'], $validated['suffix'] ?? null]))),
-                    'email' => $validated['email'],
-                    'phone' => $validated['phone'],
-                ]);
+            DB::transaction(function () use ($request, $validated, $sections, $user, $student, $newPicture) {
+                PrivacyConsent::record($student);
+                $userUpdates = [];
+                $studentUpdates = $newPicture ? ['profile_picture' => $newPicture] : [];
 
-                $student->update([
-                    'profile_picture' => $newPicture ?? $student->profile_picture,
-                    'first_name' => $validated['first_name'],
-                    'last_name' => $validated['last_name'],
-                    'address' => $validated['address'],
-                    'date_of_birth' => $validated['date_of_birth'] ?? null,
-                    'student_id_number' => $validated['student_number'] ?? null,
-                    'program_id' => $selectedProgram?->id,
-                    'major_id' => $selectedProgram ? ($validated['major_id'] ?? null) : null,
-                    'program' => $selectedProgramName,
-                    'year_level' => $validated['year_level'] ?? null,
-                    'career_objectives' => $validated['career_objectives'] ?? null,
-                    'middle_name' => $validated['middle_name'] ?? null,
-                    'suffix' => $validated['suffix'] ?? null,
-                    'gender' => $validated['gender'] ?? null,
-                    'city' => $validated['city'] ?? null,
-                    'province' => $validated['province'] ?? null,
-                    'zip_code' => $validated['zip_code'] ?? null,
-                    'department' => $validated['department'] ?? null,
-                    'expected_graduation' => $validated['expected_graduation'] ?? null,
-                    'section' => $validated['section'] ?? null,
-                    'school_year' => $validated['school_year'] ?? null,
-                    'semester' => $validated['semester'] ?? null,
-                    'enrollment_status' => $validated['enrollment_status'] ?? null,
-                    'gwa' => $validated['gwa'] ?? null,
-                    'preferred_internship_field' => $validated['preferred_internship_field'] ?? null,
-                    'preferred_work_setup' => $validated['preferred_work_setup'] ?? null,
-                    'preferred_location' => $validated['preferred_location'] ?? null,
-                ]);
+                if (in_array('personal', $sections, true)) {
+                    $userUpdates['name'] = trim(implode(' ', array_filter([$validated['first_name'], $validated['middle_name'] ?? null, $validated['last_name'], $validated['suffix'] ?? null])));
+                    $studentUpdates += $this->personalAttributes($request, $validated);
+                }
+
+                if (in_array('contact', $sections, true)) {
+                    $userUpdates['email'] = $validated['email'];
+                    $userUpdates['phone'] = $validated['phone'];
+                    $studentUpdates += collect(self::CONTACT_FIELDS)
+                        ->mapWithKeys(fn (string $field) => [$field => $validated[$field] ?? null])
+                        ->all();
+                }
+
+                if (in_array('academic', $sections, true)) {
+                    $studentUpdates += $this->academicAttributes($validated);
+                }
+
+                if ($userUpdates !== []) {
+                    $user->update($userUpdates);
+                }
+                $student->update($studentUpdates);
 
                 $student->calculateProfileCompletion();
                 $this->activityLog->log($user, 'profile_update', ['role' => 'student']);
@@ -261,7 +286,8 @@ class ProfileController extends Controller
             throw $exception;
         }
 
-        if ($previousPicture && $previousPicture !== $newPicture) {
+        // Only a photo that was actually replaced is deleted; saving a tab without a photo keeps it.
+        if ($newPicture && $previousPicture && $previousPicture !== $newPicture) {
             $this->fileUpload->delete($previousPicture);
         }
 
@@ -280,24 +306,137 @@ class ProfileController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'message' => 'Profile saved',
-                'profile_completion' => $profileCompletion['percentage'],
-                'remaining_steps' => $profileCompletion['remaining_steps'],
-                'missing_steps' => $profileCompletion['missing_steps'],
+                ...self::completionPayload($profileCompletion),
                 'student_id_number' => $freshStudent->student_id_number,
                 'student_id_needs_correction' => $freshStudent->studentIdNeedsCorrection(),
             ]);
         }
 
-        return redirect()->route('student.profile.edit')
+        return redirect()->to(route('student.profile.edit').'#'.(count($sections) === 1 ? $sections[0] : 'personal'))
             ->with('success', 'Profile saved');
     }
 
-    public function updatePicture(\Illuminate\Http\Request $request)
+    public function consent(Request $request)
     {
-        $request->validate(['profile_picture' => FileUploadService::imageRules(true)]);
+        $request->validate(['privacy_consent' => ['accepted']], [
+            'privacy_consent.accepted' => PrivacyConsent::REQUIRED_MESSAGE,
+        ]);
+        $student = Auth::user()->student()->firstOrCreate([], ['profile_completion' => 0]);
+        PrivacyConsent::record($student);
+        $this->activityLog->log(Auth::user(), 'privacy_consent', ['role' => 'student']);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Privacy consent recorded.',
+                'privacy_consent_at' => $student->fresh()->privacy_consent_at?->format('M d, Y g:i A'),
+            ]);
+        }
+
+        return back()->with('success', 'Privacy consent recorded.');
+    }
+
+    /** "Allow companies to find my profile" (Browse Students and invitations). */
+    public function discoverable(Request $request)
+    {
+        $validated = $request->validate(['discoverable' => ['required', 'boolean']]);
+        $student = Auth::user()->student;
+        abort_unless($student, 404);
+
+        if ($validated['discoverable'] && ! $student->hasPrivacyConsent()) {
+            return redirect()->to(route('student.profile.edit').'#personal')
+                ->with('error', 'Agree to the privacy statement first so companies can find your profile.');
+        }
+
+        $student->update(['discoverable' => (bool) $validated['discoverable']]);
+        $this->activityLog->log(Auth::user(), 'profile_discoverable', ['discoverable' => (bool) $validated['discoverable']]);
+
+        return redirect()->to(route('student.profile.edit').'#personal')->with('success', $validated['discoverable']
+            ? 'Companies can now find your profile and invite you to apply.'
+            : 'Companies can no longer find your profile or send you new invitations.');
+    }
+
+    /**
+     * The completion fields every profile save endpoint returns, so the header bar can refresh in place.
+     */
+    public static function completionPayload(array $profileCompletion): array
+    {
+        return [
+            'profile_completion' => $profileCompletion['percentage'],
+            'remaining_steps' => $profileCompletion['remaining_steps'],
+            'missing_steps' => $profileCompletion['missing_steps'],
+            'completed_sections' => collect($profileCompletion['sections'])
+                ->filter(fn (array $section) => $section['complete'])
+                ->keys()
+                ->values()
+                ->all(),
+        ];
+    }
+
+    private const CONTACT_FIELDS = [
+        'address', 'city', 'province', 'zip_code', 'provincial_address',
+        'linkedin_url', 'facebook_url', 'github_url',
+        'emergency_contact_name', 'emergency_contact_relationship', 'emergency_contact_address', 'emergency_contact_phone',
+    ];
+
+    private function personalAttributes(Request $request, array $validated): array
+    {
+        return [
+            'first_name' => $validated['first_name'],
+            'last_name' => $validated['last_name'],
+            'middle_name' => $validated['middle_name'] ?? null,
+            'suffix' => $validated['suffix'] ?? null,
+            'gender' => $validated['gender'],
+            'date_of_birth' => $validated['date_of_birth'],
+            'place_of_birth' => $validated['place_of_birth'] ?? null,
+            'citizenship' => $validated['citizenship'] ?? null,
+            'languages' => $validated['languages'] ?? null,
+            'civil_status' => $validated['civil_status'] ?? null,
+            'religion' => $validated['religion'] ?? null,
+            'height_cm' => $validated['height_cm'] ?? null,
+            'weight_kg' => $validated['weight_kg'] ?? null,
+            'show_civil_status' => $request->boolean('show_civil_status'),
+            'show_religion' => $request->boolean('show_religion'),
+            'show_height' => $request->boolean('show_height'),
+            'show_weight' => $request->boolean('show_weight'),
+        ];
+    }
+
+    private function academicAttributes(array $validated): array
+    {
+        $selectedProgram = ! empty($validated['program_id'])
+            ? Program::with('coordinator.user')->findOrFail($validated['program_id'])
+            : null;
+
+        return [
+            'student_id_number' => $validated['student_number'] ?? null,
+            'program_id' => $selectedProgram?->id,
+            'major_id' => $selectedProgram ? ($validated['major_id'] ?? null) : null,
+            'program' => $selectedProgram?->display_name ?? ($validated['program'] ?? null),
+            'year_level' => $validated['year_level'],
+            'department' => $validated['department'],
+            'expected_graduation' => $validated['expected_graduation'],
+            'section' => $validated['section'] ?? null,
+            'school_year' => $validated['school_year'] ?? null,
+            'semester' => $validated['semester'] ?? null,
+            'enrollment_status' => $validated['enrollment_status'] ?? null,
+            'gwa' => $validated['gwa'] ?? null,
+            'elementary_school' => $validated['elementary_school'],
+            'elementary_year_graduated' => $validated['elementary_year_graduated'],
+            'high_school' => $validated['high_school'],
+            'high_school_year_graduated' => $validated['high_school_year_graduated'],
+            'career_objectives' => $validated['career_objectives'] ?? null,
+            'preferred_internship_field' => $validated['preferred_internship_field'] ?? null,
+            'preferred_work_setup' => $validated['preferred_work_setup'] ?? null,
+            'preferred_location' => $validated['preferred_location'] ?? null,
+        ];
+    }
+
+    public function updatePicture(\Illuminate\Http\Request $request, ImageProcessor $images)
+    {
+        $request->validate(['profile_picture' => ImageProcessor::rules()], ImageProcessor::messages('profile_picture'));
         $student = Auth::user()->student()->firstOrFail();
         $previousPicture = $student->profile_picture;
-        $newPicture = $this->fileUpload->uploadImage($request->file('profile_picture'), 'profiles/students', (string) $student->id);
+        $newPicture = $images->storeSquare($request->file('profile_picture'), 'profile_picture', 'profiles/students', UploadDisks::public(), self::PROFILE_PHOTO_SIZE);
 
         try {
             DB::transaction(function () use ($student, $newPicture, $previousPicture) {
@@ -317,7 +456,7 @@ class ProfileController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Profile picture updated successfully.',
-                'profile_picture_url' => PublicFileUrl::relative($newPicture),
+                'profile_picture_url' => Avatar::url($newPicture),
                 'profile_completion' => $student->fresh()->profile_completion,
             ]);
         }
@@ -326,26 +465,25 @@ class ProfileController extends Controller
     }
 
     /**
-     * Delete the profile picture.
+     * Delete the profile picture ("Remove photo").
      */
-    public function deleteProfilePicture()
+    public function deleteProfilePicture(\Illuminate\Http\Request $request)
     {
         $student = Auth::user()->student()->firstOrFail();
+        $previousPicture = $student->profile_picture;
 
-        if ($student->profile_picture) {
-            $previousPicture = $student->profile_picture;
-            DB::transaction(function () use ($student, $previousPicture) {
-                $student->update(['profile_picture' => null]);
-            });
+        if ($previousPicture) {
+            $student->update(['profile_picture' => null]);
             $student->calculateProfileCompletion();
             $this->fileUpload->delete($previousPicture);
-
-            return redirect()->route('student.profile.edit')
-                ->with('success', 'Profile picture removed successfully!');
         }
 
-        return redirect()->route('student.profile.edit')
-            ->with('error', 'No profile picture to delete.');
+        $message = $previousPicture ? 'Profile photo removed.' : 'No profile photo to remove.';
+        if ($request->expectsJson()) {
+            return response()->json(['success' => (bool) $previousPicture, 'message' => $message, 'initials' => Avatar::initials(Auth::user()->name)]);
+        }
+
+        return redirect()->route('student.profile.edit')->with($previousPicture ? 'success' : 'error', $message);
     }
 
     private function calculateStorageUsage(Student $student): string

@@ -58,8 +58,17 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
+        RateLimiter::for('photo-uploads', fn (Request $request) => Limit::perMinute(10)->by('photo-uploads:'.($request->user()?->id ?: $request->ip())));
+
+        // Burst guard on top of the daily invitation limit in InvitationService.
+        RateLimiter::for('invitations', fn (Request $request) => Limit::perMinute(10)->by('invitations:'.($request->user()?->id ?: $request->ip())));
+
         Gate::define('message.send', function (User $user, User $recipient) {
             return app(MessagePolicy::class)->send($user, $recipient);
+        });
+
+        Gate::define('message.view', function (User $user, User $recipient) {
+            return app(MessagePolicy::class)->view($user, $recipient);
         });
     }
 }

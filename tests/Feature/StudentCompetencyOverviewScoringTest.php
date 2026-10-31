@@ -28,7 +28,7 @@ function createOverviewSkill(Student $student, string $name, string $category, s
     ]);
 }
 
-it('scores the three configured radar groups from every listed skill, regardless of verification status', function () {
+it('scores the chart by skill type, with a Certificates axis for certificate-type entries', function () {
     $student = createOverviewStudent();
     createOverviewSkill($student, 'Technical one', 'technical', 'expert');
     createOverviewSkill($student, 'Skill one', 'skill', 'intermediate');
@@ -41,10 +41,13 @@ it('scores the three configured radar groups from every listed skill, regardless
 
     expect(array_keys($overview['groups']))->toBe(['technical', 'soft', 'certification'])
         ->and($overview['groups']['technical']['target'])->toBe(6)
-        ->and($overview['groups']['technical']['count'])->toBe(4)
-        ->and($overview['groups']['technical']['score'])->toBe((100 + 50 + 75 + 100) / 600 * 100)
+        // Old categories map to skill type Technical except Soft; Certification now counts as Technical too.
+        ->and($overview['groups']['technical']['count'])->toBe(5)
+        ->and($overview['groups']['technical']['score'])->toBe((100 + 50 + 75 + 100 + 100) / 600 * 100)
         ->and($overview['groups']['soft']['score'])->toBe(75 / 4)
-        ->and($overview['groups']['certification']['score'])->toBe(50.0)
+        // Certificates axis: entries whose type is Certificate (technical, skill, soft, certification).
+        ->and($overview['groups']['certification']['count'])->toBe(4)
+        ->and($overview['groups']['certification']['score'])->toBe(100.0)
         ->and($overview['profile_strength']['counted_skill_count'])->toBe(6)
         ->and(collect($overview['skills'])->firstWhere('name', 'Seminar one')['category_label'])->toBe('Seminar');
 });
@@ -127,9 +130,10 @@ it('logs unknown category identifiers and includes them in the response without 
     ]);
     Log::shouldReceive('warning')
         ->once()
-        ->with('Unmapped student competency category in overview scoring.', [
+        ->with('Certificate has no chart group in overview scoring.', [
             'student_id' => $student->id,
             'skill_id' => DB::table('student_competencies')->where('name', 'Unmapped item')->value('id'),
+            'skill_type' => null,
             'category' => 'emerging_category',
         ]);
 
@@ -138,7 +142,7 @@ it('logs unknown category identifiers and includes them in the response without 
 
     expect($overview['unmapped_categories'])->toBe(['emerging_category'])
         ->and($item['group_key'])->toBeNull()
-        ->and($item['category_label'])->toBe('Emerging category')
+        ->and($item['group_keys'])->toBe([])
         ->and($overview['profile_strength']['counted_skill_count'])->toBe(1);
 });
 
@@ -160,21 +164,24 @@ it('returns only the requested student competencies and supports the category fi
         // The skills array always stays complete (the client filters it); only the
         // profile-strength count reflects the category filter.
         ->and(collect($filtered['skills'])->pluck('name')->all())->toBe(['Certification skill', 'Soft skill', 'Technical skill'])
-        ->and($filtered['profile_strength']['counted_skill_count'])->toBe(1);
+        // Technical now also covers the old Certification entry (mapped to skill type Technical).
+        ->and($filtered['profile_strength']['counted_skill_count'])->toBe(2);
 });
 
-it('renders the competency overview without any verification status badge or toggle', function () {
+it('renders My Certificates without any verification status badge or toggle', function () {
     $student = createOverviewStudent();
     createOverviewSkill($student, 'Cloud certification', 'certification', 'advanced');
 
     $this->actingAs($student->user)
         ->get(route('student.competencies.index'))
         ->assertOk()
-        ->assertSee('My competencies')
+        ->assertSee('My Certificates')
         ->assertSee('Technical')
         ->assertSee('Soft skills')
-        ->assertSee('Certification')
+        ->assertSee('Certificates')
         ->assertSee('Cloud certification')
+        ->assertDontSee('Pending verification until reviewed')
+        ->assertDontSee('coordinator review')
         ->assertDontSee('Verified only')
         ->assertDontSee('All submitted')
         ->assertDontSee('co-status-verified', false)

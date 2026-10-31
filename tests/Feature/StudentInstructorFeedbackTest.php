@@ -68,25 +68,27 @@ it('renders clickable breadcrumbs at every level with the current page as plain 
 
 // ---------------------------------------------------------------- B. modals
 
-it('offers the competency form in a modal and re-opens it with errors after a failed save', function () {
+it('offers the certificate wizard in a modal and re-opens it with the data and errors after a failed save', function () {
     $f = feedbackFixture();
 
     $this->actingAs($f['studentUser'])->get(route('student.competencies.index'))
         ->assertOk()
-        ->assertSee('id="addCompetencyModal"', false)
-        ->assertSee('data-bs-target="#addCompetencyModal"', false)
-        ->assertDontSee('data-sb-open-on-load', false);
+        ->assertSee('id="certificateWizard"', false)
+        ->assertSee('data-wizard-open', false)
+        ->assertSee('+ Add a certificate')
+        ->assertDontSee('data-old=', false);
 
     $this->actingAs($f['studentUser'])->from(route('student.competencies.index'))
-        ->post(route('student.competencies.store'), ['_modal' => 'competency', 'name' => ''])
+        ->post(route('student.competencies.store'), ['_wizard_mode' => 'add', 'name' => '', 'skills' => ['Soldering']])
         ->assertRedirect(route('student.competencies.index'))
         ->assertSessionHasErrors('name');
 
     $this->actingAs($f['studentUser'])->followingRedirects()->from(route('student.competencies.index'))
-        ->post(route('student.competencies.store'), ['_modal' => 'competency', 'name' => ''])
+        ->post(route('student.competencies.store'), ['_wizard_mode' => 'add', 'name' => '', 'skills' => ['Soldering']])
         ->assertOk()
-        ->assertSee('data-sb-open-on-load', false)
-        ->assertSee('Please fix the highlighted fields');
+        ->assertSee('data-old=', false)
+        ->assertSee('Please type the title of your certificate.')
+        ->assertSee('Soldering');
 });
 
 it('puts the daily entry and weekly journal forms in modals that re-open after validation errors', function () {

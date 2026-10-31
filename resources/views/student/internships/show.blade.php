@@ -74,7 +74,7 @@
                                 <li class="mb-1 text-secondary"><i class="bi bi-x-circle"></i> {{ $item['name'] }} <span class="text-muted">({{ $item['required_level'] }} required)</span><br><span class="ms-4 text-muted">{{ $item['reason_label'] }}</span></li>
                             @endforeach
                         </ul>
-                        <a href="{{ route('student.competencies.index', ['add' => 1]) }}" class="btn btn-outline-primary btn-sm w-100"><i class="bi bi-plus-lg"></i> Add or update a competency</a>
+                        <a href="{{ route('student.competencies.index', ['add' => 1]) }}" class="btn btn-outline-primary btn-sm w-100"><i class="bi bi-plus-lg"></i> Add or update a certificate</a>
                     @endif
                 </div>
             @endif
@@ -117,6 +117,9 @@
 
         <div class="card">
             <div class="card-body">
+                @if($requestedDocumentNames->isNotEmpty())
+                    <div class="alert alert-light border small"><i class="bi bi-person-vcard" aria-hidden="true"></i> This company asks applicants for: {{ $requestedDocumentNames->implode(', ') }}. {{ $hasApplied ? 'Upload them' : 'After you apply, upload them' }} on your <a href="{{ route('student.profile.edit') }}#documents">Documents tab</a>.</div>
+                @endif
                 @if($hasApplied)
                     <div class="alert alert-info mb-0"><i class="bi bi-check-circle"></i> You have already applied to this internship.</div>
                     <a href="{{ route('student.applications.index') }}" class="btn btn-outline-primary w-100 mt-3">View My Applications</a>
@@ -131,10 +134,12 @@
                             @endforeach
                         </ul>
                     </div>
+                @elseif($needsCharacterReference)
+                    <div class="alert alert-warning mb-0">This internship requires at least one character reference. <a href="{{ route('student.profile.edit') }}#references">Add a reference</a>, then come back to apply.</div>
                 @else
                     <h2 class="h6">Apply Now</h2>
                     @if($resumes->isEmpty())
-                        <p class="text-muted">Create a resume before applying. Archived resumes cannot be submitted.</p>
+                        <p class="text-muted">Create a resume before applying.</p>
                         <a href="{{ route('student.resume.index') }}" class="btn btn-outline-primary w-100">Manage My Resumes</a>
                     @else
                     <form method="POST" action="{{ route('student.internships.apply', $internship) }}" data-ajax-application>

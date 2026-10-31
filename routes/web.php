@@ -95,6 +95,8 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
     Route::post('/notifications/archive-all-read', [NotificationController::class, 'archiveAllRead'])->name('notifications.archive-all-read');
     Route::get('/api/notifications/unread', [NotificationController::class, 'unreadJson'])->name('notifications.unread');
+    // 2x2 picture: private file, served only through StudentPolicy::viewIdPhoto.
+    Route::get('/students/{student}/id-photo', [\App\Http\Controllers\Student\IdPhotoController::class, 'show'])->whereNumber('student')->name('students.id-photo');
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
@@ -107,13 +109,34 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
         Route::get('/profile', [\App\Http\Controllers\Student\ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/profile', [\App\Http\Controllers\Student\ProfileController::class, 'update'])->name('profile.update');
+        Route::post('/profile/consent', [\App\Http\Controllers\Student\ProfileController::class, 'consent'])->name('profile.consent');
         Route::post('/profile/change-requests', [StudentChangeRequestController::class, 'store'])->name('profile.change-requests.store');
-        Route::delete('/profile-picture', [\App\Http\Controllers\Student\ProfileController::class, 'deleteProfilePicture'])->name('profile.delete-picture');
-        Route::post('/profile-picture', [\App\Http\Controllers\Student\ProfileController::class, 'updatePicture'])->name('profile.update-picture');
+        Route::get('/profile/skills/suggest', [\App\Http\Controllers\Student\StudentSkillController::class, 'suggest'])->name('skills.suggest');
+        Route::post('/profile/skills', [\App\Http\Controllers\Student\StudentSkillController::class, 'store'])->name('skills.store');
+        Route::patch('/profile/skills/{studentSkill}', [\App\Http\Controllers\Student\StudentSkillController::class, 'update'])->name('skills.update');
+        Route::delete('/profile/skills/{studentSkill}', [\App\Http\Controllers\Student\StudentSkillController::class, 'destroy'])->name('skills.destroy');
+        Route::post('/profile/experiences', [\App\Http\Controllers\Student\ExperienceController::class, 'store'])->name('experiences.store');
+        Route::put('/profile/experiences/{experience}', [\App\Http\Controllers\Student\ExperienceController::class, 'update'])->name('experiences.update');
+        Route::delete('/profile/experiences/{experience}', [\App\Http\Controllers\Student\ExperienceController::class, 'destroy'])->name('experiences.destroy');
+        Route::post('/profile/references', [\App\Http\Controllers\Student\CharacterReferenceController::class, 'store'])->name('references.store');
+        Route::put('/profile/references/{reference}', [\App\Http\Controllers\Student\CharacterReferenceController::class, 'update'])->name('references.update');
+        Route::delete('/profile/references/{reference}', [\App\Http\Controllers\Student\CharacterReferenceController::class, 'destroy'])->name('references.destroy');
+        Route::post('/profile/awards', [\App\Http\Controllers\Student\StudentAwardController::class, 'store'])->name('awards.store');
+        Route::put('/profile/awards/{award}', [\App\Http\Controllers\Student\StudentAwardController::class, 'update'])->name('awards.update');
+        Route::delete('/profile/awards/{award}', [\App\Http\Controllers\Student\StudentAwardController::class, 'destroy'])->name('awards.destroy');
+        Route::middleware('throttle:photo-uploads')->group(function () {
+            Route::delete('/profile-picture', [\App\Http\Controllers\Student\ProfileController::class, 'deleteProfilePicture'])->name('profile.delete-picture');
+            Route::post('/profile-picture', [\App\Http\Controllers\Student\ProfileController::class, 'updatePicture'])->name('profile.update-picture');
+            Route::post('/profile/id-photo', [\App\Http\Controllers\Student\IdPhotoController::class, 'store'])->name('profile.id-photo.store');
+            Route::delete('/profile/id-photo', [\App\Http\Controllers\Student\IdPhotoController::class, 'destroy'])->name('profile.id-photo.destroy');
+        });
         // Competencies
         Route::get('/competencies', [CompetencyController::class, 'index'])->name('competencies.index');
         Route::get('/competencies/create', [CompetencyController::class, 'create'])->name('competencies.create');
         Route::post('/competencies', [CompetencyController::class, 'store'])->name('competencies.store');
+        Route::get('/competencies/skills/suggest', [CompetencyController::class, 'suggestSkills'])->name('competencies.skills.suggest');
+        Route::post('/competencies/from-certificate/{certificate}', [CompetencyController::class, 'completeLegacy'])->name('competencies.complete-legacy');
+        Route::get('/competencies/{competency}/file', [CompetencyController::class, 'file'])->name('competencies.file');
         Route::get('/competencies/{competency}', [CompetencyController::class, 'show'])->name('competencies.show');
         Route::get('/competencies/{competency}/edit', [CompetencyController::class, 'edit'])->name('competencies.edit');
         Route::put('/competencies/{competency}', [CompetencyController::class, 'update'])->name('competencies.update');
@@ -140,14 +163,17 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         Route::delete('/certificates/{certificate}', [PortfolioController::class, 'destroyCertificate'])->name('certificates.destroy');
         Route::get('/resume', [ResumeController::class, 'index'])->name('resume.index');
         Route::post('/resume/generate', [ResumeController::class, 'generate'])->name('resume.generate');
-        Route::post('/resume/{resume}/archive', [ResumeController::class, 'archive'])->whereNumber('resume')->name('resume.archive');
-        Route::post('/resume/{resume}/restore', [ResumeController::class, 'restore'])->whereNumber('resume')->name('resume.restore');
+        Route::delete('/resume/{resume}', [ResumeController::class, 'destroy'])->whereNumber('resume')->name('resume.destroy');
         Route::get('/resume/{resume}/view', [ResumeController::class, 'view'])->name('resume.view');
         Route::get('/resume/{resume}/download', [ResumeController::class, 'download'])->name('resume.download');
         Route::get('/internships', [StudentInternshipController::class, 'index'])->name('internships.index');
         Route::get('/internships/{internship}', [StudentInternshipController::class, 'show'])->name('internships.show');
         Route::post('/internships/{internship}/recommendation-feedback', [StudentInternshipController::class, 'storeRecommendationFeedback'])->name('internships.recommendation-feedback');
         Route::post('/internships/{internship}/apply', [StudentInternshipController::class, 'apply'])->name('internships.apply');
+        Route::get('/invitations', [\App\Http\Controllers\Student\InvitationController::class, 'index'])->name('invitations.index');
+        Route::post('/invitations/{invitation}/accept', [\App\Http\Controllers\Student\InvitationController::class, 'accept'])->whereNumber('invitation')->name('invitations.accept');
+        Route::post('/invitations/{invitation}/decline', [\App\Http\Controllers\Student\InvitationController::class, 'decline'])->whereNumber('invitation')->name('invitations.decline');
+        Route::put('/profile/discoverable', [StudentProfileController::class, 'discoverable'])->name('profile.discoverable');
         Route::get('/applications', [StudentInternshipController::class, 'applications'])->name('applications.index');
         Route::get('/applications/{application}', [StudentInternshipController::class, 'showApplication'])->name('applications.show');
         Route::get('/applications/{application}/edit', [StudentInternshipController::class, 'editApplication'])->name('applications.edit');
@@ -170,6 +196,10 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         Route::resource('internships', EmployerInternshipController::class)->except(['show']);
         Route::resource('skills', EmployerSkillController::class)->except(['show']);
         Route::post('/internships/{internship}/close', [EmployerInternshipController::class, 'close'])->name('internships.close');
+        Route::get('/students', [\App\Http\Controllers\Employer\StudentBrowseController::class, 'index'])->name('students.index');
+        Route::get('/students/{student}', [\App\Http\Controllers\Employer\StudentBrowseController::class, 'show'])->whereNumber('student')->name('students.show');
+        Route::get('/invitations', [\App\Http\Controllers\Employer\InvitationController::class, 'index'])->name('invitations.index');
+        Route::post('/invitations', [\App\Http\Controllers\Employer\InvitationController::class, 'store'])->middleware('throttle:invitations')->name('invitations.store');
         Route::get('/applicants', [ApplicantController::class, 'index'])->name('applicants.index');
         Route::get('/applicants/{application}', [ApplicantController::class, 'show'])->name('applicants.show');
         Route::put('/applicants/{application}/status', [ApplicantController::class, 'updateStatus'])->name('applicants.status');

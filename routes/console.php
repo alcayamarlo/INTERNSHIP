@@ -13,3 +13,4 @@ Artisan::command('inspire', function () {
 Schedule::job(new CheckCompetencyExpiry)->dailyAt('08:00');
 Schedule::job(new ScheduledBackup)->dailyAt('02:00');
 Schedule::command('cache:prune-stale-tags')->hourly();
+Schedule::command('invitations:expire')->hourly()->withoutOverlapping();

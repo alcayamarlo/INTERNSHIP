@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use App\Enums\ApplicationStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Support\CatalogName;
 use App\Support\StudentIdFormat;
 
 class Student extends Model
@@ -26,6 +30,7 @@ class Student extends Model
         'year_level',
         'career_objectives',
         'profile_picture',
+        'id_photo_path',
         'address',
         'middle_name', 'suffix', 'gender', 'city', 'province', 'zip_code', 'department',
         'first_name', 'last_name',
@@ -37,6 +42,12 @@ class Student extends Model
         'enrollment_status',
         'gwa',
         'profile_completion',
+        'place_of_birth', 'citizenship', 'languages', 'civil_status', 'religion', 'height_cm', 'weight_kg',
+        'show_civil_status', 'show_religion', 'show_height', 'show_weight',
+        'provincial_address', 'linkedin_url', 'facebook_url', 'github_url',
+        'emergency_contact_name', 'emergency_contact_relationship', 'emergency_contact_address', 'emergency_contact_phone',
+        'elementary_school', 'elementary_year_graduated', 'high_school', 'high_school_year_graduated', 'honors_awards',
+        'privacy_consent', 'privacy_consent_at', 'discoverable',
     ];
 
     protected function casts(): array
@@ -49,7 +60,42 @@ class Student extends Model
             'rendered_internship_hours' => 'integer',
             'major_subjects_passed' => 'boolean',
             'student_id_locked' => 'boolean',
+            'height_cm' => 'decimal:1',
+            'weight_kg' => 'decimal:1',
+            'show_civil_status' => 'boolean',
+            'show_religion' => 'boolean',
+            'show_height' => 'boolean',
+            'show_weight' => 'boolean',
+            'elementary_year_graduated' => 'integer',
+            'high_school_year_graduated' => 'integer',
+            'privacy_consent' => 'boolean',
+            'privacy_consent_at' => 'datetime',
+            'discoverable' => 'boolean',
         ];
+    }
+
+    public function hasPrivacyConsent(): bool
+    {
+        return $this->privacy_consent && $this->privacy_consent_at !== null;
+    }
+
+    /** Companies may find and invite this student: consent given and "Allow companies to find my profile" on. */
+    public function isDiscoverable(): bool
+    {
+        return $this->hasPrivacyConsent() && $this->discoverable !== false;
+    }
+
+    public function scopeDiscoverable(Builder $query): Builder
+    {
+        return $query->where('privacy_consent', true)
+            ->whereNotNull('privacy_consent_at')
+            ->where('discoverable', true)
+            ->whereHas('user', fn (Builder $user) => $user->where('is_active', true)->whereNull('archived_at'));
+    }
+
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(InternshipInvitation::class);
     }
 
     public function user(): BelongsTo
@@ -112,6 +158,78 @@ class Student extends Model
         return $this->hasMany(StudentChangeRequest::class);
     }
 
+    public function studentSkills(): HasMany
+    {
+        return $this->hasMany(StudentSkill::class);
+    }
+
+    /**
+     * Normalized names of this student's competencies that have an uploaded certificate. Read-only:
+     * lets a matching skill chip say "Has certificate" without touching the competency itself.
+     *
+     * @return Collection<int, string>
+     */
+    public function certifiedCompetencyNames(): Collection
+    {
+        $certificates = $this->competencies()->whereNotNull('evidence_path')->with('learnedSkills')->get();
+
+        // A profile skill matches a certificate title or any skill learned in a certificate.
+        return $certificates->pluck('name')
+            ->concat($certificates->flatMap(fn (StudentCompetency $certificate) => $certificate->learnedSkills->pluck('name')))
+            ->map(fn (string $name) => CatalogName::normalized($name))
+            ->unique()
+            ->values();
+    }
+
+    public function experiences(): HasMany
+    {
+        return $this->hasMany(StudentExperience::class);
+    }
+
+    public function characterReferences(): HasMany
+    {
+        return $this->hasMany(CharacterReference::class);
+    }
+
+    public function awards(): HasMany
+    {
+        return $this->hasMany(StudentAward::class);
+    }
+
+    /**
+     * On-request ID codes asked for by internships this student has an active application to.
+     *
+     * @return Collection<string, Collection<int, string>> code => internship titles
+     */
+    public function requestedDocuments(): Collection
+    {
+        return $this->applications()
+            ->where('status', '<>', ApplicationStatus::Withdrawn->value)
+            ->with('internship:id,title,requested_documents')
+            ->get()
+            ->flatMap(fn (InternshipApplication $application) => collect($application->internship?->requested_documents ?? [])
+                ->map(fn (string $code) => ['code' => $code, 'internship' => $application->internship->title]))
+            ->groupBy('code')
+            ->map(fn (Collection $rows) => $rows->pluck('internship')->unique()->values());
+    }
+
+    /**
+     * Rendered and required OJT hours: from the latest placement's approved logs once placed,
+     * otherwise the hours the student entered on the Academic tab.
+     *
+     * @return array{rendered: int, required: ?int, from_ojt: bool}
+     */
+    public function internshipHours(): array
+    {
+        $placement = $this->placements()->withApprovedHours()->latest('id')->first();
+
+        return [
+            'rendered' => $placement ? (int) floor($placement->approvedHours()) : (int) $this->rendered_internship_hours,
+            'required' => ($placement?->required_hours ?: $this->academicProgram?->required_internship_hours) ?: null,
+            'from_ojt' => $placement !== null,
+        ];
+    }
+
     public function profileVerifier(): BelongsTo
     {
         return $this->belongsTo(User::class, 'profile_verified_by_user_id');
@@ -126,78 +244,96 @@ class Student extends Model
         return ! StudentIdFormat::matches($this->student_id_number, $pattern);
     }
 
+    public const COMPLETION_WEIGHTS = [
+        'personal' => 15,
+        'contact' => 15,
+        'academic' => 15,
+        'skills' => 15,
+        'portfolio' => 15,
+        'references' => 10,
+        'documents' => 15,
+    ];
+
+    public const MIN_COMPLETION_SKILLS = 3;
+
+    /**
+     * Weighted completion per profile tab. Experience is optional and never counted.
+     */
     public function profileCompletionSummary(): array
     {
-        $fields = [
-            ['label' => 'Add your first name', 'value' => $this->first_name ?: str($this->user?->name)->before(' ')->toString()],
-            ['label' => 'Add your last name', 'value' => $this->last_name ?: str($this->user?->name)->afterLast(' ')->toString()],
-            ['label' => 'Add your email address', 'value' => $this->user?->email],
-            ['label' => 'Add your mobile number', 'value' => $this->user?->phone],
-            ['label' => 'Add your student ID', 'value' => $this->student_id_number],
-            ['label' => 'Select your program', 'value' => $this->program],
-            ['label' => 'Add your year level', 'value' => $this->year_level],
-            ['label' => 'Add your career objectives', 'value' => $this->career_objectives],
-            ['label' => 'Add your address', 'value' => $this->address],
-            ['label' => 'Add your city', 'value' => $this->city],
-            ['label' => 'Add your province', 'value' => $this->province],
-            ['label' => 'Add your ZIP code', 'value' => $this->zip_code],
-            ['label' => 'Add your date of birth', 'value' => $this->date_of_birth],
-            ['label' => 'Upload a profile photo', 'value' => $this->profile_picture],
+        $user = $this->user;
+        $missingFields = fn (array $fields): array => array_keys(array_filter($fields, fn ($value) => blank($value)));
+
+        $missing = [
+            'personal' => $missingFields([
+                'first name' => $this->first_name ?: str($user?->name)->before(' ')->toString(),
+                'last name' => $this->last_name ?: str($user?->name)->afterLast(' ')->toString(),
+                'gender' => $this->gender,
+                'date of birth' => $this->date_of_birth,
+            ]),
+            'contact' => $missingFields([
+                'mobile number' => $user?->phone,
+                'email' => $user?->email,
+                'city address' => $this->address && $this->city && $this->province ? $this->address : null,
+                'emergency contact name' => $this->emergency_contact_name,
+                'emergency contact relationship' => $this->emergency_contact_relationship,
+                'emergency contact address' => $this->emergency_contact_address,
+                'emergency contact phone' => $this->emergency_contact_phone,
+            ]),
+            'academic' => $missingFields([
+                'college' => $this->department,
+                'course' => $this->program,
+                'year level' => $this->year_level,
+                'expected graduation' => $this->expected_graduation,
+                'elementary school' => $this->elementary_school && $this->elementary_year_graduated ? $this->elementary_school : null,
+                'high school' => $this->high_school && $this->high_school_year_graduated ? $this->high_school : null,
+            ]),
         ];
 
-        $completedFields = collect($fields)
-            ->filter(fn (array $field) => filled($field['value']))
-            ->count();
-        $missingSteps = collect($fields)
-            ->reject(fn (array $field) => filled($field['value']))
-            ->pluck('label')
-            ->values();
-        $competencyCount = min($this->competencies()->count(), 3);
-        for ($competency = $competencyCount + 1; $competency <= 3; $competency++) {
-            $missingSteps->push('Add competency ('.$competency.' of 3)');
+        $skillCount = $this->studentSkills()->count();
+        $missing['skills'] = $skillCount >= self::MIN_COMPLETION_SKILLS
+            ? []
+            : ['at least '.self::MIN_COMPLETION_SKILLS.' skills ('.$skillCount.' of '.self::MIN_COMPLETION_SKILLS.')'];
+        $missing['portfolio'] = $this->portfolios()->projects()->exists() ? [] : ['at least 1 project'];
+        $missing['references'] = $this->characterReferences()->exists() ? [] : ['at least 1 character reference'];
+        $missing['documents'] = array_values(array_filter([
+            $this->resumes()->whereNotNull('file_path')->exists() ? null : 'your resume',
+            $this->hasSubmittedRequiredDocument() ? null : 'at least one required document',
+        ]));
+
+        $labels = ['personal' => 'Personal', 'contact' => 'Contact', 'academic' => 'Academic', 'skills' => 'Skills', 'portfolio' => 'Portfolio', 'references' => 'Character Reference', 'documents' => 'Documents'];
+        $sections = [];
+        foreach (self::COMPLETION_WEIGHTS as $key => $weight) {
+            $sections[$key] = [
+                'label' => $labels[$key],
+                'weight' => $weight,
+                'complete' => $missing[$key] === [],
+                'missing' => $missing[$key],
+            ];
         }
 
-        $activeRequirements = DeploymentRequirement::active()
-            ->orderBy('sort_order')
-            ->orderBy('id')
-            ->get();
-        $latestDocuments = $this->deploymentDocuments()
-            ->whereIn('deployment_requirement_id', $activeRequirements->modelKeys())
-            ->orderByDesc('updated_at')
-            ->get()
-            ->unique('deployment_requirement_id')
-            ->keyBy('deployment_requirement_id');
-        $approvedDocumentCount = 0;
-        foreach ($activeRequirements as $requirement) {
-            $document = $latestDocuments->get($requirement->id);
-            $approved = $requirement->upload_source === DeploymentRequirement::SOURCE_SYSTEM
-                ? $requirement->code === 'resume' && $this->resumes()->whereNotNull('file_path')->exists()
-                : in_array($document?->verification_status, ['approved', 'verified'], true);
-
-            if ($approved) {
-                $approvedDocumentCount++;
-            } else {
-                $missingSteps->push(match ($document?->verification_status) {
-                    'submitted', 'resubmitted', 'pending' => 'Await approval for '.$requirement->name,
-                    'rejected' => 'Replace rejected '.$requirement->name,
-                    default => $requirement->upload_source === DeploymentRequirement::SOURCE_SYSTEM
-                        ? 'Complete '.$requirement->name
-                        : 'Upload '.$requirement->name,
-                });
-            }
-        }
-
-        $totalSteps = count($fields) + 3 + $activeRequirements->count();
-        $completedSteps = $completedFields + $competencyCount + $approvedDocumentCount;
-        $remainingSteps = $totalSteps - $completedSteps;
+        $incomplete = array_filter($sections, fn (array $section) => ! $section['complete']);
 
         return [
-            'percentage' => $totalSteps > 0 ? (int) round(($completedSteps / $totalSteps) * 100) : 100,
-            'completed_steps' => $completedSteps,
-            'total_steps' => $totalSteps,
-            'remaining_steps' => $remainingSteps,
-            'missing_steps' => $missingSteps->all(),
+            'percentage' => array_sum(array_map(fn (array $section) => $section['complete'] ? $section['weight'] : 0, $sections)),
+            'completed_steps' => count($sections) - count($incomplete),
+            'total_steps' => count($sections),
+            'remaining_steps' => count($incomplete),
+            'missing_steps' => array_values(array_map(
+                fn (array $section) => $section['label'].': add '.implode(', ', $section['missing']),
+                $incomplete
+            )),
+            'sections' => $sections,
         ];
+    }
+
+    private function hasSubmittedRequiredDocument(): bool
+    {
+        return $this->deploymentDocuments()
+            ->whereIn('verification_status', ['submitted', 'resubmitted', 'pending', 'approved', 'verified'])
+            ->whereHas('deploymentRequirement', fn ($query) => $query->required()
+                ->where('upload_source', DeploymentRequirement::SOURCE_STUDENT))
+            ->exists();
     }
 
     public function calculateProfileCompletion(): int

@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Intern · '.($placement->student?->user?->name ?? 'OJT'))
+@section('title', 'Intern · '.($profile['name'] ?? 'OJT'))
 
 @section('content')
-<x-page-header :title="$placement->student?->user?->name ?? 'Intern'" subtitle="OJT supervision record">
+<x-page-header :title="$profile['name'] ?? 'Intern'" subtitle="OJT supervision record">
     <a href="{{ route('employer.interns.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back</a>
     @if($placement->student?->user)
         <a href="{{ route('messages.show', $placement->student->user) }}" class="btn btn-outline-primary"><i class="bi bi-chat-dots" aria-hidden="true"></i> Message</a>
@@ -11,6 +11,15 @@
 </x-page-header>
 
 @include('ojt.partials.progress', ['placement' => $placement])
+
+@if(! empty($profile['emergency_contact']))
+    <div class="card mb-4">
+        <div class="card-header"><h2 class="h6 mb-0"><i class="bi bi-telephone" aria-hidden="true"></i> Emergency contact</h2></div>
+        <div class="card-body">
+            @include('employer.applicants.partials.definition-list', ['heading' => '', 'rows' => $profile['emergency_contact']])
+        </div>
+    </div>
+@endif
 
 @if($placement->isActive())
     <div class="card mb-4">

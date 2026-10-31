@@ -228,7 +228,7 @@
 
         <a href="{{ route('student.competencies.index') }}" class="list-group-item list-group-item-action">
             <i class="bi bi-award" aria-hidden="true"></i>
-            Add / Update Competencies
+            Add / Update Certificates
         </a>
 
         <a href="{{ route('student.profile.edit') }}#portfolio" class="list-group-item list-group-item-action">
@@ -331,9 +331,9 @@
             <x-empty-state
                 icon="bi-briefcase"
                 title="No recommendations yet"
-                message="Add competencies to your profile and we will match you with internships."
+                message="Add certificates to your profile and we will match you with internships."
             >
-                <a href="{{ route('student.competencies.index') }}" class="btn btn-primary">Add competencies</a>
+                <a href="{{ route('student.competencies.index') }}" class="btn btn-primary">Add a certificate</a>
             </x-empty-state>
 
         @endif

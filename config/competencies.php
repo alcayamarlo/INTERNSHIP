@@ -1,18 +1,23 @@
 <?php
 
+// Chart axes for My Certificates. Each axis selects certificates by one field; a certificate
+// can count on two axes (its skill type, and "Certificates" when its type is Certificate).
 return [
     'groups' => [
         'technical' => [
             'label' => 'Technical',
-            'categories' => ['technical', 'skill', 'training', 'workshop', 'seminar'],
+            'field' => 'skill_type',
+            'values' => ['technical'],
         ],
         'soft' => [
             'label' => 'Soft skills',
-            'categories' => ['soft'],
+            'field' => 'skill_type',
+            'values' => ['soft'],
         ],
         'certification' => [
-            'label' => 'Certification',
-            'categories' => ['certification'],
+            'label' => 'Certificates',
+            'field' => 'certificate_type',
+            'values' => ['certificate'],
         ],
     ],
     'targets' => [

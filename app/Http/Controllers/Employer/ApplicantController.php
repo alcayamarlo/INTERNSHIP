@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Employer;
 
 use App\Enums\ApplicationStatus;
-use App\Enums\PortfolioCategory;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Application\UpdateApplicationStatusRequest;
 use App\Mail\InterviewInvitationMail;
 use App\Models\InternshipApplication;
 use App\Services\ActivityLogService;
+use App\Services\CompanyVisibleProfile;
+use App\Services\MessagingEligibility;
 use App\Services\NotificationService;
 use App\Services\PlacementService;
 use Illuminate\Support\Facades\Auth;
@@ -22,7 +23,9 @@ class ApplicantController extends Controller
     public function __construct(
         private NotificationService $notificationService,
         private ActivityLogService $activityLog,
-        private PlacementService $placementService
+        private PlacementService $placementService,
+        private CompanyVisibleProfile $companyProfile,
+        private MessagingEligibility $messaging,
     ) {}
 
     public function index()
@@ -31,9 +34,11 @@ class ApplicantController extends Controller
             'internship',
             fn ($q) => $q->where('employer_id', Auth::user()->employer->id)
         )
-            ->with(['student.user', 'student.competencies', 'internship'])
+            ->with(['student.user', 'internship'])
             ->latest('applied_at')
             ->paginate(15);
+        $applications->getCollection()->each(fn (InternshipApplication $application) => $application
+            ->setAttribute('company_profile', $this->companyProfile->summary($application->student)));
 
         return view('employer.applicants.index', compact('applications'));
     }
@@ -42,52 +47,16 @@ class ApplicantController extends Controller
     {
         $this->authorize('view', $application);
 
-        $application->load([
-            'student.user',
-            'student.competencies',
-            'student.portfolios.reviewerUser:id,name',
-            'student.certificates.reviewerUser:id,name',
-            'student.resumes.reviewerUser:id,name',
-            'internship',
-        ]);
-        $applicationResumeQuery = $application->student->resumes();
-        $applicationResume = $application->status->isActive()
-            ? $applicationResumeQuery->withArchived()->latest()->first()
-            : $applicationResumeQuery->latest()->first();
+        $application->load(['student.user', 'internship', 'placement']);
+        $applicationResume = $application->student->resumes()->latest('generated_at')->latest('id')->first();
         if ($applicationResume) {
             $applicationResume->setAttribute('file_size_display', $this->fileSize($applicationResume->file_path));
         }
 
-        $student = $application->student;
-        if ($application->status === ApplicationStatus::Withdrawn) {
-            $student->setRelation('portfolios', collect());
-            $student->setRelation('certificates', collect());
-            $student->setRelation('resumes', collect());
-        }
-        $student->portfolios->each(fn ($file) => $file->setAttribute('file_size_display', $this->fileSize($file->file_path)));
-        $student->certificates->each(fn ($file) => $file->setAttribute('file_size_display', $this->fileSize($file->file_path)));
-        $student->resumes->each(fn ($file) => $file->setAttribute('file_size_display', $this->fileSize($file->file_path)));
-        $verifiedCertificates = $student->certificates
-            ->filter(fn ($file) => $file->verification_status === 'verified')
-            ->values();
-        $certificateKeys = $verifiedCertificates
-            ->map(fn ($file) => $file->title.'|'.$file->file_path)
-            ->flip();
-        $portfolioCertificates = $student->portfolios
-            ->filter(fn ($file) => $file->category === PortfolioCategory::Certificate
-                && $file->verification_status === 'verified'
-                && ! $certificateKeys->has($file->title.'|'.$file->file_path));
-        $student->setRelation(
-            'portfolios',
-            $student->portfolios
-                ->filter(fn ($file) => $file->category === PortfolioCategory::Project)
-                ->values()
-        );
-        $student->setRelation('certificates', $verifiedCertificates->concat($portfolioCertificates)->values());
-
+        $profile = $this->companyProfile->for($application->student, Auth::user(), $application);
         $availableStatuses = $application->status->allowedNextStatuses();
 
-        return view('employer.applicants.show', compact('application', 'applicationResume', 'availableStatuses'));
+        return view('employer.applicants.show', compact('application', 'applicationResume', 'availableStatuses', 'profile'));
     }
 
     public function updateStatus(UpdateApplicationStatusRequest $request, InternshipApplication $application)
@@ -98,6 +67,9 @@ class ApplicantController extends Controller
         $status = $validated['status'] instanceof ApplicationStatus
             ? $validated['status']
             : ApplicationStatus::from($validated['status']);
+
+        $studentUser = $application->student->user;
+        $chatWasOpen = $this->messaging->companyChatOpen(Auth::user(), $studentUser);
 
         $application = DB::transaction(function () use ($application, $validated, $status) {
             $application = InternshipApplication::query()
@@ -137,15 +109,30 @@ class ApplicantController extends Controller
             return $application;
         });
 
-        $studentUser = $application->student->user;
         $invitationSent = true;
-        $this->notificationService->send(
-            $studentUser,
-            'application_update',
-            'Application Status Updated',
-            'Your application for '.$application->internship->title.' is now '.$application->status->label(),
-            ['application_id' => $application->id]
-        );
+        // One notification per change; it also says when the company chat opens or closes.
+        $chatOpen = $this->messaging->companyChatOpen(Auth::user(), $studentUser);
+        $title = $application->internship->title;
+        [$notificationTitle, $notificationMessage, $notificationData] = match (true) {
+            ! $chatWasOpen && $chatOpen => [
+                $status === ApplicationStatus::Reviewed ? 'Application reviewed' : 'Application Status Updated',
+                $status === ApplicationStatus::Reviewed
+                    ? "Your application for {$title} was reviewed. You can now message the company."
+                    : "Your application for {$title} is now {$status->label()}. You can now message the company.",
+                ['application_id' => $application->id, 'messaging_open_with' => Auth::id()],
+            ],
+            $chatWasOpen && ! $chatOpen => [
+                'Application Status Updated',
+                "Your application for {$title} is now {$status->label()}. Messaging with {$application->internship->employer->company_name} is now closed; you can still read past messages.",
+                ['application_id' => $application->id],
+            ],
+            default => [
+                'Application Status Updated',
+                "Your application for {$title} is now {$status->label()}",
+                ['application_id' => $application->id],
+            ],
+        };
+        $this->notificationService->send($studentUser, 'application_update', $notificationTitle, $notificationMessage, $notificationData);
 
         if ($status === ApplicationStatus::Interview && $application->interview_at) {
             // The status change is already saved; a mail failure only warns the employer.
@@ -188,15 +175,13 @@ class ApplicantController extends Controller
     {
         $this->authorize('downloadResume', $application);
 
-        $resume = $application->student->resumes()->latest()->first();
+        $resume = $application->student->resumes()->latest('generated_at')->latest('id')->first();
 
         abort_unless($resume && $resume->file_path, 404, 'Resume not found.');
 
         $this->authorize('download', $resume);
-        $disk = app(\App\Services\ResumeBuilderService::class)->diskFor($resume);
-        abort_unless($disk, 404, 'Resume file not found.');
 
-        return Storage::disk($disk)->download($resume->file_path, 'resume-'.$resume->student_id.'.pdf', ['Content-Type' => 'application/pdf', 'X-Content-Type-Options' => 'nosniff']);
+        return app(\App\Services\ResumeBuilderService::class)->pdfResponse($resume, Auth::user(), download: true);
     }
 
     private function fileSize(?string $path): string

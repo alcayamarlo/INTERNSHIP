@@ -18,12 +18,20 @@ function profilePicturePng(string $name): UploadedFile
 }
 
 it('uploads and displays student profile pictures on the public disk', function () {
+    if (! extension_loaded('gd')) {
+        $this->markTestSkipped('Needs the GD extension.');
+    }
     Storage::fake('public');
     $user = User::factory()->create(['role' => UserRole::Student]);
     $student = Student::create(['user_id' => $user->id]);
+    // Student photos are decoded with GD, so this needs a fully valid image.
+    $image = imagecreatetruecolor(8, 8);
+    ob_start();
+    imagepng($image);
+    $png = UploadedFile::fake()->createWithContent('student.png', (string) ob_get_clean());
 
     $this->actingAs($user)
-        ->postJson(route('student.profile.update-picture'), ['profile_picture' => profilePicturePng('student.png')])
+        ->postJson(route('student.profile.update-picture'), ['profile_picture' => $png])
         ->assertOk()
         ->assertJsonPath('success', true)
         ->assertJsonStructure(['profile_picture_url']);

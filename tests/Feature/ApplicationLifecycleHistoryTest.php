@@ -83,7 +83,8 @@ it('records application status changes in a full history timeline', function () 
         ->assertOk()
         ->assertSee('Verified Employer Skill')
         ->assertSee('Verified Employer Certificate')
-        ->assertSee('bi-patch-check-fill');
+        // Certificate verification was removed, so employers no longer see a verified badge.
+        ->assertDontSee('bi-patch-check-fill');
 
     $this->actingAs($employerUser)
         ->put(route('employer.applicants.status', $application), [

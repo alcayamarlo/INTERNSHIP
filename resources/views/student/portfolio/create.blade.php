@@ -3,7 +3,7 @@
 @section('title', 'Upload Portfolio Item')
 
 @section('content')
-<x-page-header title="Upload to Portfolio" subtitle="Add certificates, projects, and supporting documents" />
+<x-page-header title="Upload to Portfolio" subtitle="Add projects and supporting documents" />
 
 <div class="row justify-content-center">
     <div class="col-lg-8">
@@ -91,62 +91,8 @@
             <div class="tab-pane fade" id="certificate" role="tabpanel" aria-labelledby="certificate-tab">
                 <div class="card">
                     <div class="card-body">
-                        <form method="POST" action="{{ route('student.certificates.store') }}" enctype="multipart/form-data" data-ajax-form data-ajax-reset="true">
-                            @csrf
-
-                            <div class="mb-3">
-                                <label class="form-label">Certificate Title <span class="text-danger" aria-hidden="true">*</span></label>
-                                <input type="text" class="form-control @error('title') is-invalid @enderror" name="title" value="{{ old('title') }}" placeholder="e.g., AWS Solutions Architect Associate" required>
-                                @error('title')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">Issuing Organization</label>
-                                    <input type="text" class="form-control @error('issuer') is-invalid @enderror" name="issuer" value="{{ old('issuer') }}" placeholder="e.g., Amazon Web Services">
-                                    @error('issuer')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Expiration Date</label>
-                                    <input type="date" class="form-control @error('expiration_date') is-invalid @enderror" name="expiration_date" value="{{ old('expiration_date') }}">
-                                    @error('expiration_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label">Issue Date</label>
-                                    <input type="date" class="form-control @error('issue_date') is-invalid @enderror" name="issue_date" value="{{ old('issue_date') }}">
-                                    @error('issue_date')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="mb-3 mt-3">
-                                <label class="form-label">Upload Certificate File <span class="text-danger" aria-hidden="true">*</span></label>
-                                <div class="input-group">
-                                    <input type="file" class="form-control @error('file') is-invalid @enderror" name="file" id="certificateFile" accept=".pdf,.jpg,.jpeg,.png" required>
-                                    <label class="input-group-text" for="certificateFile">Choose</label>
-                                </div>
-                                <small class="text-muted d-block mt-2">Allowed: PDF, JPG, JPEG, PNG (Max 10 MB)</small>
-                                @error('file')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <div class="alert alert-warning small">Uploaded evidence is marked <strong>Pending Verification</strong> until an authorized evaluator reviews it.</div>
-
-                            <div class="d-flex gap-2">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-cloud-upload"></i> Upload Certificate
-                                </button>
-                                <a href="{{ route('student.profile.edit') }}#portfolio" class="btn btn-outline-secondary">
-                                    <i class="bi bi-x-circle"></i> Cancel
-                                </a>
-                            </div>
-                        </form>
+                        <p class="mb-3">Certificates are now added in My Certificates, together with the skills you learned in them.</p>
+                        <a href="{{ route('student.competencies.index', ['add' => 1]) }}" class="btn btn-primary"><i class="bi bi-award" aria-hidden="true"></i> + Add a certificate</a>
                     </div>
                 </div>
             </div>

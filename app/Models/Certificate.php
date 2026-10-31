@@ -18,6 +18,7 @@ class Certificate extends Model
         'uploaded_by_user_id',
         'expiration_date', 'verification_status', 'review_notes', 'reviewed_at',
         'reviewed_by_user_id',
+        'student_competency_id',
     ];
 
     protected function casts(): array
@@ -43,5 +44,11 @@ class Certificate extends Model
     public function uploader(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by_user_id');
+    }
+
+    /** Set once the student completes this old entry in My Certificates. */
+    public function completedCertificate(): BelongsTo
+    {
+        return $this->belongsTo(StudentCompetency::class, 'student_competency_id');
     }
 }

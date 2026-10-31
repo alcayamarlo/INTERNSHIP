@@ -23,8 +23,7 @@ class ApplyInternshipRequest extends FormRequest
             'resume_id' => [
                 ...$resumeRequirement,
                 Rule::exists('resumes', 'id')
-                    ->where('student_id', $this->user()?->student?->id ?? 0)
-                    ->whereNull('archived_at'),
+                    ->where('student_id', $this->user()?->student?->id ?? 0),
             ],
             'cover_letter' => ['nullable', 'string', 'max:5000'],
         ];
@@ -33,8 +32,8 @@ class ApplyInternshipRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'resume_id.required' => 'Choose an active resume to apply.',
-            'resume_id.exists' => 'Choose one of your non-archived resumes.',
+            'resume_id.required' => 'Choose a resume to apply.',
+            'resume_id.exists' => 'Choose one of your resumes.',
         ];
     }
 }

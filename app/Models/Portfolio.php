@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\PortfolioType;
 use App\Enums\PortfolioCategory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -22,6 +23,9 @@ class Portfolio extends Model
         'reviewed_at',
         'uploaded_by_user_id',
         'reviewed_by_user_id',
+        'tools_used',
+        'project_url',
+        'achievements',
     ];
 
     protected function casts(): array
@@ -36,6 +40,13 @@ class Portfolio extends Model
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
+    }
+
+    public function scopeProjects(Builder $query): Builder
+    {
+        return $query->where(fn (Builder $projects) => $projects
+            ->where('category', PortfolioCategory::Project->value)
+            ->orWhere(fn (Builder $legacy) => $legacy->whereNull('category')->where('type', PortfolioType::Project->value)));
     }
 
     public function deploymentRequirement(): BelongsTo

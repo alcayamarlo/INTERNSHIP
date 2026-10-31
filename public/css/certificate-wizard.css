@@ -1,0 +1,348 @@
+/* My Certificates: 3-step wizard, older-certificate list, and detail extras. Uses SkillBridge tokens. */
+
+#certificateWizard .cw-progress {
+    color: var(--sb-muted);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+#certificateWizard .cw-progress-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 0 16px;
+}
+
+#certificateWizard .cw-progress-bar span {
+    height: 4px;
+    border-radius: 999px;
+    background: var(--sb-border);
+    transition: background var(--sb-motion-base, 220ms) ease;
+}
+
+#certificateWizard .cw-progress-bar span.is-done {
+    background: var(--sb-brand);
+}
+
+#certificateWizard .cw-step {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+#certificateWizard .cw-step[hidden] {
+    display: none;
+}
+
+#certificateWizard .cw-step-title {
+    margin-bottom: 16px;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+#certificateWizard .cw-subheading {
+    margin: 20px 0 12px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+#certificateWizard .cw-field {
+    margin-bottom: 18px;
+}
+
+#certificateWizard .cw-required {
+    margin-left: 2px;
+    color: var(--sb-danger-ink);
+}
+
+#certificateWizard .cw-error {
+    min-height: 0;
+    margin-top: 4px;
+    color: var(--sb-danger-ink);
+    font-size: 13px;
+}
+
+#certificateWizard .cw-error:empty {
+    display: none;
+}
+
+#certificateWizard .cw-type-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+#certificateWizard .cw-type-card,
+#certificateWizard .cw-pill {
+    position: relative;
+    cursor: pointer;
+}
+
+#certificateWizard .cw-type-card input,
+#certificateWizard .cw-pill input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+#certificateWizard .cw-type-card {
+    display: grid;
+    gap: 4px;
+    padding: 12px 14px;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-md, 12px);
+    background: var(--sb-surface);
+}
+
+#certificateWizard .cw-type-name {
+    font-weight: 600;
+}
+
+#certificateWizard .cw-type-example {
+    color: var(--sb-muted);
+    font-size: 12px;
+}
+
+#certificateWizard .cw-pill-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+#certificateWizard .cw-pill[hidden] {
+    display: none;
+}
+
+#certificateWizard .cw-pill span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--sb-border);
+    border-radius: 999px;
+    background: var(--sb-surface);
+    font-weight: 600;
+}
+
+#certificateWizard .cw-type-card:has(input:checked),
+#certificateWizard .cw-pill input:checked + span {
+    border-color: var(--sb-brand);
+    background: var(--sb-brand-soft);
+    color: var(--sb-brand-content);
+}
+
+#certificateWizard .cw-type-card:has(input:focus-visible),
+#certificateWizard .cw-pill input:focus-visible + span {
+    outline: 2px solid var(--sb-brand);
+    outline-offset: 2px;
+}
+
+#certificateWizard .cw-type-card:has(input.is-invalid),
+#certificateWizard .cw-pill input.is-invalid + span {
+    border-color: var(--sb-danger-ink);
+}
+
+#certificateWizard .cw-skill-row {
+    display: flex;
+    gap: 8px;
+}
+
+#certificateWizard .cw-combobox {
+    position: relative;
+    flex: 1 1 auto;
+}
+
+#certificateWizard .cw-suggestions {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    left: 0;
+    z-index: 10;
+    max-height: 220px;
+    margin: 0;
+    padding: 4px;
+    overflow-y: auto;
+    list-style: none;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-md, 12px);
+    background: var(--sb-surface);
+    box-shadow: var(--sb-shadow);
+}
+
+#certificateWizard .cw-suggestions [role="option"] {
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#certificateWizard .cw-suggestions [role="option"]:hover,
+#certificateWizard .cw-suggestions [role="option"][aria-selected="true"] {
+    background: var(--sb-brand-soft);
+    color: var(--sb-brand-content);
+}
+
+#certificateWizard .cw-counter {
+    margin: 6px 0 0;
+    color: var(--sb-muted);
+    font-size: 13px;
+}
+
+#certificateWizard .cw-chips,
+#competenciesOverview .co-learned-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+#certificateWizard .cw-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 4px 4px 12px;
+    border: 1px solid var(--sb-brand-ring);
+    border-radius: 999px;
+    background: var(--sb-brand-soft);
+    color: var(--sb-brand-content);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#certificateWizard .cw-chip-remove {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: inherit;
+    font-size: 18px;
+    line-height: 1;
+}
+
+#certificateWizard .cw-chip-remove:focus-visible {
+    outline: 2px solid var(--sb-brand);
+}
+
+#competenciesOverview .co-learned-title {
+    margin: 16px 0 0;
+    color: var(--sb-muted);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+}
+
+#competenciesOverview .co-learned-list li {
+    padding: 3px 10px;
+    border: 1px solid var(--sb-border);
+    border-radius: 999px;
+    background: var(--sb-surface-raised);
+    font-size: 13px;
+}
+
+#competenciesOverview .co-detail-issuer {
+    margin: 2px 0 0;
+    color: var(--sb-muted);
+    font-size: 14px;
+}
+
+#competenciesOverview .co-detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+#competenciesOverview .co-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--sb-border);
+    border-radius: 999px;
+    background: var(--sb-surface);
+    color: var(--sb-ink);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#competenciesOverview .co-secondary.co-danger {
+    color: var(--sb-danger-ink);
+}
+
+#competenciesOverview .co-legacy-list {
+    display: grid;
+    gap: 10px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+#competenciesOverview .co-legacy-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border: 1px dashed var(--sb-border);
+    border-radius: var(--sb-radius-md, 12px);
+}
+
+#competenciesOverview .co-legacy-row .co-row-name,
+#competenciesOverview .co-legacy-row .co-row-category {
+    display: block;
+}
+
+#competenciesOverview .co-legacy-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+#competenciesOverview .co-legacy-actions form {
+    margin: 0;
+}
+
+#competenciesOverview .co-toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 1080;
+    padding: 12px 16px;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-md, 12px);
+    background: var(--sb-surface);
+    color: var(--sb-ink);
+    box-shadow: var(--sb-shadow);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(8px);
+    transition: opacity 180ms ease, transform 180ms ease;
+}
+
+#competenciesOverview .co-toast.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@media (max-width: 575.98px) {
+    #certificateWizard .cw-type-grid {
+        grid-template-columns: 1fr;
+    }
+
+    #competenciesOverview .co-legacy-row {
+        grid-template-columns: 1fr;
+    }
+
+    #competenciesOverview .co-toast {
+        right: 16px;
+        left: 16px;
+    }
+}

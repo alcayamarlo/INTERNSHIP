@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'My competencies')
+@section('title', 'My Certificates')
 
 @push('styles')
 <style>
@@ -934,43 +934,36 @@
 @php
     $initialCategory = $overview['category_filter'];
     $initialScores = collect($overview['groups'])->mapWithKeys(fn ($group, $key) => [$key => $group['score']])->all();
-    $initialFiltered = collect($overview['skills'])->filter(function ($skill) use ($initialCategory) {
-        return ! $initialCategory
-            || $skill['category_key'] === $initialCategory
-            || $skill['group_key'] === $initialCategory;
-    })->values();
+    $initialFiltered = collect($overview['skills'])->filter(fn ($skill) => ! $initialCategory
+        || in_array($initialCategory, $skill['group_keys'], true)
+        || ($initialCategory === '__other' && $skill['group_keys'] === []))->values();
     $selectedSkill = $initialFiltered->first();
-    $levelRows = [
-        ['key' => 'beginner', 'label' => 'Beginner', 'points' => 25],
-        ['key' => 'intermediate', 'label' => 'Intermediate', 'points' => 50],
-        ['key' => 'advanced', 'label' => 'Advanced', 'points' => 75],
-        ['key' => 'expert', 'label' => 'Expert', 'points' => 100],
-    ];
+    $axisLabels = ['technical' => 'Technical', 'soft' => 'Soft skills', 'certification' => 'Certificates'];
 @endphp
 <main class="co-outer-panel" id="competenciesOverview"
     data-loading="true"
     aria-busy="true"
     data-category="{{ $initialCategory ?? '' }}"
-    data-skills='@json($overview["skills"])'
-    data-groups='@json($overview["groups"])'
+    data-skills="{{ json_encode($overview['skills']) }}"
+    data-groups="{{ json_encode($overview['groups']) }}"
     data-selected-id="{{ $selectedSkill['id'] ?? '' }}"
-    data-edit-url-template="{{ route('student.competencies.edit', ['competency' => '__ID__'], false) }}">
+    data-flash-success="{{ session('success') }}">
     <header class="co-header">
         <div>
-            <h1 class="co-title">My competencies</h1>
-            <p class="co-hint">Your skills and evidence at a glance.</p>
+            <h1 class="co-title">My Certificates</h1>
+            <p class="co-hint">Certificates you earned and the skills you learned in them.</p>
         </div>
         <div class="d-flex flex-wrap align-items-center gap-3">
-            <button type="button" class="co-primary" data-bs-toggle="modal" data-bs-target="#addCompetencyModal">Add another competency</button>
+            <button type="button" class="co-primary" data-wizard-open>+ Add a certificate</button>
         </div>
     </header>
 
     <div class="co-layout">
         <section class="co-card" aria-labelledby="competencyRadarTitle">
-            <h2 class="co-card-title" id="competencyRadarTitle">Competency profile</h2>
+            <h2 class="co-card-title" id="competencyRadarTitle">Certificate profile</h2>
             <div class="co-radar-wrap">
                 <svg class="co-radar" id="competencyRadar" viewBox="0 0 400 320" role="img"
-                     aria-label="Competency scores: Technical {{ number_format($initialScores['technical'] ?? 0, 1) }} percent, Soft skills {{ number_format($initialScores['soft'] ?? 0, 1) }} percent, Certification {{ number_format($initialScores['certification'] ?? 0, 1) }} percent">
+                     aria-label="Certificate scores: Technical {{ number_format($initialScores['technical'] ?? 0, 1) }} percent, Soft skills {{ number_format($initialScores['soft'] ?? 0, 1) }} percent, Certificates {{ number_format($initialScores['certification'] ?? 0, 1) }} percent">
                     <defs>
                         <linearGradient id="competencyRadarFill" x1="0" x2="0" y1="0" y2="1">
                             <stop offset="0%" stop-color="#38bdf8" stop-opacity=".26"></stop>
@@ -984,17 +977,14 @@
                 </svg>
                 <div class="co-vertex-tooltip" id="radarVertexTooltip" role="tooltip" aria-hidden="true"></div>
                 <span class="co-sr-only" id="competencyChartAnnouncement" aria-live="polite" aria-atomic="true"></span>
-                @foreach(['technical' => 'Technical', 'soft' => 'Soft skills', 'certification' => 'Certification'] as $axis => $label)
-                    @php
-                        $group = $overview['groups'][$axis];
-                        $axisPoints = collect($overview['skills'])->where('group_key', $axis)->sum('proficiency_points');
-                    @endphp
+                @foreach($axisLabels as $axis => $label)
+                    @php($group = $overview['groups'][$axis])
                     <button type="button" class="co-axis-button" data-axis="{{ $axis }}" data-score="{{ $initialScores[$axis] ?? 0 }}"
                             aria-pressed="{{ $initialCategory === $axis ? 'true' : 'false' }}"
                             aria-label="{{ $label }}: {{ number_format($initialScores[$axis] ?? 0, 1) }} percent">
                         <span class="co-axis-name">{{ $label }}</span>
                         <span class="co-axis-value co-number">{{ number_format($initialScores[$axis] ?? 0, 1) }}%</span>
-                        <span class="co-tooltip" role="tooltip">{{ $axisPoints }} of {{ $group['target'] * 100 }} points</span>
+                        <span class="co-tooltip" role="tooltip" data-axis-tooltip="{{ $axis }}">{{ $group['points'] }} of {{ $group['target'] * 100 }} points</span>
                     </button>
                 @endforeach
             </div>
@@ -1024,189 +1014,89 @@
 
         <div class="co-right-stack">
             <section class="co-card" aria-labelledby="skillListTitle">
-                <h2 class="co-card-title" id="skillListTitle">Skills and evidence</h2>
-                <div class="co-chip-list" role="group" aria-label="Filter skills by category">
-                    <button type="button" class="co-chip" data-category="" aria-pressed="{{ $initialCategory ? 'false' : 'true' }}">All categories</button>
+                <h2 class="co-card-title" id="skillListTitle">Your certificates</h2>
+                <div class="co-chip-list" role="group" aria-label="Filter certificates">
+                    <button type="button" class="co-chip" data-category="" aria-pressed="{{ $initialCategory ? 'false' : 'true' }}">All</button>
                     @foreach($overview['groups'] as $key => $group)
                         <button type="button" class="co-chip" data-category="{{ $key }}" aria-pressed="{{ $initialCategory === $key ? 'true' : 'false' }}">{{ $group['label'] }}</button>
                     @endforeach
-                    @if(! empty($overview['unmapped_categories']))
-                        <button type="button" class="co-chip" data-category="__other" aria-pressed="{{ $initialCategory === '__other' ? 'true' : 'false' }}">Other categories</button>
-                    @endif
                 </div>
 
-                @if($overview['skills'])
-                    <div class="co-skill-list {{ $initialFiltered->isEmpty() ? 'co-hidden' : '' }}" id="competencySkillList" aria-live="polite">
-                        <div class="co-loading-skeletons" aria-hidden="true">
-                            <span class="co-loading-skeleton"></span>
-                            <span class="co-loading-skeleton"></span>
-                            <span class="co-loading-skeleton"></span>
-                        </div>
-                        @foreach($initialFiltered as $skill)
-                            <button type="button" class="co-row" data-skill-id="{{ $skill['id'] }}" aria-pressed="{{ (string) ($selectedSkill['id'] ?? '') === (string) $skill['id'] ? 'true' : 'false' }}">
-                                <span class="co-row-main">
-                                    <span class="co-row-name">{{ $skill['name'] }}</span>
-                                    <span class="co-row-category">{{ $skill['category_label'] }} · {{ $skill['proficiency_label'] }}</span>
-                                </span>
-                            </button>
-                        @endforeach
+                <div class="co-empty {{ $overview['skills'] ? 'co-hidden' : '' }}" id="competencyEmptyState">
+                    <h3 class="co-empty-title">No certificates yet</h3>
+                    <p>You have no certificates yet. Add a certificate you earned, then list the skills you learned in it.</p>
+                    <button type="button" class="co-empty-action" data-wizard-open>+ Add a certificate</button>
+                </div>
+                <div class="co-skill-list {{ $initialFiltered->isEmpty() ? 'co-hidden' : '' }}" id="competencySkillList" aria-live="polite">
+                    <div class="co-loading-skeletons" aria-hidden="true">
+                        <span class="co-loading-skeleton"></span>
+                        <span class="co-loading-skeleton"></span>
+                        <span class="co-loading-skeleton"></span>
                     </div>
-                    <p class="co-empty {{ $initialFiltered->isEmpty() ? '' : 'co-hidden' }}" id="competencyNoResults">No competencies match this filter.</p>
-                @else
-                    <div class="co-empty" id="competencyEmptyState">
-                        <h3 class="co-empty-title">Build your competency profile</h3>
-                        <p>Add a skill or certification and attach evidence for coordinator review.</p>
-                        <button type="button" class="co-empty-action" data-bs-toggle="modal" data-bs-target="#addCompetencyModal">Submit evidence</button>
-                    </div>
-                    <div class="co-skill-list co-hidden" id="competencySkillList" aria-live="polite">
-                        <div class="co-loading-skeletons" aria-hidden="true">
-                            <span class="co-loading-skeleton"></span>
-                            <span class="co-loading-skeleton"></span>
-                            <span class="co-loading-skeleton"></span>
-                        </div>
-                    </div>
-                    <p class="co-empty co-hidden" id="competencyNoResults">No competencies match this filter.</p>
-                @endif
+                    @foreach($initialFiltered as $skill)
+                        <button type="button" class="co-row" data-skill-id="{{ $skill['id'] }}" aria-pressed="{{ (string) ($selectedSkill['id'] ?? '') === (string) $skill['id'] ? 'true' : 'false' }}">
+                            <span class="co-row-main">
+                                <span class="co-row-name">{{ $skill['name'] }}</span>
+                                <span class="co-row-category">{{ $skill['type_label'] }}@if($skill['skill_type_label']) · {{ $skill['skill_type_label'] }}@endif · {{ $skill['proficiency_label'] }}</span>
+                            </span>
+                        </button>
+                    @endforeach
+                </div>
+                <p class="co-empty {{ ($overview['skills'] && $initialFiltered->isEmpty()) ? '' : 'co-hidden' }}" id="competencyNoResults">No certificates match this filter.</p>
             </section>
 
             <section class="co-card co-detail" aria-labelledby="competencyDetailTitle">
-                <h2 class="co-card-title" id="competencyDetailTitle">Selected competency</h2>
+                <h2 class="co-card-title" id="competencyDetailTitle">Selected certificate</h2>
                 <div class="co-detail-content" id="competencyDetailContent">
                     @if($selectedSkill)
-                        <div class="co-detail-head">
-                            <div>
-                                <h3 class="co-detail-name" data-detail-name>{{ $selectedSkill['name'] }}</h3>
-                                <div class="co-detail-tags">
-                                    <span class="co-category-tag" data-detail-category>{{ $selectedSkill['category_label'] }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <p class="co-detail-description" data-detail-description>{{ $selectedSkill['description'] }}</p>
-                        <div class="co-levels" aria-label="Proficiency levels">
-                            @foreach($levelRows as $level)
-                                <div class="co-level-row {{ $selectedSkill['proficiency_key'] === $level['key'] ? 'is-current' : '' }}" data-level-row="{{ $level['key'] }}">
-                                    <span class="co-level-name">{{ $level['label'] }}</span>
-                                    <span class="co-level-track"><span class="co-level-fill" data-level-fill="{{ $level['key'] }}" data-value="{{ $selectedSkill['proficiency_points'] >= $level['points'] ? 100 : 0 }}" style="transform: scaleX({{ $selectedSkill['proficiency_points'] >= $level['points'] ? 1 : 0 }})"></span></span>
-                                    <span class="co-level-score co-number">{{ $level['points'] }}</span>
-                                </div>
-                            @endforeach
-                        </div>
-                        <div class="co-evidence" data-detail-evidence>
-                            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 1.75h5l3 3v9.5H4a1 1 0 0 1-1-1v-10a1.5 1.5 0 0 1 1-1.5Z" stroke="currentColor" stroke-width="1.3"/><path d="M9 2v3h3M5.5 8h5M5.5 10.5h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-                            <span>{{ $selectedSkill['evidence_filename'] ?: 'No evidence file attached' }}</span>
-                        </div>
-                        <div class="co-detail-action">
-                            <a class="co-primary" data-detail-action href="{{ route('student.competencies.edit', $selectedSkill['id']) }}">Edit competency</a>
-                        </div>
+                        <h3 class="co-detail-name">{{ $selectedSkill['name'] }}</h3>
                     @else
-                        <div class="co-detail-empty" id="competencyDetailEmpty">Select a competency to view its details.</div>
+                        <div class="co-detail-empty" id="competencyDetailEmpty">Select a certificate to view its details.</div>
                     @endif
                 </div>
             </section>
+
+            @if($legacyCertificates->isNotEmpty())
+                <section class="co-card" aria-labelledby="legacyCertificatesTitle" id="legacyCertificates">
+                    <h2 class="co-card-title" id="legacyCertificatesTitle">Older certificates</h2>
+                    <p class="co-hint">These came from your Documents tab. Add the type, skill type, level, and skills so they count in your chart and match score.</p>
+                    <ul class="co-legacy-list">
+                        @foreach($legacyCertificates as $legacy)
+                            <li class="co-legacy-row" data-legacy-id="{{ $legacy['id'] }}">
+                                <div>
+                                    <span class="co-row-name">{{ $legacy['title'] }}</span>
+                                    <span class="co-row-category">{{ $legacy['issuer'] ?: 'Issuer not added' }} · Needs details</span>
+                                </div>
+                                <div class="co-legacy-actions">
+                                    @if($legacy['file_url'])
+                                        <a class="co-secondary" href="{{ $legacy['file_url'] }}" target="_blank" rel="noopener">View</a>
+                                    @endif
+                                    <button type="button" class="co-primary" data-wizard-legacy="{{ json_encode($legacy) }}">Add details</button>
+                                    <form method="POST" action="{{ $legacy['delete_url'] }}" data-certificate-delete data-confirm="Delete this certificate?" data-confirm-title="Delete certificate">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="co-secondary">Delete</button>
+                                    </form>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                </section>
+            @endif
         </div>
     </div>
+    <div class="save-toast co-toast" id="certificateToast" role="status" aria-live="polite"></div>
 </main>
 
-<div class="modal fade" id="addCompetencyModal" tabindex="-1" aria-labelledby="addCompetencyModalLabel" aria-hidden="true" data-sb-form-modal @if(old('_modal') === 'competency' || request()->boolean('add')) data-sb-open-on-load @endif>
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title h5" id="addCompetencyModalLabel">Add another competency</h2>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                @if($errors->any() && old('_modal') === 'competency')
-                    <div class="alert alert-danger" role="alert">Please fix the highlighted fields and try again.</div>
-                @endif
-                <form id="addCompetencyForm" method="POST" action="{{ route('student.competencies.store') }}" enctype="multipart/form-data">
-                    @csrf
-<input type="hidden" name="_modal" value="competency">
-
-                    <div class="mb-3">
-                        <label class="form-label">Competency Name <span class="text-danger" aria-hidden="true">*</span></label>
-                        <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" placeholder="e.g., JavaScript, Leadership, Project Management" required>
-                        @error('name')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Category <span class="text-danger" aria-hidden="true">*</span></label>
-                            <select class="form-select @error('category') is-invalid @enderror" name="category" required>
-                                <option value="">Select a category</option>
-                                @foreach(\App\Enums\CompetencyCategory::cases() as $category)
-                                    <option value="{{ $category->value }}" {{ old('category') === $category->value ? 'selected' : '' }}>
-                                        {{ $category->label() }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('category')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Earned Level <span class="text-danger" aria-hidden="true">*</span></label>
-                            <select class="form-select @error('proficiency_level') is-invalid @enderror" name="proficiency_level" required>
-                                <option value="">Select a level</option>
-                                @foreach(\App\Enums\ProficiencyLevel::cases() as $level)
-                                    <option value="{{ $level->value }}" {{ old('proficiency_level') === $level->value ? 'selected' : '' }}>
-                                        {{ $level->label() }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('proficiency_level')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-
-                    <div class="alert alert-info small">Skills must be earned through an assessment, certification, or verified training. Self-declared skills are not accepted.</div>
-                    <div class="row g-3 mb-3"><div class="col-md-6"><label class="form-label">Assessment / credential <span class="text-danger" aria-hidden="true">*</span></label><input name="assessment_name" class="form-control" value="{{ old('assessment_name') }}" required placeholder="e.g. Python Skills Assessment"></div><div class="col-md-6"><label class="form-label">Evidence document <span class="text-danger" aria-hidden="true">*</span></label><input type="file" name="evidence" class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required><small class="text-muted">Pending verification until reviewed.</small></div></div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-control @error('description') is-invalid @enderror" name="description" rows="4" placeholder="Describe your experience with this competency...">{{ old('description') }}</textarea>
-                        <small class="text-muted">Optional. Max 1000 characters.</small>
-                        @error('description')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Date Obtained</label>
-                            <input type="date" class="form-control @error('obtained_at') is-invalid @enderror" name="obtained_at" value="{{ old('obtained_at') }}">
-                            <small class="text-muted">Optional. When did you acquire this competency?</small>
-                            @error('obtained_at')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Issuing Organization</label>
-                            <input type="text" class="form-control @error('issuing_organization') is-invalid @enderror" name="issuing_organization" value="{{ old('issuing_organization') }}" placeholder="e.g., Coursera, Google, Your Company">
-                            <small class="text-muted">Optional. Organization that issued certification.</small>
-                            @error('issuing_organization')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-</form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary" form="addCompetencyForm"><i class="bi bi-check-circle" aria-hidden="true"></i> Add Competency</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-@push('scripts')
-<script src="{{ asset('js/sb-modals.js') }}"></script>
-@endpush
+@include('student.competencies.partials.wizard')
 @endsection
+
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/certificate-wizard.css') }}?v=1">
+@endpush
+@push('scripts')
+<script src="{{ asset('js/certificate-wizard.js') }}?v=1" defer></script>
+@endpush
 
 @push('scripts')
 <script>
@@ -1320,12 +1210,12 @@
         });
     };
     const announceChart = (scores) => {
-        const label = `Competency scores: Technical ${fmt(scores.technical)}, Soft skills ${fmt(scores.soft)}, Certification ${fmt(scores.certification)}`;
+        const label = `Certificate scores: Technical ${fmt(scores.technical)}, Soft skills ${fmt(scores.soft)}, Certificates ${fmt(scores.certification)}`;
         radar.setAttribute('aria-label', label);
         chartAnnouncement.textContent = label;
     };
     const vertexTooltipText = (key) => {
-        const groupSkills = skills.filter((skill) => skill.group_key === key);
+        const groupSkills = skills.filter((skill) => (skill.group_keys || []).includes(key));
         const points = groupSkills.reduce((sum, skill) => sum + Number(skill.proficiency_points || 0), 0);
         return `${points} of ${Number(groups[key]?.target || 0) * 100} points`;
     };
@@ -1349,7 +1239,7 @@
 
     const renderDetail = (skill) => {
         if (!skill) {
-            detail.innerHTML = '<div class="co-detail-empty">Select a competency to view its details.</div>';
+            detail.innerHTML = '<div class="co-detail-empty">Select a certificate to view its details.</div>';
             return;
         }
 
@@ -1363,12 +1253,20 @@
         name.className = 'co-detail-name';
         name.textContent = skill.name;
         headingWrap.append(name);
-        const tags = document.createElement('div');
-        tags.className = 'co-detail-tags';
-        const categoryTag = document.createElement('span');
-        categoryTag.className = 'co-category-tag';
-        categoryTag.textContent = skill.category_label;
-        tags.append(categoryTag);
+        if (skill.issuing_organization) {
+            const issuer = document.createElement("p");
+            issuer.className = "co-detail-issuer";
+            issuer.textContent = skill.issuing_organization;
+            headingWrap.append(issuer);
+        }
+        const tags = document.createElement("div");
+        tags.className = "co-detail-tags";
+        [skill.type_label, skill.skill_type_label].filter(Boolean).forEach((text) => {
+            const tag = document.createElement("span");
+            tag.className = "co-category-tag";
+            tag.textContent = text;
+            tags.append(tag);
+        });
         headingWrap.append(tags);
         head.append(headingWrap);
         content.append(head);
@@ -1404,21 +1302,51 @@
         });
         content.append(levelList);
 
-        const evidence = document.createElement('div');
-        evidence.className = 'co-evidence';
+        if ((skill.learned_skills || []).length) {
+            const learnedTitle = document.createElement("h4");
+            learnedTitle.className = "co-learned-title";
+            learnedTitle.textContent = "Skills you learned";
+            const learned = document.createElement("ul");
+            learned.className = "co-learned-list";
+            skill.learned_skills.forEach((text) => {
+                const item = document.createElement("li");
+                item.textContent = text;
+                learned.append(item);
+            });
+            content.append(learnedTitle, learned);
+        }
+
+        const evidence = document.createElement("div");
+        evidence.className = "co-evidence";
         evidence.innerHTML = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 1.75h5l3 3v9.5H4a1 1 0 0 1-1-1v-10a1.5 1.5 0 0 1 1-1.5Z" stroke="currentColor" stroke-width="1.3"/><path d="M9 2v3h3M5.5 8h5M5.5 10.5h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
-        const evidenceName = document.createElement('span');
-        evidenceName.textContent = skill.evidence_filename || 'No evidence file attached';
+        const evidenceName = document.createElement("span");
+        evidenceName.textContent = skill.evidence_filename || "No file attached";
         evidence.append(evidenceName);
         content.append(evidence);
 
-        const actionWrap = document.createElement('div');
-        actionWrap.className = 'co-detail-action';
-        const action = document.createElement('a');
-        action.className = 'co-primary';
-        action.href = root.dataset.editUrlTemplate.replace('__ID__', encodeURIComponent(skill.id));
-        action.textContent = 'Edit competency';
-        actionWrap.append(action);
+        const actionWrap = document.createElement("div");
+        actionWrap.className = "co-detail-action co-detail-actions";
+        if (skill.file_url) {
+            const view = document.createElement("a");
+            view.className = "co-secondary";
+            view.href = skill.file_url;
+            view.target = "_blank";
+            view.rel = "noopener";
+            view.textContent = "View";
+            actionWrap.append(view);
+        }
+        const edit = document.createElement("button");
+        edit.type = "button";
+        edit.className = "co-primary";
+        edit.dataset.wizardEdit = String(skill.id);
+        edit.textContent = "Edit";
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "co-secondary co-danger";
+        remove.dataset.certificateDeleteUrl = skill.delete_url;
+        remove.dataset.certificateName = skill.name;
+        remove.textContent = "Delete";
+        actionWrap.append(edit, remove);
         content.append(actionWrap);
         detail.append(content);
         const revealContent = () => {
@@ -1437,7 +1365,7 @@
 
     const skillVisible = (skill) => {
         return !category
-            || (category === '__other' ? !skill.group_key : skill.group_key === category);
+            || (category === '__other' ? !(skill.group_keys || []).length : (skill.group_keys || []).includes(category));
     };
 
     const renderList = (animate = true, initial = false) => {
@@ -1462,7 +1390,7 @@
                 name.textContent = skill.name;
                 const meta = document.createElement('span');
                 meta.className = 'co-row-category';
-                meta.textContent = `${skill.category_label} · ${skill.proficiency_label}`;
+                meta.textContent = [skill.type_label, skill.skill_type_label, skill.proficiency_label].filter(Boolean).join(' · ');
                 main.append(name, meta);
                 row.append(main);
                 row.style.opacity = '0';
@@ -1506,7 +1434,7 @@
     const updateStrength = (initial = false) => {
         const counted = skills.filter((skill) => {
             return !category
-                || (category === '__other' ? !skill.group_key : skill.category_key === category || skill.group_key === category);
+                || (category === '__other' ? !(skill.group_keys || []).length : (skill.group_keys || []).includes(category));
         });
         const average = counted.length
             ? counted.reduce((sum, skill) => sum + Number(skill.proficiency_points || 0), 0) / counted.length
@@ -1644,6 +1572,37 @@
     } else {
         finishHydration();
     }
+
+    // The wizard (public/js/certificate-wizard.js) reads current data here and announces saves.
+    const emptyState = document.getElementById('competencyEmptyState');
+    window.sbCertificates = { find: (id) => skills.find((skill) => String(skill.id) === String(id)) };
+    document.addEventListener('certificates:changed', (event) => {
+        const overview = event.detail?.overview;
+        if (!overview) return;
+        finishHydration();
+        skills.splice(0, skills.length, ...overview.skills);
+        Object.keys(groups).forEach((key) => delete groups[key]);
+        Object.assign(groups, overview.groups);
+        if (event.detail.selectId) selectedId = String(event.detail.selectId);
+        emptyState?.classList.toggle('co-hidden', skills.length > 0);
+        const targets = {};
+        Object.keys(angleByGroup).forEach((key) => {
+            targets[key] = groupScore(key);
+            const axisButton = document.querySelector(`#competenciesOverview [data-axis="${key}"]`);
+            const tooltip = document.querySelector(`#competenciesOverview [data-axis-tooltip="${key}"]`);
+            if (tooltip) tooltip.textContent = vertexTooltipText(key);
+            tween(axisButton || radar, Number(currentScores[key] || 0), targets[key], duration('--co-dur-slow'), easeInOut, (value) => {
+                currentScores[key] = value;
+                refreshShapeAndVertices();
+                axisButton?.querySelector('.co-axis-value') && (axisButton.querySelector('.co-axis-value').textContent = fmt(value));
+                const stat = document.querySelector(`#competenciesOverview [data-stat-value="${key}"]`);
+                if (stat) stat.textContent = fmt(value);
+            });
+        });
+        updateStrength();
+        renderList(false);
+        announceChart(targets);
+    });
 })();
 </script>
 @endpush
