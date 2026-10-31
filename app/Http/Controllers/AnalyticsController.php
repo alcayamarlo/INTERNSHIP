@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Enums\ApplicationStatus;
 use App\Enums\UserRole;
-use App\Models\Certificate;
 use App\Models\InternshipApplication;
 use App\Models\Portfolio;
 use App\Models\RecommendationFeedback;
@@ -102,12 +101,8 @@ class AnalyticsController extends Controller
             'total_applications' => InternshipApplication::query()
                 ->when($studentIds !== null, fn ($query) => $query->whereIn('student_id', $studentIds))
                 ->count(),
-            'verified_evidence' => $verifiedEvidenceQuery(StudentCompetency::class)
-                + $verifiedEvidenceQuery(Certificate::class)
-                + $verifiedEvidenceQuery(Portfolio::class),
-            'pending_reviews' => $pendingReviewQuery(StudentCompetency::class)
-                + $pendingReviewQuery(Certificate::class)
-                + $pendingReviewQuery(Portfolio::class),
+            'verified_evidence' => $verifiedEvidenceQuery(Portfolio::class),
+            'pending_reviews' => $pendingReviewQuery(Portfolio::class),
             'helpful_feedback' => (clone $feedbackQuery)->where('feedback', 'helpful')->count(),
             'not_helpful_feedback' => (clone $feedbackQuery)->where('feedback', 'not_helpful')->count(),
         ];

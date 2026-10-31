@@ -41,6 +41,11 @@ class PlacementPolicy
             && $this->coordinatorCanAccess($user, $placement);
     }
 
+    public function requestRating(User $user, Placement $placement): bool
+    {
+        return $user->isRole(UserRole::Coordinator) && $this->coordinatorCanAccess($user, $placement);
+    }
+
     public function downloadCertificate(User $user, Placement $placement): bool
     {
         return $placement->isCleared() && $this->view($user, $placement);

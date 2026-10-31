@@ -58,6 +58,13 @@
                 @error('institution_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
 
+            <div class="col-md-6" id="student-id-field">
+                <label for="student_id_number" class="form-label">Student ID Number</label>
+                <input id="student_id_number" name="student_id_number" type="text" value="{{ old('student_id_number') }}" placeholder="SCC-21-00013240" class="form-control @error('student_id_number') is-invalid @enderror">
+                <small class="form-text text-muted">This becomes the student's login username and can't be changed by the student afterward.</small>
+                @error('student_id_number')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+
             <div class="col-12">
                 <hr>
             </div>
@@ -87,16 +94,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const role = document.getElementById('role');
     const companyField = document.getElementById('company-field');
     const institutionField = document.getElementById('institution-field');
+    const studentIdField = document.getElementById('student-id-field');
     const company = document.getElementById('company_name');
     const institution = document.getElementById('institution_id');
+    const studentId = document.getElementById('student_id_number');
 
     function updateFields() {
         const isEmployer = role.value === 'employer';
-        const needsInstitution = role.value === 'coordinator' || role.value === 'student';
+        const isStudent = role.value === 'student';
+        const needsInstitution = role.value === 'coordinator' || isStudent;
         companyField.hidden = !isEmployer;
         institutionField.hidden = isEmployer;
+        studentIdField.hidden = !isStudent;
         company.required = isEmployer;
         institution.required = needsInstitution;
+        studentId.required = isStudent;
     }
 
     role.addEventListener('change', updateFields);

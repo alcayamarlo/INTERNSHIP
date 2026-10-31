@@ -20,8 +20,7 @@
                         <a href="{{ $base ?? '' }}#questions">FAQs</a>
                     </div>
                     <div class="public-nav-actions">
-                        <a class="public-button" href="{{ route('login') }}">Log in</a>
-                        <a class="public-button public-button-primary" href="{{ route('register') }}">Student registration <svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg></a>
+                        <a class="public-button public-button-primary" href="{{ route('login') }}">Log in <svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"></path></svg></a>
                     </div>
                 </div>
             </div>

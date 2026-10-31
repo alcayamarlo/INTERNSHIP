@@ -46,7 +46,7 @@
             <span class="jb-empty-icon" aria-hidden="true">{!! $icon($ICONS['briefcase']) !!}</span>
             <h3>No open internships right now</h3>
             <p>New opportunities are posted by partner employers throughout the year.</p>
-            <a class="public-button public-button-primary" href="{{ route('register') }}">Create a student account to get updates</a>
+            <a class="public-button public-button-primary" href="{{ route('login') }}">Sign in for updates</a>
         </div>
     @else
         <div class="jb" data-jb>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\Student;
 use App\Models\User;
 use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
@@ -22,35 +23,42 @@ class LoginController extends Controller
     public function login(LoginRequest $request)
     {
         $credentials = $request->validated();
-        $user = User::query()->where('email', $credentials['email'])->first();
+        $login = trim($credentials['login']);
+        $user = str_contains($login, '@')
+            ? User::query()->where('email', $login)->first()
+            : Student::query()->where('student_id_number', mb_strtoupper($login))->first()?->user;
 
         if (! $user) {
             return back()->withErrors([
-                'email' => 'Email not found.',
-            ])->onlyInput('email');
+                'login' => 'Account not found.',
+            ])->onlyInput('login');
         }
 
         if (! Hash::check($credentials['password'], $user->password)) {
             return back()->withErrors([
-                'email' => 'Wrong password.',
-            ])->onlyInput('email');
+                'login' => 'Wrong password.',
+            ])->onlyInput('login');
         }
 
         if ($user->archived_at) {
             return back()->withErrors([
-                'email' => 'This account has been archived. Please contact the administrator.',
-            ])->onlyInput('email');
+                'login' => 'This account has been archived. Please contact the administrator.',
+            ])->onlyInput('login');
         }
 
         if (! $user->is_active) {
             return back()->withErrors([
-                'email' => 'Your account has been deactivated. Please contact support.',
-            ])->onlyInput('email');
+                'login' => 'Your account has been deactivated. Please contact support.',
+            ])->onlyInput('login');
         }
 
         Auth::login($user);
         $request->session()->regenerate();
         $this->activityLog->log($user, 'login');
+
+        if ($user->must_change_password) {
+            return redirect()->route('password.force-change');
+        }
 
         if (! $user->hasVerifiedEmail()) {
             return redirect()->route('verification.notice')

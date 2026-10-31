@@ -99,7 +99,6 @@ class DashboardController extends Controller
                 'competencies',
                 'certificates',
                 'portfolios',
-                'competencies as verified_competencies_count' => fn ($query) => $query->where('verification_status', 'verified'),
                 'certificates as verified_certificates_count' => fn ($query) => $query->where('verification_status', 'verified'),
                 'portfolios as verified_portfolios_count' => fn ($query) => $query->where('verification_status', 'verified'),
             ])
@@ -162,11 +161,11 @@ class DashboardController extends Controller
 
     private function studentListPayload(Student $student, string $studentIdPattern): array
     {
-        $totalSubmissions = $student->competencies_count
-            + $student->certificates_count
+        // Competencies are no longer a reviewable item, so they're excluded from this
+        // submitted/verified ratio (still exposed separately as competencies_count).
+        $totalSubmissions = $student->certificates_count
             + $student->portfolios_count;
-        $verifiedSubmissions = $student->verified_competencies_count
-            + $student->verified_certificates_count
+        $verifiedSubmissions = $student->verified_certificates_count
             + $student->verified_portfolios_count;
 
         return [
@@ -212,12 +211,13 @@ class DashboardController extends Controller
             'category' => $item->category?->label() ?? 'Competency',
             'level' => $item->proficiency_level?->value ?? 'beginner',
             'level_label' => $item->proficiency_level?->label() ?? 'Beginner',
-            'status' => $this->verificationStatus($item->verification_status),
         ]);
         $certificates = $student->certificates->map(fn ($item) => [
+            'id' => $item->id,
             'title' => $item->title,
             'issuer' => $item->issuer,
             'status' => $this->verificationStatus($item->verification_status),
+            'has_file' => filled($item->file_path),
         ]);
         $portfolios = $student->portfolios->map(fn ($item) => [
             'title' => $item->title,
@@ -225,7 +225,8 @@ class DashboardController extends Controller
             'status' => $this->verificationStatus($item->verification_status),
         ]);
 
-        $submissions = $competencies->concat($certificates)->concat($portfolios);
+        // Competencies are excluded here too: they no longer carry a verification status.
+        $submissions = $certificates->concat($portfolios);
         $verificationCounts = [
             'verified' => $submissions->where('status', 'verified')->count(),
             'pending' => $submissions->where('status', 'pending')->count(),
@@ -297,7 +298,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Batch verify competencies, certificates, or portfolios.
+     * Batch verify portfolios.
      */
     public function batchVerify(Request $request)
     {
@@ -305,7 +306,7 @@ class DashboardController extends Controller
         abort_unless($coordinator && $coordinator->institution_id, 403, 'No institution assigned.');
 
         $validated = $request->validate([
-            'type' => ['required', 'in:competency,certificate,portfolio'],
+            'type' => ['required', 'in:portfolio'],
             'ids' => ['required', 'array', 'min:1'],
             'ids.*' => ['integer'],
             'verification_status' => ['required', 'in:verified,rejected'],
@@ -313,8 +314,6 @@ class DashboardController extends Controller
         ]);
 
         $modelClass = match ($validated['type']) {
-            'competency' => \App\Models\StudentCompetency::class,
-            'certificate' => \App\Models\Certificate::class,
             'portfolio' => \App\Models\Portfolio::class,
         };
 

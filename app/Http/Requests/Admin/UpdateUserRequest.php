@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Enums\UserRole;
+use App\Support\StudentIdFormat;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -17,13 +18,25 @@ class UpdateUserRequest extends FormRequest
     public function rules(): array
     {
         $user = $this->route('user');
+        $isStudent = $this->input('role') === UserRole::Student->value;
 
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user?->id)],
+            'email' => [$isStudent ? 'nullable' : 'required', 'email', 'max:255', Rule::unique('users')->ignore($user?->id)],
             'role' => ['required', Rule::enum(UserRole::class)],
             'is_active' => ['required', 'boolean'],
             'password' => ['nullable', 'confirmed', Password::defaults()],
+            'student_id_number' => [
+                $isStudent ? 'required' : 'nullable',
+                'string',
+                'max:50',
+                Rule::unique('students', 'student_id_number')->ignore($user?->student?->id),
+                function ($attribute, $value, $fail) {
+                    if ($value !== null && ! StudentIdFormat::matches($value)) {
+                        $fail('Enter a student ID in the format SCC-21-00013240.');
+                    }
+                },
+            ],
         ];
     }
 
@@ -31,8 +44,11 @@ class UpdateUserRequest extends FormRequest
     {
         return [
             'name.required' => 'User name is required.',
+            'email.required' => 'Email address is required.',
             'email.unique' => 'This email is already in use.',
             'role.required' => 'Please select a role.',
+            'student_id_number.required' => 'Student ID number is required.',
+            'student_id_number.unique' => 'This student ID is already in use.',
         ];
     }
 }

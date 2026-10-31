@@ -37,6 +37,7 @@ it('allows admins to create a student account with its student profile', functio
         'password_confirmation' => 'DistinctivePassword#2026',
         'role' => UserRole::Student->value,
         'institution_id' => $institution->id,
+        'student_id_number' => 'SCC-26-00000042',
     ])->assertRedirect(route('admin.users.index'))
         ->assertSessionHasNoErrors();
 
@@ -46,7 +47,75 @@ it('allows admins to create a student account with its student profile', functio
     expect($studentUser->role)->toBe(UserRole::Student)
         ->and($student)->toBeInstanceOf(Student::class)
         ->and($student->institution_id)->toBe($institution->id)
+        ->and($student->student_id_number)->toBe('SCC-26-00000042')
+        ->and($student->student_id_locked)->toBeTrue()
         ->and($student->profile_completion)->toBe($student->profileCompletionSummary()['percentage']);
+});
+
+it('lets an admin edit a student\'s locked school ID from the user management page', function () {
+    $admin = User::factory()->create(['role' => UserRole::Admin]);
+    $institution = Institution::create(['name' => 'Test Institution', 'address' => 'Cebu City']);
+    $studentUser = User::factory()->create(['role' => UserRole::Student, 'email' => null]);
+    $student = Student::create([
+        'user_id' => $studentUser->id,
+        'institution_id' => $institution->id,
+        'student_id_number' => 'SCC-26-00000001',
+        'student_id_locked' => true,
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.users.index'))
+        ->assertOk()
+        ->assertSee('name="student_id_number"', false)
+        ->assertSee('SCC-26-00000001');
+
+    $this->actingAs($admin)
+        ->put(route('admin.users.update', $studentUser), [
+            'name' => $studentUser->name,
+            'role' => UserRole::Student->value,
+            'is_active' => true,
+            'student_id_number' => 'SCC-26-00099999',
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect($student->fresh()->student_id_number)->toBe('SCC-26-00099999')
+        ->and($student->fresh()->student_id_locked)->toBeTrue();
+});
+
+it('requires a valid, unique student ID when an admin edits a student through the user form', function () {
+    $admin = User::factory()->create(['role' => UserRole::Admin]);
+    $institution = Institution::create(['name' => 'Test Institution', 'address' => 'Cebu City']);
+    $studentA = Student::create([
+        'user_id' => User::factory()->create(['role' => UserRole::Student, 'email' => null])->id,
+        'institution_id' => $institution->id,
+        'student_id_number' => 'SCC-26-00000001',
+    ]);
+    $studentB = Student::create([
+        'user_id' => User::factory()->create(['role' => UserRole::Student, 'email' => null])->id,
+        'institution_id' => $institution->id,
+        'student_id_number' => 'SCC-26-00000002',
+    ]);
+
+    $this->actingAs($admin)
+        ->put(route('admin.users.update', $studentB->user), [
+            'name' => $studentB->user->name,
+            'role' => UserRole::Student->value,
+            'is_active' => true,
+            'student_id_number' => 'SCC-26-00000001',
+        ])
+        ->assertSessionHasErrors('student_id_number');
+
+    $this->actingAs($admin)
+        ->put(route('admin.users.update', $studentB->user), [
+            'name' => $studentB->user->name,
+            'role' => UserRole::Student->value,
+            'is_active' => true,
+            'student_id_number' => 'not-a-valid-id',
+        ])
+        ->assertSessionHasErrors('student_id_number');
+
+    expect($studentB->fresh()->student_id_number)->toBe('SCC-26-00000002');
 });
 
 it('uses all roles in user filters, limits announcement audiences, and keeps admin creation restricted', function () {
@@ -136,6 +205,7 @@ it('does not allow an admin to change their own role', function () {
     $this->actingAs($admin)
         ->put(route('admin.users.update', $admin), adminUserUpdateData($admin, [
             'role' => UserRole::Student->value,
+            'student_id_number' => 'SCC-26-00000055',
         ]))
         ->assertSessionHasErrors('role');
 

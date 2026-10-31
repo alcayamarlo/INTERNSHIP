@@ -128,6 +128,12 @@ class StudentProfileRequest extends FormRequest
                             );
                         }
                     }
+                } elseif ($student?->student_id_locked
+                    && (string) ($studentNumber ?? '') !== (string) ($student->student_id_number ?? '')) {
+                    $validator->errors()->add(
+                        'student_number',
+                        "Your student ID was set when your account was created and can't be changed here. Contact your coordinator or administrator if it needs correction."
+                    );
                 }
                 if (filled($studentNumber) && $studentNumber !== $student?->student_id_number) {
                     if (! StudentIdFormat::matches($studentNumber)) {

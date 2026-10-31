@@ -73,22 +73,15 @@ it('returns summary analytics for applications, verification, and recommendation
         'applied_at' => now(),
     ]);
 
+    // Competencies and certificates are no longer coordinator-reviewed, so they're
+    // excluded from the verified/pending evidence summary below (confirmed by this
+    // fixture: only the portfolio items move those two numbers).
     StudentCompetency::create([
         'student_id' => $student->id,
         'name' => 'PHP Development',
         'category' => CompetencyCategory::Technical,
         'description' => 'Built web applications using PHP.',
         'proficiency_level' => ProficiencyLevel::Advanced,
-        'verification_status' => 'verified',
-    ]);
-
-    StudentCompetency::create([
-        'student_id' => $student->id,
-        'name' => 'Communication',
-        'category' => CompetencyCategory::Soft,
-        'description' => 'Communication skills baseline.',
-        'proficiency_level' => ProficiencyLevel::Intermediate,
-        'verification_status' => 'pending',
     ]);
 
     Certificate::create([
@@ -97,15 +90,24 @@ it('returns summary analytics for applications, verification, and recommendation
         'issuer' => 'Cisco',
         'issue_date' => now()->subMonths(2),
         'file_path' => 'portfolios/'.$student->id.'/ccna-certificate.pdf',
-        'verification_status' => 'pending',
+        'verification_status' => 'verified',
     ]);
 
     Portfolio::create([
         'student_id' => $student->id,
-        'title' => 'Portfolio Sample',
+        'title' => 'Verified Portfolio Sample',
         'type' => 'project',
         'description' => 'Project showcase',
         'file_path' => 'portfolios/'.$student->id.'/sample-portfolio.pdf',
+        'verification_status' => 'verified',
+    ]);
+
+    Portfolio::create([
+        'student_id' => $student->id,
+        'title' => 'Rejected Portfolio Sample',
+        'type' => 'project',
+        'description' => 'Project showcase',
+        'file_path' => 'portfolios/'.$student->id.'/rejected-portfolio.pdf',
         'verification_status' => 'rejected',
     ]);
 

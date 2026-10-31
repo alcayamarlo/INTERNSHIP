@@ -55,6 +55,7 @@ it('shows pending evidence for coordinators and allows reviewing it', function (
     $coordinator = createCoordinatorForVerification($institution);
     $student = createStudentForVerification($institution);
 
+    // Competencies and certificates still get uploaded, but no longer appear in the coordinator review queue.
     $competency = StudentCompetency::create([
         'student_id' => $student->id,
         'name' => 'Python Fundamentals',
@@ -66,7 +67,6 @@ it('shows pending evidence for coordinators and allows reviewing it', function (
         'evidence_path' => 'competencies/1/sample.pdf',
         'evidence_name' => 'sample.pdf',
     ]);
-
     $certificate = Certificate::create([
         'student_id' => $student->id,
         'title' => 'Google IT Support',
@@ -89,46 +89,20 @@ it('shows pending evidence for coordinators and allows reviewing it', function (
         ->get(route('coordinator.verification.index'))
         ->assertOk()
         ->assertSee('Verification Queue')
-        ->assertSee($competency->name)
-        ->assertSee($certificate->title)
-        ->assertSee($portfolio->title);
+        ->assertSee($portfolio->title)
+        ->assertDontSee($competency->name)
+        ->assertDontSee($certificate->title);
 
-    $this->actingAs($coordinator)
-        ->post(route('coordinator.verification.reviewCompetency', $competency), [
-            'verification_status' => 'verified',
-            'review_notes' => 'Strong evidence and aligned with program expectations.',
-        ])
-        ->assertRedirect();
-
+    // Neither competencies nor certificates can be reviewed at all anymore; both routes are gone.
+    expect(\Illuminate\Support\Facades\Route::has('coordinator.verification.reviewCompetency'))->toBeFalse()
+        ->and(\Illuminate\Support\Facades\Route::has('coordinator.verification.reviewCertificate'))->toBeFalse();
     $this->assertDatabaseHas('student_competencies', [
         'id' => $competency->id,
-        'verification_status' => 'verified',
+        'verification_status' => 'evidence_submitted',
     ]);
-
-    $this->assertDatabaseHas('notifications', [
-        'user_id' => $student->user_id,
-        'type' => 'verification',
-        'title' => 'Competency Evidence Verified',
-    ]);
-
-    $this->actingAs($coordinator)
-        ->post(route('coordinator.verification.reviewCertificate', $certificate), [
-            'verification_status' => 'rejected',
-            'review_notes' => 'Certificate cannot be verified.',
-        ])
-        ->assertRedirect();
-
     $this->assertDatabaseHas('certificates', [
         'id' => $certificate->id,
-        'verification_status' => 'rejected',
-        'reviewed_by_user_id' => $coordinator->id,
-    ]);
-    expect($certificate->fresh()->reviewed_at)->not->toBeNull();
-
-    $this->assertDatabaseHas('notifications', [
-        'user_id' => $student->user_id,
-        'type' => 'verification',
-        'title' => 'Certificate Evidence Rejected',
+        'verification_status' => 'evidence_submitted',
     ]);
 
     $this->actingAs($coordinator)

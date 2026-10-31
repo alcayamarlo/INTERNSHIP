@@ -20,8 +20,8 @@ class CompetencyMatchingService
 
     /**
      * Same score as calculateMatch(), plus the breakdown of which requirements
-     * matched and why each unmatched one is missing (no evidence, not yet
-     * verified, or below the required proficiency level).
+     * matched and why each unmatched one is missing (no evidence, or below the
+     * required proficiency level).
      */
     public function calculateMatchWithDetails(Student $student, Internship $internship): array
     {
@@ -82,7 +82,7 @@ class CompetencyMatchingService
                 'details' => [
                     'matched_requirements' => [],
                     'missing_requirements' => [],
-                    'verified_match_count' => 0,
+                    'matched_count' => 0,
                     'total_requirements' => 0,
                     'explanation' => 'This internship has no listed requirements, so no skill matching could be calculated.',
                 ],
@@ -93,7 +93,7 @@ class CompetencyMatchingService
         $feedback = $this->getStudentFeedback($student, $internship->id);
         $matchedRequirements = [];
         $missingRequirements = [];
-        $verifiedMatchCount = 0;
+        $matchedCount = 0;
         $weightedScore = 0;
         $totalWeight = 0;
 
@@ -130,25 +130,13 @@ class CompetencyMatchingService
                 ? $studentMatch->proficiency_level->score()
                 : ProficiencyLevel::from($studentMatch->proficiency_level)->score();
 
-            $isVerified = strtolower((string) ($studentMatch->verification_status ?? '')) === 'verified';
-
-            if ($isVerified && $studentScore >= $requiredScore) {
+            if ($studentScore >= $requiredScore) {
                 $matchedRequirements[] = [
                     'name' => $requirement->requirement_name,
                     'required_level' => $requiredLevelLabel,
                 ];
-                $verifiedMatchCount++;
+                $matchedCount++;
                 $weightedScore += $weight * min($studentScore / $requiredScore, 1.0);
-                continue;
-            }
-
-            if (! $isVerified) {
-                $missingRequirements[] = [
-                    'name' => $requirement->requirement_name,
-                    'required_level' => $requiredLevelLabel,
-                    'reason' => 'not_verified',
-                    'reason_label' => 'Added, but your coordinator has not verified it yet.',
-                ];
                 continue;
             }
 
@@ -156,13 +144,13 @@ class CompetencyMatchingService
                 'name' => $requirement->requirement_name,
                 'required_level' => $requiredLevelLabel,
                 'reason' => 'below_required_level',
-                'reason_label' => 'Your verified level is below the required '.$requiredLevelLabel.' level.',
+                'reason_label' => 'Your current level is below the required '.$requiredLevelLabel.' level.',
             ];
         }
 
         $matchPercentage = $totalWeight > 0
             ? (int) round(($weightedScore / $totalWeight) * 100)
-            : (int) round(($verifiedMatchCount / $requirements->count()) * 100);
+            : (int) round(($matchedCount / $requirements->count()) * 100);
 
         $feedbackAdjustment = $this->calculateFeedbackAdjustment($feedback);
         $matchPercentage = max(0, min(100, $matchPercentage + $feedbackAdjustment));
@@ -172,11 +160,11 @@ class CompetencyMatchingService
             'details' => [
                 'matched_requirements' => $matchedRequirements,
                 'missing_requirements' => $missingRequirements,
-                'verified_match_count' => $verifiedMatchCount,
+                'matched_count' => $matchedCount,
                 'total_requirements' => $requirements->count(),
-                'explanation' => $verifiedMatchCount > 0
-                    ? 'The recommendation score is based on verified competency evidence that meets the internship requirements.'
-                    : 'No verified competency evidence currently matches the internship requirements.',
+                'explanation' => $matchedCount > 0
+                    ? 'The recommendation score is based on competency evidence that meets the internship requirements.'
+                    : 'No competency evidence currently matches the internship requirements.',
             ],
         ];
     }

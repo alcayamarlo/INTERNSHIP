@@ -43,6 +43,8 @@
         @if($placement->isCleared())
             <p class="text-muted">The coordinator has cleared this OJT, so the evaluation is locked.</p>
             @include('ojt.partials.evaluation', ['placement' => $placement])
+        @elseif(! $placement->rating_requested_at && ! $placement->evaluation)
+            <x-empty-state icon="bi-clipboard-check" title="No rating requested yet" message="Your coordinator hasn't requested a performance rating for this intern yet." />
         @else
             @php $evaluation = $placement->evaluation; @endphp
             <p class="small text-muted">Rate each criterion from 1 (poor) to 5 (outstanding). You can update the evaluation until the coordinator clears the OJT.</p>

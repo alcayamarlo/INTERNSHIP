@@ -108,6 +108,29 @@ it('prevents students from changing verified student ID program or year level th
         ->and($student->fresh()->year_level)->toBe('3rd Year');
 });
 
+it('prevents a CSV-imported student from changing their locked ID even before coordinator verification', function () {
+    $institution = Institution::create(['name' => 'Imported University']);
+    $student = phaseFourStudent($institution, [
+        'student_id_locked' => true,
+    ]);
+
+    $this->actingAs($student->user)
+        ->put(route('student.profile.update'), [
+            'first_name' => 'Imported',
+            'last_name' => 'Student',
+            'email' => $student->user->email,
+            'phone' => '09171234567',
+            'address' => '1 Campus Road',
+            'city' => 'Cebu City',
+            'province' => 'Cebu',
+            'zip_code' => '6000',
+            'student_number' => 'SCC-22-00000099',
+        ])
+        ->assertSessionHasErrors(['student_number']);
+
+    expect($student->fresh()->student_id_number)->toBe('SCC-21-00013240');
+});
+
 it('allows a coordinator to verify a profile and update internship readiness', function () {
     $institution = Institution::create(['name' => 'Readiness University']);
     [$coordinatorUser, $coordinator] = phaseFourCoordinator($institution);
@@ -150,13 +173,13 @@ it('notifies the assigned coordinator and applies an approved student change req
 
     $this->actingAs($student->user)
         ->post(route('student.profile.change-requests.store'), [
-            'field' => 'student_id_number',
-            'requested_value' => 'scc-19-00012320',
+            'field' => 'year_level',
+            'requested_value' => '4th Year',
         ])
         ->assertRedirect();
 
     $changeRequest = StudentChangeRequest::query()->firstOrFail();
-    expect($changeRequest->requested_value)->toBe('SCC-19-00012320');
+    expect($changeRequest->requested_value)->toBe('4th Year');
     Queue::assertPushed(SendNotification::class, fn (SendNotification $job) => $job->userId === $coordinatorUser->id);
 
     $this->actingAs($coordinatorUser)
@@ -165,10 +188,47 @@ it('notifies the assigned coordinator and applies an approved student change req
         ])
         ->assertRedirect();
 
-    expect($student->fresh()->student_id_number)->toBe('SCC-19-00012320')
+    expect($student->fresh()->year_level)->toBe('4th Year')
         ->and($changeRequest->fresh()->status)->toBe('approved');
     Queue::assertPushed(SendNotification::class, fn (SendNotification $job) => $job->userId === $student->user_id
         && $job->type === 'profile_change_request');
+});
+
+it('never lets a coordinator approve a student ID change, even via a forged request', function () {
+    Queue::fake();
+    $institution = Institution::create(['name' => 'Locked ID University']);
+    [$coordinatorUser, $coordinator] = phaseFourCoordinator($institution);
+    $program = phaseFourProgram($coordinator);
+    $student = phaseFourStudent($institution, [
+        'program_id' => $program->id,
+        'profile_verified_at' => now(),
+        'profile_verified_by_user_id' => $coordinatorUser->id,
+    ]);
+
+    $this->actingAs($student->user)
+        ->post(route('student.profile.change-requests.store'), [
+            'field' => 'student_id_number',
+            'requested_value' => 'SCC-19-00012320',
+        ])
+        ->assertSessionHasErrors('field');
+
+    expect(StudentChangeRequest::query()->count())->toBe(0);
+
+    // Even a change request forged directly (bypassing the form) must not be approvable.
+    $forgedRequest = $student->changeRequests()->create([
+        'field' => 'student_id_number',
+        'current_value' => $student->student_id_number,
+        'requested_value' => 'SCC-19-00012320',
+        'status' => 'pending',
+    ]);
+
+    $this->actingAs($coordinatorUser)
+        ->patch(route('coordinator.students.change-requests.review', [$student, $forgedRequest]), [
+            'decision' => 'approved',
+        ])
+        ->assertStatus(422);
+
+    expect($student->fresh()->student_id_number)->toBe('SCC-21-00013240');
 });
 
 it('requires a coordinator note when rejecting a change request and sends the outcome', function () {

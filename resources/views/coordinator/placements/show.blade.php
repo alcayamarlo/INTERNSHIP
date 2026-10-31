@@ -27,6 +27,24 @@
     </div>
 @endcan
 
+<div class="card mb-4">
+    <div class="card-header"><h2 class="h6 mb-0"><i class="bi bi-star" aria-hidden="true"></i> Employer rating</h2></div>
+    <div class="card-body">
+        @if($placement->rating_requested_at)
+            <p class="small text-muted mb-2">Requested {{ $placement->rating_requested_at->format('M d, Y') }}@if($placement->ratingRequestedBy) by {{ $placement->ratingRequestedBy->name }}@endif.</p>
+        @else
+            <p class="small text-muted mb-2">No rating has been requested from the employer yet.</p>
+        @endif
+        @can('requestRating', $placement)
+            <form method="POST" action="{{ route('coordinator.placements.request-rating', $placement) }}" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-send" aria-hidden="true"></i> {{ $placement->rating_requested_at ? 'Re-request rating' : 'Request rating' }}
+                </button>
+            </form>
+        @endcan
+    </div>
+</div>
 @include('ojt.partials.evaluation', ['placement' => $placement])
 @include('ojt.partials.attendance', ['placement' => $placement, 'mode' => 'readonly'])
 @include('ojt.partials.journals', ['placement' => $placement, 'mode' => 'readonly'])

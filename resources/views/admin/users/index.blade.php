@@ -5,6 +5,9 @@
 @section('content')
 
 <x-page-header title="User Management" subtitle="Manage accounts and preserve archived user records">
+    <a href="{{ route('admin.students.import.create') }}" class="btn btn-outline-primary">
+        <i class="bi bi-upload" aria-hidden="true"></i> Import Students
+    </a>
     <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
         <i class="bi bi-plus-lg" aria-hidden="true"></i> Create User
     </a>
@@ -158,8 +161,8 @@
                             <input id="editName{{ $user->id }}" type="text" class="form-control" name="name" value="{{ $user->name }}" required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label" for="editEmail{{ $user->id }}">Email <span class="text-danger" aria-hidden="true">*</span></label>
-                            <input id="editEmail{{ $user->id }}" type="email" class="form-control" name="email" value="{{ $user->email }}" required>
+                            <label class="form-label" for="editEmail{{ $user->id }}">Email <span class="text-danger" data-email-required-mark aria-hidden="true">*</span></label>
+                            <input id="editEmail{{ $user->id }}" type="email" class="form-control" name="email" value="{{ $user->email }}">
                         </div>
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
@@ -180,6 +183,11 @@
                                     <option value="0" {{ !($user->is_active ?? true) ? 'selected' : '' }}>Inactive</option>
                                 </select>
                             </div>
+                        </div>
+                        <div class="mb-3" data-student-id-field @unless($user->role === \App\Enums\UserRole::Student) hidden @endunless>
+                            <label class="form-label" for="editStudentId{{ $user->id }}">Student ID Number</label>
+                            <input id="editStudentId{{ $user->id }}" type="text" class="form-control" name="student_id_number" value="{{ $user->student->student_id_number ?? '' }}" placeholder="SCC-21-00013240">
+                            <small class="form-text text-muted">This is the student's login username. Only an admin can change it.</small>
                         </div>
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -204,3 +212,29 @@
 @endif
 
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[id^="editUser"]').forEach(function (modal) {
+        var roleSelect = modal.querySelector('select[name="role"]');
+        var studentIdField = modal.querySelector('[data-student-id-field]');
+        var studentIdInput = studentIdField ? studentIdField.querySelector('input[name="student_id_number"]') : null;
+        var emailInput = modal.querySelector('input[name="email"]');
+        var emailRequiredMark = modal.querySelector('[data-email-required-mark]');
+        if (!roleSelect) return;
+
+        function update() {
+            var isStudent = roleSelect.value === 'student';
+            if (studentIdField) studentIdField.hidden = !isStudent;
+            if (studentIdInput) studentIdInput.required = isStudent;
+            if (emailInput) emailInput.required = !isStudent;
+            if (emailRequiredMark) emailRequiredMark.hidden = isStudent;
+        }
+
+        roleSelect.addEventListener('change', update);
+        update();
+    });
+});
+</script>
+@endpush

@@ -29,9 +29,9 @@ function matchExplanationFixture(): array
     InternshipRequirement::create(['internship_id' => $internship->id, 'requirement_name' => 'Low Level Skill', 'required_level' => ProficiencyLevel::Expert]);
     InternshipRequirement::create(['internship_id' => $internship->id, 'requirement_name' => 'Matched Skill', 'required_level' => ProficiencyLevel::Intermediate]);
 
-    StudentCompetency::create(['student_id' => $student->id, 'name' => 'Unverified Skill', 'category' => CompetencyCategory::Technical, 'proficiency_level' => ProficiencyLevel::Advanced, 'verification_status' => 'evidence_submitted']);
-    StudentCompetency::create(['student_id' => $student->id, 'name' => 'Low Level Skill', 'category' => CompetencyCategory::Technical, 'proficiency_level' => ProficiencyLevel::Beginner, 'verification_status' => 'verified']);
-    StudentCompetency::create(['student_id' => $student->id, 'name' => 'Matched Skill', 'category' => CompetencyCategory::Technical, 'proficiency_level' => ProficiencyLevel::Advanced, 'verification_status' => 'verified']);
+    StudentCompetency::create(['student_id' => $student->id, 'name' => 'Unverified Skill', 'category' => CompetencyCategory::Technical, 'proficiency_level' => ProficiencyLevel::Advanced]);
+    StudentCompetency::create(['student_id' => $student->id, 'name' => 'Low Level Skill', 'category' => CompetencyCategory::Technical, 'proficiency_level' => ProficiencyLevel::Beginner]);
+    StudentCompetency::create(['student_id' => $student->id, 'name' => 'Matched Skill', 'category' => CompetencyCategory::Technical, 'proficiency_level' => ProficiencyLevel::Advanced]);
 
     return compact('studentUser', 'student', 'internship');
 }
@@ -44,10 +44,10 @@ it('explains each missing requirement with its specific reason', function () {
     $matched = collect($result['details']['matched_requirements'])->keyBy('name');
 
     expect($matched->has('Matched Skill'))->toBeTrue()
+        ->and($matched->has('Unverified Skill'))->toBeTrue()
         ->and($missing->get('No Evidence Skill')['reason'])->toBe('no_evidence')
-        ->and($missing->get('Unverified Skill')['reason'])->toBe('not_verified')
         ->and($missing->get('Low Level Skill')['reason'])->toBe('below_required_level')
-        ->and($result['details']['verified_match_count'])->toBe(1);
+        ->and($result['details']['matched_count'])->toBe(2);
 });
 
 it('shows the why-this-score breakdown on the internship details page', function () {
@@ -58,8 +58,8 @@ it('shows the why-this-score breakdown on the internship details page', function
         ->assertOk()
         ->assertSee('Why this score')
         ->assertSee('Matched Skill')
+        ->assertSee('Unverified Skill')
         ->assertSee('No evidence added for this skill yet.')
-        ->assertSee('has not verified it yet')
         ->assertSee('below the required Expert level');
 });
 
@@ -68,11 +68,11 @@ it('invalidates the cached match details when a student updates their competenci
     $service = app(CompetencyMatchingService::class);
 
     $before = $service->calculateMatchWithDetails($fixture['student'], $fixture['internship']);
-    expect($before['details']['verified_match_count'])->toBe(1);
+    expect($before['details']['matched_count'])->toBe(2);
 
-    StudentCompetency::create(['student_id' => $fixture['student']->id, 'name' => 'No Evidence Skill', 'category' => CompetencyCategory::Technical, 'proficiency_level' => ProficiencyLevel::Advanced, 'verification_status' => 'verified']);
+    StudentCompetency::create(['student_id' => $fixture['student']->id, 'name' => 'No Evidence Skill', 'category' => CompetencyCategory::Technical, 'proficiency_level' => ProficiencyLevel::Advanced]);
     $service->invalidateCache($fixture['student']);
 
     $after = $service->calculateMatchWithDetails($fixture['student']->fresh(), $fixture['internship']);
-    expect($after['details']['verified_match_count'])->toBe(2);
+    expect($after['details']['matched_count'])->toBe(3);
 });

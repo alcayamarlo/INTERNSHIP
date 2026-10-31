@@ -33,8 +33,7 @@
     <div class="body">
         has satisfactorily completed <strong>{{ number_format($approvedHours, 2) }} hours</strong> of on-the-job training
         as <strong>{{ $placement->internship?->title }}</strong> at <strong>{{ $placement->employer?->company_name }}</strong>
-        from {{ $placement->start_date?->format('F d, Y') }} to {{ ($placement->end_date ?? $placement->completed_at)?->format('F d, Y') }}@if($placement->evaluation),
-        with a supervisor performance rating of <strong>{{ number_format((float) $placement->evaluation->average_score, 2) }} / 5 ({{ $placement->evaluation->ratingLabel() }})</strong>@endif.
+        from {{ $placement->start_date?->format('F d, Y') }} to {{ ($placement->end_date ?? $placement->completed_at)?->format('F d, Y') }}.
     </div>
 
     <div class="signatures">

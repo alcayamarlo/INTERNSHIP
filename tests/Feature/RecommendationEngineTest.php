@@ -15,7 +15,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-it('weights verified evidence and exposes explainable recommendation details', function () {
+it('weights evidence by proficiency level regardless of verification status and exposes explainable recommendation details', function () {
     $institution = Institution::create([
         'name' => 'Metro State University',
         'address' => '123 Education Avenue',
@@ -62,16 +62,18 @@ it('weights verified evidence and exposes explainable recommendation details', f
     InternshipRequirement::create([
         'internship_id' => $internship->id,
         'requirement_name' => 'Communication',
-        'required_level' => ProficiencyLevel::Intermediate,
+        'required_level' => ProficiencyLevel::Advanced,
     ]);
 
+    // Rejected status no longer blocks a match: what matters now is only whether the
+    // student's proficiency level meets the requirement's required level.
     StudentCompetency::create([
         'student_id' => $student->id,
         'name' => 'PHP Development',
         'category' => CompetencyCategory::Technical,
         'description' => 'Built web applications using PHP.',
         'proficiency_level' => ProficiencyLevel::Advanced,
-        'verification_status' => 'verified',
+        'verification_status' => 'rejected',
     ]);
 
     StudentCompetency::create([
@@ -79,8 +81,8 @@ it('weights verified evidence and exposes explainable recommendation details', f
         'name' => 'Communication',
         'category' => CompetencyCategory::Soft,
         'description' => 'Communication skills baseline.',
-        'proficiency_level' => ProficiencyLevel::Advanced,
-        'verification_status' => 'rejected',
+        'proficiency_level' => ProficiencyLevel::Beginner,
+        'verification_status' => 'verified',
     ]);
 
     $recommendations = app(CompetencyMatchingService::class)->getRecommendations($student, 5);
@@ -90,8 +92,8 @@ it('weights verified evidence and exposes explainable recommendation details', f
         ->and($recommendations[0]->recommendation_details)->toBeArray()
         ->and($recommendations[0]->recommendation_details['matched_requirements'])->toContain(['name' => 'PHP Development', 'required_level' => 'Intermediate'])
         ->and(collect($recommendations[0]->recommendation_details['missing_requirements'])->pluck('name'))->toContain('Communication')
-        ->and(collect($recommendations[0]->recommendation_details['missing_requirements'])->firstWhere('name', 'Communication')['reason'])->toBe('not_verified')
-        ->and($recommendations[0]->recommendation_details['verified_match_count'])->toBe(1);
+        ->and(collect($recommendations[0]->recommendation_details['missing_requirements'])->firstWhere('name', 'Communication')['reason'])->toBe('below_required_level')
+        ->and($recommendations[0]->recommendation_details['matched_count'])->toBe(1);
 });
 
 it('stores student feedback for recommended internships', function () {
@@ -182,13 +184,8 @@ it('applies recommendation feedback only to its internship', function () {
         ]);
     }
 
-    StudentCompetency::create([
-        'student_id' => $student->id,
-        'name' => 'PHP',
-        'category' => CompetencyCategory::Technical,
-        'proficiency_level' => ProficiencyLevel::Advanced,
-        'verification_status' => 'evidence_submitted',
-    ]);
+    // No matching competency at all, so both internships start at a 0% base match;
+    // only the feedback adjustment should move the one with feedback attached.
     \App\Models\RecommendationFeedback::create([
         'student_id' => $student->id,
         'internship_id' => $internships[0]->id,

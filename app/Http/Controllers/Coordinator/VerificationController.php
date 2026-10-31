@@ -121,8 +121,6 @@ class VerificationController extends Controller
         $students = $coordinator->scopedStudentsQuery()
             ->with([
                 'user:id,name,email',
-                'competencies',
-                'certificates.reviewerUser:id,name',
                 'portfolios.reviewerUser:id,name',
                 'resumes.reviewerUser:id,name',
             ])
@@ -130,8 +128,6 @@ class VerificationController extends Controller
             ->get()
             ->map(function (Student $student) {
                 $items = collect()
-                    ->concat($student->competencies->map(fn (StudentCompetency $item) => $this->formatSubmission('competencies', $item, $student)))
-                    ->concat($student->certificates->map(fn (Certificate $item) => $this->formatSubmission('certificates', $item, $student)))
                     ->concat($student->portfolios->map(fn (Portfolio $item) => $this->formatSubmission('portfolio', $item, $student)))
                     ->concat($student->resumes->filter(fn (Resume $item) => filled($item->file_path))->map(fn (Resume $item) => $this->formatSubmission('resumes', $item, $student)))
                     ->sortByDesc('created_at')
@@ -164,6 +160,8 @@ class VerificationController extends Controller
     {
         $model = $this->findSubmission($type, $id);
         abort_if($model instanceof Resume, 403, 'Resumes cannot be reviewed by coordinators.');
+        abort_if($model instanceof Certificate, 403, 'Certificates can no longer be reviewed by coordinators.');
+        abort_if($model instanceof StudentCompetency, 403, 'Competencies can no longer be reviewed by coordinators.');
         abort_if(
             $model instanceof Portfolio
                 && ! in_array($model->category, [
@@ -201,10 +199,8 @@ class VerificationController extends Controller
         $coordinator = $this->coordinator();
         abort_unless($coordinator->canAccessStudent($student), 403, 'You cannot review evidence for this student.');
 
-        $student->loadMissing(['competencies', 'certificates', 'portfolios']);
+        $student->loadMissing(['portfolios']);
         $pending = collect()
-            ->concat($student->competencies->filter(fn (StudentCompetency $item) => $this->normalizeStatus($item->verification_status) === 'pending')->map(fn ($item) => ['type' => 'competencies', 'item' => $item]))
-            ->concat($student->certificates->filter(fn (Certificate $item) => $this->normalizeStatus($item->verification_status) === 'pending')->map(fn ($item) => ['type' => 'certificates', 'item' => $item]))
             ->concat($student->portfolios->filter(fn (Portfolio $item) => in_array($item->category, [PortfolioCategory::Certificate, PortfolioCategory::Project], true) && $this->normalizeStatus($item->verification_status) === 'pending')->map(fn ($item) => ['type' => 'portfolio', 'item' => $item]));
 
         $changes = DB::transaction(function () use ($pending) {
@@ -233,14 +229,10 @@ class VerificationController extends Controller
 
         $student->load([
             'user:id,name,email',
-            'competencies',
-            'certificates.reviewerUser:id,name',
             'portfolios.reviewerUser:id,name',
         ]);
 
         $items = collect()
-            ->concat($student->competencies->map(fn (StudentCompetency $item) => $this->formatSubmission('competencies', $item, $student)))
-            ->concat($student->certificates->map(fn (Certificate $item) => $this->formatSubmission('certificates', $item, $student)))
             ->concat($student->portfolios->map(fn (Portfolio $item) => $this->formatSubmission('portfolio', $item, $student)))
             ->sortByDesc('created_at')
             ->values();
@@ -332,16 +324,6 @@ class VerificationController extends Controller
             'X-Content-Type-Options' => 'nosniff',
             'Cache-Control' => 'private, no-store',
         ]);
-    }
-
-    public function reviewCompetency(Request $request, StudentCompetency $competency): RedirectResponse
-    {
-        return $this->legacyReview($request, 'competencies', $competency);
-    }
-
-    public function reviewCertificate(Request $request, Certificate $certificate): RedirectResponse
-    {
-        return $this->legacyReview($request, 'certificates', $certificate);
     }
 
     public function reviewPortfolio(Request $request, Portfolio $portfolio): RedirectResponse
@@ -560,6 +542,11 @@ class VerificationController extends Controller
 
     private function findSubmission(string $type, int $id): Model
     {
+        // 'certificates' is intentionally absent from the reviewable types used by
+        // index/studentDetails/verifyAll/updateStatus (and from the 'verification.update'
+        // route's type constraint) — coordinators can no longer review certificates.
+        // It's kept here only so showEvidence/downloadEvidence can still resolve one for
+        // read-only preview/download.
         $model = match ($type) {
             'competencies' => StudentCompetency::class,
             'certificates' => Certificate::class,
@@ -584,7 +571,6 @@ class VerificationController extends Controller
     {
         return match ($type) {
             'competencies' => $item->category?->label() ?? 'Competency',
-            'certificates' => $item->issuer ?: 'Certificate',
             'resumes' => 'Resume',
             'portfolio' => $item->type?->label() ?? 'Portfolio',
         };
@@ -594,7 +580,6 @@ class VerificationController extends Controller
     {
         return match ($type) {
             'competencies' => 'Competency',
-            'certificates' => 'Certificate',
             'portfolio' => 'Portfolio',
         };
     }

@@ -11,7 +11,7 @@ class OjtCertificateController extends Controller
     {
         $this->authorize('downloadCertificate', $placement);
 
-        $placement->load(['student.user', 'student.institution', 'internship', 'employer', 'evaluation', 'clearedBy:id,name']);
+        $placement->load(['student.user', 'student.institution', 'internship', 'employer', 'clearedBy:id,name']);
 
         $pdf = Pdf::loadView('ojt.certificate', [
             'placement' => $placement,

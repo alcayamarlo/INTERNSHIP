@@ -20,7 +20,6 @@
                     <h3>Account</h3>
                     <ul>
                         <li><a href="{{ route('login') }}">Log in</a></li>
-                        <li><a href="{{ route('register') }}">Student registration</a></li>
                     </ul>
                 </nav>
             </div>

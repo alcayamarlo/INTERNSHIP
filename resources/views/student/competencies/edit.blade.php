@@ -21,7 +21,6 @@
                         @enderror
                     </div>
 
-                    <div class="alert alert-info small">This competency is earned from submitted evidence. Changing the evidence resets verification to Pending Verification.</div>
                     <div class="row g-3 mb-3"><div class="col-md-6"><label class="form-label">Assessment / credential <span class="text-danger" aria-hidden="true">*</span></label><input name="assessment_name" class="form-control" value="{{ old('assessment_name', $competency->assessment_name) }}" required></div><div class="col-md-6"><label class="form-label">Replace evidence (optional)</label><input type="file" name="evidence" class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"></div></div>
 
                     <div class="row g-3">

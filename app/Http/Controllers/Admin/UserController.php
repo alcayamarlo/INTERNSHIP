@@ -89,6 +89,8 @@ class UserController extends Controller
                 $student = Student::create([
                     'user_id' => $user->id,
                     'institution_id' => $validated['institution_id'],
+                    'student_id_number' => mb_strtoupper(trim($validated['student_id_number'])),
+                    'student_id_locked' => true,
                 ]);
                 $student->calculateProfileCompletion();
             }
@@ -137,7 +139,7 @@ class UserController extends Controller
                 }
             }
 
-            $user->fill(collect($validated)->except('password')->all());
+            $user->fill(collect($validated)->except(['password', 'student_id_number'])->all());
 
             if (! empty($validated['password'])) {
                 $user->password = Hash::make($validated['password']);
@@ -147,6 +149,18 @@ class UserController extends Controller
 
             if ($previousRole !== $newRole) {
                 $this->ensureRoleProfile($user, $newRole);
+            }
+
+            if ($newRole === UserRole::Student && ! empty($validated['student_id_number'])) {
+                $studentIdNumber = mb_strtoupper(trim($validated['student_id_number']));
+                $student = $user->student()->firstOrCreate([], ['profile_completion' => 0]);
+                if ($student->student_id_number !== $studentIdNumber || ! $student->student_id_locked) {
+                    $student->update([
+                        'student_id_number' => $studentIdNumber,
+                        'student_id_locked' => true,
+                    ]);
+                    $student->calculateProfileCompletion();
+                }
             }
 
             $this->activityLog->log($actor, 'admin_update_user', ['user_id' => $user->id]);

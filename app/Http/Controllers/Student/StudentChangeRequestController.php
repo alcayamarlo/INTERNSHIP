@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Program;
 use App\Models\StudentChangeRequest;
 use App\Services\NotificationService;
-use App\Support\StudentIdFormat;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -28,29 +27,19 @@ class StudentChangeRequestController extends Controller
         }
 
         $validated = $request->validate([
-            'field' => ['required', Rule::in(['student_id_number', 'program_id', 'year_level'])],
+            'field' => ['required', Rule::in(['program_id', 'year_level'])],
             'requested_value' => ['required', 'string', 'max:255'],
         ]);
         $field = $validated['field'];
         $value = trim($validated['requested_value']);
 
         $rules = match ($field) {
-            'student_id_number' => ['required', 'string', 'max:50', Rule::unique('students', 'student_id_number')->ignore($student->id)],
             'program_id' => ['required', 'integer', 'exists:programs,id'],
             'year_level' => ['required', Rule::in(['1st Year', '2nd Year', '3rd Year', '4th Year'])],
         };
         $validatedValue = validator(['requested_value' => $value], ['requested_value' => $rules], [
             'requested_value.unique' => 'This student ID is already in use.',
         ])->validate()['requested_value'];
-
-        if ($field === 'student_id_number') {
-            $validatedValue = mb_strtoupper($validatedValue);
-            if (! StudentIdFormat::matches($validatedValue)) {
-                throw ValidationException::withMessages([
-                    'requested_value' => 'Enter a student ID in the format SCC-21-00013240.',
-                ]);
-            }
-        }
 
         $currentValue = (string) ($student->getAttribute($field) ?? '');
         if ((string) $validatedValue === $currentValue) {

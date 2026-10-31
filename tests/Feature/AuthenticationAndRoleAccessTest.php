@@ -1,7 +1,6 @@
 <?php
 
 use App\Enums\UserRole;
-use App\Mail\EmailVerificationCodeMail;
 use App\Models\Coordinator;
 use App\Models\Employer;
 use App\Models\Institution;
@@ -9,35 +8,8 @@ use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Mail;
 
 uses(RefreshDatabase::class);
-
-it('registers a student and sends an email verification code', function () {
-    Http::fake();
-    Mail::fake();
-
-    $institution = Institution::create(['name' => "St. Cecilia's College-Cebu, Inc."]);
-
-    $this->post(route('register.store'), [
-        'name' => 'Registration Test Student',
-        'email' => 'registration-student@example.test',
-        'password' => 'DistinctivePassword#2026',
-        'password_confirmation' => 'DistinctivePassword#2026',
-        'institution_id' => $institution->id,
-        'program' => 'Bachelor of Science in Information Technology',
-    ])->assertRedirect(route('verification.notice'));
-
-    $user = User::where('email', 'registration-student@example.test')->firstOrFail();
-
-    expect($user->role)->toBe(UserRole::Student)
-        ->and($user->student)->toBeInstanceOf(Student::class)
-        ->and($user->hasVerifiedEmail())->toBeFalse();
-
-    Mail::assertSent(EmailVerificationCodeMail::class, fn (EmailVerificationCodeMail $mail) => $mail->hasTo($user->email));
-});
 
 it('logs a user in and logs them out', function () {
     $user = User::factory()->create([
@@ -48,7 +20,7 @@ it('logs a user in and logs them out', function () {
     Student::create(['user_id' => $user->id]);
 
     $this->post(route('login'), [
-        'email' => $user->email,
+        'login' => $user->email,
         'password' => 'TestPassword#2026',
     ])->assertRedirect(route('student.dashboard'));
 
@@ -91,7 +63,7 @@ it('logs in each role to its own dashboard and keeps the session authenticated o
             ->assertRedirect(route('login'));
 
         $this->post(route('login'), [
-            'email' => $user->email,
+            'login' => $user->email,
             'password' => 'TestPassword#2026',
         ])->assertRedirect($dashboard);
 
@@ -110,11 +82,11 @@ it('rejects incorrect and nonexistent login credentials with a validation messag
     ]);
 
     foreach ([
-        ['email' => $user->email, 'password' => 'IncorrectPassword#2026'],
-        ['email' => 'missing-login@example.test', 'password' => 'TestPassword#2026'],
+        ['login' => $user->email, 'password' => 'IncorrectPassword#2026'],
+        ['login' => 'missing-login@example.test', 'password' => 'TestPassword#2026'],
     ] as $credentials) {
         $this->post(route('login'), $credentials)
-            ->assertSessionHasErrors('email');
+            ->assertSessionHasErrors('login');
 
         $this->assertGuest();
     }
@@ -128,35 +100,13 @@ it('does not authenticate inactive users', function () {
     ]);
 
     $this->post(route('login'), [
-        'email' => $user->email,
+        'login' => $user->email,
         'password' => 'TestPassword#2026',
     ])->assertSessionHasErrors([
-        'email' => 'Your account has been deactivated. Please contact support.',
+        'login' => 'Your account has been deactivated. Please contact support.',
     ]);
 
     $this->assertGuest();
-});
-
-it('keeps public registration assigned to student even when an elevated role is submitted', function () {
-    Http::fake();
-    Mail::fake();
-    $institution = Institution::create(['name' => "St. Cecilia's College-Cebu, Inc."]);
-
-    $this->post(route('register.store'), [
-        'name' => 'Role Tampering Student',
-        'email' => 'role-tampering@example.test',
-        'password' => 'DistinctivePassword#2026',
-        'password_confirmation' => 'DistinctivePassword#2026',
-        'institution_id' => $institution->id,
-        'program' => 'Bachelor of Science in Information Technology',
-        'role' => UserRole::Admin->value,
-    ])->assertRedirect(route('verification.notice'));
-
-    $user = User::where('email', 'role-tampering@example.test')->firstOrFail();
-
-    expect($user->role)->toBe(UserRole::Student)
-        ->and(Hash::check('DistinctivePassword#2026', $user->password))->toBeTrue()
-        ->and($user->student)->toBeInstanceOf(Student::class);
 });
 
 it('denies every role access to dashboards belonging to other roles', function () {

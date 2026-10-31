@@ -1,17 +1,13 @@
 <?php
 
-use App\Enums\UserRole;
-use App\Models\Coordinator;
-use App\Models\Institution;
 use App\Models\Student;
 use App\Models\StudentCompetency;
 use App\Models\User;
+use App\Enums\UserRole;
 use App\Services\StudentCompetencyOverviewService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Http\UploadedFile;
 
 uses(RefreshDatabase::class);
 
@@ -22,48 +18,35 @@ function createOverviewStudent(): Student
     return Student::create(['user_id' => $user->id]);
 }
 
-function createOverviewSkill(Student $student, string $name, string $category, string $level, string $status, array $extra = []): StudentCompetency
+function createOverviewSkill(Student $student, string $name, string $category, string $level, array $extra = []): StudentCompetency
 {
     return $student->competencies()->create([
         'name' => $name,
         'category' => $category,
         'proficiency_level' => $level,
-        'verification_status' => $status,
         ...$extra,
     ]);
 }
 
-it('scores the three configured radar groups and excludes rejected and unknown statuses', function () {
+it('scores the three configured radar groups from every listed skill, regardless of verification status', function () {
     $student = createOverviewStudent();
-    createOverviewSkill($student, 'Verified technical', 'technical', 'expert', 'verified');
-    createOverviewSkill($student, 'Pending skill', 'skill', 'intermediate', 'evidence_submitted');
-    createOverviewSkill($student, 'Approved workshop', 'workshop', 'advanced', 'approved');
-    createOverviewSkill($student, 'Rejected seminar', 'seminar', 'expert', 'rejected');
-    createOverviewSkill($student, 'Draft training', 'training', 'expert', 'draft');
-    createOverviewSkill($student, 'Verified soft', 'soft', 'advanced', 'verified');
-    createOverviewSkill($student, 'Verified certificate', 'certification', 'expert', 'verified');
+    createOverviewSkill($student, 'Technical one', 'technical', 'expert');
+    createOverviewSkill($student, 'Skill one', 'skill', 'intermediate');
+    createOverviewSkill($student, 'Workshop one', 'workshop', 'advanced');
+    createOverviewSkill($student, 'Seminar one', 'seminar', 'expert');
+    createOverviewSkill($student, 'Soft one', 'soft', 'advanced');
+    createOverviewSkill($student, 'Certificate one', 'certification', 'expert');
 
-    $overview = app(StudentCompetencyOverviewService::class)->forStudent($student, 'all');
+    $overview = app(StudentCompetencyOverviewService::class)->forStudent($student);
 
     expect(array_keys($overview['groups']))->toBe(['technical', 'soft', 'certification'])
         ->and($overview['groups']['technical']['target'])->toBe(6)
-        ->and($overview['groups']['technical']['scores']['verified'])->toBe(175 / 600 * 100)
-        ->and($overview['groups']['technical']['scores']['all_submitted'])->toBe(225 / 600 * 100)
-        ->and($overview['groups']['technical']['counts'])->toBe([
-            'verified' => 2,
-            'all_submitted' => 3,
-            'pending' => 1,
-            'rejected' => 1,
-            'unmapped' => 1,
-        ])
-        ->and($overview['groups']['soft']['scores']['verified'])->toBe(75 / 4)
-        ->and($overview['groups']['certification']['scores']['verified'])->toBe(50.0)
-        ->and($overview['profile_strength']['counted_skill_count'])->toBe(5)
-        ->and($overview['profile_strength']['average_points'])->toBe(80.0)
-        ->and($overview['profile_strength']['level_label'])->toBe('Advanced')
-        ->and($overview['unmapped']['count'])->toBe(1)
-        ->and($overview['unmapped']['statuses'])->toBe(['draft'])
-        ->and(collect($overview['skills'])->firstWhere('name', 'Rejected seminar')['category_label'])->toBe('Seminar');
+        ->and($overview['groups']['technical']['count'])->toBe(4)
+        ->and($overview['groups']['technical']['score'])->toBe((100 + 50 + 75 + 100) / 600 * 100)
+        ->and($overview['groups']['soft']['score'])->toBe(75 / 4)
+        ->and($overview['groups']['certification']['score'])->toBe(50.0)
+        ->and($overview['profile_strength']['counted_skill_count'])->toBe(6)
+        ->and(collect($overview['skills'])->firstWhere('name', 'Seminar one')['category_label'])->toBe('Seminar');
 });
 
 it('returns zero for empty categories and nonpositive configured targets', function () {
@@ -72,8 +55,8 @@ it('returns zero for empty categories and nonpositive configured targets', funct
 
     $overview = app(StudentCompetencyOverviewService::class)->forStudent($student);
 
-    expect($overview['groups']['technical']['scores'])->toBe(['verified' => 0.0, 'all_submitted' => 0.0])
-        ->and($overview['groups']['soft']['scores'])->toBe(['verified' => 0.0, 'all_submitted' => 0.0])
+    expect($overview['groups']['technical']['score'])->toBe(0.0)
+        ->and($overview['groups']['soft']['score'])->toBe(0.0)
         ->and($overview['profile_strength'])->toBe([
             'average_points' => null,
             'average_level' => null,
@@ -85,12 +68,12 @@ it('returns zero for empty categories and nonpositive configured targets', funct
 it('caps category percentages at 100 percent', function () {
     $student = createOverviewStudent();
     foreach (range(1, 8) as $number) {
-        createOverviewSkill($student, 'Technical expert '.$number, 'technical', 'expert', 'verified');
+        createOverviewSkill($student, 'Technical expert '.$number, 'technical', 'expert');
     }
 
     $overview = app(StudentCompetencyOverviewService::class)->forStudent($student);
 
-    expect($overview['groups']['technical']['scores']['verified'])->toBe(100.0);
+    expect($overview['groups']['technical']['score'])->toBe(100.0);
 });
 
 it('maps profile strength average points to the nearest existing proficiency label', function () {
@@ -110,7 +93,7 @@ it('maps profile strength average points to the nearest existing proficiency lab
                 75 => 'advanced',
                 100 => 'expert',
             };
-            createOverviewSkill($student, "Boundary {$index}-{$pointIndex}", 'technical', $level, 'verified');
+            createOverviewSkill($student, "Boundary {$index}-{$pointIndex}", 'technical', $level);
         }
 
         expect(app(StudentCompetencyOverviewService::class)->forStudent($student)['profile_strength']['level_label'])
@@ -124,12 +107,12 @@ it('uses the configured fallback target when a radar group target is absent', fu
         'competencies.targets' => ['soft' => 4, 'certification' => 2],
         'competencies.default_target' => 8,
     ]);
-    createOverviewSkill($student, 'Verified technical', 'technical', 'expert', 'verified');
+    createOverviewSkill($student, 'Technical one', 'technical', 'expert');
 
     $overview = app(StudentCompetencyOverviewService::class)->forStudent($student);
 
     expect($overview['groups']['technical']['target'])->toBe(8)
-        ->and($overview['groups']['technical']['scores']['verified'])->toBe(12.5);
+        ->and($overview['groups']['technical']['score'])->toBe(12.5);
 });
 
 it('logs unknown category identifiers and includes them in the response without assigning a radar group', function () {
@@ -139,7 +122,6 @@ it('logs unknown category identifiers and includes them in the response without 
         'name' => 'Unmapped item',
         'category' => 'emerging_category',
         'proficiency_level' => 'intermediate',
-        'verification_status' => 'verified',
         'created_at' => now(),
         'updated_at' => now(),
     ]);
@@ -160,114 +142,43 @@ it('logs unknown category identifiers and includes them in the response without 
         ->and($overview['profile_strength']['counted_skill_count'])->toBe(1);
 });
 
-it('logs unknown status values with skill IDs and reports their unmapped count', function () {
-    $student = createOverviewStudent();
-    $draft = createOverviewSkill($student, 'Draft item', 'technical', 'intermediate', 'draft');
-    $other = createOverviewSkill($student, 'Other status item', 'technical', 'advanced', 'withdrawn');
-    Log::shouldReceive('warning')
-        ->twice()
-        ->with('Unmapped student competency status in overview scoring.', \Mockery::on(
-            fn (array $context) => $context['student_id'] === $student->id
-                && in_array($context['skill_id'], [$draft->id, $other->id], true)
-                && in_array($context['status'], ['draft', 'withdrawn'], true)
-        ));
-
-    $overview = app(StudentCompetencyOverviewService::class)->forStudent($student, 'all');
-
-    expect($overview['unmapped']['count'])->toBe(2)
-        ->and($overview['unmapped']['statuses'])->toBe(['draft', 'withdrawn'])
-        ->and($overview['profile_strength']['counted_skill_count'])->toBe(0)
-        ->and(collect($overview['skills'])->every(fn (array $skill) => ! $skill['counts_in_score']))->toBeTrue();
-});
-
-it('returns only the requested student competencies and supports the view and category filters', function () {
+it('returns only the requested student competencies and supports the category filter', function () {
     $student = createOverviewStudent();
     $otherStudent = createOverviewStudent();
-    createOverviewSkill($student, 'Verified', 'technical', 'expert', 'verified');
-    createOverviewSkill($student, 'Pending', 'soft', 'beginner', 'evidence_submitted');
-    createOverviewSkill($student, 'Rejected', 'certification', 'expert', 'rejected');
-    createOverviewSkill($otherStudent, 'Other student', 'technical', 'expert', 'verified');
+    createOverviewSkill($student, 'Technical skill', 'technical', 'expert');
+    createOverviewSkill($student, 'Soft skill', 'soft', 'beginner');
+    createOverviewSkill($student, 'Certification skill', 'certification', 'expert');
+    createOverviewSkill($otherStudent, 'Other student', 'technical', 'expert');
 
     $service = app(StudentCompetencyOverviewService::class);
-    $verified = $service->forStudent($student, 'verified', 'technical');
-    $all = $service->forStudent($student, 'all');
+    $all = $service->forStudent($student);
+    $filtered = $service->forStudent($student, 'technical');
 
-    expect(collect($verified['skills'])->pluck('name')->all())->toBe(['Pending', 'Rejected', 'Verified'])
-        ->and($verified['profile_strength']['counted_skill_count'])->toBe(1)
-        ->and($verified['profile_strength']['average_points'])->toBe(100.0)
-        ->and($all['profile_strength']['counted_skill_count'])->toBe(2)
-        ->and(collect($all['skills'])->pluck('name')->contains('Other student'))->toBeFalse();
+    expect(collect($all['skills'])->pluck('name')->all())->toBe(['Certification skill', 'Soft skill', 'Technical skill'])
+        ->and($all['profile_strength']['counted_skill_count'])->toBe(3)
+        ->and(collect($all['skills'])->pluck('name')->contains('Other student'))->toBeFalse()
+        // The skills array always stays complete (the client filters it); only the
+        // profile-strength count reflects the category filter.
+        ->and(collect($filtered['skills'])->pluck('name')->all())->toBe(['Certification skill', 'Soft skill', 'Technical skill'])
+        ->and($filtered['profile_strength']['counted_skill_count'])->toBe(1);
 });
 
-it('reflects a coordinator review update from the same student competency row on the next service call', function () {
-    $institution = Institution::create(['name' => 'St. Cecilia College']);
+it('renders the competency overview without any verification status badge or toggle', function () {
     $student = createOverviewStudent();
-    $student->update(['institution_id' => $institution->id]);
-    $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
-    Coordinator::create([
-        'user_id' => $coordinatorUser->id,
-        'institution_id' => $institution->id,
-    ]);
-    $skill = createOverviewSkill($student, 'Reviewed technical skill', 'technical', 'intermediate', 'evidence_submitted');
-    $service = app(StudentCompetencyOverviewService::class);
-
-    expect($service->forStudent($student, 'verified')['groups']['technical']['counts']['verified'])->toBe(0)
-        ->and($service->forStudent($student, 'all')['groups']['technical']['scores']['all_submitted'])->toBe(50 / 600 * 100);
-
-    $this->actingAs($coordinatorUser)
-        ->post(route('coordinator.verification.reviewCompetency', $skill), [
-            'verification_status' => 'verified',
-            'review_notes' => 'Evidence checked.',
-        ])
-        ->assertRedirect();
-
-    expect($service->forStudent($student->fresh(), 'verified')['groups']['technical']['counts']['verified'])->toBe(1)
-        ->and($service->forStudent($student->fresh(), 'all')['groups']['technical']['counts']['pending'])->toBe(0)
-        ->and($skill->fresh()->verification_status)->toBe('verified')
-        ->and($skill->fresh()->proficiency_level->value)->toBe('intermediate');
-});
-
-it('resubmits a rejected skill as evidence_submitted when replacement evidence is uploaded', function () {
-    Storage::fake('private');
-    $student = createOverviewStudent();
-    $skill = createOverviewSkill($student, 'Rejected skill', 'technical', 'beginner', 'rejected', [
-        'assessment_name' => 'Initial assessment',
-        'review_notes' => 'Please provide clearer evidence.',
-    ]);
+    createOverviewSkill($student, 'Cloud certification', 'certification', 'advanced');
 
     $this->actingAs($student->user)
-        ->put(route('student.competencies.update', $skill), [
-            'name' => 'Rejected skill',
-            'category' => 'technical',
-            'proficiency_level' => 'advanced',
-            'assessment_name' => 'Updated assessment',
-            'evidence' => UploadedFile::fake()->createWithContent('replacement.pdf', "%PDF-1.4\nreplacement evidence"),
-        ])
-        ->assertRedirect(route('student.competencies.index'));
-
-    expect($skill->fresh()->verification_status)->toBe('evidence_submitted')
-        ->and($skill->fresh()->proficiency_level->value)->toBe('advanced')
-        ->and(app(StudentCompetencyOverviewService::class)->forStudent($student->fresh(), 'verified')['groups']['technical']['counts']['verified'])->toBe(0)
-        ->and(app(StudentCompetencyOverviewService::class)->forStudent($student->fresh(), 'all')['groups']['technical']['counts']['pending'])->toBe(1);
-});
-
-it('renders the competency overview and shows coordinator notes for rejected skills', function () {
-    $student = createOverviewStudent();
-    createOverviewSkill($student, 'Rejected cloud certification', 'certification', 'advanced', 'rejected', [
-        'review_notes' => 'Please add the signed certificate.',
-    ]);
-
-    $this->actingAs($student->user)
-        ->get(route('student.competencies.index', ['view' => 'all']))
+        ->get(route('student.competencies.index'))
         ->assertOk()
         ->assertSee('My competencies')
-        ->assertSee('Verified only')
-        ->assertSee('All submitted')
         ->assertSee('Technical')
         ->assertSee('Soft skills')
         ->assertSee('Certification')
-        ->assertSee('Rejected cloud certification')
-        ->assertSee('Coordinator note')
-        ->assertSee('Please add the signed certificate.')
-        ->assertSee('co-status-rejected', false);
+        ->assertSee('Cloud certification')
+        ->assertDontSee('Verified only')
+        ->assertDontSee('All submitted')
+        ->assertDontSee('co-status-verified', false)
+        ->assertDontSee('co-status-pending', false)
+        ->assertDontSee('co-status-rejected', false)
+        ->assertDontSee('Coordinator note');
 });

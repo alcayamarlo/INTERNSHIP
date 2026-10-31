@@ -15,6 +15,7 @@ class Student extends Model
         'user_id',
         'institution_id',
         'student_id_number',
+        'student_id_locked',
         'profile_verified_at',
         'profile_verified_by_user_id',
         'rendered_internship_hours',
@@ -47,6 +48,7 @@ class Student extends Model
             'profile_verified_at' => 'datetime',
             'rendered_internship_hours' => 'integer',
             'major_subjects_passed' => 'boolean',
+            'student_id_locked' => 'boolean',
         ];
     }
 

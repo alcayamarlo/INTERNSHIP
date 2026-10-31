@@ -202,7 +202,6 @@
                                         <h3>{{ $competency['name'] }}</h3>
                                         <p>{{ $competency['category'] }}</p>
                                     </div>
-                                    <span class="profile-status profile-status-{{ $competency['status'] }}">{{ ucfirst($competency['status']) }}</span>
                                 </div>
                                 <div class="profile-level" aria-label="{{ $competency['level_label'] }} proficiency">
                                     <div class="profile-level-segments" aria-hidden="true">
@@ -232,6 +231,9 @@
                                 <div>
                                     <h3>{{ $certificate['title'] }}</h3>
                                     <p>{{ $certificate['issuer'] ?: 'Issuer not specified' }}</p>
+                                    @if($certificate['has_file'])
+                                        <a href="{{ route('coordinator.verification.evidence', ['certificates', $certificate['id']]) }}" target="_blank" rel="noopener" class="small">View file</a>
+                                    @endif
                                 </div>
                                 <span class="profile-status profile-status-{{ $certificate['status'] }}">{{ ucfirst($certificate['status']) }}</span>
                             </article>

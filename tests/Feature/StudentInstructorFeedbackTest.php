@@ -135,7 +135,7 @@ it('shows only open internships, with public-safe fields, to guests on the landi
 });
 
 it('shows a friendly empty state when nothing is open', function () {
-    $this->get(route('home'))->assertOk()->assertSee('No open internships right now')->assertSee('Create a student account to get updates')->assertDontSee('data-jb-card', false);
+    $this->get(route('home'))->assertOk()->assertSee('No open internships right now')->assertSee('Sign in for updates')->assertDontSee('data-jb-card', false);
 });
 
 it('sends a guest to login with a message and returns them to the apply page afterwards', function () {
@@ -145,7 +145,7 @@ it('sends a guest to login with a message and returns them to the apply page aft
     $this->get($applyUrl)->assertRedirect(route('login'))->assertSessionHas('status', 'Please log in to apply.');
     expect(session('url.intended'))->toBe($applyUrl);
 
-    $this->post('/login', ['email' => $f['studentUser']->email, 'password' => 'password'])->assertRedirect($applyUrl);
+    $this->post('/login', ['login' => $f['studentUser']->email, 'password' => 'password'])->assertRedirect($applyUrl);
 
     $this->get($applyUrl)->assertRedirect(route('student.internships.show', $f['open']));
 });

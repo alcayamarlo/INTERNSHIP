@@ -72,16 +72,17 @@ it('groups the coordinator queue and exposes program filters from scoped student
         ->assertSee('BSIT')
         ->assertSee('Queue Example Student')
         ->assertSee('JavaScript')
-        ->assertSee('Web Development')
         ->assertSee('Capstone Project')
-        ->assertSee('Everything');
+        ->assertSee('Everything')
+        // Certificates are no longer part of the coordinator review queue.
+        ->assertDontSee('Web Development');
 });
 
 it('requires a reason for rejection and records review audit data', function () {
     $fixture = verificationQueueFixture();
     $url = route('coordinator.verification.update', [
-        'type' => 'certificates',
-        'id' => $fixture['certificate']->id,
+        'type' => 'portfolio',
+        'id' => $fixture['portfolio']->id,
     ]);
 
     $this->actingAs($fixture['coordinatorUser'])
@@ -91,31 +92,44 @@ it('requires a reason for rejection and records review audit data', function () 
 
     $this->patchJson($url, [
         'status' => 'rejected',
-        'note' => 'Certificate expired.',
+        'note' => 'File unreadable.',
     ])->assertOk()
         ->assertJsonPath('item.status', 'rejected')
         ->assertJsonPath('message', 'Rejected with reason');
 
-    $this->assertDatabaseHas('certificates', [
-        'id' => $fixture['certificate']->id,
+    $this->assertDatabaseHas('portfolios', [
+        'id' => $fixture['portfolio']->id,
         'verification_status' => 'rejected',
-        'review_notes' => 'Certificate expired.',
+        'review_notes' => 'File unreadable.',
         'reviewed_by_user_id' => $fixture['coordinatorUser']->id,
     ]);
-    expect($fixture['certificate']->fresh()->reviewed_at)->not->toBeNull();
+    expect($fixture['portfolio']->fresh()->reviewed_at)->not->toBeNull();
     $this->assertDatabaseHas('verification_activities', [
         'student_id' => $fixture['student']->id,
-        'item_type' => 'certificates',
-        'item_id' => $fixture['certificate']->id,
+        'item_type' => 'portfolio',
+        'item_id' => $fixture['portfolio']->id,
         'action' => 'rejected',
-        'note' => 'Certificate expired.',
+        'note' => 'File unreadable.',
         'coordinator_id' => $fixture['coordinator']->id,
     ]);
     $this->assertDatabaseHas('notifications', [
         'user_id' => $fixture['student']->user_id,
         'type' => 'verification',
-        'title' => 'Certificate Evidence Rejected',
+        'title' => 'Portfolio Evidence Rejected',
     ]);
+});
+
+it('does not allow certificates to be reviewed through the verification queue', function () {
+    $fixture = verificationQueueFixture();
+
+    $this->actingAs($fixture['coordinatorUser'])
+        ->patchJson(route('coordinator.verification.update', [
+            'type' => 'certificates',
+            'id' => $fixture['certificate']->id,
+        ]), ['status' => 'verified'])
+        ->assertNotFound();
+
+    expect($fixture['certificate']->fresh()->verification_status)->toBe('evidence_submitted');
 });
 
 it('verifies all pending evidence in one request and serves the drawer history', function () {
@@ -124,18 +138,21 @@ it('verifies all pending evidence in one request and serves the drawer history',
     $this->actingAs($fixture['coordinatorUser'])
         ->postJson(route('coordinator.verification.students.verify-all', $fixture['student']))
         ->assertOk()
-        ->assertJsonPath('message', '3 verified')
-        ->assertJsonCount(3, 'items');
+        ->assertJsonPath('message', '1 verified')
+        ->assertJsonCount(1, 'items');
 
-    $this->assertDatabaseCount('verification_activities', 3);
-    $this->assertDatabaseCount('notifications', 3);
+    $this->assertDatabaseCount('verification_activities', 1);
+    $this->assertDatabaseCount('notifications', 1);
+    // The certificate and the competency are both untouched: neither is part of the review flow anymore.
+    expect($fixture['certificate']->fresh()->verification_status)->toBe('evidence_submitted')
+        ->and($fixture['competency']->fresh()->verification_status)->toBe('evidence_submitted');
 
     $this->getJson(route('coordinator.verification.students.show', $fixture['student']))
         ->assertOk()
         ->assertJsonPath('student.email', $fixture['student']->user->email)
         ->assertJsonPath('student.preferred_work_setup', 'Hybrid')
-        ->assertJsonPath('progress.verified', 3)
-        ->assertJsonCount(3, 'activity');
+        ->assertJsonPath('progress.verified', 1)
+        ->assertJsonCount(1, 'activity');
 });
 
 it('prevents coordinators from reviewing students at another institution', function () {
@@ -147,18 +164,18 @@ it('prevents coordinators from reviewing students at another institution', funct
         'institution_id' => $otherInstitution->id,
         'program' => 'BSN',
     ]);
-    $otherCompetency = StudentCompetency::create([
+    $otherPortfolio = Portfolio::create([
         'student_id' => $otherStudent->id,
-        'name' => 'Other student competency',
-        'category' => CompetencyCategory::Technical,
-        'proficiency_level' => ProficiencyLevel::Intermediate,
+        'title' => 'Other student portfolio',
+        'type' => 'project',
+        'file_path' => 'portfolios/other.pdf',
         'verification_status' => 'evidence_submitted',
     ]);
 
     $this->actingAs($fixture['coordinatorUser'])
         ->patchJson(route('coordinator.verification.update', [
-            'type' => 'competencies',
-            'id' => $otherCompetency->id,
+            'type' => 'portfolio',
+            'id' => $otherPortfolio->id,
         ]), ['status' => 'verified'])
         ->assertForbidden();
 
@@ -180,4 +197,45 @@ it('serves evidence through a private preview route scoped to the coordinator in
         ->assertOk()
         ->assertHeader('Content-Type', 'application/pdf')
         ->assertHeader('X-Content-Type-Options', 'nosniff');
+});
+
+it('lets a coordinator view a certificate file read-only but never review it', function () {
+    $fixture = verificationQueueFixture();
+    Storage::fake('private');
+    Storage::disk('private')->put('certificates/sample.pdf', '%PDF-1.4 evidence');
+    $fixture['certificate']->update(['file_path' => 'certificates/sample.pdf']);
+
+    $this->actingAs($fixture['coordinatorUser'])
+        ->get(route('coordinator.verification.evidence', [
+            'type' => 'certificates',
+            'id' => $fixture['certificate']->id,
+        ]))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'application/pdf');
+
+    $this->actingAs($fixture['coordinatorUser'])
+        ->get(route('coordinator.verification.download', [
+            'type' => 'certificates',
+            'id' => $fixture['certificate']->id,
+        ]))
+        ->assertOk();
+
+    // Still no way to change its status: the review route doesn't match this type.
+    $this->actingAs($fixture['coordinatorUser'])
+        ->patchJson(route('coordinator.verification.update', [
+            'type' => 'certificates',
+            'id' => $fixture['certificate']->id,
+        ]), ['status' => 'verified'])
+        ->assertNotFound();
+
+    // A coordinator from another institution cannot view it.
+    $outsiderInstitution = Institution::create(['name' => 'Outsider Institute']);
+    $outsiderUser = User::factory()->create(['role' => UserRole::Coordinator]);
+    Coordinator::create(['user_id' => $outsiderUser->id, 'institution_id' => $outsiderInstitution->id]);
+    $this->actingAs($outsiderUser)
+        ->get(route('coordinator.verification.evidence', [
+            'type' => 'certificates',
+            'id' => $fixture['certificate']->id,
+        ]))
+        ->assertForbidden();
 });

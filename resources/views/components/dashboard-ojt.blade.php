@@ -8,7 +8,7 @@
     $card = null;
 
     if ($user?->isRole(UserRole::Student) && $user->student) {
-        $placement = $user->student->placements()->with(['internship', 'employer', 'evaluation'])
+        $placement = $user->student->placements()->with(['internship', 'employer'])
             ->orderByRaw("case when status = 'active' then 0 else 1 end")->latest()->first();
         $card = ['type' => 'student', 'placement' => $placement];
     } elseif ($user?->isRole(UserRole::Employer) && $user->employer) {

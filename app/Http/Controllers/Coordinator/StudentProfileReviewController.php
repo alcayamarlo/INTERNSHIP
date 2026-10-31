@@ -9,7 +9,6 @@ use App\Models\Student;
 use App\Models\StudentChangeRequest;
 use App\Services\ActivityLogService;
 use App\Services\NotificationService;
-use App\Support\StudentIdFormat;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -128,25 +127,14 @@ class StudentProfileReviewController extends Controller
 
     private function applyRequestedValue(Student $student, StudentChangeRequest $changeRequest): void
     {
+        // Student ID changes are never applied here: only an admin can change a
+        // student's ID (it's their login identifier), via the admin users page.
         $attributes = match ($changeRequest->field) {
-            'student_id_number' => $this->studentIdAttributes($changeRequest->requested_value, $student),
             'program_id' => $this->programAttributes($changeRequest->requested_value),
             'year_level' => ['year_level' => $changeRequest->requested_value],
             default => abort(422, 'Unsupported profile field.'),
         };
         $student->update($attributes);
-    }
-
-    private function studentIdAttributes(string $studentId, Student $student): array
-    {
-        if (! StudentIdFormat::matches($studentId)
-            || Student::query()->where('student_id_number', $studentId)->where('id', '!=', $student->id)->exists()) {
-            throw ValidationException::withMessages([
-                'change_request' => 'The requested student ID no longer meets the format or uniqueness requirements.',
-            ]);
-        }
-
-        return ['student_id_number' => $studentId];
     }
 
     private function programAttributes(string $programId): array

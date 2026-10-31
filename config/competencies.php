@@ -21,11 +21,4 @@ return [
         'certification' => 2,
     ],
     'default_target' => 4,
-    'status_map' => [
-        'verified' => 'verified',
-        'approved' => 'verified',
-        'evidence_submitted' => 'pending',
-        'rejected' => 'rejected',
-    ],
-    'unmapped_status' => 'not_counted',
 ];

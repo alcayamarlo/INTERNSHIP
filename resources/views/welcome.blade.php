@@ -68,8 +68,7 @@
                             <button type="submit" class="public-button public-button-primary jb-search-btn">Search</button>
                         </form>
                         <div class="public-hero-actions">
-                            <a class="public-button public-button-primary public-button-lg" href="{{ route('register') }}">Create a student account <svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
-                            <a class="public-button public-button-lg" href="{{ route('login') }}">Sign in to your workspace</a>
+                            <a class="public-button public-button-primary public-button-lg" href="{{ route('login') }}">Sign in to your workspace <svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
                         </div>
                     </div>
                     <div class="public-hero-art">
@@ -132,7 +131,7 @@
                             <li><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7"></path></svg>Submit and follow internship applications</li>
                             <li><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4.5 4.5L19 7"></path></svg>Track your readiness checklist</li>
                         </ul>
-                        <a class="public-button public-button-primary" href="{{ route('register') }}">Register as a student</a>
+                        <a class="public-button public-button-primary" href="{{ route('login') }}">Student sign in</a>
                     </article>
                     <article class="public-role-card reveal" style="--reveal-delay: 100ms">
                         <span class="role-icon"><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M5 21V5l7-3v19M19 21V9l-7-4M8 8v.01M8 12v.01M8 16v.01M15 12v.01M15 16v.01"></path></svg></span>
@@ -177,8 +176,8 @@
                 </div>
                 <div class="public-faq-list">
                     <details class="public-faq-item reveal">
-                        <summary>Who can register from this page?</summary>
-                        <p>Public registration is for students. Coordinator, employer, and administrator access is provided through existing accounts.</p>
+                        <summary>How do I get a student account?</summary>
+                        <p>Student accounts are provisioned by your school's registrar or administrator. If you're enrolled but don't have login details yet, contact your coordinator or administrator.</p>
                     </details>
                     <details class="public-faq-item reveal">
                         <summary>Where can I see current internship openings?</summary>
@@ -197,17 +196,15 @@
 
             <section class="public-cta text-center {{ $ctaImg ? 'public-cta-image' : '' }}" @if ($ctaImg) style="--cta-bg: url('{{ $ctaImg }}')" @endif>
                 <h2>Take the next step in your internship journey.</h2>
-                <p>Set up your student account to start building a profile and tracking your progress.</p>
-                <a class="public-button public-button-lg" href="{{ route('register') }}">Get started <svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
-                <p class="public-cta-note">Coordinator or employer? <a href="{{ route('login') }}">Sign in to your workspace</a></p>
+                <p>Sign in with the account provided by your school to start building your profile and tracking your progress.</p>
+                <a class="public-button public-button-lg" href="{{ route('login') }}">Sign in <svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
             </section>
         </main>
 
         @include('partials.public-footer', ['base' => ''])
 
         <div class="public-mobile-cta" data-mobile-cta>
-            <a class="public-button" href="{{ route('login') }}">Log in</a>
-            <a class="public-button public-button-primary" href="{{ route('register') }}">Create a student account</a>
+            <a class="public-button public-button-primary" href="{{ route('login') }}">Log in</a>
         </div>
     </div>
     <script>

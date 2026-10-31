@@ -14,6 +14,50 @@ use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
+it('hides the verification status badge for certificates but keeps it for other files', function () {
+    $user = User::factory()->create(['role' => UserRole::Student]);
+    $student = Student::create(['user_id' => $user->id]);
+
+    $certificate = Certificate::create([
+        'student_id' => $student->id,
+        'title' => 'Badge Hidden Certificate',
+        'issuer' => 'Issuer',
+        'file_path' => 'certificates/'.$student->id.'/cert.pdf',
+        'verification_status' => 'verified',
+    ]);
+    $project = Portfolio::create([
+        'student_id' => $student->id,
+        'title' => 'Badge Visible Project',
+        'type' => 'project',
+        'file_path' => 'portfolios/'.$student->id.'/project.pdf',
+        'verification_status' => 'verified',
+    ]);
+
+    $certificatePresented = PortfolioItemPresenter::present($certificate);
+    expect($certificatePresented['is_certificate'])->toBeTrue()
+        ->and($certificatePresented['status_label'])->toBe('')
+        ->and($certificatePresented['status_class'])->toBe('')
+        ->and($certificatePresented['file_status'])->toBe('')
+        ->and($certificatePresented['reviewer'])->toBe('')
+        ->and($certificatePresented['reviewed_at'])->toBe('');
+
+    $projectPresented = PortfolioItemPresenter::present($project);
+    expect($projectPresented['is_certificate'])->toBeFalse()
+        ->and($projectPresented['status_label'])->toBe('Verified');
+
+    $response = $this->actingAs($user)->get(route('student.profile.edit'))->assertOk();
+    $response->assertSee('Badge Visible Project')->assertSee('status-badge status-verified', false);
+
+    // The certificate row renders with no status badge markup at all.
+    $html = $response->getContent();
+    $certificateRowStart = strpos($html, 'Badge Hidden Certificate');
+    $nextStatusCell = strpos($html, 'data-label="Status"', $certificateRowStart);
+    $nextRowEnd = strpos($html, '</tr>', $certificateRowStart);
+    expect($nextStatusCell)->toBeLessThan($nextRowEnd);
+    $statusCellContent = substr($html, $nextStatusCell, $nextRowEnd - $nextStatusCell);
+    expect($statusCellContent)->not->toContain('status-badge');
+});
+
 it('counts a certificate and its portfolio mirror once in the profile summary', function () {
     $user = User::factory()->create(['role' => UserRole::Student]);
     $student = Student::create(['user_id' => $user->id]);

@@ -26,9 +26,6 @@
                 <div class="d-flex flex-wrap gap-2 mb-4">
                     <span class="sb-tag">{{ $competency->category->label() }}</span>
                     <x-status-badge :status="$competency->proficiency_level->value" :tone="$proficiencyTone" :label="$competency->proficiency_level->label()" />
-                    @if($competency->verification_status === 'verified')
-                        <x-status-badge status="verified" label="Verified" />
-                    @endif
                 </div>
 
                 @if($competency->description)

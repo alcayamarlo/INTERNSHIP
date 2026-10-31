@@ -31,6 +31,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'archived_at',
         'email_notifications',
         'last_login_at',
+        'must_change_password',
     ];
 
     protected $hidden = [
@@ -54,6 +55,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'is_active' => 'boolean',
             'archived_at' => 'datetime',
             'email_notifications' => 'boolean',
+            'must_change_password' => 'boolean',
             'role' => UserRole::class,
         ];
     }

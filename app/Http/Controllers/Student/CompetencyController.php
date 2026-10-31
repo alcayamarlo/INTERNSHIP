@@ -27,7 +27,6 @@ class CompetencyController extends Controller
         $student = Auth::user()->student;
         $overview = app(StudentCompetencyOverviewService::class)->forStudent(
             $student,
-            $request->string('view')->toString() ?: 'verified',
             $request->string('category')->toString() ?: null
         );
 
@@ -68,7 +67,6 @@ class CompetencyController extends Controller
                 $data = collect($validated)->except('evidence')->all();
                 $data['evidence_path'] = $path;
                 $data['evidence_name'] = $request->file('evidence')->getClientOriginalName();
-                $data['verification_status'] = 'evidence_submitted';
                 $competency = $student->competencies()->create($data);
                 $student->calculateProfileCompletion();
                 $this->activityLog->log(Auth::user(), 'competency_create', ['competency_id' => $competency->id]);
@@ -143,7 +141,6 @@ class CompetencyController extends Controller
                 if ($newPath) {
                     $data['evidence_path'] = $newPath;
                     $data['evidence_name'] = $request->file('evidence')->getClientOriginalName();
-                    $data['verification_status'] = 'evidence_submitted';
                 }
                 $competency->update($data);
                 Auth::user()->student->calculateProfileCompletion();

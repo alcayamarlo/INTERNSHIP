@@ -173,6 +173,12 @@ class InternController extends Controller
             return back()->with('error', 'This OJT is already cleared by the coordinator; the evaluation is locked.');
         }
 
+        // Existing evaluations (submitted before the request step existed) stay editable;
+        // only a brand-new submission requires a coordinator request first.
+        if (! $placement->rating_requested_at && ! $placement->evaluation()->exists()) {
+            return back()->with('error', 'Wait for the coordinator to request a rating before submitting one.');
+        }
+
         $rules = [
             'strengths' => ['nullable', 'string', 'max:2000'],
             'improvements' => ['nullable', 'string', 'max:2000'],
@@ -206,7 +212,6 @@ class InternController extends Controller
             $this->activityLog->log(Auth::user(), 'evaluation_submitted', ['placement_id' => $placement->id]);
         });
 
-        $this->notifyStudent($placement, 'Evaluation submitted', 'Your supervisor submitted your OJT performance evaluation.');
         $completed = $this->placementService->completeIfEligible($placement, Auth::user());
 
         $message = $completed

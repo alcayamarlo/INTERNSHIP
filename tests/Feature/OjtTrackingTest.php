@@ -12,6 +12,7 @@ use App\Models\Internship;
 use App\Models\InternshipApplication;
 use App\Models\JournalEntry;
 use App\Models\Placement;
+use App\Models\Program;
 use App\Models\Student;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
@@ -60,6 +61,7 @@ function ojtPlacement(array $fixture, int $requiredHours = 16): Placement
         'start_date' => now()->subDays(10)->toDateString(),
         'required_hours' => $requiredHours,
         'status' => Placement::STATUS_ACTIVE,
+        'rating_requested_at' => now(),
     ]);
 }
 
@@ -188,6 +190,125 @@ it('runs the full OJT lifecycle through completion, clearance and certificate', 
         ->post(route('employer.interns.evaluation.store', $placement), ['scores' => ojtScores(1)])
         ->assertSessionHas('error');
     expect((float) $placement->evaluation->fresh()->average_score)->toBe(5.0);
+});
+
+it('blocks an employer from submitting a rating until the coordinator requests one', function () {
+    $fixture = ojtFixture();
+    $placement = ojtPlacement($fixture);
+    $placement->update(['rating_requested_at' => null, 'rating_requested_by_user_id' => null]);
+
+    $this->actingAs($fixture['employerUser'])
+        ->post(route('employer.interns.evaluation.store', $placement), ['scores' => ojtScores()])
+        ->assertSessionHas('error');
+
+    expect($placement->fresh()->evaluation)->toBeNull();
+
+    $this->actingAs($fixture['coordinatorUser'])
+        ->post(route('coordinator.placements.request-rating', $placement))
+        ->assertSessionHas('success');
+
+    expect($placement->fresh()->rating_requested_at)->not->toBeNull()
+        ->and($placement->fresh()->rating_requested_by_user_id)->toBe($fixture['coordinatorUser']->id);
+    $this->assertDatabaseHas('notifications', [
+        'user_id' => $fixture['employerUser']->id,
+        'type' => 'ojt_update',
+        'title' => 'Rating requested',
+    ]);
+
+    $this->actingAs($fixture['employerUser'])
+        ->post(route('employer.interns.evaluation.store', $placement), ['scores' => ojtScores()])
+        ->assertSessionHas('success');
+
+    expect($placement->fresh()->evaluation)->not->toBeNull();
+});
+
+it('denies a coordinator from requesting a rating for a student outside their institution', function () {
+    $fixture = ojtFixture();
+    $placement = ojtPlacement($fixture);
+    $placement->update(['rating_requested_at' => null, 'rating_requested_by_user_id' => null]);
+    $outsider = ojtFixture();
+
+    $this->actingAs($outsider['coordinatorUser'])
+        ->post(route('coordinator.placements.request-rating', $placement))
+        ->assertForbidden();
+
+    expect($placement->fresh()->rating_requested_at)->toBeNull();
+});
+
+it('denies a coordinator from requesting or viewing a rating for a student assigned to another coordinator\'s program', function () {
+    $fixture = ojtFixture();
+    $placement = ojtPlacement($fixture);
+
+    $otherCoordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
+    $otherCoordinator = Coordinator::create([
+        'user_id' => $otherCoordinatorUser->id,
+        'institution_id' => $fixture['student']->institution_id,
+    ]);
+    $program = Program::create([
+        'name' => 'Computer Science',
+        'code' => 'BSCS',
+        'required_internship_hours' => 486,
+        'coordinator_id' => $otherCoordinator->id,
+    ]);
+    $fixture['student']->update(['program_id' => $program->id]);
+
+    // Same institution, but the student's program is assigned to a different coordinator.
+    $this->actingAs($fixture['coordinatorUser'])
+        ->post(route('coordinator.placements.request-rating', $placement))
+        ->assertForbidden();
+    $this->actingAs($fixture['coordinatorUser'])
+        ->get(route('coordinator.placements.show', $placement))
+        ->assertForbidden();
+
+    $this->actingAs($otherCoordinatorUser)
+        ->post(route('coordinator.placements.request-rating', $placement))
+        ->assertSessionHas('success');
+});
+
+it('keeps a pre-existing evaluation visible and editable even without a formal rating request', function () {
+    $fixture = ojtFixture();
+    $placement = ojtPlacement($fixture);
+    $placement->update(['rating_requested_at' => null, 'rating_requested_by_user_id' => null]);
+    Evaluation::create([
+        'placement_id' => $placement->id,
+        'evaluator_user_id' => $fixture['employerUser']->id,
+        'scores' => ojtScores(4),
+        'average_score' => 4,
+        'would_hire' => true,
+        'submitted_at' => now(),
+    ]);
+
+    // The employer can still update a rating that was submitted before this feature existed.
+    $this->actingAs($fixture['employerUser'])
+        ->get(route('employer.interns.show', $placement))
+        ->assertOk()
+        ->assertSee('Update evaluation', false)
+        ->assertDontSee('No rating requested yet');
+
+    $this->actingAs($fixture['employerUser'])
+        ->post(route('employer.interns.evaluation.store', $placement), ['scores' => ojtScores(5), 'comments' => 'Updated.'])
+        ->assertSessionHas('success');
+
+    expect($placement->fresh()->evaluation->comments)->toBe('Updated.');
+});
+
+it('never shows the employer rating to the student, even after one is submitted', function () {
+    $fixture = ojtFixture();
+    $placement = ojtPlacement($fixture);
+
+    $this->actingAs($fixture['employerUser'])
+        ->post(route('employer.interns.evaluation.store', $placement), ['scores' => ojtScores(5), 'comments' => 'Secret rating comment'])
+        ->assertSessionHas('success');
+
+    $response = $this->actingAs($fixture['studentUser'])->get(route('student.ojt.index'))->assertOk();
+    $response->assertDontSee('Supervisor Evaluation')
+        ->assertDontSee('Secret rating comment')
+        ->assertDontSee('ojt-evaluation', false);
+
+    // A student hitting the employer-only rating endpoint is rejected by role middleware.
+    $this->actingAs($fixture['studentUser'])
+        ->post(route('employer.interns.evaluation.store', $placement), ['scores' => ojtScores()])
+        ->assertForbidden();
 });
 
 it('requires a remark when rejecting a time entry and does not count rejected hours', function () {

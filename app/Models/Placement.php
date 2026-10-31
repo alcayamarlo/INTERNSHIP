@@ -30,6 +30,8 @@ class Placement extends Model
         'cleared_by_user_id',
         'clearance_remarks',
         'certificate_number',
+        'rating_requested_at',
+        'rating_requested_by_user_id',
     ];
 
     protected function casts(): array
@@ -40,6 +42,7 @@ class Placement extends Model
             'required_hours' => 'integer',
             'completed_at' => 'datetime',
             'cleared_at' => 'datetime',
+            'rating_requested_at' => 'datetime',
         ];
     }
 
@@ -66,6 +69,11 @@ class Placement extends Model
     public function clearedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'cleared_by_user_id');
+    }
+
+    public function ratingRequestedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rating_requested_by_user_id');
     }
 
     public function attendanceLogs(): HasMany

@@ -4,13 +4,17 @@ namespace App\Http\Controllers\Coordinator;
 
 use App\Http\Controllers\Controller;
 use App\Models\Placement;
+use App\Services\NotificationService;
 use App\Services\PlacementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PlacementController extends Controller
 {
-    public function __construct(private PlacementService $placementService) {}
+    public function __construct(
+        private PlacementService $placementService,
+        private NotificationService $notificationService
+    ) {}
 
     public function index(Request $request)
     {
@@ -71,5 +75,28 @@ class PlacementController extends Controller
         $this->placementService->clear($placement, Auth::user(), $validated['clearance_remarks'] ?? null);
 
         return back()->with('success', 'OJT cleared. The student can now download the certificate of completion.');
+    }
+
+    public function requestRating(Placement $placement)
+    {
+        $this->authorize('requestRating', $placement);
+
+        $placement->update([
+            'rating_requested_at' => now(),
+            'rating_requested_by_user_id' => Auth::id(),
+        ]);
+
+        $placement->loadMissing('employer.user', 'student.user');
+        if ($employerUser = $placement->employer?->user) {
+            $this->notificationService->send(
+                $employerUser,
+                'ojt_update',
+                'Rating requested',
+                'Your coordinator requested a performance rating for '.($placement->student?->user?->name ?? 'this intern').'.',
+                ['placement_id' => $placement->id]
+            );
+        }
+
+        return back()->with('success', 'Rating request sent to the employer.');
     }
 }

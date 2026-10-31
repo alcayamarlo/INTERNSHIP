@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Enums\UserRole;
+use App\Support\StudentIdFormat;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -27,6 +28,18 @@ class StoreUserRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:20'],
             'institution_id' => ['required_if:role,coordinator,student', 'nullable', 'exists:institutions,id'],
             'company_name' => ['required_if:role,employer', 'nullable', 'string', 'max:255'],
+            'student_id_number' => [
+                'required_if:role,student',
+                'nullable',
+                'string',
+                'max:50',
+                'unique:students,student_id_number',
+                function ($attribute, $value, $fail) {
+                    if ($value !== null && ! StudentIdFormat::matches($value)) {
+                        $fail('Enter a student ID in the format SCC-21-00013240.');
+                    }
+                },
+            ],
         ];
     }
 }

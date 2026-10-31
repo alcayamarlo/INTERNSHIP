@@ -226,9 +226,12 @@
             <div class="profile-field-grid">
                 <div>
                     <label class="form-label" for="student_number">Student ID number</label>
-                    <input id="student_number" type="text" class="form-control @error('student_number') is-invalid @enderror" name="student_number" value="{{ old('student_number', $student->student_id_number) }}" placeholder="SCC-21-00013240" autocomplete="off" data-student-id-pattern="{{ $studentIdPattern }}" @readonly($profileVerified)>
+                    <input id="student_number" type="text" class="form-control @error('student_number') is-invalid @enderror" name="student_number" value="{{ old('student_number', $student->student_id_number) }}" placeholder="SCC-21-00013240" autocomplete="off" data-student-id-pattern="{{ $studentIdPattern }}" @readonly($profileVerified || $student->student_id_locked)>
+                    @if($student->student_id_locked)
+                        <small class="form-text text-muted">Your student ID was set when your account was created and can't be changed here. Contact your coordinator or administrator if it needs correction.</small>
+                    @endif
                     <small id="studentIdCorrectionNotice" class="form-text text-warning" @if(!$studentIdNeedsCorrection) hidden @endif>This ID doesn't match the SCC-YY-NNNNNNNN format. Enter your correct student ID.</small>
-                    @if($profileVerified)<button type="button" class="btn btn-sm btn-outline-primary mt-2" data-request-change-field="student_id_number">Request change</button>@endif
+                    @if($profileVerified && ! $student->student_id_locked)<button type="button" class="btn btn-sm btn-outline-primary mt-2" data-request-change-field="student_id_number">Request change</button>@endif
                     @error('student_number')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div>
@@ -438,7 +441,9 @@
                         </td>
                         <td data-label="Type">{{ $item['type_label'] }}</td>
                         <td data-label="Status">
-                            <span class="status-badge {{ $item['status_class'] }}">{{ $item['status_label'] }}</span>
+                            @unless($item['is_certificate'])
+                                <span class="status-badge {{ $item['status_class'] }}">{{ $item['status_label'] }}</span>
+                            @endunless
                         </td>
                         <td data-label="Actions">
                             <div class="portfolio-actions">
@@ -922,9 +927,13 @@
             document.getElementById('previewCategory').textContent = data.fileCategory;
             document.getElementById('previewIssuer').textContent = data.fileIssuer || 'Not provided';
             document.getElementById('previewUploaded').textContent = data.fileUploaded;
-            document.getElementById('previewStatus').textContent = data.fileStatus;
-            document.getElementById('previewReviewer').textContent = data.fileReviewer;
-            document.getElementById('previewReviewedAt').textContent = data.fileReviewedAt;
+            ['previewStatus', 'previewReviewer', 'previewReviewedAt'].forEach((id) => {
+                const dd = document.getElementById(id);
+                const value = { previewStatus: data.fileStatus, previewReviewer: data.fileReviewer, previewReviewedAt: data.fileReviewedAt }[id];
+                dd.textContent = value;
+                dd.hidden = !value;
+                dd.previousElementSibling.hidden = !value;
+            });
             document.getElementById('previewSize').textContent = data.fileSize;
             document.getElementById('previewDownload').href = data.downloadUrl;
             previewModal.showModal();

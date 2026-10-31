@@ -15,7 +15,6 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Coordinator\DashboardController as CoordinatorDashboardController;
@@ -57,14 +56,6 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'login'])
         ->middleware('throttle:login');
 
-    // REGISTER
-    Route::get('/register', [RegisterController::class, 'showRegistrationForm'])
-        ->name('register');
-
-    Route::post('/register', [RegisterController::class, 'register'])
-        ->name('register.store')
-        ->middleware('throttle:register');
-
     Route::get('/forgot-password', [ForgotPasswordController::class, 'showResetForm'])->name('password.request');
     Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetCode'])->name('password.email')->middleware('throttle:password-reset-request');
     Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update')->middleware('throttle:password-reset-submit');
@@ -75,6 +66,13 @@ Route::match(['get', 'post'], '/logout', [LoginController::class, 'logout'])
     ->name('logout');
 
 Route::middleware(['auth', 'active'])->group(function () {
+    Route::get('/password/force-change', [\App\Http\Controllers\Auth\ForcePasswordChangeController::class, 'edit'])
+        ->name('password.force-change');
+    Route::put('/password/force-change', [\App\Http\Controllers\Auth\ForcePasswordChangeController::class, 'update'])
+        ->name('password.force-change.update');
+});
+
+Route::middleware(['auth', 'active', 'password.current'])->group(function () {
     Route::get('/profile/complete', ProfileCompletionController::class)
         ->name('profile.complete');
 
@@ -208,12 +206,12 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/verification/{type}/{id}/download', [VerificationController::class, 'downloadEvidence'])
             ->whereIn('type', ['competencies', 'certificates', 'portfolio', 'resumes'])
             ->name('verification.download');
+        // 'certificates' and 'competencies' are intentionally excluded here: coordinators
+        // can view/download but not review/change status.
         Route::patch('/verification/{type}/{id}', [VerificationController::class, 'updateStatus'])
-            ->whereIn('type', ['competencies', 'certificates', 'portfolio'])
+            ->whereIn('type', ['portfolio'])
             ->name('verification.update');
         Route::post('/verification/batch', [CoordinatorDashboardController::class, 'batchVerify'])->name('verification.batch');
-        Route::post('/verification/competencies/{competency}', [VerificationController::class, 'reviewCompetency'])->name('verification.reviewCompetency');
-        Route::post('/verification/certificates/{certificate}', [VerificationController::class, 'reviewCertificate'])->name('verification.reviewCertificate');
         Route::post('/verification/portfolios/{portfolio}', [VerificationController::class, 'reviewPortfolio'])->name('verification.reviewPortfolio');
         Route::get('/reports', [CoordinatorReportController::class, 'index'])->name('reports.index');
         Route::post('/reports/generate', [CoordinatorReportController::class, 'generate'])->name('reports.generate');
@@ -221,6 +219,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/placements', [CoordinatorPlacementController::class, 'index'])->name('placements.index');
         Route::get('/placements/{placement}', [CoordinatorPlacementController::class, 'show'])->name('placements.show');
         Route::post('/placements/{placement}/clear', [CoordinatorPlacementController::class, 'clear'])->name('placements.clear');
+        Route::post('/placements/{placement}/request-rating', [CoordinatorPlacementController::class, 'requestRating'])->name('placements.request-rating');
     });
 
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
@@ -253,6 +252,8 @@ Route::middleware(['auth', 'active'])->group(function () {
             ->name('portfolio-files.destroy');
         Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
         Route::get('/users/create', [AdminUserController::class, 'create'])->name('users.create');
+        Route::get('/students/import', [\App\Http\Controllers\Admin\StudentImportController::class, 'create'])->name('students.import.create');
+        Route::post('/students/import', [\App\Http\Controllers\Admin\StudentImportController::class, 'store'])->name('students.import.store');
         Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
         Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
         Route::post('/users/{user}/archive', [AdminUserController::class, 'archive'])->name('users.archive');

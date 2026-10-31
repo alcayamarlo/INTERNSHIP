@@ -172,8 +172,9 @@ it('searches student IDs and competency names and returns verification counts', 
         ->assertOk()
         ->assertJsonPath('students.0.student_id_number', 'SCC-24-00000001')
         ->assertJsonPath('students.0.competencies_count', 1)
-        ->assertJsonPath('students.0.verified_submissions_count', 1)
-        ->assertJsonPath('students.0.total_submissions_count', 3)
+        // Competencies are no longer part of the verified/total submissions ratio.
+        ->assertJsonPath('students.0.verified_submissions_count', 0)
+        ->assertJsonPath('students.0.total_submissions_count', 2)
         ->assertJsonPath('students.0.profile_completion', 72)
         ->assertJsonPath('summary.total', 1);
 
@@ -241,7 +242,9 @@ it('shows read-only profile submission summaries and persisted recent verificati
     $this->actingAs($coordinator)
         ->get(route('coordinator.students.show', $student))
         ->assertOk()
-        ->assertSee('1/3 verified')
+        // The competency no longer counts toward verification progress (0/2: the
+        // certificate and portfolio only), though it still lists below unchanged.
+        ->assertSee('0/2 verified')
         ->assertSee('1 pending')
         ->assertSee('JavaScript')
         ->assertSee('Open Academy')

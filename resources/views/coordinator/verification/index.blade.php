@@ -68,8 +68,6 @@
 
         <div class="filter-group" role="group" aria-label="Submission type">
             <button type="button" class="filter-chip is-active" data-filter-group="type" data-filter-value="all" aria-pressed="true">All</button>
-            <button type="button" class="filter-chip" data-filter-group="type" data-filter-value="competencies" aria-pressed="false">Competencies</button>
-            <button type="button" class="filter-chip" data-filter-group="type" data-filter-value="certificates" aria-pressed="false">Certificates</button>
             <button type="button" class="filter-chip" data-filter-group="type" data-filter-value="portfolio" aria-pressed="false">Portfolio</button>
         </div>
 

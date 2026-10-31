@@ -96,15 +96,16 @@ it('stores a real portfolio file and allows a coordinator to review it', functio
         ->get(route('student.portfolio.index'))
         ->assertRedirect(route('student.profile.edit').'#portfolio');
 
+    // Certificates and competencies no longer show a verification status badge to
+    // students at all (precisely covered in StudentProfilePortfolioSummaryTest);
+    // here we just confirm they still display.
     $this->get(route('student.profile.edit'))
         ->assertOk()
-        ->assertSee('Verified Student Certificate')
-        ->assertSee('status-verified');
+        ->assertSee('Verified Student Certificate');
 
     $this->get(route('student.competencies.index'))
         ->assertOk()
-        ->assertSee('Verified Student Skill')
-        ->assertSee('bi-patch-check-fill');
+        ->assertSee('Verified Student Skill');
 });
 
 it('marks a replaced portfolio as resubmitted and redirects to the refreshed profile', function () {

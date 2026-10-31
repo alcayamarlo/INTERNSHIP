@@ -37,7 +37,7 @@
         @if (
             $errors->any()
             &&
-            !$errors->has('email')
+            !$errors->has('login')
             &&
             !$errors->has('password')
         )
@@ -56,38 +56,38 @@
         >
             @csrf
 
-            {{-- EMAIL --}}
+            {{-- LOGIN --}}
             <div class="auth-field">
-                <label for="email" class="auth-label">
-                    Email Address
+                <label for="login" class="auth-label">
+                    Email or School ID
                     <span class="auth-required" aria-hidden="true">*</span>
                 </label>
 
                 <div class="auth-input-wrap">
-                    <i class="bi bi-envelope auth-input-icon" aria-hidden="true"></i>
+                    <i class="bi bi-person auth-input-icon" aria-hidden="true"></i>
                     <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        class="auth-input @error('email') is-invalid @enderror"
-                        value="{{ old('email') }}"
-                        placeholder="Enter your email address"
-                        autocomplete="email"
+                        type="text"
+                        id="login"
+                        name="login"
+                        class="auth-input @error('login') is-invalid @enderror"
+                        value="{{ old('login') }}"
+                        placeholder="Enter your email address or school ID"
+                        autocomplete="username"
                         maxlength="255"
-                        aria-invalid="{{ $errors->has('email') ? 'true' : 'false' }}"
-                        aria-describedby="emailError @if ($errors->has('email')) emailServerError @endif"
+                        aria-invalid="{{ $errors->has('login') ? 'true' : 'false' }}"
+                        aria-describedby="loginError @if ($errors->has('login')) loginServerError @endif"
                         required
                     >
                 </div>
 
-                @error('email')
-                    <div id="emailServerError" class="auth-error server-error" role="alert">
+                @error('login')
+                    <div id="loginServerError" class="auth-error server-error" role="alert">
                         <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
                         <span>{{ $message }}</span>
                     </div>
                 @enderror
 
-                <div id="emailError" class="auth-error" aria-live="polite"></div>
+                <div id="loginError" class="auth-error" aria-live="polite"></div>
             </div>
 
             {{-- PASSWORD --}}
@@ -167,7 +167,7 @@
 
         <p class="auth-footer-text">
             Don't have a SkillBridge account?
-            <a href="{{ route('register') }}">Create one now</a>
+            Contact your coordinator or administrator.
         </p>
 
     </section>
@@ -187,11 +187,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    const emailInput = document.getElementById('email');
+    const emailInput = document.getElementById('login');
     const passwordInput = document.getElementById('password');
-    const emailError = document.getElementById('emailError');
+    const emailError = document.getElementById('loginError');
     const passwordError = document.getElementById('passwordError');
-    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     let hasSubmitted = false;
@@ -209,21 +208,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function validateEmail() {
-        const email = emailInput.value.trim();
+        const login = emailInput.value.trim();
         clearError(emailInput, emailError);
 
-        if (email === '') {
-            showError(emailInput, emailError, 'Email address is required.');
+        if (login === '') {
+            showError(emailInput, emailError, 'Email address or school ID is required.');
             return false;
         }
 
-        if (email.length > 255) {
-            showError(emailInput, emailError, 'Email address is too long.');
-            return false;
-        }
-
-        if (!emailRegex.test(email)) {
-            showError(emailInput, emailError, 'Please enter a valid email address.');
+        if (login.length > 255) {
+            showError(emailInput, emailError, 'This is too long.');
             return false;
         }
 

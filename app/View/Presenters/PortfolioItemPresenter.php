@@ -40,14 +40,18 @@ class PortfolioItemPresenter
             ? PortfolioCategory::Certificate->label()
             : ($category?->label() ?? $typeLabel);
 
+        // Certificates are no longer reviewed by coordinators, so students never see a
+        // verification status badge or reviewer info for them (the field stays in the
+        // database untouched; it's just not surfaced here anymore).
         return [
             'type_key' => $typeKey,
             'type_label' => $typeLabel,
             'title' => $title,
             'description' => $description,
             'search' => mb_strtolower($title.' '.$searchDescription),
-            'status_label' => $status['label'],
-            'status_class' => $status['class'],
+            'is_certificate' => $isCertificate,
+            'status_label' => $isCertificate ? '' : $status['label'],
+            'status_class' => $isCertificate ? '' : $status['class'],
             'has_file' => filled($filePath),
             'preview_url' => filled($filePath)
                 ? route($isCertificate ? 'student.certificates.preview' : ($isResume ? 'student.resume.view' : 'student.portfolio.preview'), $item, false)
@@ -58,13 +62,13 @@ class PortfolioItemPresenter
             'file_category' => $fileCategoryLabel,
             'file_issuer' => $isCertificate ? (string) ($item->issuer ?? '') : '',
             'uploaded_at' => $item->created_at?->format('M d, Y') ?? 'Unknown',
-            'file_status' => ucfirst(match ($item->verification_status) {
+            'file_status' => $isCertificate ? '' : ucfirst(match ($item->verification_status) {
                 'evidence_submitted' => 'pending',
                 'resubmitted' => 'Resubmitted',
                 default => $item->verification_status ?? 'pending',
             }),
-            'reviewer' => $item->reviewerUser?->name ?? 'Not reviewed',
-            'reviewed_at' => $item->reviewed_at?->format('M d, Y') ?? 'Not reviewed',
+            'reviewer' => $isCertificate ? '' : ($item->reviewerUser?->name ?? 'Not reviewed'),
+            'reviewed_at' => $isCertificate ? '' : ($item->reviewed_at?->format('M d, Y') ?? 'Not reviewed'),
             'file_size_kb' => number_format(($item->file_size_bytes ?? 0) / 1024, 1),
             'file_extension' => strtolower(pathinfo((string) $filePath, PATHINFO_EXTENSION)),
             'edit_url' => $isCertificate

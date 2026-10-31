@@ -17,7 +17,6 @@
             <a href="#ojt-progress" class="btn btn-outline-secondary btn-sm"><i class="bi bi-speedometer2" aria-hidden="true"></i> Progress</a>
             <a href="#ojt-time-record" class="btn btn-outline-secondary btn-sm"><i class="bi bi-clock-history" aria-hidden="true"></i> Time Record</a>
             <a href="#ojt-journal" class="btn btn-outline-secondary btn-sm"><i class="bi bi-journal-text" aria-hidden="true"></i> Weekly Journal</a>
-            <a href="#ojt-evaluation" class="btn btn-outline-secondary btn-sm"><i class="bi bi-clipboard-check" aria-hidden="true"></i> Evaluation</a>
         </nav>
     @endif
 </x-page-header>
@@ -178,9 +177,6 @@
     </div>
     <div id="ojt-journal" class="ojt-anchor">
         @include('ojt.partials.journals', ['placement' => $placement, 'mode' => 'student'])
-    </div>
-    <div id="ojt-evaluation" class="ojt-anchor">
-        @include('ojt.partials.evaluation', ['placement' => $placement])
     </div>
 @endif
 @endsection

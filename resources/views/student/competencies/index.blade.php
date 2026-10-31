@@ -97,34 +97,6 @@
         margin-top: 6px;
     }
 
-    #competenciesOverview .co-segment {
-        background: var(--co-panel);
-        border: 1px solid var(--co-border-strong);
-        border-radius: var(--co-radius-control);
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        isolation: isolate;
-        padding: var(--co-space-1);
-        position: relative;
-    }
-
-    #competenciesOverview .co-segment-pill {
-        background: var(--co-accent);
-        border-radius: var(--co-radius-control);
-        inset: var(--co-space-1) auto var(--co-space-1) var(--co-space-1);
-        pointer-events: none;
-        position: absolute;
-        transform: translateX(0);
-        transition: transform var(--co-dur-toggle) var(--co-ease-out);
-        width: calc(50% - var(--co-space-1));
-        z-index: -1;
-    }
-
-    #competenciesOverview .co-segment[data-view="all"] .co-segment-pill {
-        transform: translateX(100%);
-    }
-
-    #competenciesOverview .co-segment-button,
     #competenciesOverview .co-chip,
     #competenciesOverview .co-axis-button,
     #competenciesOverview .co-row,
@@ -145,17 +117,6 @@
             font-weight var(--co-dur-selection) var(--co-ease-out);
     }
 
-    #competenciesOverview .co-segment-button {
-        background: transparent;
-        border-radius: var(--co-radius-control);
-        min-height: 44px;
-        min-width: 136px;
-        padding: var(--co-space-2) var(--co-space-3);
-        position: relative;
-        z-index: 1;
-    }
-
-    #competenciesOverview .co-segment-button:hover,
     #competenciesOverview .co-chip:hover,
     #competenciesOverview .co-axis-button:hover,
     #competenciesOverview .co-row:hover {
@@ -163,18 +124,6 @@
         color: var(--co-text);
     }
 
-    #competenciesOverview .co-segment-button[aria-pressed="true"] {
-        color: var(--co-text-on-accent);
-        font-weight: 500;
-    }
-
-    #competenciesOverview .co-segment-button:focus-visible,
-    #competenciesOverview .co-segment-button:hover {
-        background-color: transparent;
-        border-color: transparent;
-    }
-
-    #competenciesOverview .co-segment-button:active,
     #competenciesOverview .co-chip:active,
     #competenciesOverview .co-axis-button:active,
     #competenciesOverview .co-row:active,
@@ -675,47 +624,6 @@
         white-space: nowrap;
     }
 
-    #competenciesOverview .co-status {
-        align-items: center;
-        border: 1px solid transparent;
-        border-radius: var(--co-radius-control);
-        display: inline-flex;
-        flex: 0 0 auto;
-        font-size: 12px;
-        gap: var(--co-space-1);
-        line-height: 18px;
-        padding: var(--co-space-1) var(--co-space-2);
-    }
-
-    #competenciesOverview .co-status svg {
-        height: 12px;
-        width: 12px;
-    }
-
-    #competenciesOverview .co-status-verified {
-        background: var(--co-verified-bg);
-        border-color: rgba(134, 239, 172, .24);
-        color: var(--co-verified);
-    }
-
-    #competenciesOverview .co-status-pending {
-        background: var(--co-pending-bg);
-        border-color: rgba(252, 211, 77, .24);
-        color: var(--co-pending);
-    }
-
-    #competenciesOverview .co-status-rejected {
-        background: var(--co-rejected-bg);
-        border-color: rgba(253, 164, 175, .24);
-        color: var(--co-rejected);
-    }
-
-    #competenciesOverview .co-status-neutral {
-        background: var(--co-neutral-bg);
-        border-color: var(--co-border);
-        color: var(--co-neutral);
-    }
-
     #competenciesOverview .co-empty {
         align-items: center;
         color: var(--co-secondary);
@@ -883,38 +791,11 @@
         padding-top: var(--co-space-3);
     }
 
-    #competenciesOverview .co-evidence svg,
-    #competenciesOverview .co-note-icon {
+    #competenciesOverview .co-evidence svg {
         color: var(--co-muted);
         flex: 0 0 auto;
         height: 16px;
         width: 16px;
-    }
-
-    #competenciesOverview .co-note {
-        align-items: flex-start;
-        background: rgba(127, 29, 29, .18);
-        border: 1px solid rgba(253, 164, 175, .24);
-        border-radius: var(--co-radius-control);
-        color: var(--co-secondary);
-        display: flex;
-        gap: var(--co-space-2);
-        margin-top: var(--co-space-4);
-        padding: var(--co-space-3);
-    }
-
-    #competenciesOverview .co-note strong {
-        color: var(--co-rejected);
-        display: block;
-        font-size: 12px;
-        font-weight: 500;
-        margin-bottom: var(--co-space-1);
-    }
-
-    #competenciesOverview .co-note-text {
-        font-size: 13px;
-        line-height: 1.5;
-        overflow-wrap: anywhere;
     }
 
     #competenciesOverview .co-detail-action {
@@ -973,14 +854,6 @@
         #competenciesOverview .co-header {
             align-items: stretch;
             flex-direction: column;
-        }
-
-        #competenciesOverview .co-segment {
-            width: 100%;
-        }
-
-        #competenciesOverview .co-segment-button {
-            min-width: 0;
         }
 
         #competenciesOverview .co-outer-panel,
@@ -1059,18 +932,12 @@
 
 @section('content')
 @php
-    $initialView = $overview['view'];
     $initialCategory = $overview['category_filter'];
-    $initialScores = collect($overview['groups'])->mapWithKeys(fn ($group, $key) => [$key => $group['scores'][$initialView === 'all' ? 'all_submitted' : 'verified']])->all();
-    $initialFiltered = collect($overview['skills'])->filter(function ($skill) use ($initialView, $initialCategory) {
-        $visibleByStatus = $initialView === 'all'
-            ? in_array($skill['status_group'], ['verified', 'pending', 'rejected', 'not_counted'], true)
-            : $skill['status_group'] === 'verified';
-        $visibleByCategory = ! $initialCategory
+    $initialScores = collect($overview['groups'])->mapWithKeys(fn ($group, $key) => [$key => $group['score']])->all();
+    $initialFiltered = collect($overview['skills'])->filter(function ($skill) use ($initialCategory) {
+        return ! $initialCategory
             || $skill['category_key'] === $initialCategory
             || $skill['group_key'] === $initialCategory;
-
-        return $visibleByStatus && $visibleByCategory;
     })->values();
     $selectedSkill = $initialFiltered->first();
     $levelRows = [
@@ -1083,7 +950,6 @@
 <main class="co-outer-panel" id="competenciesOverview"
     data-loading="true"
     aria-busy="true"
-    data-view="{{ $initialView }}"
     data-category="{{ $initialCategory ?? '' }}"
     data-skills='@json($overview["skills"])'
     data-groups='@json($overview["groups"])'
@@ -1092,15 +958,10 @@
     <header class="co-header">
         <div>
             <h1 class="co-title">My competencies</h1>
-            <p class="co-hint">Your skills, evidence, and verified progress at a glance.</p>
+            <p class="co-hint">Your skills and evidence at a glance.</p>
         </div>
         <div class="d-flex flex-wrap align-items-center gap-3">
             <button type="button" class="co-primary" data-bs-toggle="modal" data-bs-target="#addCompetencyModal">Add another competency</button>
-            <div class="co-segment" id="competencyViewToggle" role="group" aria-label="Competency view" data-view="{{ $initialView }}">
-                <span class="co-segment-pill" aria-hidden="true"></span>
-                <button type="button" class="co-segment-button" data-view-option="verified" aria-pressed="{{ $initialView === 'verified' ? 'true' : 'false' }}">Verified only</button>
-                <button type="button" class="co-segment-button" data-view-option="all" aria-pressed="{{ $initialView === 'all' ? 'true' : 'false' }}">All submitted</button>
-            </div>
         </div>
     </header>
 
@@ -1118,7 +979,6 @@
                     </defs>
                     <g class="co-grid-layer" id="radarGrid"></g>
                     <g class="co-axis-layer" id="radarAxes"></g>
-                    <polygon id="radarSecondaryShape" class="co-secondary-shape" points="200,150 200,150 200,150"></polygon>
                     <polygon id="radarPrimaryShape" class="co-primary-shape" points="200,150 200,150 200,150"></polygon>
                     <g id="radarVertices"></g>
                 </svg>
@@ -1127,19 +987,14 @@
                 @foreach(['technical' => 'Technical', 'soft' => 'Soft skills', 'certification' => 'Certification'] as $axis => $label)
                     @php
                         $group = $overview['groups'][$axis];
-                        $scoreKey = $initialView === 'all' ? 'all_submitted' : 'verified';
-                        $axisPoints = collect($overview['skills'])->where('group_key', $axis)
-                            ->filter(fn ($skill) => $initialView === 'all'
-                                ? in_array($skill['status_group'], ['verified', 'pending'], true)
-                                : $skill['status_group'] === 'verified')
-                            ->sum('proficiency_points');
+                        $axisPoints = collect($overview['skills'])->where('group_key', $axis)->sum('proficiency_points');
                     @endphp
                     <button type="button" class="co-axis-button" data-axis="{{ $axis }}" data-score="{{ $initialScores[$axis] ?? 0 }}"
                             aria-pressed="{{ $initialCategory === $axis ? 'true' : 'false' }}"
                             aria-label="{{ $label }}: {{ number_format($initialScores[$axis] ?? 0, 1) }} percent">
                         <span class="co-axis-name">{{ $label }}</span>
                         <span class="co-axis-value co-number">{{ number_format($initialScores[$axis] ?? 0, 1) }}%</span>
-                        <span class="co-tooltip" role="tooltip">{{ $axisPoints }} of {{ $group['target'] * 100 }} points · {{ $group['counts']['pending'] }} pending</span>
+                        <span class="co-tooltip" role="tooltip">{{ $axisPoints }} of {{ $group['target'] * 100 }} points</span>
                     </button>
                 @endforeach
             </div>
@@ -1175,7 +1030,7 @@
                     @foreach($overview['groups'] as $key => $group)
                         <button type="button" class="co-chip" data-category="{{ $key }}" aria-pressed="{{ $initialCategory === $key ? 'true' : 'false' }}">{{ $group['label'] }}</button>
                     @endforeach
-                    @if(! empty($overview['unmapped']['category_count']))
+                    @if(! empty($overview['unmapped_categories']))
                         <button type="button" class="co-chip" data-category="__other" aria-pressed="{{ $initialCategory === '__other' ? 'true' : 'false' }}">Other categories</button>
                     @endif
                 </div>
@@ -1193,11 +1048,10 @@
                                     <span class="co-row-name">{{ $skill['name'] }}</span>
                                     <span class="co-row-category">{{ $skill['category_label'] }} · {{ $skill['proficiency_label'] }}</span>
                                 </span>
-                                @include('student.competencies.partials.status-badge', ['status' => $skill['status_group'], 'label' => $skill['status_label']])
                             </button>
                         @endforeach
                     </div>
-                    <p class="co-empty {{ $initialFiltered->isEmpty() ? '' : 'co-hidden' }}" id="competencyNoResults">No competencies match this view.</p>
+                    <p class="co-empty {{ $initialFiltered->isEmpty() ? '' : 'co-hidden' }}" id="competencyNoResults">No competencies match this filter.</p>
                 @else
                     <div class="co-empty" id="competencyEmptyState">
                         <h3 class="co-empty-title">Build your competency profile</h3>
@@ -1211,7 +1065,7 @@
                             <span class="co-loading-skeleton"></span>
                         </div>
                     </div>
-                    <p class="co-empty co-hidden" id="competencyNoResults">No competencies match this view.</p>
+                    <p class="co-empty co-hidden" id="competencyNoResults">No competencies match this filter.</p>
                 @endif
             </section>
 
@@ -1224,7 +1078,6 @@
                                 <h3 class="co-detail-name" data-detail-name>{{ $selectedSkill['name'] }}</h3>
                                 <div class="co-detail-tags">
                                     <span class="co-category-tag" data-detail-category>{{ $selectedSkill['category_label'] }}</span>
-                                    @include('student.competencies.partials.status-badge', ['status' => $selectedSkill['status_group'], 'label' => $selectedSkill['status_label'], 'detail' => true])
                                 </div>
                             </div>
                         </div>
@@ -1241,10 +1094,6 @@
                         <div class="co-evidence" data-detail-evidence>
                             <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 1.75h5l3 3v9.5H4a1 1 0 0 1-1-1v-10a1.5 1.5 0 0 1 1-1.5Z" stroke="currentColor" stroke-width="1.3"/><path d="M9 2v3h3M5.5 8h5M5.5 10.5h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
                             <span>{{ $selectedSkill['evidence_filename'] ?: 'No evidence file attached' }}</span>
-                        </div>
-                        <div class="co-note {{ $selectedSkill['status_group'] === 'rejected' && $selectedSkill['coordinator_note'] ? '' : 'co-hidden' }}" data-detail-note>
-                            <svg class="co-note-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.7a6.3 6.3 0 1 0 0 12.6A6.3 6.3 0 0 0 8 1.7Z" stroke="currentColor" stroke-width="1.3"/><path d="M8 7v3.4M8 4.8h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                            <div><strong>Coordinator note</strong><p class="co-note-text">{{ $selectedSkill['coordinator_note'] }}</p></div>
                         </div>
                         <div class="co-detail-action">
                             <a class="co-primary" data-detail-action href="{{ route('student.competencies.edit', $selectedSkill['id']) }}">Edit competency</a>
@@ -1376,38 +1225,23 @@
     const rowStaggerMs = reduceMotion ? 0 : duration('--co-delay-row');
     const levelStaggerMs = reduceMotion ? 0 : duration('--co-delay-level');
     const initialRevealMs = reduceMotion ? 0 : duration('--co-dur-hero') / 2;
-    const toggle = document.getElementById('competencyViewToggle');
     const radar = document.getElementById('competencyRadar');
     const radarWrap = radar.closest('.co-radar-wrap');
     const grid = document.getElementById('radarGrid');
     const axes = document.getElementById('radarAxes');
     const primaryShape = document.getElementById('radarPrimaryShape');
-    const secondaryShape = document.getElementById('radarSecondaryShape');
     const vertices = document.getElementById('radarVertices');
     const vertexTooltip = document.getElementById('radarVertexTooltip');
     const chartAnnouncement = document.getElementById('competencyChartAnnouncement');
     const list = document.getElementById('competencySkillList');
     const noResults = document.getElementById('competencyNoResults');
     const detail = document.getElementById('competencyDetailContent');
-    const statusIcons = {
-        verified: '<svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="m2.3 6.1 2.2 2.2 5.2-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-        pending: '<svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="4.4" stroke="currentColor" stroke-width="1.2"/><path d="M6 3.4v2.8l1.8 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>',
-        rejected: '<svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="m3 3 6 6m0-6L3 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
-        not_counted: '<svg viewBox="0 0 12 12" fill="none" aria-hidden="true"><circle cx="6" cy="6" r="4.4" stroke="currentColor" stroke-width="1.2"/><path d="M6 5.2v2.1M6 3.6h.01" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>'
-    };
-    const statusClasses = {
-        verified: 'co-status-verified',
-        pending: 'co-status-pending',
-        rejected: 'co-status-rejected',
-        not_counted: 'co-status-neutral'
-    };
     const levels = [
         { key: 'beginner', label: 'Beginner', points: 25 },
         { key: 'intermediate', label: 'Intermediate', points: 50 },
         { key: 'advanced', label: 'Advanced', points: 75 },
         { key: 'expert', label: 'Expert', points: 100 }
     ];
-    let view = root.dataset.view === 'all' ? 'all' : 'verified';
     let category = root.dataset.category || '';
     let selectedId = root.dataset.selectedId || '';
     let currentScores = {};
@@ -1424,9 +1258,7 @@
         root.setAttribute('aria-busy', 'false');
     };
 
-    const groupScore = (group, selectedView) => Number(
-        groups[group]?.scores?.[selectedView === 'all' ? 'all_submitted' : 'verified'] ?? 0
-    );
+    const groupScore = (group) => Number(groups[group]?.score ?? 0);
 
     const fmt = (value) => `${Number(value).toFixed(1)}%`;
     let currentAveragePoints = 0;
@@ -1494,11 +1326,8 @@
     };
     const vertexTooltipText = (key) => {
         const groupSkills = skills.filter((skill) => skill.group_key === key);
-        const counted = groupSkills.filter((skill) => skill.status_group === 'verified'
-            || (view === 'all' && skill.status_group === 'pending'));
-        const pending = groupSkills.filter((skill) => skill.status_group === 'pending').length;
-        const points = counted.reduce((sum, skill) => sum + Number(skill.proficiency_points || 0), 0);
-        return `${points} of ${Number(groups[key]?.target || 0) * 100} points · ${pending} pending`;
+        const points = groupSkills.reduce((sum, skill) => sum + Number(skill.proficiency_points || 0), 0);
+        return `${points} of ${Number(groups[key]?.target || 0) * 100} points`;
     };
     const showVertexTooltip = (key) => {
         const coordinates = point(angleByGroup[key], currentScores[key] || 0);
@@ -1517,16 +1346,6 @@
         vertexTooltip.classList.add('is-visible');
     };
     const hideVertexTooltip = () => vertexTooltip.classList.remove('is-visible');
-
-    const makeStatus = (status, label) => {
-        const badge = document.createElement('span');
-        badge.className = `co-status ${statusClasses[status] || statusClasses.not_counted}`;
-        badge.innerHTML = statusIcons[status] || statusIcons.not_counted;
-        const text = document.createElement('span');
-        text.textContent = label;
-        badge.append(text);
-        return badge;
-    };
 
     const renderDetail = (skill) => {
         if (!skill) {
@@ -1549,7 +1368,7 @@
         const categoryTag = document.createElement('span');
         categoryTag.className = 'co-category-tag';
         categoryTag.textContent = skill.category_label;
-        tags.append(categoryTag, makeStatus(skill.status_group, skill.status_label));
+        tags.append(categoryTag);
         headingWrap.append(tags);
         head.append(headingWrap);
         content.append(head);
@@ -1593,21 +1412,6 @@
         evidence.append(evidenceName);
         content.append(evidence);
 
-        if (skill.status_group === 'rejected' && skill.coordinator_note) {
-            const note = document.createElement('div');
-            note.className = 'co-note';
-            note.innerHTML = '<svg class="co-note-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.7a6.3 6.3 0 1 0 0 12.6A6.3 6.3 0 0 0 8 1.7Z" stroke="currentColor" stroke-width="1.3"/><path d="M8 7v3.4M8 4.8h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
-            const noteContent = document.createElement('div');
-            const noteTitle = document.createElement('strong');
-            noteTitle.textContent = 'Coordinator note';
-            const noteText = document.createElement('p');
-            noteText.className = 'co-note-text';
-            noteText.textContent = skill.coordinator_note;
-            noteContent.append(noteTitle, noteText);
-            note.append(note.firstElementChild, noteContent);
-            content.append(note);
-        }
-
         const actionWrap = document.createElement('div');
         actionWrap.className = 'co-detail-action';
         const action = document.createElement('a');
@@ -1632,12 +1436,8 @@
     };
 
     const skillVisible = (skill) => {
-        const statusVisible = view === 'verified'
-            ? skill.status_group === 'verified'
-            : ['verified', 'pending', 'rejected', 'not_counted'].includes(skill.status_group);
-        const categoryVisible = !category
+        return !category
             || (category === '__other' ? !skill.group_key : skill.group_key === category);
-        return statusVisible && categoryVisible;
     };
 
     const renderList = (animate = true, initial = false) => {
@@ -1664,7 +1464,7 @@
                 meta.className = 'co-row-category';
                 meta.textContent = `${skill.category_label} · ${skill.proficiency_label}`;
                 main.append(name, meta);
-                row.append(main, makeStatus(skill.status_group, skill.status_label));
+                row.append(main);
                 row.style.opacity = '0';
                 row.style.transition = 'opacity var(--co-dur-crossfade) var(--co-ease-out)';
                 row.style.transitionDelay = `${(initial ? initialRevealMs : 0) + Math.min(index, 7) * rowStaggerMs}ms`;
@@ -1705,11 +1505,8 @@
 
     const updateStrength = (initial = false) => {
         const counted = skills.filter((skill) => {
-            const categoryVisible = !category
+            return !category
                 || (category === '__other' ? !skill.group_key : skill.category_key === category || skill.group_key === category);
-            const statusVisible = skill.status_group === 'verified'
-                || (view === 'all' && skill.status_group === 'pending');
-            return categoryVisible && statusVisible;
         });
         const average = counted.length
             ? counted.reduce((sum, skill) => sum + Number(skill.proficiency_points || 0), 0) / counted.length
@@ -1742,39 +1539,6 @@
         }
     };
 
-    const updateScores = () => {
-        window.clearTimeout(announceTimer);
-        const targets = Object.keys(angleByGroup).reduce((result, key) => {
-            result[key] = groupScore(key, view);
-            return result;
-        }, {});
-
-        Object.keys(angleByGroup).forEach((key) => {
-            const axisButton = document.querySelector(`#competenciesOverview [data-axis="${key}"]`);
-            const valueElement = axisButton?.querySelector('.co-axis-value');
-            const stat = document.querySelector(`#competenciesOverview [data-stat-value="${key}"]`);
-            const from = Number(currentScores[key] ?? 0);
-            tween(axisButton || radar, from, targets[key], duration('--co-dur-slow'), easeInOut, (value) => {
-                currentScores[key] = value;
-                if (valueElement) valueElement.textContent = fmt(value);
-                if (stat) stat.textContent = fmt(value);
-                updatePolygon(primaryShape, currentScores);
-                updateVertices(currentScores);
-            });
-            if (axisButton) {
-                axisButton.dataset.score = String(targets[key]);
-                axisButton.setAttribute('aria-label', `${groups[key].label}: ${fmt(targets[key])} percent`);
-                const tooltip = axisButton.querySelector('.co-tooltip');
-                const groupSkills = skills.filter((skill) => skill.group_key === key);
-                const counted = groupSkills.filter((skill) => skill.status_group === 'verified'
-                    || (view === 'all' && skill.status_group === 'pending'));
-                const pendingCount = groupSkills.filter((skill) => skill.status_group === 'pending').length;
-                if (tooltip) tooltip.textContent = `${counted.reduce((sum, skill) => sum + skill.proficiency_points, 0)} of ${groups[key].target * 100} points · ${pendingCount} pending`;
-            }
-        });
-        announceTimer = window.setTimeout(() => announceChart(targets), reduceMotion ? 0 : duration('--co-dur-slow'));
-    };
-
     const selectSkill = (id) => {
         selectedId = id;
         list?.querySelectorAll('[data-skill-id]').forEach((row) => {
@@ -1798,23 +1562,6 @@
         renderList();
     };
 
-    document.querySelectorAll('#competenciesOverview [data-view-option]').forEach((button) => {
-        button.addEventListener('click', () => {
-            const nextView = button.dataset.viewOption;
-            if (nextView === view) return;
-            finishHydration();
-            view = nextView;
-            toggle.dataset.view = view;
-            root.dataset.view = view;
-            document.querySelectorAll('#competenciesOverview [data-view-option]').forEach((option) => {
-                option.setAttribute('aria-pressed', String(option.dataset.viewOption === view));
-            });
-            updateScores();
-            updateStrength();
-            renderList();
-        });
-    });
-
     document.querySelectorAll('#competenciesOverview [data-category]').forEach((button) => {
         button.addEventListener('click', () => setCategory(button.dataset.category));
     });
@@ -1824,18 +1571,13 @@
     });
 
     const initialTargets = Object.keys(angleByGroup).reduce((result, key) => {
-        result[key] = groupScore(key, view);
+        result[key] = groupScore(key);
         return result;
     }, {});
     const initialCurrent = { technical: 0, soft: 0, certification: 0 };
-    const submittedTargets = Object.keys(angleByGroup).reduce((result, key) => {
-        result[key] = groupScore(key, 'all');
-        return result;
-    }, {});
     currentScores = { ...initialCurrent };
     buildRadarGrid();
     updatePolygon(primaryShape, initialCurrent);
-    updatePolygon(secondaryShape, submittedTargets);
     Object.keys(angleByGroup).forEach((key) => {
         const vertex = document.createElementNS(svgNs, 'circle');
         vertex.setAttribute('class', 'co-vertex');

@@ -2,11 +2,9 @@
 
 use App\Enums\UserRole;
 use App\Mail\EmailVerificationCodeMail;
-use App\Models\Institution;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
@@ -151,34 +149,4 @@ it('throttles verification code resends', function () {
         ->assertTooManyRequests();
 
     Mail::assertSent(EmailVerificationCodeMail::class, 1);
-});
-
-it('emails a verification code when a user registers', function () {
-    Http::fake();
-    Mail::fake();
-
-    $institution = Institution::create([
-        'name' => "St. Cecilia's College-Cebu, Inc.",
-        'address' => null,
-    ]);
-
-    $this->post(route('register.store'), [
-        'name' => 'New Student',
-        'email' => 'new-student@example.com',
-        'password' => 'DistinctivePassword#2026',
-        'password_confirmation' => 'DistinctivePassword#2026',
-        'institution_id' => $institution->id,
-        'program' => 'Bachelor of Science in Information Technology',
-    ])->assertRedirect(route('verification.notice'));
-
-    $user = User::where('email', 'new-student@example.com')->firstOrFail();
-
-    expect($user->hasVerifiedEmail())->toBeFalse()
-        ->and($user->verification_attempts)->toBe(0)
-        ->and($user->verification_code_expires_at->isFuture())->toBeTrue();
-
-    Mail::assertSent(EmailVerificationCodeMail::class, function (EmailVerificationCodeMail $mail) use ($user) {
-        return $mail->hasTo($user->email)
-            && Hash::check($mail->code, $user->verification_code);
-    });
 });

@@ -10,29 +10,10 @@ use App\Models\User;
 use App\Services\NotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
-
-it('keeps a new student able to continue when the verification email cannot be sent', function () {
-    Mail::shouldReceive('to')->andThrow(new RuntimeException('SMTP unavailable'));
-    $institution = Institution::create(['name' => "St. Cecilia's College-Cebu, Inc.", 'address' => null]);
-
-    $this->post('/register', [
-        'institution_id' => $institution->id,
-        'name' => 'Mailless Student',
-        'email' => 'mailless@example.test',
-        'password' => 'Password',
-        'password_confirmation' => 'Password',
-        'program' => 'Bachelor of Science in Information Technology',
-    ])->assertRedirect('/email/verify')
-        ->assertSessionHasErrors('code');
-
-    expect(User::where('email', 'mailless@example.test')->exists())->toBeTrue();
-    $this->post('/email/verify/resend')->assertSessionHasErrors('code');
-});
 
 it('marks admin-created accounts verified and lets admins verify stuck accounts', function () {
     $admin = User::factory()->create(['role' => UserRole::Admin]);

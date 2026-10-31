@@ -32,8 +32,6 @@
     };
 
     const getTypeLabel = (type) => ({
-        competencies: 'Competency',
-        certificates: 'Certificate',
         portfolio: 'Portfolio',
         resumes: 'Resume',
     }[type] ?? type);
@@ -386,10 +384,10 @@
         document.getElementById('verificationPreviewTitle').textContent = item.title;
         document.getElementById('verificationPreviewCategory').textContent = item.category === 'deployment_document'
             ? 'Deployment document'
-            : item.category === 'certificate' || item.type === 'certificates'
+            : item.category === 'certificate'
                 ? 'Certificate'
                 : item.category === 'resume' ? 'Resume' : item.category === 'project' ? 'Project' : item.subtype || 'File';
-        document.getElementById('verificationPreviewIssuer').textContent = item.type === 'certificates' ? (item.subtype || 'Not provided') : 'Not provided';
+        document.getElementById('verificationPreviewIssuer').textContent = 'Not provided';
         document.getElementById('verificationPreviewUploaded').textContent = item.created_at
             ? new Date(item.created_at).toLocaleDateString()
             : 'Unknown';
