@@ -38,7 +38,6 @@
     @include('partials.public-theme-head')
 </head>
 <body class="skillbridge-public">
-    <a class="public-skip" href="#main-content">Skip to main content</a>
     <div class="public-page">
         @include('partials.public-nav', ['base' => ''])
         @include('partials.public-theme-toggle')
