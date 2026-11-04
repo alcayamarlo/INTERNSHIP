@@ -66,7 +66,7 @@
                 muted: theme.getPropertyValue('--sb-muted').trim() || '#7a5f63',
             });
             Chart.defaults.color = chartColors.muted;
-            const gridColor = theme.getPropertyValue('--sb-ink').trim() || '#1a0b0d';
+            const gridColor = theme.getPropertyValue('--sb-chart-grid').trim() || 'rgba(142,13,28,.1)';
 
             document.querySelectorAll('canvas').forEach(canvas => {
                 const chart = Chart.getChart(canvas);

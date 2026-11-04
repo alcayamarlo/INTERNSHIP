@@ -57,6 +57,8 @@
     >
 
 
+    @include('partials.theme-init')
+
     {{-- Collapsed-sidebar preference is applied before first paint to avoid a layout jump. --}}
     <script>
         try {
@@ -72,6 +74,7 @@
     <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}">
     <link rel="stylesheet" href="{{ asset('css/skillbridge-dashboard.css') }}?v=1">
     <link rel="stylesheet" href="{{ asset('css/skillbridge-sidebar.css') }}?v={{ @filemtime(public_path('css/skillbridge-sidebar.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/sb-eye-comfort.css') }}?v={{ @filemtime(public_path('css/sb-eye-comfort.css')) }}">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}"></script>
     @vite('resources/js/app.js')
 
@@ -304,7 +307,6 @@
         {{-- PAGE TITLE --}}
 
         <div class="sb-topbar-title">
-            <strong>@yield('title', 'Dashboard')</strong>
             <span>{{ $userRole?->label() ?? 'User' }} workspace</span>
         </div>
 

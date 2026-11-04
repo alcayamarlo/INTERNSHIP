@@ -14,6 +14,7 @@
     // Pass real numbers from your controller, e.g.:
     //   return view('landing', ['communityStats' => ['students' => 0, 'employers' => 0, 'placed' => 0]]);
     $communityStats = $communityStats ?? null;
+
 @endphp
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
@@ -32,15 +33,16 @@
     <link rel="icon" href="{{ asset('images/brand/favicon.ico') }}?v=2" sizes="any">
     <link rel="apple-touch-icon" href="{{ asset('images/brand/apple-touch-icon.png') }}?v=2">
     <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}">
-    <script defer src="{{ asset('js/skillbridge-ui.js') }}"></script>
+    <script defer src="{{ asset('js/skillbridge-ui.js') }}?v={{ @filemtime(public_path('js/skillbridge-ui.js')) }}"></script>
     <script defer src="{{ asset('js/sb-job-board.js') }}?v=1"></script>
-    <link rel="stylesheet" href="{{ asset('css/skillbridge-public.css') }}?v=7">
+    <link rel="stylesheet" href="{{ asset('css/skillbridge-public.css') }}?v=15">
     @include('partials.public-theme-head')
+    <link rel="stylesheet" href="{{ asset('css/sb-eye-comfort.css') }}?v={{ @filemtime(public_path('css/sb-eye-comfort.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/sb-nav-controls.css') }}?v={{ @filemtime(public_path('css/sb-nav-controls.css')) }}">
 </head>
 <body class="skillbridge-public">
     <div class="public-page">
-        @include('partials.public-nav', ['base' => ''])
-        @include('partials.public-theme-toggle')
+        @include('partials.public-nav', ['base' => '', 'navSearch' => true])
 
         <main id="main-content">
             <section class="public-hero" aria-labelledby="hero-heading">
@@ -49,23 +51,6 @@
                         <div class="public-eyebrow">Student Development and Internship Placement</div>
                         <h1 id="hero-heading">Build your skills.<br>Move toward <span>what's next.</span></h1>
                         <p class="public-hero-lead">Track competencies, prepare your internship profile, and connect with opportunities through a shared workspace for students, coordinators, and employers.</p>
-                        <form class="jb-search jb-search-hero" role="search" aria-label="Search internships" method="get" action="{{ route('home') }}#internships" data-jb-hero-search>
-                            <div class="jb-field">
-                                <svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM21 21l-4.3-4.3"></path></svg>
-                                <div>
-                                    <label for="heroWhat">Search internships</label>
-                                    <input id="heroWhat" type="search" name="what" placeholder="Role or keyword" autocomplete="off">
-                                </div>
-                            </div>
-                            <div class="jb-field">
-                                <svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path></svg>
-                                <div>
-                                    <label for="heroWhere">Location</label>
-                                    <input id="heroWhere" type="search" name="where" placeholder="City or Remote" autocomplete="off">
-                                </div>
-                            </div>
-                            <button type="submit" class="public-button public-button-primary jb-search-btn">Search</button>
-                        </form>
                         <div class="public-hero-actions">
                             <a class="public-button public-button-primary public-button-lg" href="{{ route('login') }}">Sign in to your workspace <svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
                         </div>
@@ -206,6 +191,7 @@
             <a class="public-button public-button-primary" href="{{ route('login') }}">Log in</a>
         </div>
     </div>
+    @include('partials.auth-modal')
     <script>
         (function () {
             var nav = document.querySelector('.public-nav');

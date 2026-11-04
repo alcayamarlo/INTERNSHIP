@@ -48,7 +48,7 @@
         .public-theme-toggle:hover { border-color: var(--sb-red); color: var(--sb-brand-content); background: var(--sb-red-soft); }
 
         /* ---- Hero ---- */
-        .public-hero { position: relative; overflow: hidden; padding: clamp(48px, 7vw, 96px) var(--public-gutter) clamp(56px, 8vw, 96px); background: radial-gradient(ellipse at 74% 2%, var(--sb-brand-soft), transparent 45%), var(--sb-canvas); }
+        .public-hero { position: relative; overflow: hidden; padding: clamp(48px, 7vw, 96px) var(--public-gutter) clamp(56px, 8vw, 96px); background: #120A0C; }
         .public-hero-layout { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); align-items: center; gap: clamp(30px, 6vw, 84px); max-width: 1280px; margin: auto; }
         .public-hero-content { position: relative; z-index: 1; max-width: 660px; margin: 0; text-align: left; }
         .public-eyebrow { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 23px; padding: 8px 13px; border: 1px solid var(--sb-border); border-radius: 999px; color: var(--sb-brand-content); background: var(--sb-surface); font-size: 12px; font-weight: 600; }
@@ -260,7 +260,7 @@
 
 /* Clean white page in light mode (dark mode keeps its own tokens) */
 html:not([data-theme="dark"]) body.skillbridge-public { --sb-canvas: #fff; --sb-bg: #fff; --sb-surface-raised: #fff; background: #fff; }
-html:not([data-theme="dark"]) .skillbridge-public .public-hero { background: #fff; }
+html:not([data-theme="dark"]) .skillbridge-public .public-hero { background: var(--sb-canvas, #FBF4F5); }
 html:not([data-theme="dark"]) .skillbridge-public .public-roles { background: #fff; border-block: 1px solid var(--sb-border); }
 html:not([data-theme="dark"]) .skillbridge-public .public-nav { background: rgba(255, 255, 255, .94); }
 
