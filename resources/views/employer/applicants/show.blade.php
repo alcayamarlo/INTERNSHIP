@@ -5,6 +5,9 @@
 @section('content')
 <x-page-header :title="$profile['name']" :subtitle="trim(($profile['program'] ?? '').($profile['year_level'] ? ' — '.$profile['year_level'] : ''))">
     <a href="{{ route('employer.applicants.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to Applicants</a>
+    @if($application->student?->user)
+        @include('partials.report-button', ['type' => 'user', 'id' => $application->student->user_id, 'label' => $profile['name']])
+    @endif
 </x-page-header>
 
 <div class="row g-4" data-refresh-on-focus>
@@ -167,6 +170,9 @@
     </div>
 
     <div class="col-lg-4">
+        @if(in_array($application->status, [\App\Enums\ApplicationStatus::Accepted, \App\Enums\ApplicationStatus::Completed], true))
+            @include('employer.partials.coordinator-contact', ['student' => $application->student])
+        @endif
         <div class="card mb-4">
             <div class="card-body d-grid gap-2">
                 @if($applicationResume)

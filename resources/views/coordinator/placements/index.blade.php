@@ -3,12 +3,14 @@
 @section('title', 'OJT Monitoring')
 
 @section('content')
-<x-page-header title="OJT Monitoring" subtitle="Track deployed students' hours, journals and evaluations, and clear completed OJTs." />
+<x-page-header title="OJT Monitoring" subtitle="Validate placements, track hours against the requirement, follow up on students at risk, and clear completed OJTs." />
 
 <div class="row g-3 mb-4">
-    <div class="col-md-4"><x-dashboard-stat-card title="Ongoing OJT" :value="$summary['ongoing']" icon="bi-person-workspace" tone="info" :href="route('coordinator.placements.index', ['status' => 'ongoing'])" /></div>
-    <div class="col-md-4"><x-dashboard-stat-card title="For clearance" :value="$summary['for_clearance']" icon="bi-hourglass-split" tone="warning" :href="route('coordinator.placements.index', ['status' => 'for_clearance'])" /></div>
-    <div class="col-md-4"><x-dashboard-stat-card title="Cleared" :value="$summary['cleared']" icon="bi-patch-check" tone="success" :href="route('coordinator.placements.index', ['status' => 'cleared'])" /></div>
+    <div class="col-md-4 col-xl"><x-dashboard-stat-card title="To validate" :value="$summary['pending_validation']" icon="bi-shield-exclamation" tone="warning" :href="route('coordinator.placements.index', ['status' => 'pending_validation'])" /></div>
+    <div class="col-md-4 col-xl"><x-dashboard-stat-card title="At risk" :value="$summary['at_risk']" icon="bi-exclamation-triangle" tone="danger" :href="route('coordinator.placements.index', ['status' => 'at_risk'])" /></div>
+    <div class="col-md-4 col-xl"><x-dashboard-stat-card title="Ongoing OJT" :value="$summary['ongoing']" icon="bi-person-workspace" tone="info" :href="route('coordinator.placements.index', ['status' => 'ongoing'])" /></div>
+    <div class="col-md-4 col-xl"><x-dashboard-stat-card title="For clearance" :value="$summary['for_clearance']" icon="bi-hourglass-split" tone="warning" :href="route('coordinator.placements.index', ['status' => 'for_clearance'])" /></div>
+    <div class="col-md-4 col-xl"><x-dashboard-stat-card title="Cleared" :value="$summary['cleared']" icon="bi-patch-check" tone="success" :href="route('coordinator.placements.index', ['status' => 'cleared'])" /></div>
 </div>
 
 <form method="GET" class="row g-2 mb-3">
@@ -20,6 +22,8 @@
         <label class="visually-hidden" for="status">Status</label>
         <select id="status" name="status" class="form-select">
             <option value="">All statuses</option>
+            <option value="pending_validation" @selected($filter === 'pending_validation')>To validate</option>
+            <option value="at_risk" @selected($filter === 'at_risk')>At risk</option>
             <option value="ongoing" @selected($filter === 'ongoing')>Ongoing</option>
             <option value="for_clearance" @selected($filter === 'for_clearance')>For clearance</option>
             <option value="cleared" @selected($filter === 'cleared')>Cleared</option>

@@ -36,7 +36,8 @@ it('has no separate My Applications sidebar item but keeps it reachable inside I
     preg_match('/<nav class="sb-nav">.*?<\/nav>/s', $html, $sidebar);
     expect($sidebar[0])->not->toContain(route('student.applications.index'))
         ->and($sidebar[0])->toContain(route('student.internships.index'));
-    expect($html)->toContain('sb-section-tabs')->toContain(route('student.applications.index'));
+    // Reached from the "My Applications" button in the Internships page header.
+    expect($html)->toMatch('/<a href="'.preg_quote(route('student.applications.index'), '/').'" class="btn btn-primary">/');
 
     // Old URL and route name keep working, and Internships stays highlighted there.
     $apps = $this->actingAs($f['studentUser'])->get(route('student.applications.index'))->assertOk()->getContent();

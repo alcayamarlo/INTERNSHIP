@@ -58,6 +58,8 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
+        RateLimiter::for('content-reports', fn (Request $request) => Limit::perHour(20)->by('content-reports:'.($request->user()?->id ?: $request->ip())));
+
         RateLimiter::for('photo-uploads', fn (Request $request) => Limit::perMinute(10)->by('photo-uploads:'.($request->user()?->id ?: $request->ip())));
 
         // Burst guard on top of the daily invitation limit in InvitationService.

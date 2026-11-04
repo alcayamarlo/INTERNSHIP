@@ -22,6 +22,10 @@ class JournalEntry extends Model
         'supervisor_comment',
         'reviewed_by_user_id',
         'reviewed_at',
+        'coordinator_review_status',
+        'coordinator_comment',
+        'coordinator_reviewed_at',
+        'coordinator_reviewed_by_user_id',
     ];
 
     protected function casts(): array
@@ -29,7 +33,14 @@ class JournalEntry extends Model
         return [
             'week_start' => 'date',
             'reviewed_at' => 'datetime',
+            'coordinator_reviewed_at' => 'datetime',
         ];
+    }
+
+    /** The coordinator sent it back; the student may replace it. */
+    public function isReturnedByCoordinator(): bool
+    {
+        return $this->coordinator_review_status === 'returned';
     }
 
     public function placement(): BelongsTo

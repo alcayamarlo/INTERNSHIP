@@ -46,11 +46,13 @@ class StudentProfileReviewController extends Controller
         $validated = $request->validate([
             'rendered_internship_hours' => ['required', 'integer', 'between:0,10000'],
             'major_subjects_passed' => ['required', 'boolean'],
+            'gwa' => ['nullable', 'numeric', 'between:1,5', 'decimal:0,2'],
         ]);
 
         $student->update([
             'rendered_internship_hours' => $validated['rendered_internship_hours'],
             'major_subjects_passed' => $request->boolean('major_subjects_passed'),
+            ...($request->has('gwa') ? ['gwa' => $validated['gwa'] ?? null] : []),
         ]);
 
         return back()->with('success', 'Academic readiness updated.');

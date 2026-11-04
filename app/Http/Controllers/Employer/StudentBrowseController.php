@@ -34,10 +34,14 @@ class StudentBrowseController extends Controller
             'year_level' => ['nullable', 'string', 'in:'.implode(',', self::YEAR_LEVELS)],
             'skill' => ['nullable', 'string', 'max:60'],
             'certificate' => ['nullable', 'string', 'max:100'],
+            'shortlisted' => ['nullable', 'boolean'],
         ]);
         $programs = Program::orderBy('code')->get();
+        $employerId = Auth::user()->employer->id;
 
         $students = $this->browsable()
+            ->when($filters['shortlisted'] ?? false, fn (Builder $query) => $query->whereIn('students.id',
+                \Illuminate\Support\Facades\DB::table('employer_shortlists')->where('employer_id', $employerId)->select('student_id')))
             ->when($filters['q'] ?? null, fn (Builder $query, string $term) => $query->whereHas('user', fn (Builder $user) => $user->where('name', 'like', '%'.$term.'%')))
             ->when($filters['program_id'] ?? null, function (Builder $query, int $programId) use ($programs) {
                 $program = $programs->firstWhere('id', $programId);
@@ -93,6 +97,7 @@ class StudentBrowseController extends Controller
 
         return [
             'openInternships' => Internship::query()->where('employer_id', $employer->id)->open()->orderBy('title')->get(['id', 'title', 'expires_at']),
+            'shortlistedIds' => $employer->shortlistedStudents()->whereIn('students.id', $studentIds)->pluck('students.id')->all(),
             'pendingInvites' => InternshipInvitation::pending()
                 ->where('employer_id', $employer->id)
                 ->whereIn('student_id', $studentIds)

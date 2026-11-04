@@ -20,7 +20,7 @@
             <div class="d-flex justify-content-between flex-wrap gap-2">
                 <div>
                     <h2 class="h5 mb-1" id="invitation-{{ $invitation->id }}">{{ $internship->title }}</h2>
-                    <p class="text-muted mb-0">{{ $internship->employer->company_name }} · {{ $internship->location ?: 'Location not set' }}@if($internship->work_setup) · {{ $internship->work_setup->label() }}@endif</p>
+                    <p class="text-muted mb-0">{{ $internship->employer->company_name }} <x-verified-badge :employer="$internship->employer" /> · {{ $internship->location ?: 'Location not set' }}@if($internship->work_setup) · {{ $internship->work_setup->label() }}@endif</p>
                 </div>
                 <span class="badge {{ $status->badgeClass() }} align-self-start">{{ $status->label() }}</span>
             </div>

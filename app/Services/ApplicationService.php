@@ -146,6 +146,13 @@ class ApplicationService
             ]);
         }
 
+        $coordinator = $student->assignedCoordinator();
+        if ($coordinator && $internship->flags()->where('coordinator_id', $coordinator->id)->exists()) {
+            throw ValidationException::withMessages([
+                'internship' => 'Your OJT coordinator marked this posting as not suitable for your program.',
+            ]);
+        }
+
         if ($internship->requires_character_reference && ! $student->characterReferences()->exists()) {
             throw ValidationException::withMessages([
                 'character_reference' => 'This internship requires at least one character reference. Add one on your profile under Character Reference, then apply.',

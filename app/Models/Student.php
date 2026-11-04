@@ -98,6 +98,17 @@ class Student extends Model
         return $this->hasMany(InternshipInvitation::class);
     }
 
+    /** Coordinator approve/reject decisions, oldest first; the latest one counts. */
+    public function eligibilityDecisions(): HasMany
+    {
+        return $this->hasMany(EligibilityDecision::class)->orderBy('id');
+    }
+
+    public function latestEligibilityDecision(): ?EligibilityDecision
+    {
+        return $this->hasMany(EligibilityDecision::class)->orderByDesc('id')->first();
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -228,6 +239,22 @@ class Student extends Model
             'required' => ($placement?->required_hours ?: $this->academicProgram?->required_internship_hours) ?: null,
             'from_ojt' => $placement !== null,
         ];
+    }
+
+    /**
+     * The OJT coordinator responsible for this student: the program's coordinator, or else a coordinator
+     * of the student's school (the same rule as Coordinator::canAccessStudent).
+     */
+    public function assignedCoordinator(): ?Coordinator
+    {
+        $programCoordinatorId = $this->academicProgram?->coordinator_id;
+        if ($programCoordinatorId) {
+            return Coordinator::with('user')->find($programCoordinatorId);
+        }
+
+        return $this->institution_id
+            ? Coordinator::with('user')->where('institution_id', $this->institution_id)->orderBy('id')->first()
+            : null;
     }
 
     public function profileVerifier(): BelongsTo

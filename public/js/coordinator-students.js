@@ -12,6 +12,8 @@
     const searchInput = document.getElementById('studentSearch');
     const programSelect = document.getElementById('studentProgram');
     const sortSelect = document.getElementById('studentSort');
+    const yearSelect = document.getElementById('studentYear');
+    const statusSelect = document.getElementById('studentStatus');
     let currentPage = initial.pagination.current_page;
     let lastPage = initial.pagination.last_page;
     let requestController = null;
@@ -136,6 +138,8 @@
             search: searchInput.value.trim(),
             program: programSelect.value,
             sort: sortSelect.value,
+            year_level: yearSelect?.value || '',
+            status: statusSelect?.value || '',
             page: String(pageNumber),
         });
 
@@ -169,6 +173,8 @@
     });
     programSelect.addEventListener('change', () => loadPage(1));
     sortSelect.addEventListener('change', () => loadPage(1));
+    yearSelect?.addEventListener('change', () => loadPage(1));
+    statusSelect?.addEventListener('change', () => loadPage(1));
 
     render(initial.students, initial.pagination, initial.summary);
 })();

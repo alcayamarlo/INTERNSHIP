@@ -12,9 +12,15 @@ class Placement extends Model
 {
     use SoftDeletes;
 
+    /** Accepted by the company; waits for the coordinator to validate it before hours can be logged. */
+    public const STATUS_PENDING_VALIDATION = 'pending_validation';
+
     public const STATUS_ACTIVE = 'active';
 
     public const STATUS_COMPLETED = 'completed';
+
+    /** No time logged for this many days on an active OJT marks it at risk. */
+    public const AT_RISK_IDLE_DAYS = 7;
 
     protected $fillable = [
         'application_id',
@@ -32,6 +38,9 @@ class Placement extends Model
         'certificate_number',
         'rating_requested_at',
         'rating_requested_by_user_id',
+        'validated_at',
+        'validated_by_user_id',
+        'validation_remarks',
     ];
 
     protected function casts(): array
@@ -43,7 +52,53 @@ class Placement extends Model
             'completed_at' => 'datetime',
             'cleared_at' => 'datetime',
             'rating_requested_at' => 'datetime',
+            'validated_at' => 'datetime',
         ];
+    }
+
+    public function isPendingValidation(): bool
+    {
+        return $this->status === self::STATUS_PENDING_VALIDATION;
+    }
+
+    /**
+     * Active OJTs that need attention: started over a week ago with no time logged in the last week,
+     * or past their end date without the required hours.
+     */
+    public function scopeAtRisk($query)
+    {
+        $since = now()->subDays(self::AT_RISK_IDLE_DAYS)->toDateString();
+
+        return $query->where('status', self::STATUS_ACTIVE)->where(fn ($risk) => $risk
+            ->where(fn ($idle) => $idle->whereDate('start_date', '<=', $since)
+                ->whereDoesntHave('attendanceLogs', fn ($logs) => $logs->whereDate('work_date', '>=', $since)))
+            ->orWhere(fn ($late) => $late->whereNotNull('end_date')->whereDate('end_date', '<', now()->toDateString())));
+    }
+
+    /** Why this OJT is at risk, or null. */
+    public function riskReason(): ?string
+    {
+        if (! $this->isActive()) {
+            return null;
+        }
+
+        if ($this->end_date && $this->end_date->isPast() && ! $this->hasMetRequiredHours()) {
+            return 'Past the end date without the required hours';
+        }
+
+        $since = now()->subDays(self::AT_RISK_IDLE_DAYS)->startOfDay();
+        $logged = $this->relationLoaded('attendanceLogs')
+            ? $this->attendanceLogs->contains(fn ($log) => $log->work_date->gte($since))
+            : $this->attendanceLogs()->whereDate('work_date', '>=', $since->toDateString())->exists();
+
+        return $this->start_date && $this->start_date->lte($since) && ! $logged
+            ? 'No time logged in the last '.self::AT_RISK_IDLE_DAYS.' days'
+            : null;
+    }
+
+    public function validatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'validated_by_user_id');
     }
 
     public function application(): BelongsTo
@@ -152,6 +207,7 @@ class Placement extends Model
         return match (true) {
             $this->isCleared() => 'Cleared',
             $this->isCompleted() => 'Completed',
+            $this->isPendingValidation() => 'Waiting for coordinator validation',
             default => 'Ongoing',
         };
     }

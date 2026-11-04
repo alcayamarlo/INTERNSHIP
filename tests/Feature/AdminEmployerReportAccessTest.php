@@ -80,13 +80,13 @@ it('allows an admin to create, update, and archive users', function () {
 
 it('allows employers to create, update, and delete only their own opportunities', function () {
     $ownerUser = User::factory()->create(['role' => UserRole::Employer]);
-    $owner = Employer::create([
+    $owner = Employer::create(['verified_at' => now(), 
         'user_id' => $ownerUser->id,
         'company_name' => 'Opportunity Owner',
         'contact_person' => 'Owner',
     ]);
     $otherUser = User::factory()->create(['role' => UserRole::Employer]);
-    Employer::create([
+    Employer::create(['verified_at' => now(), 
         'user_id' => $otherUser->id,
         'company_name' => 'Other Employer',
         'contact_person' => 'Other',

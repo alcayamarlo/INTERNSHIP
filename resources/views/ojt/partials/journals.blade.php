@@ -19,8 +19,15 @@
                 @if($entry->supervisor_comment)
                     <div class="small mt-2 p-2 rounded" style="background: rgba(13,110,253,.08);"><i class="bi bi-chat-quote" aria-hidden="true"></i> <strong>Supervisor:</strong> {{ $entry->supervisor_comment }}</div>
                 @endif
+                @if($entry->coordinator_review_status)
+                    <div class="small mt-2 p-2 rounded {{ $entry->isReturnedByCoordinator() ? 'border border-danger' : 'border' }}" data-coordinator-review>
+                        <i class="bi bi-mortarboard" aria-hidden="true"></i> <strong>Coordinator:</strong>
+                        {{ $entry->isReturnedByCoordinator() ? 'Returned' : 'Reviewed' }}@if($entry->coordinator_comment) · {{ $entry->coordinator_comment }}@endif
+                        @if($entry->isReturnedByCoordinator() && $mode === 'student')<span class="d-block text-muted">Delete this report and submit a corrected one for the same week.</span>@endif
+                    </div>
+                @endif
 
-                @if($mode === 'student' && ! $entry->isAcknowledged() && $placement->isActive())
+                @if($mode === 'student' && (! $entry->isAcknowledged() || $entry->isReturnedByCoordinator()) && $placement->isActive())
                     <form method="POST" action="{{ route('student.ojt.journals.destroy', [$placement, $entry]) }}" class="mt-2" data-confirm="Delete this journal entry?" data-confirm-title="Delete journal">
                         @csrf @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>

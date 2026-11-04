@@ -133,6 +133,11 @@
             ],
             'Manage' => [
                 ['coordinator.students.index', 'coordinator.students.*', 'bi-mortarboard', 'Students'],
+                ['coordinator.criteria.index', 'coordinator.criteria.*', 'bi-list-check', 'Eligibility Criteria'],
+                ['coordinator.applications.index', 'coordinator.applications.*', 'bi-kanban', 'Applications'],
+                ['coordinator.companies.index', 'coordinator.companies.*', 'bi-buildings', 'Partner Companies'],
+                ['coordinator.reviews.index', 'coordinator.reviews.*', 'bi-journal-check', 'Report Reviews'],
+                ['coordinator.statistics.index', 'coordinator.statistics.*', 'bi-pie-chart', 'Statistics'],
                 ['coordinator.verification.index', 'coordinator.verification.*', 'bi-shield-check', 'Verification'],
                 ['coordinator.placements.index', 'coordinator.placements.*', 'bi-clock-history', 'OJT Monitoring'],
                 ['coordinator.reports.index', 'coordinator.reports.*', 'bi-bar-chart', 'Reports'],
@@ -145,13 +150,18 @@
             ],
             'Management' => [
                 ['admin.academics.index', 'admin.academics.*', 'bi-mortarboard', 'Academic settings'],
+                ['admin.criteria.index', 'admin.criteria.*', 'bi-list-check', 'Eligibility Criteria'],
                 ['admin.users.index', 'admin.users.*', 'bi-people', 'Users'],
                 ['admin.placements.index', 'admin.placements.*', 'bi-clock-history', 'OJT Placements'],
                 ['admin.announcements.index', 'admin.announcements.*', 'bi-megaphone', 'Announcements'],
+                ['admin.institutions.index', 'admin.institutions.*', 'bi-bank', 'Institutions'],
                 ['admin.skill-categories.index', 'admin.skill-categories.*', 'bi-tags', 'Skill Categories'],
+                ['admin.skill-tags.index', 'admin.skill-tags.*', 'bi-hash', 'Student Skill Tags'],
             ],
             'System' => [
-                ['admin.logs', 'admin.logs', 'bi-journal-text', 'System Logs'],
+                ['admin.moderation.index', 'admin.moderation.*', 'bi-flag', 'Reported Content'],
+                ['admin.logs', 'admin.logs*', 'bi-journal-text', 'Audit & Security Log'],
+                ['admin.health', 'admin.health', 'bi-activity', 'Usage & Health'],
                 ['admin.reports', 'admin.reports', 'bi-file-earmark-bar-graph', 'Reports'],
             ],
         ],
@@ -1126,6 +1136,11 @@
 
 @stack('scripts')
 
+@auth
+    @unless(auth()->user()->isRole(\App\Enums\UserRole::Admin))
+        @include('partials.report-modal')
+    @endunless
+@endauth
 
 </body>
 

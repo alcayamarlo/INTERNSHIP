@@ -6,6 +6,7 @@
 @php($student = $profile)
 <x-page-header :title="$profile['name']" :subtitle="collect([$profile['program'], $profile['year_level']])->filter()->implode(' · ')">
     <a href="{{ route('employer.students.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to students</a>
+    @include('employer.students.partials.shortlist-button')
     <div>@include('employer.students.partials.invite-button')</div>
 </x-page-header>
 

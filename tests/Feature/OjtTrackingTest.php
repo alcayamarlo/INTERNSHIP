@@ -81,7 +81,8 @@ it('opens a placement with the configured required hours when an employer accept
     $placement = Placement::firstWhere('application_id', $fixture['application']->id);
     expect($placement)->not->toBeNull()
         ->and($placement->required_hours)->toBe(486)
-        ->and($placement->isActive())->toBeTrue();
+        // The coordinator validates the placement before hours can be logged.
+        ->and($placement->isPendingValidation())->toBeTrue();
 
     expect(ApplicationStatus::Accepted->allowedNextStatuses())->toBe([]);
 

@@ -9,6 +9,16 @@ document.addEventListener('submit', (event) => {
         : form.querySelector('button[type="submit"], input[type="submit"]');
     if (!button || button.disabled) return;
 
+    // A disabled button is left out of the submitted data, so keep its name/value (e.g. decision=rejected).
+    if (button.name && !form.querySelector(`input[type="hidden"][data-submitter-value][name="${CSS.escape(button.name)}"]`)) {
+        const carrier = document.createElement('input');
+        carrier.type = 'hidden';
+        carrier.name = button.name;
+        carrier.value = button.value;
+        carrier.dataset.submitterValue = '';
+        form.append(carrier);
+    }
+
     button.dataset.originalContent = button instanceof HTMLInputElement ? button.value : button.innerHTML;
     button.setAttribute('aria-busy', 'true');
     button.disabled = true;

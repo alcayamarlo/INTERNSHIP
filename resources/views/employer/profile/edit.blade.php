@@ -4,7 +4,13 @@
 
 @section('content')
 
-<x-page-header title="Company Profile" subtitle="Update your company information and contact details" />
+<x-page-header title="Company Profile" subtitle="Update your company information and contact details">
+    @if($employer->isVerified())
+        <x-verified-badge :employer="$employer" />
+    @else
+        <span class="badge text-bg-warning" data-company-pending>Pending admin verification</span>
+    @endif
+</x-page-header>
 
 <div class="row g-4">
 

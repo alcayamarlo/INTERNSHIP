@@ -97,6 +97,8 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
     Route::get('/api/notifications/unread', [NotificationController::class, 'unreadJson'])->name('notifications.unread');
     // 2x2 picture: private file, served only through StudentPolicy::viewIdPhoto.
     Route::get('/students/{student}/id-photo', [\App\Http\Controllers\Student\IdPhotoController::class, 'show'])->whereNumber('student')->name('students.id-photo');
+    // Report a posting, company, message, or user to the administrators.
+    Route::post('/reports', [\App\Http\Controllers\ContentReportController::class, 'store'])->middleware('throttle:content-reports')->name('content-reports.store');
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
@@ -193,13 +195,19 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         Route::get('/profile', [\App\Http\Controllers\Employer\ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/profile', [\App\Http\Controllers\Employer\ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/company-logo', [\App\Http\Controllers\Employer\ProfileController::class, 'deleteCompanyLogo'])->name('profile.delete-logo');
-        Route::resource('internships', EmployerInternshipController::class)->except(['show']);
+        // Posting, browsing students, and inviting need an admin-verified company.
+        Route::resource('internships', EmployerInternshipController::class)->except(['show'])
+            ->middlewareFor(['create', 'store', 'edit', 'update', 'destroy'], 'company.verified');
         Route::resource('skills', EmployerSkillController::class)->except(['show']);
-        Route::post('/internships/{internship}/close', [EmployerInternshipController::class, 'close'])->name('internships.close');
-        Route::get('/students', [\App\Http\Controllers\Employer\StudentBrowseController::class, 'index'])->name('students.index');
-        Route::get('/students/{student}', [\App\Http\Controllers\Employer\StudentBrowseController::class, 'show'])->whereNumber('student')->name('students.show');
+        Route::middleware('company.verified')->group(function () {
+            Route::post('/internships/{internship}/close', [EmployerInternshipController::class, 'close'])->name('internships.close');
+            Route::get('/students', [\App\Http\Controllers\Employer\StudentBrowseController::class, 'index'])->name('students.index');
+            Route::get('/students/{student}', [\App\Http\Controllers\Employer\StudentBrowseController::class, 'show'])->whereNumber('student')->name('students.show');
+            Route::post('/students/{student}/shortlist', [\App\Http\Controllers\Employer\ShortlistController::class, 'store'])->whereNumber('student')->name('students.shortlist.store');
+            Route::delete('/students/{student}/shortlist', [\App\Http\Controllers\Employer\ShortlistController::class, 'destroy'])->whereNumber('student')->name('students.shortlist.destroy');
+            Route::post('/invitations', [\App\Http\Controllers\Employer\InvitationController::class, 'store'])->middleware('throttle:invitations')->name('invitations.store');
+        });
         Route::get('/invitations', [\App\Http\Controllers\Employer\InvitationController::class, 'index'])->name('invitations.index');
-        Route::post('/invitations', [\App\Http\Controllers\Employer\InvitationController::class, 'store'])->middleware('throttle:invitations')->name('invitations.store');
         Route::get('/applicants', [ApplicantController::class, 'index'])->name('applicants.index');
         Route::get('/applicants/{application}', [ApplicantController::class, 'show'])->name('applicants.show');
         Route::put('/applicants/{application}/status', [ApplicantController::class, 'updateStatus'])->name('applicants.status');
@@ -243,6 +251,9 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             ->name('verification.update');
         Route::post('/verification/batch', [CoordinatorDashboardController::class, 'batchVerify'])->name('verification.batch');
         Route::post('/verification/portfolios/{portfolio}', [VerificationController::class, 'reviewPortfolio'])->name('verification.reviewPortfolio');
+        Route::get('/criteria', [\App\Http\Controllers\Coordinator\EligibilityCriteriaController::class, 'index'])->name('criteria.index');
+        Route::get('/criteria/{program}', [\App\Http\Controllers\Coordinator\EligibilityCriteriaController::class, 'show'])->name('criteria.show');
+        Route::post('/criteria/{program}', [\App\Http\Controllers\Coordinator\EligibilityCriteriaController::class, 'store'])->name('criteria.store');
         Route::get('/reports', [CoordinatorReportController::class, 'index'])->name('reports.index');
         Route::post('/reports/generate', [CoordinatorReportController::class, 'generate'])->name('reports.generate');
         Route::get('/analytics', fn () => view('coordinator.analytics'))->name('analytics');
@@ -250,6 +261,26 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         Route::get('/placements/{placement}', [CoordinatorPlacementController::class, 'show'])->name('placements.show');
         Route::post('/placements/{placement}/clear', [CoordinatorPlacementController::class, 'clear'])->name('placements.clear');
         Route::post('/placements/{placement}/request-rating', [CoordinatorPlacementController::class, 'requestRating'])->name('placements.request-rating');
+        Route::post('/placements/{placement}/validate', [CoordinatorPlacementController::class, 'validatePlacement'])->name('placements.validate');
+        Route::post('/placements/{placement}/hold', [CoordinatorPlacementController::class, 'hold'])->name('placements.hold');
+
+        // Eligibility decisions (approve / mark not eligible) with history.
+        Route::post('/students/{student}/eligibility', [\App\Http\Controllers\Coordinator\EligibilityDecisionController::class, 'store'])->name('students.eligibility.store');
+        // Applications and placements monitor, including unplaced students.
+        Route::get('/applications', [\App\Http\Controllers\Coordinator\ApplicationMonitorController::class, 'index'])->name('applications.index');
+        // Partner companies: directory, MOA, and postings marked not suitable.
+        Route::get('/companies', [\App\Http\Controllers\Coordinator\CompanyController::class, 'index'])->name('companies.index');
+        Route::get('/companies/{employer}', [\App\Http\Controllers\Coordinator\CompanyController::class, 'show'])->name('companies.show');
+        Route::put('/companies/{employer}/moa', [\App\Http\Controllers\Coordinator\CompanyController::class, 'updateMoa'])->name('companies.moa.update');
+        Route::post('/internships/{internship}/flag', [\App\Http\Controllers\Coordinator\CompanyController::class, 'flag'])->name('internships.flag');
+        Route::delete('/internships/{internship}/flag', [\App\Http\Controllers\Coordinator\CompanyController::class, 'unflag'])->name('internships.unflag');
+        // Second review of weekly reports and evaluations after the supervisor.
+        Route::get('/reviews', [\App\Http\Controllers\Coordinator\ReviewController::class, 'index'])->name('reviews.index');
+        Route::post('/reviews/journals/{journalEntry}', [\App\Http\Controllers\Coordinator\ReviewController::class, 'reviewJournal'])->name('reviews.journals');
+        Route::post('/reviews/evaluations/{evaluation}', [\App\Http\Controllers\Coordinator\ReviewController::class, 'reviewEvaluation'])->name('reviews.evaluations');
+        // Institutional statistics and exports.
+        Route::get('/statistics', [\App\Http\Controllers\Coordinator\StatisticsController::class, 'index'])->name('statistics.index');
+        Route::get('/statistics/export/{format}', [\App\Http\Controllers\Coordinator\StatisticsController::class, 'export'])->whereIn('format', ['pdf', 'xlsx'])->name('statistics.export');
     });
 
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
@@ -257,6 +288,9 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         Route::get('/profile', [AdminProfileController::class, 'edit'])->name('profile.edit');
         Route::post('/profile-picture', [AdminProfileController::class, 'updatePicture'])->name('profile.update-picture');
         Route::get('/academics', [AcademicCatalogController::class, 'index'])->name('academics.index');
+        Route::get('/criteria', [\App\Http\Controllers\Coordinator\EligibilityCriteriaController::class, 'index'])->name('criteria.index');
+        Route::get('/criteria/{program}', [\App\Http\Controllers\Coordinator\EligibilityCriteriaController::class, 'show'])->name('criteria.show');
+        Route::post('/criteria/{program}', [\App\Http\Controllers\Coordinator\EligibilityCriteriaController::class, 'store'])->name('criteria.store');
         Route::get('/academics/settings', fn () => redirect()->route('admin.academics.index'))
             ->name('academics.settings');
         Route::post('/academics/settings', [AcademicCatalogController::class, 'updateSettings'])->name('academics.settings.update');
@@ -289,6 +323,8 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         Route::post('/users/{user}/archive', [AdminUserController::class, 'archive'])->name('users.archive');
         Route::post('/users/{user}/restore', [AdminUserController::class, 'restore'])->name('users.restore');
         Route::post('/users/{user}/verify-email', [AdminUserController::class, 'verifyEmail'])->name('users.verify-email');
+        Route::post('/users/{user}/verify-company', [AdminUserController::class, 'verifyCompany'])->name('users.verify-company');
+        Route::post('/users/{user}/unverify-company', [AdminUserController::class, 'unverifyCompany'])->name('users.unverify-company');
         Route::delete('/users/{user}/permanent', [AdminUserController::class, 'forceDelete'])->name('users.force-delete');
         Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
         Route::resource('skill-categories', AdminSkillCategoryController::class)
@@ -300,7 +336,29 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         Route::delete('/announcements/{announcement}', [AdminAnnouncementController::class, 'destroy'])->name('announcements.destroy');
         Route::get('/placements', [AdminPlacementController::class, 'index'])->name('placements.index');
         Route::get('/placements/{placement}', [AdminPlacementController::class, 'show'])->name('placements.show');
-        Route::get('/logs', [AdminSystemController::class, 'logs'])->name('logs');
+        // Audit and security log (kept 1 year).
+        Route::get('/logs', [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])->name('logs');
+        Route::get('/logs/export', [\App\Http\Controllers\Admin\AuditLogController::class, 'export'])->name('logs.export');
+        // Account suspension.
+        Route::post('/users/{user}/suspend', [AdminUserController::class, 'suspend'])->name('users.suspend');
+        Route::post('/users/{user}/lift-suspension', [AdminUserController::class, 'liftSuspension'])->name('users.lift-suspension');
+        // Institutions.
+        Route::get('/institutions', [\App\Http\Controllers\Admin\InstitutionController::class, 'index'])->name('institutions.index');
+        Route::post('/institutions', [\App\Http\Controllers\Admin\InstitutionController::class, 'store'])->name('institutions.store');
+        Route::put('/institutions/{institution}', [\App\Http\Controllers\Admin\InstitutionController::class, 'update'])->name('institutions.update');
+        Route::post('/institutions/{institution}/verify', [\App\Http\Controllers\Admin\InstitutionController::class, 'verify'])->name('institutions.verify');
+        Route::post('/institutions/{institution}/unverify', [\App\Http\Controllers\Admin\InstitutionController::class, 'unverify'])->name('institutions.unverify');
+        // Reported content and moderation.
+        Route::get('/moderation', [\App\Http\Controllers\Admin\ModerationController::class, 'index'])->name('moderation.index');
+        Route::get('/moderation/{contentReport}', [\App\Http\Controllers\Admin\ModerationController::class, 'show'])->name('moderation.show');
+        Route::post('/moderation/{contentReport}/resolve', [\App\Http\Controllers\Admin\ModerationController::class, 'resolve'])->name('moderation.resolve');
+        // Usage and health.
+        Route::get('/health', [\App\Http\Controllers\Admin\HealthController::class, 'index'])->name('health');
+        // Student skill tags.
+        Route::get('/skill-tags', [\App\Http\Controllers\Admin\SkillTagController::class, 'index'])->name('skill-tags.index');
+        Route::put('/skill-tags/{skillTag}', [\App\Http\Controllers\Admin\SkillTagController::class, 'update'])->name('skill-tags.update');
+        Route::post('/skill-tags/{skillTag}/merge', [\App\Http\Controllers\Admin\SkillTagController::class, 'merge'])->name('skill-tags.merge');
+        Route::delete('/skill-tags/{skillTag}', [\App\Http\Controllers\Admin\SkillTagController::class, 'destroy'])->name('skill-tags.destroy');
         Route::match(['get', 'post'], '/reports', [AdminSystemController::class, 'reports'])->name('reports');
         Route::post('/backup', [AdminSystemController::class, 'backup'])->name('backup');
     });

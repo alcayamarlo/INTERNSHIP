@@ -17,7 +17,7 @@ uses(RefreshDatabase::class);
 
 it('marks admin-created accounts verified and lets admins verify stuck accounts', function () {
     $admin = User::factory()->create(['role' => UserRole::Admin]);
-    $institution = Institution::create(['name' => 'Coordinator College', 'address' => null]);
+    $institution = Institution::create(['name' => 'Coordinator College', 'address' => null, 'verified_at' => now()]);
 
     $this->actingAs($admin)->post(route('admin.users.store'), [
         'name' => 'New Coordinator',

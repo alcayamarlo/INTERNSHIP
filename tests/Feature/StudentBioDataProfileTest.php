@@ -34,7 +34,7 @@ function bioDataStudent(array $attributes = []): Student
 function bioDataEmployer(string $name = 'Acme Corp'): array
 {
     $user = User::factory()->create(['role' => UserRole::Employer]);
-    $employer = Employer::create(['user_id' => $user->id, 'company_name' => $name, 'contact_person' => 'HR']);
+    $employer = Employer::create(['verified_at' => now(), 'user_id' => $user->id, 'company_name' => $name, 'contact_person' => 'HR']);
 
     return [$user, $employer];
 }

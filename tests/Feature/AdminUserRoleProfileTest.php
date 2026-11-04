@@ -21,7 +21,7 @@ function adminUserUpdateData(User $user, array $overrides = []): array
 
 it('allows admins to create a student account with its student profile', function () {
     $admin = User::factory()->create(['role' => UserRole::Admin]);
-    $institution = Institution::create(['name' => 'Test Institution', 'address' => 'Cebu City']);
+    $institution = Institution::create(['name' => 'Test Institution', 'address' => 'Cebu City', 'verified_at' => now()]);
 
     $this->actingAs($admin)
         ->get(route('admin.users.create'))
@@ -54,7 +54,7 @@ it('allows admins to create a student account with its student profile', functio
 
 it('lets an admin edit a student\'s locked school ID from the user management page', function () {
     $admin = User::factory()->create(['role' => UserRole::Admin]);
-    $institution = Institution::create(['name' => 'Test Institution', 'address' => 'Cebu City']);
+    $institution = Institution::create(['name' => 'Test Institution', 'address' => 'Cebu City', 'verified_at' => now()]);
     $studentUser = User::factory()->create(['role' => UserRole::Student, 'email' => null]);
     $student = Student::create([
         'user_id' => $studentUser->id,
@@ -85,7 +85,7 @@ it('lets an admin edit a student\'s locked school ID from the user management pa
 
 it('requires a valid, unique student ID when an admin edits a student through the user form', function () {
     $admin = User::factory()->create(['role' => UserRole::Admin]);
-    $institution = Institution::create(['name' => 'Test Institution', 'address' => 'Cebu City']);
+    $institution = Institution::create(['name' => 'Test Institution', 'address' => 'Cebu City', 'verified_at' => now()]);
     $studentA = Student::create([
         'user_id' => User::factory()->create(['role' => UserRole::Student, 'email' => null])->id,
         'institution_id' => $institution->id,

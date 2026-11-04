@@ -87,6 +87,10 @@
                 <span>Rendered internship hours</span>
                 <input type="number" name="rendered_internship_hours" min="0" max="10000" step="1" value="{{ old('rendered_internship_hours', $renderedInternshipHours) }}" required>
             </label>
+            <label>
+                <span>GWA (from the registrar)</span>
+                <input type="number" name="gwa" min="1" max="5" step="0.01" value="{{ old('gwa', $student->gwa) }}" placeholder="e.g. 1.75">
+            </label>
             <label class="profile-checkbox-label">
                 <input type="hidden" name="major_subjects_passed" value="0">
                 <input type="checkbox" name="major_subjects_passed" value="1" @checked(old('major_subjects_passed', $student->major_subjects_passed))>
@@ -94,6 +98,61 @@
             </label>
             <button type="submit" class="btn btn-primary">Save academic progress</button>
         </form>
+    </section>
+
+    <section class="profile-card" aria-labelledby="eligibilityHeading" data-eligibility>
+        <div class="profile-section-heading">
+            <div>
+                <h2 id="eligibilityHeading">Internship eligibility</h2>
+                <p class="profile-prose">{{ $eligibility['source'] === 'program' ? 'Checked against the program criteria for this term.' : 'Checked against the school-wide rules (no program criteria this term).' }}</p>
+            </div>
+            <span class="profile-status {{ $eligibility['eligible'] ? 'profile-status-verified' : 'profile-status-pending' }}">{{ $eligibility['eligible'] ? 'Eligible to apply' : 'Not eligible yet' }}</span>
+        </div>
+        @if($eligibility['rules'])
+            <ul class="list-unstyled mb-3">
+                @foreach($eligibility['rules'] as $rule)
+                    <li class="mb-1" data-rule="{{ $rule['key'] }}">
+                        <i class="bi {{ $rule['passed'] ? 'bi-check-circle-fill text-success' : 'bi-x-circle-fill text-danger' }}" aria-hidden="true"></i>
+                        <strong>{{ $rule['label'] }}</strong>: {{ $rule['detail'] }}
+                        <span class="visually-hidden">{{ $rule['passed'] ? '(passed)' : '(failed)' }}</span>
+                    </li>
+                @endforeach
+            </ul>
+        @else
+            <p class="profile-prose">No eligibility rules apply this term.</p>
+        @endif
+
+        {{-- One form per decision: the decision travels in a hidden field, not on the (auto-disabled) button. --}}
+        <div class="row g-2 align-items-end">
+            <form method="POST" action="{{ route('coordinator.students.eligibility.store', $student) }}" class="col-md-9 row g-2 align-items-end m-0 p-0">
+                @csrf
+                <input type="hidden" name="decision" value="rejected">
+                <div class="col">
+                    <label class="form-label" for="eligibilityReason">Reason <span class="text-muted small">(required to mark not eligible; the student sees it)</span></label>
+                    <input id="eligibilityReason" type="text" name="reason" maxlength="1000" class="form-control @error('reason') is-invalid @enderror" value="{{ old('reason') }}" required>
+                    @error('reason')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-auto"><button type="submit" class="btn btn-outline-danger">Mark not eligible</button></div>
+            </form>
+            <form method="POST" action="{{ route('coordinator.students.eligibility.store', $student) }}" class="col-md-3 m-0">
+                @csrf
+                <input type="hidden" name="decision" value="approved">
+                <button type="submit" class="btn btn-success w-100">Approve</button>
+            </form>
+        </div>
+
+        @if($eligibilityHistory->isNotEmpty())
+            <h3 class="h6 mt-4">Decision history</h3>
+            <ul class="list-unstyled small mb-0">
+                @foreach($eligibilityHistory as $decision)
+                    <li class="mb-1">
+                        <span class="badge {{ $decision->isRejected() ? 'text-bg-danger' : 'text-bg-success' }}">{{ $decision->isRejected() ? 'Not eligible' : 'Approved' }}</span>
+                        {{ $decision->created_at->format('M d, Y h:i A') }} · {{ $decision->decidedBy?->name ?? 'Coordinator' }}
+                        @if($decision->reason) · {{ $decision->reason }}@endif
+                    </li>
+                @endforeach
+            </ul>
+        @endif
     </section>
 
     @if($changeRequests->isNotEmpty())

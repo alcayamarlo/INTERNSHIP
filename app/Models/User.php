@@ -32,6 +32,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_notifications',
         'last_login_at',
         'must_change_password',
+        'suspended_at',
+        'suspended_until',
+        'suspension_reason',
+        'suspended_by_user_id',
     ];
 
     protected $hidden = [
@@ -56,8 +60,26 @@ class User extends Authenticatable implements MustVerifyEmail
             'archived_at' => 'datetime',
             'email_notifications' => 'boolean',
             'must_change_password' => 'boolean',
+            'suspended_at' => 'datetime',
+            'suspended_until' => 'datetime',
             'role' => UserRole::class,
         ];
+    }
+
+    /** Suspended now: set by an admin and not yet past the end date (no end date means until lifted). */
+    public function isSuspended(): bool
+    {
+        return $this->suspended_at !== null && ($this->suspended_until === null || $this->suspended_until->isFuture());
+    }
+
+    /** The message shown on the sign-in screen while suspended. */
+    public function suspensionMessage(): string
+    {
+        $until = $this->suspended_until
+            ? 'until '.$this->suspended_until->timezone('Asia/Manila')->format('M d, Y h:i A')
+            : 'until an administrator lifts it';
+
+        return 'Your account is suspended '.$until.'. Reason: '.($this->suspension_reason ?: 'Not given').'.';
     }
 
     public function setEmailAttribute(?string $value): void

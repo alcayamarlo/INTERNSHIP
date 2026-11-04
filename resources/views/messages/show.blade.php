@@ -5,6 +5,7 @@
 @section('content')
 <x-page-header :title="'Chat with '.$contact->name" :subtitle="$contact->role->label()">
     <a href="{{ route('messages.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to Messages</a>
+    @include('partials.report-button', ['type' => 'user', 'id' => $contact->id, 'label' => $contact->name])
 </x-page-header>
 
 <div class="messenger-shell">
@@ -22,8 +23,13 @@
         @forelse($messages as $message)
             <div class="messenger-row {{ $message->sender_id === auth()->id() ? 'outgoing' : 'incoming' }}">
                 <div class="messenger-bubble">
-                    <p class="messenger-message">{{ $message->body }}</p>
-                    <span class="messenger-time">{{ $message->created_at->format('M d, h:i A') }}</span>
+                    <p class="messenger-message {{ $message->isHidden() ? 'fst-italic text-muted' : '' }}">{{ $message->displayBody() }}</p>
+                    <span class="messenger-time">
+                        {{ $message->created_at->format('M d, h:i A') }}
+                        @if($message->sender_id !== auth()->id() && ! $message->isHidden())
+                            <button type="button" class="btn btn-link btn-sm p-0 ms-1 align-baseline text-muted" data-report-type="message" data-report-id="{{ $message->id }}" data-report-label="this message" aria-label="Report this message"><i class="bi bi-flag" aria-hidden="true"></i></button>
+                        @endif
+                    </span>
                 </div>
             </div>
         @empty

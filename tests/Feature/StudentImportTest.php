@@ -22,7 +22,7 @@ it('blocks non-admins from the import form', function () {
 
 it('imports valid rows, updates existing students by school ID, and reports invalid rows without aborting the batch', function () {
     $admin = User::factory()->create(['role' => UserRole::Admin]);
-    $institution = Institution::create(['name' => 'Test Institution', 'address' => null]);
+    $institution = Institution::create(['name' => 'Test Institution', 'address' => null, 'verified_at' => now()]);
 
     $existingUser = User::factory()->create(['role' => UserRole::Student, 'name' => 'Old Name']);
     $existing = Student::create([

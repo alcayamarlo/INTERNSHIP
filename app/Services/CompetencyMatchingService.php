@@ -35,11 +35,17 @@ class CompetencyMatchingService
     public function getRecommendations(Student $student, int $limit = 10)
     {
         $cacheKey = "recommendations_{$student->id}_{$limit}";
+        $coordinator = $student->assignedCoordinator();
+        // Read outside the cache so a posting the coordinator just marked unsuitable disappears at once.
+        $flaggedIds = $coordinator
+            ? \App\Models\InternshipFlag::query()->where('coordinator_id', $coordinator->id)->pluck('internship_id')->all()
+            : [];
 
-        return Cache::remember($cacheKey, 1800, function () use ($student, $limit) {
+        return Cache::remember($cacheKey, 1800, function () use ($student, $limit, $coordinator) {
             // Recommendations stay within the student's program; searching covers every program.
             $internships = Internship::query()
                 ->open()
+                ->notFlaggedFor($coordinator)
                 ->forProgram($student->program_id)
                 ->with(['employer', 'requirementsList'])
                 ->latest()
@@ -58,7 +64,7 @@ class CompetencyMatchingService
                 ->values();
 
             return $recommendations;
-        });
+        })->reject(fn (Internship $internship) => in_array($internship->id, $flaggedIds, true))->values();
     }
 
     public function invalidateCache(Student $student): void

@@ -28,7 +28,7 @@ class InternshipController extends Controller
     public function index(Request $request)
     {
         $student = Auth::user()->student;
-        $query = Internship::query()->open()->with('employer', 'requirementsList', 'programs');
+        $query = Internship::query()->open()->notFlaggedFor($student->assignedCoordinator())->with('employer', 'requirementsList', 'programs');
 
         // Browsing defaults to the student's program; searching defaults to every program,
         // so students can still find internships outside their program or competencies.
@@ -86,14 +86,17 @@ class InternshipController extends Controller
 
     public function show(Internship $internship)
     {
-        $internship->load('employer', 'requirementsList');
         $student = Auth::user()->student;
-        $matchResult = $this->matchingService->calculateMatchWithDetails($student, $internship);
-        $matchPercentage = $matchResult['match_percentage'];
-        $matchDetails = $matchResult['details'];
         $hasApplied = InternshipApplication::withTrashed()->where('internship_id', $internship->id)
             ->where('student_id', $student->id)
             ->exists();
+        // A posting an administrator hid after a report stays visible only to students who already applied.
+        abort_if($internship->hidden_at !== null && ! $hasApplied, 404);
+
+        $internship->load('employer', 'requirementsList');
+        $matchResult = $this->matchingService->calculateMatchWithDetails($student, $internship);
+        $matchPercentage = $matchResult['match_percentage'];
+        $matchDetails = $matchResult['details'];
         $recommendationFeedback = RecommendationFeedback::where('student_id', $student->id)
             ->where('internship_id', $internship->id)
             ->first();

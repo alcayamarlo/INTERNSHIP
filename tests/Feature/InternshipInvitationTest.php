@@ -49,7 +49,7 @@ function inviteStudent(array $attributes = [], bool $withResume = true): Student
 function inviteEmployer(string $company = 'Acme Corp'): array
 {
     $user = User::factory()->create(['role' => UserRole::Employer]);
-    $employer = Employer::create(['user_id' => $user->id, 'company_name' => $company, 'contact_person' => 'HR']);
+    $employer = Employer::create(['verified_at' => now(), 'user_id' => $user->id, 'company_name' => $company, 'contact_person' => 'HR']);
     $internship = Internship::create([
         'employer_id' => $employer->id,
         'title' => 'Web Intern at '.$company,

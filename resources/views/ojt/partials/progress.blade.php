@@ -3,11 +3,20 @@
     $approved = $placement->approvedHours();
     $pending = $placement->pendingHours();
     $percent = $placement->progressPercent();
-    $statusKey = $placement->isCleared() ? 'verified' : ($placement->isCompleted() ? 'completed' : 'active');
+    $statusKey = $placement->isCleared() ? 'verified' : ($placement->isCompleted() ? 'completed' : ($placement->isPendingValidation() ? 'pending' : 'active'));
 @endphp
 
 <div class="card mb-4" data-ojt-progress>
     <div class="card-body">
+        @if($placement->isPendingValidation())
+            <div class="alert alert-warning small" role="status" data-pending-validation>
+                <i class="bi bi-shield-exclamation" aria-hidden="true"></i>
+                This placement is waiting for the OJT coordinator to validate it. Time logging opens once it is validated.
+                @if($placement->validation_remarks)<br><strong>Coordinator's note:</strong> {{ $placement->validation_remarks }}@endif
+            </div>
+        @elseif($risk = $placement->riskReason())
+            <div class="alert alert-danger small" role="status" data-at-risk><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> At risk: {{ $risk }}.</div>
+        @endif
         <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
             <div>
                 <h2 class="h5 mb-1">{{ $placement->internship?->title ?? 'Internship' }}</h2>

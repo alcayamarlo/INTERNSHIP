@@ -12,6 +12,14 @@
 
 @include('ojt.partials.progress', ['placement' => $placement])
 
+@include('employer.partials.coordinator-contact', ['student' => $placement->student])
+
+@if($placement->evaluation?->coordinator_review_status === 'returned')
+    <div class="alert alert-warning" role="status" data-evaluation-returned>
+        <i class="bi bi-arrow-return-left" aria-hidden="true"></i> The coordinator returned your evaluation: {{ $placement->evaluation->coordinator_comment }} Update it below and save.
+    </div>
+@endif
+
 @if(! empty($profile['emergency_contact']))
     <div class="card mb-4">
         <div class="card-header"><h2 class="h6 mb-0"><i class="bi bi-telephone" aria-hidden="true"></i> Emergency contact</h2></div>

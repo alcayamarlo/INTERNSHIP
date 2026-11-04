@@ -26,6 +26,8 @@ class Internship extends Model
         'expires_at',
         'requires_character_reference',
         'requested_documents',
+        'hidden_at',
+        'hidden_reason',
     ];
 
     protected function casts(): array
@@ -36,6 +38,7 @@ class Internship extends Model
             'expires_at' => 'datetime',
             'requires_character_reference' => 'boolean',
             'requested_documents' => 'array',
+            'hidden_at' => 'datetime',
         ];
     }
 
@@ -48,6 +51,19 @@ class Internship extends Model
     public function programs(): BelongsToMany
     {
         return $this->belongsToMany(Program::class);
+    }
+
+    public function flags(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(InternshipFlag::class);
+    }
+
+    /** Hides postings the student's OJT coordinator marked as not suitable. */
+    public function scopeNotFlaggedFor($query, ?Coordinator $coordinator)
+    {
+        return $coordinator
+            ? $query->whereDoesntHave('flags', fn ($flags) => $flags->where('coordinator_id', $coordinator->id))
+            : $query;
     }
 
     public function scopeForProgram($query, ?int $programId)
@@ -73,7 +89,8 @@ class Internship extends Model
 
     public function scopeOpen($query)
     {
-        return $query->where('status', 'open')
+        // Postings an administrator hid after a report are not listed anywhere.
+        return $query->where('status', 'open')->whereNull('hidden_at')
             ->where(function ($query) {
                 $query->whereNull('expires_at')->orWhere('expires_at', '>', now());
             });
@@ -82,6 +99,7 @@ class Internship extends Model
     public function isAcceptingApplications(): bool
     {
         return $this->status === 'open'
+            && $this->hidden_at === null
             && ($this->expires_at === null || $this->expires_at->isFuture());
     }
 }

@@ -5,7 +5,7 @@
 @endphp
 <article class="public-job-card reveal">
     <h3><a href="{{ route('internships.show', $internship) }}">{{ $internship->title }}</a></h3>
-    <p class="public-job-company"><i class="bi bi-building" aria-hidden="true"></i> {{ $internship->employer?->company_name }}</p>
+    <p class="public-job-company"><i class="bi bi-building" aria-hidden="true"></i> {{ $internship->employer?->company_name }} <x-verified-badge :employer="$internship->employer" /></p>
     <ul class="public-job-meta">
         @if($internship->location)<li><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ $internship->location }}</li>@endif
         @if($internship->work_setup)<li><i class="bi bi-laptop" aria-hidden="true"></i> {{ $internship->work_setup->label() }}</li>@endif

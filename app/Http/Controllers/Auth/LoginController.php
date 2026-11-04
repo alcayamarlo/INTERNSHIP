@@ -29,31 +29,36 @@ class LoginController extends Controller
             : Student::query()->where('student_id_number', mb_strtoupper($login))->first()?->user;
 
         if (! $user) {
+            $this->activityLog->log(null, 'login_failed', ['login' => mb_substr($login, 0, 120), 'reason' => 'unknown_account']);
+
             return back()->withErrors([
                 'login' => 'Account not found.',
             ])->onlyInput('login');
         }
 
         if (! Hash::check($credentials['password'], $user->password)) {
+            $this->activityLog->log($user, 'login_failed', ['login' => mb_substr($login, 0, 120), 'reason' => 'wrong_password']);
+
             return back()->withErrors([
                 'login' => 'Wrong password.',
             ])->onlyInput('login');
         }
 
-        if ($user->archived_at) {
-            return back()->withErrors([
-                'login' => 'This account has been archived. Please contact the administrator.',
-            ])->onlyInput('login');
-        }
+        $blocked = match (true) {
+            (bool) $user->archived_at => ['archived', 'This account has been archived. Please contact the administrator.'],
+            ! $user->is_active => ['deactivated', 'Your account has been deactivated. Please contact support.'],
+            $user->isSuspended() => ['suspended', $user->suspensionMessage()],
+            default => null,
+        };
+        if ($blocked) {
+            $this->activityLog->log($user, 'login_blocked', ['reason' => $blocked[0]]);
 
-        if (! $user->is_active) {
-            return back()->withErrors([
-                'login' => 'Your account has been deactivated. Please contact support.',
-            ])->onlyInput('login');
+            return back()->withErrors(['login' => $blocked[1]])->onlyInput('login');
         }
 
         Auth::login($user);
         $request->session()->regenerate();
+        $user->forceFill(['last_login_at' => now()])->saveQuietly();
         $this->activityLog->log($user, 'login');
 
         if ($user->must_change_password) {
@@ -77,6 +82,9 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
+        if ($request->user()) {
+            $this->activityLog->log($request->user(), 'logout');
+        }
         Auth::logout();
 
         $request->session()->invalidate();

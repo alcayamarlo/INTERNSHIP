@@ -25,10 +25,11 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        $view = $request->query('view') === 'archived' ? 'archived' : 'active';
+        $view = in_array($request->query('view'), ['archived', 'suspended'], true) ? $request->query('view') : 'active';
         $query = User::with('student')
             ->when($view === 'archived', fn ($query) => $query->whereNotNull('archived_at'))
-            ->when($view === 'active', fn ($query) => $query->whereNull('archived_at'));
+            ->when($view === 'active', fn ($query) => $query->whereNull('archived_at'))
+            ->when($view === 'suspended', fn ($query) => $query->whereNull('archived_at')->whereNotNull('suspended_at')->where(fn ($active) => $active->whereNull('suspended_until')->orWhere('suspended_until', '>', now())));
 
         if ($role = $request->get('role')) {
             $query->where('role', $role);
@@ -53,7 +54,7 @@ class UserController extends Controller
     public function create()
     {
         return view('admin.users.create', [
-            'institutions' => Institution::orderBy('name')->get(),
+            'institutions' => Institution::query()->whereNotNull('verified_at')->orderBy('name')->get(),
             'roles' => UserRole::assignable(),
         ]);
     }
@@ -164,9 +165,52 @@ class UserController extends Controller
             }
 
             $this->activityLog->log($actor, 'admin_update_user', ['user_id' => $user->id]);
+            if ($previousRole !== $newRole) {
+                $this->activityLog->log($actor, 'role_changed', ['user_id' => $user->id, 'from' => $previousRole?->value, 'to' => $newRole->value]);
+            }
+            if ($user->wasChanged('is_active')) {
+                $this->activityLog->log($actor, $user->is_active ? 'account_activated' : 'account_deactivated', ['user_id' => $user->id]);
+            }
+            if (! empty($validated['password'])) {
+                $this->activityLog->log($actor, 'admin_password_set', ['user_id' => $user->id]);
+            }
         });
 
         return back()->with('success', 'User updated successfully.');
+    }
+
+    /** Blocks sign-in until the end date (or until lifted), showing the reason on the sign-in screen. */
+    public function suspend(Request $request, User $user)
+    {
+        $this->authorize('update', $user);
+        $validated = $request->validate([
+            'suspension_reason' => ['required', 'string', 'max:1000'],
+            'suspended_until' => ['nullable', 'date', 'after:now'],
+        ], [
+            'suspension_reason.required' => 'Give a reason. The user sees it when they try to sign in.',
+            'suspended_until.after' => 'The end date must be in the future.',
+        ]);
+
+        try {
+            app(\App\Services\AccountSuspension::class)->suspend(
+                $user,
+                Auth::user(),
+                $validated['suspension_reason'],
+                isset($validated['suspended_until']) ? \Illuminate\Support\Carbon::parse($validated['suspended_until'], 'Asia/Manila') : null
+            );
+        } catch (ValidationException $exception) {
+            return back()->with('error', collect($exception->errors())->flatten()->first());
+        }
+
+        return back()->with('success', "{$user->name} is suspended ".($user->suspended_until ? 'until '.$user->suspended_until->timezone('Asia/Manila')->format('M d, Y h:i A') : 'until you lift it').'.');
+    }
+
+    public function liftSuspension(User $user)
+    {
+        $this->authorize('update', $user);
+        app(\App\Services\AccountSuspension::class)->lift($user, Auth::user());
+
+        return back()->with('success', "{$user->name}'s suspension was lifted. They can sign in again.");
     }
 
     public function destroy(User $user)
@@ -219,6 +263,39 @@ class UserController extends Controller
         }
 
         return back()->with('success', "{$user->name}'s email is now verified and they can sign in.");
+    }
+
+    /** Marks a company as verified, unlocking posting, browsing students, and invitations. */
+    public function verifyCompany(User $user)
+    {
+        $this->authorize('update', $user);
+        $employer = $user->employer;
+        abort_unless($employer, 404);
+
+        if (! $employer->isVerified()) {
+            $employer->update(['verified_at' => now(), 'verified_by_user_id' => Auth::id()]);
+            $this->activityLog->log(Auth::user(), 'admin_verify_company', ['employer_id' => $employer->id]);
+            app(\App\Services\NotificationService::class)->send(
+                $user,
+                'company_verified',
+                'Your company is verified',
+                "{$employer->company_name} is now verified. You can post internships, browse students, and invite them to apply."
+            );
+        }
+
+        return back()->with('success', "{$employer->company_name} is now a verified company.");
+    }
+
+    public function unverifyCompany(User $user)
+    {
+        $this->authorize('update', $user);
+        $employer = $user->employer;
+        abort_unless($employer, 404);
+
+        $employer->update(['verified_at' => null, 'verified_by_user_id' => null]);
+        $this->activityLog->log(Auth::user(), 'admin_unverify_company', ['employer_id' => $employer->id]);
+
+        return back()->with('success', "{$employer->company_name} is no longer verified.");
     }
 
     public function restore(User $user)

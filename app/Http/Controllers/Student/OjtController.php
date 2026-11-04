@@ -137,7 +137,8 @@ class OjtController extends Controller
         $this->authorize('log', $placement);
         abort_unless((int) $journalEntry->placement_id === (int) $placement->id, 404);
 
-        if ($journalEntry->isAcknowledged()) {
+        // A report the coordinator returned can be replaced even after the supervisor acknowledged it.
+        if ($journalEntry->isAcknowledged() && ! $journalEntry->isReturnedByCoordinator()) {
             return back()->with('error', 'Acknowledged journals can no longer be deleted.');
         }
 

@@ -13,7 +13,19 @@ class Institution extends Model
         'contact_email',
         'contact_phone',
         'description',
+        'verified_at',
+        'verified_by_user_id',
     ];
+
+    protected function casts(): array
+    {
+        return ['verified_at' => 'datetime'];
+    }
+
+    public function isVerified(): bool
+    {
+        return $this->verified_at !== null;
+    }
 
     public function students(): HasMany
     {

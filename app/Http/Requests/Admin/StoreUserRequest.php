@@ -26,7 +26,7 @@ class StoreUserRequest extends FormRequest
                 UserRole::assignable()
             ))],
             'phone' => ['nullable', 'string', 'max:20'],
-            'institution_id' => ['required_if:role,coordinator,student', 'nullable', 'exists:institutions,id'],
+            'institution_id' => ['required_if:role,coordinator,student', 'nullable', \Illuminate\Validation\Rule::exists('institutions', 'id')->whereNotNull('verified_at')],
             'company_name' => ['required_if:role,employer', 'nullable', 'string', 'max:255'],
             'student_id_number' => [
                 'required_if:role,student',

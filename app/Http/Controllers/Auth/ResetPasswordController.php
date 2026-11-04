@@ -62,6 +62,7 @@ class ResetPasswordController extends Controller
         });
 
         if ($result['status'] !== 'reset') {
+            app(\App\Services\ActivityLogService::class)->log(null, 'password_reset_failed', ['email' => mb_substr((string) $email, 0, 120)]);
             $request->session()->put([
                 'password_reset_code_requested' => true,
                 'password_reset_code_expires_at' => $request->session()->get(
@@ -81,6 +82,7 @@ class ResetPasswordController extends Controller
         ]);
 
         event(new PasswordReset($result['user']));
+        app(\App\Services\ActivityLogService::class)->log($result['user'], 'password_reset');
 
         return redirect()->route('login')->with('status', 'Your password has been reset successfully.');
     }

@@ -38,6 +38,10 @@ class Evaluation extends Model
         'comments',
         'would_hire',
         'submitted_at',
+        'coordinator_review_status',
+        'coordinator_comment',
+        'coordinator_reviewed_at',
+        'coordinator_reviewed_by_user_id',
     ];
 
     protected function casts(): array
@@ -47,6 +51,7 @@ class Evaluation extends Model
             'average_score' => 'decimal:2',
             'would_hire' => 'boolean',
             'submitted_at' => 'datetime',
+            'coordinator_reviewed_at' => 'datetime',
         ];
     }
 

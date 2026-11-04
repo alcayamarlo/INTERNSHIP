@@ -31,10 +31,12 @@ class PlacementService
                 'employer_id' => $application->internship->employer_id,
                 'internship_id' => $application->internship_id,
                 'start_date' => now()->toDateString(),
-                // The program's own requirement wins; the academic setting is the fallback.
-                'required_hours' => $application->student?->academicProgram?->required_internship_hours
+                // The program's criteria for this term win, then the program, then the academic setting.
+                'required_hours' => ($application->student ? app(EligibilityCriteria::class)->forStudent($application->student)['required_hours'] : null)
+                    ?: $application->student?->academicProgram?->required_internship_hours
                     ?: (AcademicSetting::current()->required_ojt_hours ?: 300),
-                'status' => Placement::STATUS_ACTIVE,
+                // The coordinator validates it (company, MOA, program match) before hours can be logged.
+                'status' => Placement::STATUS_PENDING_VALIDATION,
             ]
         );
     }

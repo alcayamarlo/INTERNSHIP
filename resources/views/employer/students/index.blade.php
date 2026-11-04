@@ -7,7 +7,13 @@
     <a href="{{ route('employer.invitations.index') }}" class="btn btn-outline-secondary"><i class="bi bi-envelope-paper" aria-hidden="true"></i> Sent invitations</a>
 </x-page-header>
 
+<div class="d-flex gap-2 mb-3" role="group" aria-label="Student lists">
+    <a href="{{ route('employer.students.index') }}" class="btn btn-sm {{ ($filters['shortlisted'] ?? false) ? 'btn-outline-primary' : 'btn-primary' }}">All students</a>
+    <a href="{{ route('employer.students.index', ['shortlisted' => 1]) }}" class="btn btn-sm {{ ($filters['shortlisted'] ?? false) ? 'btn-primary' : 'btn-outline-primary' }}"><i class="bi bi-star-fill" aria-hidden="true"></i> Shortlisted</a>
+</div>
+
 <form method="GET" action="{{ route('employer.students.index') }}" class="card mb-4" role="search" aria-label="Filter students">
+    @if($filters['shortlisted'] ?? false)<input type="hidden" name="shortlisted" value="1">@endif
     <div class="card-body">
         <div class="row g-3 align-items-end">
             <div class="col-md-3">
@@ -75,6 +81,7 @@
                         @endif
                         <div class="mt-auto pt-2 d-flex flex-wrap gap-2 align-items-start">
                             <a href="{{ route('employer.students.show', $student['student_id']) }}" class="btn btn-outline-primary btn-sm">View profile</a>
+                            @include('employer.students.partials.shortlist-button')
                             <div>@include('employer.students.partials.invite-button')</div>
                         </div>
                     </div>

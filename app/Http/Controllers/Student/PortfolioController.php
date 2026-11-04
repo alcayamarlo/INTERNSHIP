@@ -19,6 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Support\DownloadName;
 use App\Support\UploadDisks;
 
 class PortfolioController extends Controller
@@ -523,7 +524,7 @@ class PortfolioController extends Controller
 
         return Storage::disk($disk)->download(
             $portfolio->file_path,
-            $portfolio->title.'.'.pathinfo($portfolio->file_path, PATHINFO_EXTENSION)
+            DownloadName::make($portfolio->title, $portfolio->file_path)
         );
     }
 
@@ -544,7 +545,7 @@ class PortfolioController extends Controller
 
         return Storage::disk($disk)->response($portfolio->file_path, null, [
             'Content-Type' => $mimeTypes[strtolower($extension)] ?? 'application/octet-stream',
-            'Content-Disposition' => 'inline; filename="'.$portfolio->title.'.'.$extension.'"',
+            'Content-Disposition' => DownloadName::inline($portfolio->title, $portfolio->file_path),
             'X-Content-Type-Options' => 'nosniff',
             'Cache-Control' => 'private, no-store',
         ]);

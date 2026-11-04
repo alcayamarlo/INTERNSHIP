@@ -14,10 +14,23 @@
     subtitle="Manage your internship listings and applicants"
     eyebrow="Employer workspace"
 >
-    <span class="sb-status sb-status--success">Recruitment workspace ready</span>
+    @if(auth()->user()->employer?->isVerified())
+        <x-verified-badge :employer="auth()->user()->employer" />
+    @else
+        <span class="sb-status sb-status--warning">Pending verification</span>
+    @endif
     <span class="sb-tag"><i class="bi bi-calendar3" aria-hidden="true"></i> {{ now()->format('M d, Y') }}</span>
-    <a href="{{ route('employer.internships.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Post Internship</a>
+    @if(auth()->user()->employer?->isVerified())
+        <a href="{{ route('employer.internships.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Post Internship</a>
+    @endif
 </x-page-header>
+
+@unless(auth()->user()->employer?->isVerified())
+    <div class="alert alert-warning" role="status" data-company-pending>
+        <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+        Your company is waiting for admin verification. You can complete your <a href="{{ route('employer.profile.edit') }}" class="alert-link">company profile</a> meanwhile. Posting internships, browsing students, and sending invitations unlock once an admin verifies you.
+    </div>
+@endunless
 
 
 {{-- Dashboard statistics --}}

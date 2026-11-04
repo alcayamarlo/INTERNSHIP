@@ -20,7 +20,7 @@
         @endif
 
         <h1 class="public-page-title">{{ $internship->title }}</h1>
-        <p class="public-job-company"><i class="bi bi-building" aria-hidden="true"></i> {{ $internship->employer?->company_name }}</p>
+        <p class="public-job-company"><i class="bi bi-building" aria-hidden="true"></i> {{ $internship->employer?->company_name }} <x-verified-badge :employer="$internship->employer" /></p>
 
         <ul class="public-job-meta">
             @if($internship->location)<li><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ $internship->location }}</li>@endif

@@ -20,6 +20,9 @@
     <a href="{{ route('admin.users.index', [...request()->except('page'), 'view' => 'archived']) }}"
        class="btn btn-sm {{ $view === 'archived' ? 'btn-primary' : 'btn-outline-primary' }}"
        @if($view === 'archived') aria-current="true" @endif>Archived</a>
+    <a href="{{ route('admin.users.index', [...request()->except('page'), 'view' => 'suspended']) }}"
+       class="btn btn-sm {{ $view === 'suspended' ? 'btn-primary' : 'btn-outline-primary' }}"
+       @if($view === 'suspended') aria-current="true" @endif>Suspended</a>
 </div>
 
 <form method="GET" class="sb-toolbar" role="search" aria-label="Filter users">
@@ -80,6 +83,10 @@
                                 @if(! $user->hasVerifiedEmail())
                                     <x-status-badge status="warning" label="Email unverified" />
                                 @endif
+                                @if($user->isSuspended())
+                                    <x-status-badge status="inactive" label="Suspended" />
+                                    <small class="d-block text-muted" data-suspension>{{ $user->suspended_until ? 'Until '.$user->suspended_until->timezone('Asia/Manila')->format('M d, Y h:i A') : 'Until lifted' }} · {{ $user->suspension_reason }}</small>
+                                @endif
                             </td>
                             <td class="text-nowrap">
                                 <span class="sb-row-actions">
@@ -109,6 +116,33 @@
                                                     <i class="bi bi-patch-check" aria-hidden="true"></i>
                                                 </button>
                                             </form>
+                                        @endif
+                                        @if($user->employer)
+                                            @if($user->employer->isVerified())
+                                                <form action="{{ route('admin.users.unverify-company', $user) }}" method="POST" class="d-inline" data-confirm="Remove verification from {{ $user->employer->company_name }}? They will not be able to post internships, browse students, or send invitations." data-confirm-title="Unverify company" data-confirm-label="Unverify">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="Unverify company" aria-label="Unverify {{ $user->employer->company_name }}">
+                                                        <i class="bi bi-building-x" aria-hidden="true"></i>
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <form action="{{ route('admin.users.verify-company', $user) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-success" title="Verify company" aria-label="Verify {{ $user->employer->company_name }}">
+                                                        <i class="bi bi-building-check" aria-hidden="true"></i> Verify company
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        @endif
+                                        @if($user->id !== auth()->id())
+                                            @if($user->isSuspended())
+                                                <form action="{{ route('admin.users.lift-suspension', $user) }}" method="POST" class="d-inline" data-confirm="Lift the suspension for {{ $user->name }}? They can sign in again right away." data-confirm-title="Lift suspension" data-confirm-label="Lift">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Lift suspension" aria-label="Lift suspension for {{ $user->name }}"><i class="bi bi-unlock" aria-hidden="true"></i></button>
+                                                </form>
+                                            @else
+                                                <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#suspendUser{{ $user->id }}" title="Suspend user" aria-label="Suspend {{ $user->name }}"><i class="bi bi-slash-circle" aria-hidden="true"></i></button>
+                                            @endif
                                         @endif
                                         <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editUser{{ $user->id }}" title="Edit user" aria-label="Edit {{ $user->name }}">
                                             <i class="bi bi-pencil" aria-hidden="true"></i>
@@ -146,6 +180,33 @@
 
 @if($view === 'active')
 @foreach($users as $user)
+    @if($user->id !== auth()->id() && ! $user->isSuspended())
+        <div class="modal fade" id="suspendUser{{ $user->id }}" tabindex="-1" aria-labelledby="suspendUserTitle{{ $user->id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form method="POST" action="{{ route('admin.users.suspend', $user) }}">
+                        @csrf
+                        <div class="modal-header">
+                            <h2 class="modal-title h5" id="suspendUserTitle{{ $user->id }}">Suspend {{ $user->name }}</h2>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="small text-muted">They are signed out at once and cannot sign in. The sign-in screen shows the reason and end date.</p>
+                            <label class="form-label" for="suspendReason{{ $user->id }}">Reason <span class="text-danger" aria-hidden="true">*</span></label>
+                            <textarea id="suspendReason{{ $user->id }}" name="suspension_reason" rows="3" maxlength="1000" class="form-control mb-3" required></textarea>
+                            <label class="form-label" for="suspendUntil{{ $user->id }}">Suspended until (Philippine time)</label>
+                            <input id="suspendUntil{{ $user->id }}" type="datetime-local" name="suspended_until" class="form-control" min="{{ now('Asia/Manila')->format('Y-m-d\TH:i') }}">
+                            <small class="form-text text-muted">Leave blank to suspend until you lift it. It lifts automatically at the end date.</small>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-warning">Suspend</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
     <div class="modal fade" id="editUser{{ $user->id }}" tabindex="-1" aria-labelledby="editUserTitle{{ $user->id }}" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">

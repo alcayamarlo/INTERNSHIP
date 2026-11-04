@@ -21,6 +21,20 @@ class EnsureUserIsActive
             abort(403, 'Your account is inactive or archived. Please contact support.');
         }
 
+        // A suspension signs the user out at once and shows the reason and end date on the sign-in screen.
+        if ($user?->isSuspended()) {
+            $message = $user->suspensionMessage();
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $message], 403);
+            }
+
+            return redirect()->route('login')->withErrors(['login' => $message]);
+        }
+
         return $next($request);
     }
 }

@@ -25,7 +25,7 @@
                             <div class="progress" style="height: 6px;" role="progressbar" aria-label="Hours progress" aria-valuenow="{{ $percent }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar {{ $percent >= 100 ? 'bg-success' : '' }}" style="width: {{ $percent }}%"></div></div>
                         </td>
                         <td data-label="Evaluation">{{ $placement->evaluation ? number_format((float) $placement->evaluation->average_score, 2).' / 5' : '—' }}</td>
-                        <td data-label="Status"><x-status-badge :status="$placement->isCleared() ? 'verified' : ($placement->isCompleted() ? 'pending' : 'active')" :label="$placement->isCompleted() && ! $placement->isCleared() ? 'For clearance' : $placement->statusLabel()" /></td>
+                        <td data-label="Status"><x-status-badge :status="$placement->isCleared() ? 'verified' : (($placement->isCompleted() || $placement->isPendingValidation()) ? 'pending' : 'active')" :label="$placement->isCompleted() && ! $placement->isCleared() ? 'For clearance' : $placement->statusLabel()" />@if($risk = $placement->riskReason())<span class="badge text-bg-danger d-inline-block mt-1" title="{{ $risk }}"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> At risk</span><small class="d-block text-danger">{{ $risk }}</small>@endif</td>
                         <td class="sb-stack-block"><a href="{{ route($showRoute, $placement) }}" class="btn btn-sm btn-outline-primary">View</a></td>
                     </tr>
                 @empty

@@ -70,6 +70,8 @@ class DashboardController extends Controller
             'search' => ['nullable', 'string', 'max:150'],
             'program' => ['nullable', 'string', 'max:255'],
             'sort' => ['nullable', 'in:name,completion_desc,completion_asc'],
+            'year_level' => ['nullable', 'in:1st Year,2nd Year,3rd Year,4th Year'],
+            'status' => ['nullable', 'in:placed,unplaced,eligible,not_eligible'],
             'page' => ['nullable', 'integer', 'min:1'],
         ]);
 
@@ -103,6 +105,16 @@ class DashboardController extends Controller
                 'portfolios as verified_portfolios_count' => fn ($query) => $query->where('verification_status', 'verified'),
             ])
             ->when(isset($validated['program']) && $validated['program'] !== '', fn ($query) => $query->where('program', $validated['program']))
+            ->when($validated['year_level'] ?? null, fn ($query, string $year) => $query->where('year_level', $year))
+            ->when($validated['status'] ?? null, function ($query, string $status) use ($coordinator) {
+                $eligibleIds = fn () => app(\App\Services\InternshipEligibility::class)->constrain($coordinator->scopedStudentsQuery())->select('students.id');
+                match ($status) {
+                    'placed' => $query->whereHas('placements'),
+                    'unplaced' => $query->whereDoesntHave('placements'),
+                    'eligible' => $query->whereIn('students.id', $eligibleIds()),
+                    default => $query->whereNotIn('students.id', $eligibleIds()),
+                };
+            })
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($studentQuery) use ($search) {
                     $studentQuery->where('student_id_number', 'like', "%{$search}%")
@@ -155,6 +167,8 @@ class DashboardController extends Controller
                 'search' => $search,
                 'program' => $validated['program'] ?? '',
                 'sort' => $sort,
+                'year_level' => $validated['year_level'] ?? '',
+                'status' => $validated['status'] ?? '',
             ],
         ]);
     }
@@ -291,6 +305,8 @@ class DashboardController extends Controller
             'recentActivity' => $recentActivity,
             'profileCompletion' => $profileCompletion,
             'initials' => $initials,
+            'eligibility' => app(\App\Services\EligibilityChecker::class)->check($student),
+            'eligibilityHistory' => $student->eligibilityDecisions()->with('decidedBy:id,name')->get()->reverse()->values(),
         ]);
     }
 

@@ -8,6 +8,7 @@ use App\Models\Portfolio;
 use App\Models\Resume;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Support\DownloadName;
 use App\Support\UploadDisks;
 
 class PrivateFileController extends Controller
@@ -19,7 +20,7 @@ class PrivateFileController extends Controller
 
         return Storage::disk($disk)->download(
             $portfolio->file_path,
-            $portfolio->title.'.'.pathinfo($portfolio->file_path, PATHINFO_EXTENSION)
+            DownloadName::make($portfolio->title, $portfolio->file_path)
         );
     }
 
@@ -29,7 +30,7 @@ class PrivateFileController extends Controller
 
         return Storage::disk($this->diskWithFile($certificate->file_path))->download(
             $certificate->file_path,
-            $certificate->title.'.'.pathinfo($certificate->file_path, PATHINFO_EXTENSION)
+            DownloadName::make($certificate->title, $certificate->file_path)
         );
     }
 
@@ -49,7 +50,7 @@ class PrivateFileController extends Controller
 
         return Storage::disk($disk)->response($certificate->file_path, null, [
             'Content-Type' => $mimeTypes[$extension],
-            'Content-Disposition' => 'inline; filename="'.basename($certificate->title).'.'.$extension.'"',
+            'Content-Disposition' => DownloadName::inline($certificate->title, $certificate->file_path),
             'X-Content-Type-Options' => 'nosniff',
             'Cache-Control' => 'private, no-store',
         ]);
@@ -63,7 +64,7 @@ class PrivateFileController extends Controller
 
         return Storage::disk($this->diskWithFile($portfolio->file_path))->download(
             $portfolio->file_path,
-            $portfolio->title.'.'.pathinfo($portfolio->file_path, PATHINFO_EXTENSION)
+            DownloadName::make($portfolio->title, $portfolio->file_path)
         );
     }
 
@@ -86,7 +87,7 @@ class PrivateFileController extends Controller
 
         return Storage::disk($disk)->response($portfolio->file_path, null, [
             'Content-Type' => $mimeTypes[$extension],
-            'Content-Disposition' => 'inline; filename="'.basename($portfolio->title).'.'.$extension.'"',
+            'Content-Disposition' => DownloadName::inline($portfolio->title, $portfolio->file_path),
             'X-Content-Type-Options' => 'nosniff',
             'Cache-Control' => 'private, no-store',
         ]);
@@ -111,7 +112,7 @@ class PrivateFileController extends Controller
 
         return Storage::disk($disk)->response($certificate->file_path, null, [
             'Content-Type' => $mimeTypes[$extension],
-            'Content-Disposition' => 'inline; filename="'.basename($certificate->title).'.'.$extension.'"',
+            'Content-Disposition' => DownloadName::inline($certificate->title, $certificate->file_path),
             'X-Content-Type-Options' => 'nosniff',
             'Cache-Control' => 'private, no-store',
         ]);
@@ -133,7 +134,7 @@ class PrivateFileController extends Controller
 
         return Storage::disk($disk)->response($portfolio->file_path, null, [
             'Content-Type' => $mimeTypes[$extension],
-            'Content-Disposition' => 'inline; filename="'.basename($portfolio->title).'.'.$extension.'"',
+            'Content-Disposition' => DownloadName::inline($portfolio->title, $portfolio->file_path),
             'X-Content-Type-Options' => 'nosniff',
         ]);
     }

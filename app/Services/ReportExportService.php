@@ -14,6 +14,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
+use App\Support\CsvCell;
 use App\Support\UploadDisks;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -190,7 +191,7 @@ class ReportExportService
         fputcsv($output, array_keys($data[0]));
 
         foreach ($data as $row) {
-            fputcsv($output, $row);
+            fputcsv($output, CsvCell::row($row));
         }
 
         rewind($output);

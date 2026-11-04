@@ -214,6 +214,11 @@ class InternController extends Controller
                 'comments' => $validated['comments'] ?? null,
                 'would_hire' => (bool) ($validated['would_hire'] ?? false),
                 'submitted_at' => now(),
+                // A new submission goes back to the coordinator's review queue.
+                'coordinator_review_status' => null,
+                'coordinator_comment' => null,
+                'coordinator_reviewed_at' => null,
+                'coordinator_reviewed_by_user_id' => null,
             ]);
 
             $this->activityLog->log(Auth::user(), 'evaluation_submitted', ['placement_id' => $placement->id]);

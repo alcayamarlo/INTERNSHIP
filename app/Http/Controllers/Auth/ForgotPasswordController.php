@@ -36,6 +36,7 @@ class ForgotPasswordController extends Controller
     public function sendResetCode(ForgotPasswordRequest $request)
     {
         $email = $request->validated('email');
+        app(\App\Services\ActivityLogService::class)->log(\App\Models\User::query()->where('email', mb_strtolower(trim($email)))->first(), 'password_reset_requested', ['email' => mb_substr($email, 0, 120)]);
 
         $request->session()->forget([
             'password_reset_code_requested',

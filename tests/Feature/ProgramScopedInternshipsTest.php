@@ -19,7 +19,7 @@ function programScopeFixture(): array
     $hm = Program::firstOrCreate(['code' => 'BSHM'], ['name' => 'BS Hospitality Management', 'required_internship_hours' => 600]);
 
     $employerUser = User::factory()->create(['role' => UserRole::Employer]);
-    $employer = Employer::create(['user_id' => $employerUser->id, 'company_name' => 'Scope Co', 'contact_person' => 'Scope']);
+    $employer = Employer::create(['verified_at' => now(), 'user_id' => $employerUser->id, 'company_name' => 'Scope Co', 'contact_person' => 'Scope']);
 
     $make = function (string $title, array $programs, ?string $skill = null) use ($employer) {
         $internship = Internship::create(['employer_id' => $employer->id, 'title' => $title, 'description' => 'Test posting.', 'status' => 'open']);

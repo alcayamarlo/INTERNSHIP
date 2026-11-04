@@ -26,7 +26,7 @@ class StudentImportController extends Controller
     public function create()
     {
         return view('admin.students.import', [
-            'institutions' => Institution::orderBy('name')->get(),
+            'institutions' => Institution::query()->whereNotNull('verified_at')->orderBy('name')->get(),
         ]);
     }
 

@@ -1443,6 +1443,42 @@ body.skillbridge-app .badge:is(.bg-secondary, .bg-dark, .bg-light) {
     --bs-badge-color: var(--sb-text-soft);
 }
 
+/* Bootstrap's text-bg-* badges use white text, which is unreadable on the theme's tinted badge
+   background; give them the same tint and ink colours as the bg-* badges above. */
+body.skillbridge-app .badge:is(.text-bg-success, .text-bg-warning, .text-bg-danger, .text-bg-info, .text-bg-primary, .text-bg-secondary, .text-bg-dark, .text-bg-light) {
+    color: var(--bs-badge-color) !important;
+}
+
+body.skillbridge-app .badge.text-bg-success {
+    --bs-badge-color: var(--sb-success-ink);
+    background-color: rgba(var(--bs-success-rgb), .14) !important;
+    border-color: var(--sb-success-border);
+}
+
+body.skillbridge-app .badge.text-bg-warning {
+    --bs-badge-color: var(--sb-warning-ink);
+    background-color: rgba(var(--bs-warning-rgb), .18) !important;
+    border-color: var(--sb-warning-border);
+}
+
+body.skillbridge-app .badge.text-bg-danger {
+    --bs-badge-color: var(--sb-danger-ink);
+    background-color: rgba(var(--bs-danger-rgb), .14) !important;
+    border-color: var(--sb-danger-border);
+}
+
+body.skillbridge-app .badge.text-bg-info,
+body.skillbridge-app .badge.text-bg-primary {
+    --bs-badge-color: var(--sb-info-ink);
+    background-color: rgba(var(--bs-info-rgb), .14) !important;
+    border-color: var(--sb-info-border);
+}
+
+body.skillbridge-app .badge:is(.text-bg-secondary, .text-bg-dark, .text-bg-light) {
+    --bs-badge-color: var(--sb-text-soft);
+    background-color: var(--sb-surface-muted, rgba(0, 0, 0, .06)) !important;
+}
+
 .sb-status {
     display: inline-flex;
     align-items: center;

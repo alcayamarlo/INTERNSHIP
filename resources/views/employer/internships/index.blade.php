@@ -31,7 +31,7 @@
                             <td><strong>{{ $internship->title }}</strong></td>
                             <td>{{ $internship->location ?? '—' }}</td>
                             <td>{{ $internship->work_setup->label() }}</td>
-                            <td><x-status-badge :status="$internship->status" :label="ucfirst($internship->status)" /></td>
+                            <td><x-status-badge :status="$internship->status" :label="ucfirst($internship->status)" />@if($internship->hidden_at)<span class="badge text-bg-danger d-inline-block mt-1" title="{{ $internship->hidden_reason }}">Hidden by an administrator</span><small class="d-block text-danger">{{ $internship->hidden_reason }}</small>@endif</td>
                             <td>{{ $internship->applications_count }}</td>
                             <td class="text-nowrap">
                                 <span class="sb-row-actions">

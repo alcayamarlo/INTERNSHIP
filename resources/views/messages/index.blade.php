@@ -19,7 +19,7 @@
                                 <i class="bi bi-lock-fill text-muted ms-1" title="{{ $lockedReasons[$contactId] }}" aria-hidden="true"></i>
                                 <small class="d-block text-muted" data-chat-locked>{{ $lockedReasons[$contactId] }}</small>
                             @endif
-                            <small class="d-block {{ request()->routeIs('messages.show') && request()->route('user')?->id === $contact->id ? '' : 'text-muted' }}">{{ Str::limit($thread->first()->body, 50) }}</small>
+                            <small class="d-block {{ request()->routeIs('messages.show') && request()->route('user')?->id === $contact->id ? '' : 'text-muted' }}">{{ Str::limit($thread->first()->displayBody(), 50) }}</small>
                         </a>
                     @endif
                 @empty

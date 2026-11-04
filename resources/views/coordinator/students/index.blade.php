@@ -59,6 +59,25 @@
             </select>
         </label>
         <label class="students-select">
+            <span class="visually-hidden">Filter students by year level</span>
+            <select id="studentYear">
+                <option value="">All year levels</option>
+                @foreach(['1st Year', '2nd Year', '3rd Year', '4th Year'] as $year)
+                    <option value="{{ $year }}" @selected(($filters['year_level'] ?? '') === $year)>{{ $year }}</option>
+                @endforeach
+            </select>
+        </label>
+        <label class="students-select">
+            <span class="visually-hidden">Filter students by status</span>
+            <select id="studentStatus">
+                <option value="">Any status</option>
+                <option value="eligible" @selected(($filters['status'] ?? '') === 'eligible')>Eligible to apply</option>
+                <option value="not_eligible" @selected(($filters['status'] ?? '') === 'not_eligible')>Not eligible yet</option>
+                <option value="placed" @selected(($filters['status'] ?? '') === 'placed')>Placed</option>
+                <option value="unplaced" @selected(($filters['status'] ?? '') === 'unplaced')>Not placed</option>
+            </select>
+        </label>
+        <label class="students-select">
             <span class="visually-hidden">Sort students</span>
             <select id="studentSort">
                 <option value="name" @selected($filters['sort'] === 'name')>Name</option>

@@ -14,3 +14,7 @@ Schedule::job(new CheckCompetencyExpiry)->dailyAt('08:00');
 Schedule::job(new ScheduledBackup)->dailyAt('02:00');
 Schedule::command('cache:prune-stale-tags')->hourly();
 Schedule::command('invitations:expire')->hourly()->withoutOverlapping();
+Schedule::command('moa:remind')->dailyAt('07:00');
+Schedule::command('logs:prune')->dailyAt('03:00');
+// Heartbeat for the admin health page ("scheduler last ran").
+Schedule::call(fn () => cache()->forever('scheduler:last_run', now()->toIso8601String()))->everyMinute()->name('scheduler-heartbeat');

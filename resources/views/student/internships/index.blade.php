@@ -69,7 +69,7 @@
                         <span class="sb-tag">{{ $internship->work_setup->label() }}</span>
                     </div>
                     <h3 class="h5 mb-2">{{ $internship->title }}</h3>
-                    <p class="sb-meta"><i class="bi bi-building" aria-hidden="true"></i> {{ $internship->employer->company_name }}</p>
+                    <p class="sb-meta"><i class="bi bi-building" aria-hidden="true"></i> {{ $internship->employer->company_name }} <x-verified-badge :employer="$internship->employer" /></p>
                     @if($internship->location)<p class="sb-meta"><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ $internship->location }}</p>@endif
                     <p class="sb-meta"><i class="bi bi-mortarboard" aria-hidden="true"></i> {{ $internship->programs->isEmpty() ? 'All programs' : $internship->programs->pluck('code')->implode(', ') }}</p>
                     <p class="card-text small">{{ Str::limit($internship->description, 120) }}</p>
