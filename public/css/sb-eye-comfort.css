@@ -1,0 +1,144 @@
+/*
+ * Eye-comfort pass for the light and dark themes. Loaded LAST on every layout.
+ * Only tokens and component overrides: no layout, backend or logic changes.
+ *  - no pure #000 / #FFF for large areas or body text
+ *  - large red areas use a deep gradient; neon #E11D2E stays on small elements
+ *  - soft surfaces, quiet hover, tuned status colours, visible focus rings
+ */
+
+/* ---------------------------------------------------------------------
+   LIGHT tokens
+   --------------------------------------------------------------------- */
+:root:not([data-theme="dark"]),
+:root:root:not([data-theme="dark"]) body.skillbridge-app,
+:root:root:not([data-theme="dark"]) body.sb-app,
+:root:root:not([data-theme="dark"]) body.skillbridge-public,
+:root:root:not([data-theme="dark"]) body.skillbridge-guest {
+    color-scheme: light;
+    --sb-canvas: #FBF4F5;
+    --sb-bg: #FBF4F5;
+    --sb-surface: #FFFFFF;
+    --sb-card: #FFFFFF;
+    --sb-surface-raised: #FFFAFA;
+    --sb-ink: #1F1316;
+    --sb-text: #1F1316;
+    --sb-text-soft: #4A383C;
+    --sb-muted: #6B5A5E;
+    --sb-border: #EBD9DC;
+    --sb-input-border: #A8878E;
+    --sb-shadow: 0 6px 20px rgba(142, 13, 28, .06);
+    --sb-card-shadow: 0 6px 20px rgba(142, 13, 28, .06);
+    --sb-hover-neutral: color-mix(in srgb, var(--sb-surface) 95%, var(--sb-ink) 5%);
+    --sb-row-hover: #FDF6F7;
+    --sb-brand-content: #8E0D1C;
+    --sb-focus: rgba(225, 29, 46, .35);
+    --sb-chart-grid: #F1DFE2;
+
+    --sb-success-ink: #0B7A46; --sb-success-bg: #E6F6EE; --sb-success-border: rgba(11, 122, 70, .25);
+    --sb-warning-ink: #8A5A00; --sb-warning-bg: #FFF3DC; --sb-warning-border: rgba(138, 90, 0, .25);
+    --sb-danger-ink: #C4182A;  --sb-danger-bg: #FDE7EA;  --sb-danger-border: rgba(196, 24, 42, .25);
+    --sb-info-ink: #1D4ED8;    --sb-info-bg: #E8EFFE;    --sb-info-border: rgba(29, 78, 216, .25);
+    --sb-ok-ink: #0B7A46;  --sb-ok-bg: #E6F6EE;
+    --sb-warn-ink: #8A5A00; --sb-warn-bg: #FFF3DC;
+    --sb-bad-ink: #C4182A;  --sb-bad-bg: #FDE7EA;
+}
+
+/* ---------------------------------------------------------------------
+   DARK tokens
+   --------------------------------------------------------------------- */
+:root[data-theme="dark"],
+:root:root[data-theme="dark"] body.skillbridge-app,
+:root:root[data-theme="dark"] body.sb-app,
+:root:root[data-theme="dark"] body.skillbridge-public,
+:root:root[data-theme="dark"] body.skillbridge-guest {
+    color-scheme: dark;
+    --sb-canvas: #120A0C;
+    --sb-bg: #120A0C;
+    --sb-surface: #1B1114;
+    --sb-card: #1B1114;
+    --sb-surface-raised: #251A1D;
+    --sb-ink: #EFE4E6;
+    --sb-text: #EFE4E6;
+    --sb-text-soft: #D9C9CC;
+    --sb-muted: #B8A4A8;
+    --sb-border: rgba(255, 255, 255, .08);
+    --sb-input-border: #85747A;
+    --sb-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+    --sb-card-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+    --sb-hover-neutral: color-mix(in srgb, var(--sb-surface) 95%, #fff 5%);
+    --sb-row-hover: rgba(255, 255, 255, .04);
+    --sb-brand-content: #FF5A67;
+    --sb-focus: rgba(255, 90, 103, .45);
+    --sb-chart-grid: rgba(255, 255, 255, .08);
+
+    --sb-success-ink: #5BE0A8; --sb-success-bg: rgba(52, 211, 153, .16); --sb-success-border: rgba(91, 224, 168, .3);
+    --sb-warning-ink: #F7B955; --sb-warning-bg: rgba(245, 166, 35, .16); --sb-warning-border: rgba(247, 185, 85, .3);
+    --sb-danger-ink: #FF8A93;  --sb-danger-bg: rgba(255, 90, 103, .16);  --sb-danger-border: rgba(255, 138, 147, .3);
+    --sb-info-ink: #8CBBFA;    --sb-info-bg: rgba(96, 165, 250, .16);    --sb-info-border: rgba(140, 187, 250, .3);
+    --sb-ok-ink: #5BE0A8;  --sb-ok-bg: rgba(52, 211, 153, .16);
+    --sb-warn-ink: #F7B955; --sb-warn-bg: rgba(245, 166, 35, .16);
+    --sb-bad-ink: #FF8A93;  --sb-bad-bg: rgba(255, 90, 103, .16);
+}
+
+/* The page background comes from the token, so nothing flashes white before the body paints. */
+html { background-color: var(--sb-canvas); }
+html[data-theme="dark"] { background-color: #120A0C; }
+
+/* ---------------------------------------------------------------------
+   Typography
+   --------------------------------------------------------------------- */
+body.skillbridge-app, body.sb-app, body.skillbridge-public, body.skillbridge-guest {
+    font-size: 15px; line-height: 1.55;
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+body.skillbridge-app table td, body.skillbridge-app table th,
+body.sb-app table td, body.sb-app table th { font-size: 14px; line-height: 1.5; }
+html[data-theme="dark"] body.skillbridge-app, html[data-theme="dark"] body.sb-app,
+html[data-theme="dark"] body.skillbridge-public, html[data-theme="dark"] body.skillbridge-guest { font-weight: 500; }
+html[data-theme="dark"] h1, html[data-theme="dark"] h2, html[data-theme="dark"] h3,
+html[data-theme="dark"] h4, html[data-theme="dark"] h5, html[data-theme="dark"] h6 { font-weight: 700; }
+
+/* ---------------------------------------------------------------------
+   Tame the red: large areas use a deep gradient, bright red stays on small elements
+   --------------------------------------------------------------------- */
+html body.sb-app .sb-sidebar { background: linear-gradient(180deg, #D41A2A, #8E0D1C); }
+html[data-theme="dark"] body.sb-app .sb-sidebar { background: linear-gradient(180deg, #B3121F, #5E0A13); }
+
+.lm-head { background: radial-gradient(ellipse at 90% 0%, rgba(255, 255, 255, .12), transparent 55%), linear-gradient(180deg, #D41A2A, #8E0D1C); }
+html[data-theme="dark"] .lm-head { background: radial-gradient(ellipse at 90% 0%, rgba(255, 255, 255, .08), transparent 55%), linear-gradient(180deg, #B3121F, #5E0A13); }
+
+.skillbridge-public .public-cta:not(.public-cta-image) { background: linear-gradient(180deg, #D41A2A, #8E0D1C); }
+html[data-theme="dark"] .skillbridge-public .public-cta:not(.public-cta-image) { background: linear-gradient(180deg, #B3121F, #5E0A13); }
+html[data-theme="dark"] .skillbridge-public .public-announcement { background: #5E0A13; }
+
+/* ---------------------------------------------------------------------
+   Softer depth
+   --------------------------------------------------------------------- */
+.lm-dialog { box-shadow: 0 20px 50px rgba(142, 13, 28, .18), 0 0 0 1px rgba(255, 255, 255, .25); }
+html[data-theme="dark"] .lm-dialog { box-shadow: 0 0 0 1px rgba(255, 255, 255, .08), inset 0 1px 0 rgba(255, 255, 255, .04); }
+html[data-theme="dark"] .skillbridge-public .public-nav.is-scrolled { box-shadow: none; }
+.skillbridge-public .public-nav.is-scrolled { box-shadow: 0 6px 20px rgba(142, 13, 28, .06); }
+
+/* Input borders reach 3:1 (errors and focus keep their own colours). */
+html body input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="file"]):not(.is-invalid):not(:focus),
+html body select:not(.is-invalid):not(:focus),
+html body textarea:not(.is-invalid):not(:focus) { border-color: var(--sb-input-border); }
+
+/* ---------------------------------------------------------------------
+   Focus: visible on every control
+   --------------------------------------------------------------------- */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible,
+summary:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--sb-focus); outline-offset: 2px; }
+
+/* ---------------------------------------------------------------------
+   Images: dim photos in dark mode (not logos or icons)
+   --------------------------------------------------------------------- */
+html[data-theme="dark"] img:not([src*=".svg"]):not([src*="logo"]):not([src*="icon"]):not([src*="favicon"]):not(.sb-brand-logo) { filter: brightness(.9); }
+
+/* ---------------------------------------------------------------------
+   Motion
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto !important; }
+    .public-announce-dot { animation: none !important; }
+}

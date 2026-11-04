@@ -24,7 +24,7 @@
 
     try {
         const savedTheme = window.localStorage.getItem(storageKey);
-        if (savedTheme === 'dark' || savedTheme === 'light') root.dataset.theme = savedTheme;
+        if (!root.hasAttribute('data-public-theme') && (savedTheme === 'dark' || savedTheme === 'light')) root.dataset.theme = savedTheme;
     } catch {
         // Keep the light default from the <html data-theme> attribute when storage is unavailable.
     }

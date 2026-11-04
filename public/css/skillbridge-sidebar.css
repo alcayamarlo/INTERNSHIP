@@ -1,0 +1,169 @@
+/* =====================================================================
+   Dashboards (all roles): red sidebar, white topbar, red-family content.
+   One shared stylesheet, loaded by layouts/app.blade.php after skillbridge-ui.css.
+   Scoped to .sb-app so the public and auth pages are unaffected.
+   ===================================================================== */
+:root { --sb-sidebar-width: 260px; }
+
+/* Sidebar colours are fixed (red in light AND dark mode) */
+body.sb-app {
+    --sb-side-1: #E11D2E;
+    --sb-side-2: #B3121F;
+    --sb-side-3: #8E0D1C;
+    --sb-side-deep: #8E0D1C;
+    --sb-track: #FBDDE1;
+    --sb-ok-ink: #0B7A46; --sb-ok-bg: #E6F6EE;
+    --sb-warn-ink: #8A5A00; --sb-warn-bg: #FFF3DC;
+    --sb-bad-ink: #C4182A; --sb-bad-bg: #FDE7EA;
+}
+
+:root:not([data-theme="dark"]) body.sb-app {
+    color-scheme: light;
+    --sb-brand: #E11D2E;
+    --sb-brand-700: #B3121F;
+    --sb-brand-deep: #8E0D1C;
+    --sb-brand-soft: #FDECEE;
+    --sb-brand-content: var(--sb-brand-deep);
+    --sb-canvas: #FFF8F8;
+    --sb-ink: #140A0C;
+    --sb-muted: #6B5A5E;
+    --sb-border: #ECD9DC;
+    --sb-surface: #FFFFFF;
+    --sb-track: #FBDDE1;
+    --sb-row-hover: #FFF5F6;
+    --sb-card-shadow: 0 10px 30px rgba(60, 5, 12, .07);
+    --sb-ok-ink: #0B7A46; --sb-ok-bg: #E6F6EE;
+    --sb-warn-ink: #8A5A00; --sb-warn-bg: #FFF3DC;
+    --sb-bad-ink: #C4182A; --sb-bad-bg: #FDE7EA;
+    --sb-side-ring: #fff;
+    background: var(--sb-canvas);
+    color: var(--sb-ink);
+}
+
+/* ---------------------------------------------------------------------
+   Sidebar
+   --------------------------------------------------------------------- */
+body.sb-app .sb-sidebar {
+    border-right: 0;
+    background: linear-gradient(170deg, var(--sb-side-1) 0%, var(--sb-side-2) 60%, var(--sb-side-3) 100%);
+    color: #fff;
+}
+
+/* Brand block: logo sits on a white tile so it stays visible on red */
+body.sb-app .sb-brand { gap: 12px; padding: 18px 20px 12px; border-bottom: 0; }
+body.sb-app .sb-brand-logo { box-sizing: border-box; width: 40px; height: 40px; padding: 4px; border-radius: 12px; background: #fff; }
+body.sb-app .sb-brand-title { color: #fff; font-size: 18px; font-weight: 700; }
+body.sb-app .sb-brand-subtitle { color: rgba(255, 255, 255, .9); font-size: 12px; font-weight: 500; }
+body.sb-app .sb-sidebar-close { border-color: rgba(255, 255, 255, .35); background: rgba(255, 255, 255, .12); color: #fff; }
+
+/* User card */
+body.sb-app .sb-user-card { margin: 8px 14px 4px; padding: 12px; border: 1px solid rgba(255, 255, 255, .25); border-radius: 16px; background: rgba(255, 255, 255, .14); }
+body.sb-app .sb-user-avatar { background: #fff; color: var(--sb-side-deep); }
+body.sb-app .sb-user-name { color: #fff; font-size: 15px; font-weight: 600; }
+body.sb-app .sb-user-role { color: rgba(255, 255, 255, .9); font-size: 13px; font-weight: 500; }
+
+/* Only the nav list scrolls (thin, light scrollbar) */
+body.sb-app .sb-nav { padding: 4px 14px 12px; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .35) transparent; }
+body.sb-app .sb-nav::-webkit-scrollbar { width: 6px; }
+body.sb-app .sb-nav::-webkit-scrollbar-track { background: transparent; }
+body.sb-app .sb-nav::-webkit-scrollbar-thumb { border-radius: 6px; background: rgba(255, 255, 255, .35); }
+
+body.sb-app .sb-nav-label { padding: 18px 12px 6px; color: rgba(255, 255, 255, .8); font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
+
+body.sb-app .sb-nav-link { min-height: 44px; padding: 11px 12px; border-radius: 12px; color: rgba(255, 255, 255, .94); font-size: 15px; font-weight: 500; transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease; }
+body.sb-app .sb-nav-link > i { flex-basis: 18px; width: 18px; font-size: 18px; -webkit-text-stroke: .2px currentColor; }
+body.sb-app .sb-nav-link:hover { background: rgba(255, 255, 255, .14); color: #fff; }
+body.sb-app .sb-nav-link.active { background: #fff; color: var(--sb-side-deep); font-weight: 600; box-shadow: 0 8px 20px rgba(60, 5, 12, .25); }
+body.sb-app .sb-nav-link.active::before { display: none; }
+body.sb-app .sb-nav-badge { background: #fff; color: var(--sb-side-deep); }
+
+/* Footer card */
+body.sb-app .sb-sidebar-footer { margin: 8px 14px 16px; padding: 12px; border: 1px solid rgba(255, 255, 255, .22); border-radius: 14px; background: rgba(255, 255, 255, .12); }
+body.sb-app .sb-sidebar-footer small { color: rgba(255, 255, 255, .85); font-weight: 500; }
+body.sb-app .sb-sidebar-footer strong { color: #fff; font-weight: 600; }
+
+/* One white focus ring on red */
+body.sb-app .sb-sidebar :is(a, button):focus { outline: none; }
+body.sb-app .sb-sidebar :is(a, button):focus-visible { outline: 2px solid var(--sb-side-ring); outline-offset: 2px; box-shadow: none; }
+
+
+/* ---------------------------------------------------------------------
+   Topbar stays white
+   --------------------------------------------------------------------- */
+body.sb-app .sb-topbar { border-bottom: 1px solid var(--sb-border); background: var(--sb-surface); backdrop-filter: none; }
+body.sb-app .sb-mobile-toggle { border: 1px solid var(--sb-border); background: var(--sb-surface); color: var(--sb-ink); }
+body.sb-app .sb-search .form-control, body.sb-app .sb-search .input-group-text { border-width: 1.5px; border-color: var(--sb-border); background: var(--sb-surface); }
+body.sb-app .sb-search .form-control:focus { border-color: var(--sb-brand); box-shadow: 0 0 0 3px rgba(225, 29, 46, .15); outline: none; }
+
+/* ---------------------------------------------------------------------
+   Content area
+   --------------------------------------------------------------------- */
+body.sb-app .sb-main, body.sb-app .sb-content { background: var(--sb-canvas); }
+body.sb-app .card { border: 1px solid var(--sb-border); border-radius: 22px; background: var(--sb-surface); box-shadow: var(--sb-card-shadow); }
+body.sb-app .sb-page-header .eyebrow { color: var(--sb-brand); }
+body.sb-app .sb-page-header h1 { color: var(--sb-ink); }
+body.sb-app .sb-page-header p { color: var(--sb-muted); }
+
+/* Stat cards: red icon chip, one colour family */
+body.sb-app .sb-stat-icon, body.sb-app .sb-stat-icon--success, body.sb-app .sb-stat-icon--warning, body.sb-app .sb-stat-icon--info { background: var(--sb-brand-soft); color: var(--sb-brand); }
+body.sb-app .sb-stat-label { color: var(--sb-muted); }
+body.sb-app .sb-stat-value { color: var(--sb-ink); }
+
+/* Progress bars */
+body.sb-app .progress { height: 12px; border-radius: 999px; background: var(--sb-track); overflow: hidden; }
+body.sb-app .progress-bar { border-radius: 999px; background: linear-gradient(90deg, var(--sb-brand), var(--sb-brand-deep)); }
+
+/* Tables */
+body.sb-app .sb-content .table { --bs-table-bg: transparent; --bs-table-hover-bg: var(--sb-row-hover); --bs-table-border-color: var(--sb-border); }
+body.sb-app .sb-content .table thead th { border-bottom-color: var(--sb-border); background: var(--sb-brand-soft); color: var(--sb-brand-deep); font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+body.sb-app .sb-content .table-hover > tbody > tr:hover > * { background: var(--sb-row-hover); }
+
+/* Status badges: the only place non-red colours appear */
+body.sb-app .sb-status { border-radius: 999px; font-size: 12px; font-weight: 700; }
+body.sb-app .sb-status--success { background: var(--sb-ok-bg); color: var(--sb-ok-ink); }
+body.sb-app .sb-status--warning { background: var(--sb-warn-bg); color: var(--sb-warn-ink); }
+body.sb-app .sb-status--danger { background: var(--sb-bad-bg); color: var(--sb-bad-ink); }
+body.sb-app .sb-status--info, body.sb-app .sb-status--brand { background: var(--sb-brand-soft); color: var(--sb-brand-deep); }
+
+/* Links and buttons */
+body.sb-app .sb-content a:not(.btn):not(.dropdown-item):not(.page-link) { color: var(--sb-brand-deep); }
+body.sb-app .sb-content a:not(.btn):hover { text-decoration: underline; }
+body.sb-app .btn-primary { --bs-btn-bg: var(--sb-brand); --bs-btn-border-color: var(--sb-brand); --bs-btn-color: #fff; --bs-btn-hover-bg: var(--sb-brand-deep); --bs-btn-hover-border-color: var(--sb-brand-deep); --bs-btn-hover-color: #fff; --bs-btn-active-bg: var(--sb-brand-deep); --bs-btn-active-border-color: var(--sb-brand-deep); --bs-btn-disabled-bg: #F3E9EA; --bs-btn-disabled-border-color: #F3E9EA; --bs-btn-disabled-color: #B9A9AC; --bs-btn-focus-shadow-rgb: 225, 29, 46; border-radius: 999px; font-weight: 600; }
+body.sb-app .btn-outline-secondary { --bs-btn-color: var(--sb-ink); --bs-btn-border-color: var(--sb-border); --bs-btn-bg: var(--sb-surface); --bs-btn-hover-bg: var(--sb-brand-soft); --bs-btn-hover-border-color: var(--sb-brand); --bs-btn-hover-color: var(--sb-brand-deep); --bs-btn-active-bg: var(--sb-brand-soft); --bs-btn-active-color: var(--sb-brand-deep); --bs-btn-active-border-color: var(--sb-brand); }
+body.sb-app .btn:disabled, body.sb-app .btn.disabled { opacity: 1; }
+
+/* ---------------------------------------------------------------------
+   Mobile / tablet: off-canvas drawer, same red styling
+   --------------------------------------------------------------------- */
+@media (max-width: 991.98px) {
+    body.sb-app .sb-sidebar { width: min(300px, calc(100vw - 48px)); box-shadow: 0 0 40px rgba(20, 10, 12, .35); }
+    body.sb-app .sb-sidebar-close { display: inline-grid; }
+    body.sb-app .sb-sidebar-overlay { background: rgba(20, 10, 12, .5); }
+    body.sb-app .sb-content { padding: 16px; }
+    body.sb-app .sb-stat-grid, body.sb-app .sb-stat-grid--3 { grid-template-columns: 1fr; }
+}
+@media (min-width: 576px) and (max-width: 991.98px) { body.sb-app .sb-content { padding: 20px; } }
+
+@media (prefers-reduced-motion: reduce) {
+    body.sb-app .sb-sidebar, body.sb-app .sb-nav-link, body.sb-app .sb-sidebar-overlay { transition: none; }
+}
+
+/* Dark mode: keep table headers and the progress track readable */
+html[data-theme="dark"] body.sb-app .sb-content .table thead th { color: #ffb3bb; }
+html[data-theme="dark"] body.sb-app .progress { background: #3b1d22; }
+
+/* User card removed from the sidebar on all dashboards (name and role stay in the topbar menu) */
+body.sb-app .sb-user-card { display: none; }
+
+/* Footer card (SKILL BRIDGE PLATFORM / Connect. Grow. Succeed.) removed from the sidebar on all dashboards */
+body.sb-app .sb-sidebar-footer { display: none; }
+
+/* ---------- Collapsed icon rail (desktop/tablet) ---------- */
+@media (min-width: 992px) {
+    html.sb-collapsed body.sb-app .sb-brand { justify-content: center; padding: 18px 0 12px; }
+    html.sb-collapsed body.sb-app .sb-nav { padding: 4px 12px 12px; }
+    html.sb-collapsed body.sb-app .sb-nav-label { height: 1px; margin: 14px 10px; padding: 0; overflow: hidden; background: rgba(255, 255, 255, .3); font-size: 0; line-height: 0; }
+    html.sb-collapsed body.sb-app .sb-nav-link { justify-content: center; width: 100%; min-height: 44px; padding: 0; }
+    html.sb-collapsed body.sb-app .sb-nav-link > i { flex: 0 0 auto; width: auto; font-size: 20px; }
+    html.sb-collapsed body.sb-app .sb-nav-link > .sb-nav-badge { position: absolute; top: 3px; right: 3px; min-width: 16px; height: 16px; padding: 0 4px; font-size: 10px; }
+}

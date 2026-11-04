@@ -4,22 +4,59 @@
 
 @push('styles')
 <style>
+    html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
     .ojt-anchor {
-        scroll-margin-top: 96px;
+        scroll-margin-top: calc(var(--sb-topbar-height, 64px) + 72px);
+    }
+    .ojt-tabs {
+        position: sticky;
+        top: var(--sb-topbar-height, 64px);
+        z-index: 1020;
+        margin: -8px -4px 20px;
+        padding: 10px 4px;
+        overflow-x: auto;
+        white-space: nowrap;
+        background: var(--sb-canvas, var(--sb-surface));
+        border-bottom: 1px solid var(--sb-border);
+    }
+    .ojt-tabs .btn.active {
+        background: var(--sb-brand-content, #8f1a27);
+        border-color: var(--sb-brand-content, #8f1a27);
+        color: #fff;
     }
 </style>
 @endpush
 
 @section('content')
-<x-page-header title="My OJT" subtitle="Log your daily time, submit weekly journals and track your progress toward completion.">
-    @if($placement)
-        <nav class="d-flex flex-wrap gap-2" aria-label="Jump to section">
-            <a href="#ojt-progress" class="btn btn-outline-secondary btn-sm"><i class="bi bi-speedometer2" aria-hidden="true"></i> Progress</a>
-            <a href="#ojt-time-record" class="btn btn-outline-secondary btn-sm"><i class="bi bi-clock-history" aria-hidden="true"></i> Time Record</a>
-            <a href="#ojt-journal" class="btn btn-outline-secondary btn-sm"><i class="bi bi-journal-text" aria-hidden="true"></i> Weekly Journal</a>
-        </nav>
-    @endif
-</x-page-header>
+<x-page-header title="My OJT" subtitle="Log your daily time, submit weekly journals and track your progress toward completion." />
+@if($placement)
+    <nav class="ojt-tabs d-flex gap-2" aria-label="Jump to section">
+        <a href="#ojt-progress" class="btn btn-outline-secondary btn-sm"><i class="bi bi-speedometer2" aria-hidden="true"></i> Progress</a>
+        <a href="#ojt-time-record" class="btn btn-outline-secondary btn-sm"><i class="bi bi-clock-history" aria-hidden="true"></i> Time Record</a>
+        <a href="#ojt-journal" class="btn btn-outline-secondary btn-sm"><i class="bi bi-journal-text" aria-hidden="true"></i> Weekly Journal</a>
+    </nav>
+    @push('scripts')
+    <script>
+        (function () {
+            var tabs = document.querySelectorAll('.ojt-tabs a');
+            var ids = ['ojt-progress', 'ojt-time-record', 'ojt-journal'];
+            function update() {
+                var offset = (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sb-topbar-height'), 10) || 64) + 90;
+                var current = ids[0];
+                ids.forEach(function (id) {
+                    var el = document.getElementById(id);
+                    if (el && el.getBoundingClientRect().top <= offset) current = id;
+                });
+                if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) current = ids[ids.length - 1];
+                tabs.forEach(function (a) { a.classList.toggle('active', a.getAttribute('href') === '#' + current); });
+            }
+            window.addEventListener('scroll', update, { passive: true });
+            update();
+        })();
+    </script>
+    @endpush
+@endif
 
 @if(! $placement)
     <div class="card">

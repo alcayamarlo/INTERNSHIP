@@ -57,6 +57,8 @@
     >
 
 
+    @include('partials.theme-init')
+
     {{-- Collapsed-sidebar preference is applied before first paint to avoid a layout jump. --}}
     <script>
         try {
@@ -71,6 +73,8 @@
     @stack('styles')
     <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}">
     <link rel="stylesheet" href="{{ asset('css/skillbridge-dashboard.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/skillbridge-sidebar.css') }}?v={{ @filemtime(public_path('css/skillbridge-sidebar.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/sb-eye-comfort.css') }}?v={{ @filemtime(public_path('css/sb-eye-comfort.css')) }}">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}"></script>
     @vite('resources/js/app.js')
 
@@ -313,7 +317,6 @@
         {{-- PAGE TITLE --}}
 
         <div class="sb-topbar-title">
-            <strong>@yield('title', 'Dashboard')</strong>
             <span>{{ $userRole?->label() ?? 'User' }} workspace</span>
         </div>
 
@@ -817,6 +820,38 @@
 
                     }
                 );
+
+
+            /*
+             * Keep Tab inside the drawer while it is open.
+             */
+
+            document.addEventListener('keydown', function (event) {
+
+                const sidebar = document.getElementById('sidebar');
+
+                if (event.key !== 'Tab' || !sidebar || !sidebar.classList.contains('show')) {
+                    return;
+                }
+
+                const focusable = sidebar.querySelectorAll('a[href], button:not([disabled])');
+
+                if (!focusable.length) {
+                    return;
+                }
+
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+
+                if (event.shiftKey && document.activeElement === first) {
+                    event.preventDefault();
+                    last.focus();
+                } else if (!event.shiftKey && document.activeElement === last) {
+                    event.preventDefault();
+                    first.focus();
+                }
+
+            });
 
 
             /*

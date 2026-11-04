@@ -4,16 +4,13 @@
 <script>
     (function () {
         var KEY = 'sb-landing-theme';
+        var APP_KEY = 'skillbridge-theme';
         var root = document.documentElement;
+        // Tells skillbridge-ui.js not to replace this page's theme with the app theme.
+        root.setAttribute('data-public-theme', '');
 
-        // 1) Apply the saved theme BEFORE first paint (no flash). Default is light.
-        //    To follow the visitor's device setting instead, change 'light' to
-        //    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light').
+        // 1) The public pages are always light (white), whatever the saved or device theme is.
         var theme = 'light';
-        try {
-            var saved = localStorage.getItem(KEY);
-            if (saved === 'dark' || saved === 'light') theme = saved;
-        } catch (e) {}
         root.setAttribute('data-theme', theme);
 
         function isDark() { return root.getAttribute('data-theme') === 'dark'; }
@@ -42,16 +39,8 @@
             if (!btn) return;
             var next = isDark() ? 'light' : 'dark';
             apply(next);
-            try { localStorage.setItem(KEY, next); } catch (err) {}
+            try { localStorage.setItem(KEY, next); localStorage.setItem(APP_KEY, next); } catch (err) {}
             sync();
-        });
-
-        // Keep other open tabs in step.
-        window.addEventListener('storage', function (e) {
-            if (e.key === KEY && (e.newValue === 'dark' || e.newValue === 'light') && e.newValue !== root.getAttribute('data-theme')) {
-                apply(e.newValue);
-                sync();
-            }
         });
 
         window.sbLandingTheme = { sync: sync };

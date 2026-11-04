@@ -4,67 +4,64 @@
 
 @push('styles')
 <style>
-    .notification-detail {
-        max-width: 820px;
-    }
-
-    .notification-detail .notification-meta {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 10px 14px;
-        padding-bottom: 1.1rem;
-        border-bottom: 1px solid var(--sb-border);
-        color: var(--sb-muted);
-        font-size: 0.9rem;
-    }
-
-    .notification-detail .notification-title {
-        margin: 1.25rem 0 0.75rem;
-        color: var(--sb-text);
-        font-size: 1.5rem;
-        font-weight: 800;
-        line-height: 1.25;
-        letter-spacing: -0.02em;
-        overflow-wrap: anywhere;
-    }
-
-    .notification-detail .notification-body {
-        margin: 0;
-        color: var(--sb-text-soft);
-        font-size: 1.05rem;
-        line-height: 1.7;
-        white-space: pre-line;
-        overflow-wrap: anywhere;
-    }
-
-    .notification-detail .notification-actions {
-        margin-top: 1.5rem;
-    }
+    .nt-detail { max-width: none; overflow: hidden; }
+    .nt-detail-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; padding: 16px 20px; border-bottom: 1px solid var(--sb-border); }
+    .nt-detail-head h1 { margin: 0; font-size: 1rem; font-weight: 700; }
+    .nt-detail-head p { margin: 2px 0 0; color: var(--sb-muted); font-size: .875rem; }
+    .nt-detail-head .btn, .nt-detail .btn { min-height: 36px; padding: 0 14px; font-size: .8125rem; line-height: 1; }
+    .nt-detail-body { display: flex; align-items: flex-start; gap: 12px; padding: 20px; }
+    .nt-detail-icon { display: grid; flex: 0 0 auto; width: 36px; height: 36px; place-items: center; border: 1px solid var(--sb-border); border-radius: 50%; background: var(--sb-brand-soft); color: var(--sb-brand); font-size: 16px; }
+    .nt-detail-main { min-width: 0; flex: 1 1 auto; }
+    .nt-detail-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; color: var(--sb-muted); font-size: .8125rem; }
+    .nt-detail-title { margin: 8px 0 6px; color: var(--sb-ink); font-size: 1.125rem; font-weight: 700; line-height: 1.3; letter-spacing: -.01em; overflow-wrap: anywhere; }
+    .nt-detail-text { margin: 0; color: var(--sb-text-soft, var(--sb-ink)); font-size: .9375rem; line-height: 1.6; white-space: pre-line; overflow-wrap: anywhere; }
+    .nt-detail-actions { margin-top: 16px; }
+    @media (max-width: 575.98px) { .nt-detail-head { padding: 14px 16px; } .nt-detail-body { padding: 16px; } }
 </style>
 @endpush
 
 @section('content')
-<x-page-header title="Notification" subtitle="Details of your alert or update">
-    <a href="{{ route('notifications.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to notifications</a>
-</x-page-header>
+@php
+    $ntType = strtolower((string) $notification->type);
+    $ntIcon = match (true) {
+        str_contains($ntType, 'message') => 'bi-chat-dots',
+        str_contains($ntType, 'application') => 'bi-briefcase',
+        str_contains($ntType, 'invit') => 'bi-envelope-paper',
+        str_contains($ntType, 'certificate'), str_contains($ntType, 'transcript'), str_contains($ntType, 'portfolio'), str_contains($ntType, 'competenc') => 'bi-award',
+        str_contains($ntType, 'announce') => 'bi-megaphone',
+        str_contains($ntType, 'ojt'), str_contains($ntType, 'placement'), str_contains($ntType, 'journal') => 'bi-clock-history',
+        str_contains($ntType, 'reject'), str_contains($ntType, 'warn'), str_contains($ntType, 'suspend') => 'bi-exclamation-triangle',
+        default => 'bi-bell',
+    };
+@endphp
 
-<article class="card notification-detail">
-    <div class="card-body p-4">
-        <div class="notification-meta">
-            <span class="sb-tag">{{ $notification->type }}</span>
-            <span><i class="bi bi-clock" aria-hidden="true"></i> {{ $notification->created_at->format('M d, Y h:i A') }}</span>
-            <span>({{ $notification->created_at->diffForHumans() }})</span>
+<article class="card nt-detail" aria-labelledby="nt-detail-title">
+    <header class="nt-detail-head">
+        <div>
+            <h1 id="nt-detail-title">Notification</h1>
+            <p>Details of your alert or update</p>
         </div>
+        <a href="{{ route('notifications.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to notifications</a>
+    </header>
 
-        <h2 class="notification-title">{{ $notification->title }}</h2>
-        <p class="notification-body">{{ $announcement?->content ?? $notification->message }}</p>
-
-        @if($relatedUrl)
-            <div class="notification-actions">
-                <a href="{{ $relatedUrl }}" class="btn btn-primary">Open related page</a>
+    <div class="nt-detail-body">
+        <span class="nt-detail-icon" aria-hidden="true"><i class="bi {{ $ntIcon }}"></i></span>
+        <div class="nt-detail-main">
+            <div class="nt-detail-meta">
+                <span class="sb-tag">{{ $notification->type }}</span>
+                <span><i class="bi bi-clock" aria-hidden="true"></i> {{ $notification->created_at->format('M d, Y h:i A') }}</span>
+                <span>({{ $notification->created_at->diffForHumans() }})</span>
             </div>
-        @endif
+
+            <h2 class="nt-detail-title">{{ $notification->title }}</h2>
+            <p class="nt-detail-text">{{ $announcement?->content ?? $notification->message }}</p>
+
+            @if($relatedUrl)
+                <div class="nt-detail-actions">
+                    <a href="{{ $relatedUrl }}" class="btn btn-primary">Open related page</a>
+                </div>
+            @endif
+        </div>
     </div>
 </article>
 @endsection
