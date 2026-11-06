@@ -11,6 +11,21 @@
     $onLogin = $errView === 'login';
     $onForgot = $errView === 'forgot';
     $onReset = $errView === 'reset';
+    $onForce = $errView === 'force';
+    $onEmail = $errView === 'email';
+    $onCode = $errView === 'code';
+    // First-login setup pages (add Gmail, enter code, new password) cannot be closed or switched away from.
+    $locked = in_array($authOpen, ['force', 'email', 'code'], true);
+    $setupSteps = function (int $current) {
+        $out = '<ol class="lm-steps" aria-label="Account setup progress">';
+        foreach (['Gmail', 'Verify', 'Password'] as $i => $label) {
+            $n = $i + 1;
+            $cls = $n < $current ? 'is-done' : ($n === $current ? 'is-current' : '');
+            $out .= '<li class="'.$cls.'"'.($n === $current ? ' aria-current="step"' : '').'><span class="lm-step-dot">'.($n < $current ? '&#10003;' : $n).'</span><span>'.$label.'</span></li>';
+        }
+
+        return $out.'</ol>';
+    };
 
     $svg = fn (string $path, string $extra = '') => '<svg '.$extra.' viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'.$path.'</svg>';
     $icoUser = $svg('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>', 'class="lm-ico"');
@@ -24,7 +39,7 @@
     $icoClock = $svg('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', 'style="width:16px;height:16px"');
 @endphp
 <div class="lm-root" id="loginModal" data-auth-modal-root
-     data-open="{{ $openView }}"
+     data-open="{{ $openView }}" data-locked="{{ $locked ? 1 : 0 }}"
      data-home="{{ $homeUrl }}"
      data-login-url="{{ route('login') }}"
      data-forgot-url="{{ Route::has('password.request') ? route('password.request') : '' }}"
@@ -38,9 +53,11 @@
             </div>
             <h2 id="loginModalTitle" class="lm-title"><span class="lm-t1">Welcome.</span><span class="lm-t2">Sign in to find your internship.</span></h2>
             <p class="lm-cap">Sign in with the account your school gave you to track your progress, apply to internships, and message employers.</p>
+            @unless ($locked)
             <button type="button" class="lm-close" data-lm-close aria-label="Close">
                 {!! $svg('<path d="M6 6l12 12M18 6 6 18"/>', 'style="width:18px;height:18px"') !!}
             </button>
+            @endunless
         </header>
 
         <div class="lm-body">
@@ -262,6 +279,165 @@
                 <p class="lm-back"><a href="{{ route('login') }}" class="lm-link" data-auth-modal="login">&larr; Back to sign in</a></p>
             </section>
             @endif
+
+            {{-- ================= FIRST LOGIN, STEP 1: ADD GMAIL (real routes; the page posts normally) ================= --}}
+            @if ($authOpen === 'email' && Route::has('verification.email'))
+            <section data-auth-view="email" data-title="Add your Gmail." data-sub="" data-caption="We'll send a verification code to confirm it's really you." data-focus="lm-su-email" hidden>
+                {!! $setupSteps(1) !!}
+                @if (session('status'))
+                    <div class="lm-alert lm-alert-ok" role="status">{{ session('status') }}</div>
+                @endif
+
+                <form method="POST" action="{{ route('verification.email') }}" novalidate data-no-loading="true" data-setup-form>
+                    @csrf
+                    <div class="lm-field">
+                        <label for="lm-su-email" class="lm-label">Gmail Address <span aria-hidden="true">*</span></label>
+                        <div class="lm-wrap">
+                            {!! $icoMail !!}
+                            <input type="email" id="lm-su-email" name="email" class="lm-input @error('email') is-invalid @enderror"
+                                   value="{{ old('email', Auth::user()?->email) }}" placeholder="juan.delacruz@gmail.com"
+                                   autocomplete="email" maxlength="255" required>
+                        </div>
+                        @error('email')
+                            <div class="lm-error" role="alert">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <button type="submit" class="lm-submit" data-loading-text="Sending code...">
+                        <span class="lm-spin" aria-hidden="true"></span>
+                        <span class="lm-submit-label">Send Code</span>
+                    </button>
+                    <p class="lm-trust">{!! $icoShield !!} Secure account</p>
+                </form>
+
+                @if (Auth::user()?->email !== null)
+                    <p class="lm-back"><a href="{{ route('verification.notice') }}" class="lm-link">Back to entering the code</a></p>
+                @endif
+                <form method="POST" action="{{ route('logout') }}" class="lm-back">
+                    @csrf
+                    <button type="submit" class="lm-link">Sign Out</button>
+                </form>
+            </section>
+            @endif
+
+            {{-- ================= FIRST LOGIN, STEP 2: ENTER THE CODE ================= --}}
+            @if ($authOpen === 'code' && Route::has('verification.verify'))
+            <section data-auth-view="code" data-title="Verify your Gmail." data-sub="" data-caption="Check your Gmail for the 6-digit code, then enter it below." data-focus="lm-su-code-1" hidden>
+                {!! $setupSteps(2) !!}
+                @if (session('status'))
+                    <div class="lm-alert lm-alert-ok" role="status">{{ session('status') }}</div>
+                @endif
+
+                <p class="lm-lead">Enter the 6-digit code sent to your email address.<br><strong>{{ Auth::user()?->email }}</strong></p>
+
+                <form method="POST" action="{{ route('verification.verify') }}" novalidate data-no-loading="true" data-setup-form data-setup-code>
+                    @csrf
+                    <div class="lm-field">
+                        <label for="lm-su-code-1" class="lm-label">Verification Code <span aria-hidden="true">*</span></label>
+                        <input type="hidden" name="code" value="">
+                        <div class="lm-code @error('code') is-invalid @enderror" data-setup-boxes role="group" aria-label="Six-digit code">
+                            @for ($i = 1; $i <= 6; $i++)
+                                <input id="lm-su-code-{{ $i }}" class="lm-code-box" type="text" inputmode="numeric" maxlength="1"
+                                       autocomplete="{{ $i === 1 ? 'one-time-code' : 'off' }}" aria-label="Digit {{ $i }}">
+                            @endfor
+                        </div>
+                        @error('code')
+                            <div class="lm-error" role="alert">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <button type="submit" class="lm-submit" data-loading-text="Verifying..." data-setup-submit disabled>
+                        <span class="lm-spin" aria-hidden="true"></span>
+                        <span class="lm-submit-label">Verify Code</span>
+                    </button>
+                    <p class="lm-trust">{!! $icoShield !!} Secure account</p>
+                </form>
+
+                <form method="POST" action="{{ route('verification.resend') }}" novalidate data-no-loading="true" data-setup-form>
+                    @csrf
+                    <p class="lm-resend">Didn't get it? <button type="submit" class="lm-link">Resend code</button></p>
+                </form>
+                @if ($canChangeEmail ?? false)
+                    <p class="lm-back"><a href="{{ route('verification.notice', ['change' => 1]) }}" class="lm-link">Wrong email? Use a different one</a></p>
+                @endif
+                <form method="POST" action="{{ route('logout') }}" class="lm-back">
+                    @csrf
+                    <button type="submit" class="lm-link">Sign Out</button>
+                </form>
+            </section>
+            @endif
+
+            {{-- ================= FORCE PASSWORD CHANGE (after signing in with a temporary password) ================= --}}
+            @if ($authOpen === 'force' && Route::has('password.force-change.update'))
+            @php $lockedSeconds = $lockedSeconds ?? 0; $lockMin = max(1, (int) ceil($lockedSeconds / 60)); @endphp
+            <section data-auth-view="force" data-title="Set a new password." data-sub="" data-caption="Your email is verified. Your account was created with a temporary password. Choose a strong new password to continue." data-focus="lm-fc-current" hidden>
+                {!! $setupSteps(3) !!}
+                @if ($lockedSeconds > 0)
+                    <div class="lm-alert lm-alert-bad" role="alert">Too many incorrect attempts. Try again in {{ $lockMin }} {{ \Illuminate\Support\Str::plural('minute', $lockMin) }}.</div>
+                @elseif ($onForce && $errors->any())
+                    <div class="lm-alert lm-alert-bad" role="alert">Please fix the items below.</div>
+                @endif
+
+                <form method="POST" action="{{ route('password.force-change.update') }}" novalidate data-no-loading="true" data-lm-form="force"
+                      data-policy="{{ json_encode($policy ?? []) }}">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="_auth_view" value="force">
+
+                    @foreach ([
+                        ['current_password', 'lm-fc-current', 'Current Password', 'current-password', 'Your birthday, for example 05152008'],
+                        ['password', 'lm-fc-password', 'New Password', 'new-password', 'Enter a new password'],
+                        ['password_confirmation', 'lm-fc-confirm', 'Confirm New Password', 'new-password', 'Type the new password again'],
+                    ] as [$field, $id, $label, $autocomplete, $placeholder])
+                    <div class="lm-field">
+                        <label for="{{ $id }}" class="lm-label">{{ $label }} <span aria-hidden="true">*</span></label>
+                        <div class="lm-wrap">
+                            {!! $icoLock !!}
+                            <input type="password" id="{{ $id }}" name="{{ $field }}" class="lm-input @if ($onForce) @error($field) is-invalid @enderror @endif"
+                                   placeholder="{{ $placeholder }}" autocomplete="{{ $autocomplete }}" maxlength="{{ $field === 'current_password' ? 255 : ($policy['max'] ?? 64) }}" @disabled($lockedSeconds > 0) required>
+                            <button type="button" class="lm-toggle" data-lm-eye="{{ $id }}" aria-label="Show password" aria-pressed="false">{!! $icoEye !!}</button>
+                        </div>
+                        @if ($onForce) @error($field)
+                            <div class="lm-error" role="alert">
+                                @if (count($errors->get($field)) > 1)
+                                    <ul style="margin:0;padding-left:18px">@foreach ($errors->get($field) as $message)<li>{{ $message }}</li>@endforeach</ul>
+                                @else
+                                    {{ $errors->first($field) }}
+                                @endif
+                            </div>
+                        @enderror @endif
+                        @if ($field === 'password')
+                            <div class="lm-strength" aria-live="polite">
+                                <div class="lm-strength-bars" data-pw-meter aria-hidden="true" style="grid-template-columns:repeat(3,1fr)"><i></i><i></i><i></i></div>
+                                <span class="lm-strength-text" data-pw-meter-text>Not set</span>
+                            </div>
+                        @endif
+                        <div class="lm-caps" data-lm-caps hidden>{!! $icoWarn !!} Caps Lock is on</div>
+                    </div>
+                    @endforeach
+
+                    <ul class="lm-checklist" data-pw-checklist aria-label="Password requirements" aria-live="polite">
+                        <li data-rule="length">12 to 64 characters</li>
+                        <li data-rule="uppercase">An uppercase letter (A-Z)</li>
+                        <li data-rule="lowercase">A lowercase letter (a-z)</li>
+                        <li data-rule="number">A number (0-9)</li>
+                        <li data-rule="special">A special character, like ! @ # $ or %</li>
+                        <li data-rule="match">Both new passwords match</li>
+                    </ul>
+
+                    <button type="submit" class="lm-submit" data-loading-text="Updating password..." data-pw-submit disabled>
+                        <span class="lm-spin" aria-hidden="true"></span>
+                        <span class="lm-submit-label">Update Password</span>
+                    </button>
+                    <p class="lm-trust">{!! $icoShield !!} Secure account</p>
+                </form>
+
+                <form method="POST" action="{{ route('logout') }}" class="lm-back">
+                    @csrf
+                    <button type="submit" class="lm-link">Sign Out</button>
+                </form>
+            </section>
+            @endif
         </div>
     </div>
 </div>
@@ -279,7 +455,7 @@
     var body = root.querySelector('.lm-body');
     var views = {};
     [].forEach.call(root.querySelectorAll('[data-auth-view]'), function (s) { views[s.getAttribute('data-auth-view')] = s; });
-    var hashes = { login: '#login', forgot: '#forgot-password', reset: '#reset-password' };
+    var hashes = { login: '#login', forgot: '#forgot-password', reset: '#reset-password', force: '#set-password', email: '#add-gmail', code: '#verify-code' };
     var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var lastFocus = null;
     // The page scroll is intentionally never locked.
@@ -432,7 +608,7 @@
 
     // ---------- triggers ----------
     function same(a, b) { try { var x = new URL(a, location.href), y = new URL(b, location.href); return x.origin + x.pathname === y.origin + y.pathname; } catch (_) { return false; } }
-    [].forEach.call(document.querySelectorAll('a[href], [data-auth-modal]'), function (el) {
+    [].forEach.call(root.dataset.locked === '1' ? [] : document.querySelectorAll('a[href], [data-auth-modal]'), function (el) {
         var view = el.getAttribute('data-auth-modal');
         if (!view) {
             var href = el.getAttribute('href');
@@ -446,7 +622,8 @@
 
     // ---------- closing ----------
     // Only the X button closes the modal (the blurred backdrop and Esc do not).
-    root.querySelector('[data-lm-close]').addEventListener('click', close);
+    var closeBtn = root.querySelector('[data-lm-close]');
+    if (closeBtn) closeBtn.addEventListener('click', close);
     document.addEventListener('keydown', function (e) {
         if (state !== 'open') return;
         if (e.key !== 'Tab') return;
@@ -568,8 +745,78 @@
         (okL ? lp : li).focus();
     });
 
+    // ---------- first-login setup pages (add Gmail / enter code): plain form posts with a loading state ----------
+    [].forEach.call(root.querySelectorAll('[data-setup-form]'), function (f) {
+        f.addEventListener('submit', function (ev) {
+            if (f.querySelector('.lm-submit').disabled) { ev.preventDefault(); return; }
+            busy(f, true);
+        });
+    });
+    var sc = root.querySelector('[data-setup-code]');
+    if (sc) {
+        var sBoxes = [].slice.call(sc.querySelectorAll('.lm-code-box'));
+        var sReal = sc.querySelector('input[name="code"]');
+        var sBtn = sc.querySelector('[data-setup-submit]');
+        var sSync = function () { sReal.value = sBoxes.map(function (b) { return b.value; }).join(''); sBtn.disabled = sReal.value.length !== 6; };
+        var sFill = function (start, digits) {
+            digits.split('').forEach(function (d, i) { if (sBoxes[start + i]) sBoxes[start + i].value = d; });
+            sSync(); sBoxes[Math.min(start + digits.length, sBoxes.length - 1)].focus();
+        };
+        sBoxes.forEach(function (box, i) {
+            box.addEventListener('input', function () {
+                var d = box.value.replace(/\D/g, ''); box.value = '';
+                if (d) sFill(i, d.slice(0, sBoxes.length - i)); else sSync();
+                sc.querySelector('.lm-code').classList.remove('is-invalid');
+            });
+            box.addEventListener('keydown', function (e) {
+                if (e.key === 'Backspace' && !box.value && i > 0) { sBoxes[i - 1].value = ''; sBoxes[i - 1].focus(); sSync(); e.preventDefault(); }
+                else if (e.key === 'ArrowLeft' && i > 0) sBoxes[i - 1].focus();
+                else if (e.key === 'ArrowRight' && i < sBoxes.length - 1) sBoxes[i + 1].focus();
+            });
+            box.addEventListener('focus', function () { box.select(); });
+            box.addEventListener('paste', function (e) {
+                var d = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+                if (!d) return;
+                e.preventDefault(); sBoxes.forEach(function (b) { b.value = ''; }); sFill(0, d);
+            });
+        });
+    }
+
+    // ---------- force password change: live checklist (mirrors App\Support\PasswordPolicy; the server checks again) ----------
+    var ff2 = root.querySelector('[data-lm-form="force"]');
+    if (ff2) {
+        var policy = JSON.parse(ff2.dataset.policy || '{}');
+        var fcur = $('lm-fc-current'), fp = $('lm-fc-password'), fc = $('lm-fc-confirm');
+        var fsubmit = ff2.querySelector('[data-pw-submit]');
+        var fbars = ff2.querySelectorAll('[data-pw-meter] i');
+        var ftext = ff2.querySelector('[data-pw-meter-text]');
+        var fitems = [].slice.call(ff2.querySelectorAll('[data-pw-checklist] [data-rule]'));
+        var fcolors = { weak: '#C4182A', medium: '#E0862B', strong: '#1F9D5B' };
+        var fcheck = function () {
+            var v = fp.value, n = Array.from(v).length;
+            var met = {
+                length: n >= policy.min && n <= policy.max,
+                uppercase: /\p{Lu}/u.test(v), lowercase: /\p{Ll}/u.test(v), number: /\p{N}/u.test(v),
+                special: /[^\p{L}\p{N}\s]/u.test(v),
+                match: v !== '' && v === fc.value
+            };
+            fitems.forEach(function (li) { li.classList.toggle('is-met', !!met[li.dataset.rule]); });
+            var rulesOk = Object.keys(met).every(function (k) { return k === 'match' || met[k]; });
+            var sym = (v.match(/[^\p{L}\p{N}\s]/gu) || []).length;
+            var level = !v ? '' : !rulesOk ? 'weak' : (n >= 16 || (n >= 14 && sym >= 2)) ? 'strong' : 'medium';
+            var score = { '': 0, weak: 1, medium: 2, strong: 3 }[level];
+            [].forEach.call(fbars, function (b, i) { b.style.background = i < score ? fcolors[level] : ''; });
+            ftext.textContent = level ? level.charAt(0).toUpperCase() + level.slice(1) : 'Not set';
+            ftext.style.color = level ? fcolors[level] : '';
+            fsubmit.disabled = fcur.disabled || fcur.value === '' || !Object.keys(met).every(function (k) { return met[k]; });
+        };
+        [fcur, fp, fc].forEach(function (i) { i.addEventListener('input', fcheck); });
+        ff2.addEventListener('submit', function () { busy(ff2, true); });
+        fcheck();
+    }
+
     // ---------- reset: countdown, code boxes, strength ----------
-    var rf = root.querySelector('[data-lm-form="reset"]');
+    var rf =root.querySelector('[data-lm-form="reset"]');
     var timerEl = root.querySelector('[data-reset-countdown]');
     var timer = null;
     function startTimer(expiresAt) {

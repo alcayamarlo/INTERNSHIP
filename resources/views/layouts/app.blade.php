@@ -103,7 +103,6 @@
         (bool) $currentUser?->isRole(UserRole::Student) => [
             'Overview' => [
                 ['student.dashboard', 'student.dashboard', 'bi-grid-1x2', 'Dashboard'],
-                ['student.profile.edit', 'student.profile.*', 'bi-person-vcard', 'My Profile'],
             ],
             'Career' => [
                 ['student.competencies.index', 'student.competencies.*', 'bi-award', 'My Certificates'],
@@ -118,7 +117,6 @@
         (bool) $currentUser?->isRole(UserRole::Employer) => [
             'Overview' => [
                 ['employer.dashboard', 'employer.dashboard', 'bi-grid-1x2', 'Dashboard'],
-                ['employer.profile.edit', 'employer.profile.*', 'bi-building', 'Company Profile'],
             ],
             'Hiring' => [
                 ['employer.internships.index', 'employer.internships.*', 'bi-briefcase', 'Internships'],

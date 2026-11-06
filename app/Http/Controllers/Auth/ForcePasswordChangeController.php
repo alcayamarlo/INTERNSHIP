@@ -32,6 +32,11 @@ class ForcePasswordChangeController extends Controller
     {
         $user = $request->user();
 
+        // The email comes first: add and verify it, then set the new password.
+        if (! $user->hasVerifiedEmail()) {
+            return redirect()->route('verification.notice');
+        }
+
         return response()
             ->view('auth.force-password-change', [
                 'policy' => PasswordPolicy::forClient($user),
@@ -47,6 +52,10 @@ class ForcePasswordChangeController extends Controller
     {
         $user = $request->user();
         $key = self::lockKey($user->id);
+
+        if (! $user->hasVerifiedEmail()) {
+            return redirect()->route('verification.notice');
+        }
 
         // 1. Locked out: refuse before looking at anything that was typed.
         if (RateLimiter::tooManyAttempts($key, self::MAX_ATTEMPTS)) {
@@ -66,8 +75,6 @@ class ForcePasswordChangeController extends Controller
                 $wrongCurrent = true;
                 // Kept generic: it never says what the current password is or how close the guess was.
                 $validator->errors()->add('current_password', 'Your current password is incorrect.');
-            } elseif (Hash::check((string) $request->input('password'), $user->password)) {
-                $validator->errors()->add('password', 'Your new password must be different from your current password.');
             }
         });
 
@@ -111,14 +118,6 @@ class ForcePasswordChangeController extends Controller
 
         // 6. Audit log: who and when (the log adds the time and IP). Never the password.
         $this->activityLog->log($user, 'password_force_change');
-
-        // Imported students have no email yet: they add and verify one next.
-        if (! $user->hasVerifiedEmail()) {
-            return redirect()->route('verification.notice')
-                ->with('status', $user->email === null
-                    ? 'Your password has been updated. Now add your email address so we can verify it.'
-                    : 'Your password has been updated. Enter the 6-digit code sent to your email.');
-        }
 
         return redirect()->route($user->dashboardRoute())->with('success', 'Your password has been updated.');
     }

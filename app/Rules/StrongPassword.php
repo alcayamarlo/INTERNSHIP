@@ -9,8 +9,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 
 /**
  * Server-side check of App\Support\PasswordPolicy. Adds one friendly message per broken rule,
- * so the page can list everything to fix at once. Pass the user to also block their own details
- * (birthday, name, username, ID number).
+ * so the page can list everything to fix at once.
  */
 class StrongPassword implements ValidationRule
 {
@@ -24,8 +23,7 @@ class StrongPassword implements ValidationRule
             return;
         }
 
-        $personal = $this->user ? PasswordPolicy::personalInfo($this->user) : [];
-        foreach (PasswordPolicy::failures($value, $personal) as $rule) {
+        foreach (PasswordPolicy::failures($value) as $rule) {
             $fail(PasswordPolicy::MESSAGES[$rule]);
         }
     }

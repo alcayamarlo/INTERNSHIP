@@ -66,17 +66,10 @@ Route::match(['get', 'post'], '/logout', [LoginController::class, 'logout'])
     ->name('logout');
 
 Route::middleware(['auth', 'active'])->group(function () {
-    Route::get('/password/force-change', [\App\Http\Controllers\Auth\ForcePasswordChangeController::class, 'edit'])
-        ->name('password.force-change');
-    Route::put('/password/force-change', [\App\Http\Controllers\Auth\ForcePasswordChangeController::class, 'update'])
-        ->middleware('throttle:password-force-change')
-        ->name('password.force-change.update');
-});
+    // Front-end-only preview of the Gmail -> code -> new password setup flow (mock functions, no backend).
+    Route::view('/account-setup', 'auth.account-setup')->name('account-setup');
 
-Route::middleware(['auth', 'active', 'password.current'])->group(function () {
-    Route::get('/profile/complete', ProfileCompletionController::class)
-        ->name('profile.complete');
-
+    // Step 1-2 of first login: add and verify the email. This must come before the new password.
     Route::get('/email/verify', [EmailVerificationController::class, 'notice'])
         ->name('verification.notice');
     Route::post('/email/verify', [EmailVerificationController::class, 'verify'])
@@ -88,6 +81,17 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
     Route::post('/email/verify/resend', [EmailVerificationController::class, 'resend'])
         ->middleware('throttle:1,1')
         ->name('verification.resend');
+
+    Route::get('/password/force-change', [\App\Http\Controllers\Auth\ForcePasswordChangeController::class, 'edit'])
+        ->name('password.force-change');
+    Route::put('/password/force-change', [\App\Http\Controllers\Auth\ForcePasswordChangeController::class, 'update'])
+        ->middleware('throttle:password-force-change')
+        ->name('password.force-change.update');
+});
+
+Route::middleware(['auth', 'active', 'password.current'])->group(function () {
+    Route::get('/profile/complete', ProfileCompletionController::class)
+        ->name('profile.complete');
 
     Route::middleware('verified')->group(function () {
     Route::get('/search', [SearchController::class, 'index'])->name('search');
