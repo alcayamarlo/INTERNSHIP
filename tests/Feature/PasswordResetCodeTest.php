@@ -35,18 +35,19 @@ function submitPasswordResetCode(string $email, string $code = '123456'): \Illum
     ]);
 }
 
-it('shows only the email field before a reset code is requested', function () {
+// The forgot and reset steps both live in the sign-in modal on the landing page; data-open says
+// which step the modal opens on.
+it('opens on the email step before a reset code is requested', function () {
     $this->get(route('password.request'))
         ->assertOk()
-        ->assertSee('Enter your email to receive a 6-digit verification code.')
-        ->assertSee('Send Reset Code')
-        ->assertSee('name="email"', false)
-        ->assertDontSee('Six-Digit Code')
-        ->assertDontSee('name="code"', false)
-        ->assertDontSee('name="password"', false);
+        ->assertSee('data-open="forgot"', false)
+        ->assertDontSee('data-open="reset"', false)
+        ->assertSee("we'll email you a 6-digit code.", false)
+        ->assertSee('Send code')
+        ->assertSee('id="lm-fp-email" name="email"', false);
 });
 
-it('reveals the code and new password fields after requesting a reset code', function () {
+it('opens on the code and new password step after requesting a reset code', function () {
     Mail::fake();
     User::factory()->create(['email' => 'reset-step@example.test']);
 
@@ -57,13 +58,17 @@ it('reveals the code and new password fields after requesting a reset code', fun
 
     $this->get(route('password.request'))
         ->assertOk()
+        ->assertSee('data-open="reset"', false)
         ->assertSee('Six-Digit Code')
         ->assertSee('New Password')
-        ->assertSee('Confirm New Password')
-        ->assertSee('Reset Password')
-        ->assertSee('Resend Code')
+        ->assertSee('Confirm Password')
+        ->assertSee('Reset password')
+        ->assertSee('Resend code')
         ->assertSee('data-reset-countdown', false)
-        ->assertSee('name="code"', false);
+        ->assertSee('name="code"', false)
+        // The email the code went to is filled in and locked.
+        ->assertSee('value="reset-step@example.test"', false)
+        ->assertSee('CODE SENT');
 
     Mail::assertSent(PasswordResetCodeMail::class, fn (PasswordResetCodeMail $mail) => $mail->hasTo('reset-step@example.test'));
 });
@@ -87,10 +92,9 @@ it('keeps the reset form on step one when the mail transport fails', function ()
 
     $this->get(route('password.request'))
         ->assertOk()
-        ->assertSee('Send Reset Code')
-        ->assertDontSee('Six-Digit Code')
-        ->assertDontSee('New Password')
-        ->assertDontSee('Confirm New Password');
+        ->assertSee('data-open="forgot"', false)
+        ->assertDontSee('data-open="reset"', false)
+        ->assertSee('Send code');
 });
 
 it('resets the password with a valid code and consumes the code', function () {

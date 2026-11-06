@@ -17,11 +17,19 @@
         @include('auth.partials.mobile-brand')
 
         <header class="auth-heading">
-            <h1 id="auth-title">
-                Verify your
-                <span>email.</span>
-            </h1>
-            <p>Enter the 6-digit code sent to your email address. The code expires in 10 minutes.</p>
+            @if ($needsEmail)
+                <h1 id="auth-title">
+                    Add your
+                    <span>email.</span>
+                </h1>
+                <p>We'll send a 6-digit code to confirm it's yours. Use an email you check often, like your Gmail. You'll get OJT updates there, and you can use it to reset your password.</p>
+            @else
+                <h1 id="auth-title">
+                    Verify your
+                    <span>email.</span>
+                </h1>
+                <p>Enter the 6-digit code sent to your email address. The code expires in 10 minutes.</p>
+            @endif
         </header>
 
         @if (session('status'))
@@ -30,6 +38,52 @@
                 <span>{{ session('status') }}</span>
             </div>
         @endif
+
+        @if ($needsEmail)
+        <form method="POST" action="{{ route('verification.email') }}" id="addEmailForm" data-auth-form>
+            @csrf
+
+            <div class="auth-field">
+                <label for="new_email" class="auth-label">
+                    Email Address
+                    <span class="auth-required" aria-hidden="true">*</span>
+                </label>
+
+                <div class="auth-input-wrap">
+                    <i class="bi bi-envelope auth-input-icon" aria-hidden="true"></i>
+                    <input
+                        id="new_email"
+                        name="email"
+                        type="email"
+                        autocomplete="email"
+                        maxlength="255"
+                        value="{{ old('email', Auth::user()->email) }}"
+                        placeholder="juan.delacruz@gmail.com"
+                        class="auth-input @error('email') is-invalid @enderror"
+                        aria-invalid="{{ $errors->has('email') ? 'true' : 'false' }}"
+                        @if ($errors->has('email')) aria-describedby="emailError" @endif
+                        autofocus
+                        required
+                    >
+                </div>
+
+                @error('email')
+                    <div id="emailError" class="auth-error" role="alert">
+                        <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
+                        <span>{{ $message }}</span>
+                    </div>
+                @enderror
+            </div>
+
+            <button type="submit" class="auth-btn" data-loading-text="Sending code...">
+                <span class="auth-btn-label">Send Code</span>
+            </button>
+        </form>
+
+        @if (Auth::user()->email !== null)
+            <p class="auth-footer-text"><a href="{{ route('verification.notice') }}">Back to entering the code</a></p>
+        @endif
+        @else
 
         <form
             method="POST"
@@ -54,6 +108,9 @@
                         aria-readonly="true"
                     >
                 </div>
+                @if ($canChangeEmail)
+                    <a href="{{ route('verification.notice', ['change' => 1]) }}" class="auth-link">Wrong email? Use a different one</a>
+                @endif
             </div>
 
             {{-- CODE --}}
@@ -107,6 +164,7 @@
             Didn't receive the email? Check your spam folder or
             <a href="mailto:support@skillbridge.com">contact support</a>.
         </p>
+        @endif
 
         <form method="POST" action="{{ route('logout') }}" class="auth-footer-links">
             @csrf

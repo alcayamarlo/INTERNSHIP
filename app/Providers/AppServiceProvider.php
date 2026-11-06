@@ -35,10 +35,15 @@ class AppServiceProvider extends ServiceProvider
         Portfolio::observe(DashboardCacheObserver::class);
 
         RateLimiter::for('login', function (Request $request) {
-            $email = (string) $request->input('email');
+            // The sign-in field is "login" (email or school ID). Keying on it keeps students on the
+            // same campus Wi-Fi from sharing one IP-wide limit.
+            $login = mb_strtolower(trim((string) $request->input('login', $request->input('email'))));
 
-            return Limit::perMinute(5)->by($email.$request->ip());
+            return Limit::perMinute(5)->by($login.'|'.$request->ip());
         });
+
+        // Burst guard for the first-login password form; the 5-wrong-guesses lockout lives in the controller.
+        RateLimiter::for('password-force-change', fn (Request $request) => Limit::perMinute(10)->by('password-force-change:'.($request->user()?->id ?: $request->ip())));
 
         RateLimiter::for('password-reset-request', function (Request $request) {
             $email = hash('sha256', mb_strtolower(trim((string) $request->input('email'))));

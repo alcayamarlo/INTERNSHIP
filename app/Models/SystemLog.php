@@ -21,6 +21,8 @@ class SystemLog extends Model
         'password_reset',
         'password_reset_failed',
         'password_force_change',
+        'password_change_failed',
+        'password_change_locked',
         'admin_password_set',
         'role_changed',
         'account_activated',

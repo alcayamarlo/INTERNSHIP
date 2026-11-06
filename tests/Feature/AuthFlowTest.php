@@ -7,11 +7,14 @@ use App\Models\Institution;
 use App\Models\Student;
 use App\Models\User;
 
-it('shows a back-to-home link on the login page', function () {
+it('shows the login modal on the landing page and returns home when it is closed', function () {
+	// /login is the landing page with the sign-in modal open; closing it returns the address to home.
 	$this->get('/login')
 		->assertOk()
-		->assertSee('href="'.route('home').'"', false)
-		->assertSee('Back to Home');
+		->assertSee('data-open="login"', false)
+		->assertSee('data-home="'.route('home').'"', false)
+		->assertSee('data-lm-close aria-label="Close"', false)
+		->assertSee('href="'.route('home').'"', false);
 });
 
 it('redirects unverified users to email verification', function () {

@@ -82,6 +82,21 @@ class User extends Authenticatable implements MustVerifyEmail
         return 'Your account is suspended '.$until.'. Reason: '.($this->suspension_reason ?: 'Not given').'.';
     }
 
+    /**
+     * Verified means an email is on file and its code was confirmed. Imported students start without
+     * an email, so they must add and verify one (after setting their password) before using the app.
+     */
+    public function hasVerifiedEmail(): bool
+    {
+        return $this->email !== null && $this->email_verified_at !== null;
+    }
+
+    /** Students add or change their own email on the verify page until it is verified. */
+    public function canSetOwnEmail(): bool
+    {
+        return $this->isRole(UserRole::Student) && ! $this->hasVerifiedEmail();
+    }
+
     public function setEmailAttribute(?string $value): void
     {
         $this->attributes['email'] = $value === null ? null : mb_strtolower(trim($value));

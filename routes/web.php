@@ -69,6 +69,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/password/force-change', [\App\Http\Controllers\Auth\ForcePasswordChangeController::class, 'edit'])
         ->name('password.force-change');
     Route::put('/password/force-change', [\App\Http\Controllers\Auth\ForcePasswordChangeController::class, 'update'])
+        ->middleware('throttle:password-force-change')
         ->name('password.force-change.update');
 });
 
@@ -81,6 +82,9 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
     Route::post('/email/verify', [EmailVerificationController::class, 'verify'])
         ->middleware('throttle:6,1')
         ->name('verification.verify');
+    Route::post('/email/verify/address', [EmailVerificationController::class, 'storeEmail'])
+        ->middleware('throttle:5,1')
+        ->name('verification.email');
     Route::post('/email/verify/resend', [EmailVerificationController::class, 'resend'])
         ->middleware('throttle:1,1')
         ->name('verification.resend');

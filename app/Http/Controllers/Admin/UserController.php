@@ -252,6 +252,10 @@ class UserController extends Controller
     {
         $this->authorize('update', $user);
 
+        if ($user->email === null) {
+            return back()->with('error', "{$user->name} has not added an email yet. They add and verify it after their first sign-in.");
+        }
+
         if (! $user->hasVerifiedEmail()) {
             $user->forceFill([
                 'email_verified_at' => now(),

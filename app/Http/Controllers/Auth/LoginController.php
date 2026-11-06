@@ -67,7 +67,9 @@ class LoginController extends Controller
 
         if (! $user->hasVerifiedEmail()) {
             return redirect()->route('verification.notice')
-                ->with('status', 'Account not activated yet. Enter the 6-digit code sent to your email, or request a new one.');
+                ->with('status', $user->email === null
+                    ? 'Add your email address to finish setting up your account.'
+                    : 'Account not activated yet. Enter the 6-digit code sent to your email, or request a new one.');
         }
 
         // Only the public "Apply" entry point is resumed after login; any other stored URL is ignored

@@ -140,9 +140,8 @@ class StudentImportController extends Controller
                     'role' => UserRole::Student->value,
                     'must_change_password' => true,
                 ]);
-                // No email exists to verify for an imported account, so leaving
-                // it unverified would permanently lock the student out.
-                $user->forceFill(['email_verified_at' => now()])->save();
+                // No email yet: after setting a new password the student adds one and verifies it
+                // with a 6-digit code (EmailVerificationController::storeEmail).
 
                 $student = Student::create([
                     'user_id' => $user->id,

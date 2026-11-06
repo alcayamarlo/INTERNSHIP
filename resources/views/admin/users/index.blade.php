@@ -80,7 +80,9 @@
                                 @else
                                     <x-status-badge status="inactive" label="Inactive" />
                                 @endif
-                                @if(! $user->hasVerifiedEmail())
+                                @if($user->email === null)
+                                    <x-status-badge status="warning" label="No email yet" />
+                                @elseif(! $user->hasVerifiedEmail())
                                     <x-status-badge status="warning" label="Email unverified" />
                                 @endif
                                 @if($user->isSuspended())
@@ -109,7 +111,7 @@
                                             </button>
                                         </form>
                                     @else
-                                        @if(! $user->hasVerifiedEmail())
+                                        @if($user->email !== null && ! $user->hasVerifiedEmail())
                                             <form action="{{ route('admin.users.verify-email', $user) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 <button type="submit" class="btn btn-sm btn-outline-success" title="Mark email verified" aria-label="Mark email verified for {{ $user->name }}">
