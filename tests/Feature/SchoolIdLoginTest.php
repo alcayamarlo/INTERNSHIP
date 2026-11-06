@@ -6,14 +6,14 @@ use App\Models\Student;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
-it('forces a password change, then an email with a 6-digit code, before the dashboard', function () {
+it('forces the email first (add, then 6-digit code), then the new password, before the dashboard', function () {
     \Illuminate\Support\Facades\Mail::fake();
     $institution = Institution::create(['name' => 'Test Institution', 'address' => null]);
     $user = User::factory()->create([
         'role' => UserRole::Student,
         'email' => null,
         'password' => Hash::make('05142003'),
-        'email_verified_at' => now(),
+        'email_verified_at' => null,
         'must_change_password' => true,
     ]);
     Student::create([
@@ -22,25 +22,14 @@ it('forces a password change, then an email with a 6-digit code, before the dash
         'student_id_number' => 'SCC-26-00000009',
     ]);
 
-    $this->post('/login', [
-        'login' => 'scc-26-00000009',
-        'password' => '05142003',
-    ])->assertRedirect(route('password.force-change'));
-
-    $this->get('/student/dashboard')->assertRedirect(route('password.force-change'));
-
-    $this->put(route('password.force-change.update'), [
-        'current_password' => '05142003',
-        'password' => 'Mango!Tree#Sky27',
-        'password_confirmation' => 'Mango!Tree#Sky27',
-    ])->assertRedirect(route('verification.notice'));
-
-    expect($user->fresh()->must_change_password)->toBeFalse();
-
-    // No email yet: the dashboard stays locked and the verify page asks for one.
+    // 1. Sign in with the temporary password: the email step comes first.
+    $this->post('/login', ['login' => 'scc-26-00000009', 'password' => '05142003'])
+        ->assertRedirect(route('verification.notice'));
     $this->get('/student/dashboard')->assertRedirect(route('verification.notice'));
+    $this->get(route('password.force-change'))->assertRedirect(route('verification.notice'));
     $this->get(route('verification.notice'))->assertOk()->assertSee('Add your')->assertSee('name="email"', false);
 
+    // 2. Add the email: a code is sent.
     $this->post(route('verification.email'), ['email' => ' Student.Nine@Gmail.com '])
         ->assertRedirect(route('verification.notice'))
         ->assertSessionHas('status');
@@ -54,11 +43,28 @@ it('forces a password change, then an email with a 6-digit code, before the dash
         return $mail->hasTo('student.nine@gmail.com');
     });
     $this->get(route('verification.notice'))->assertSee('Verify your')->assertSee('Use a different one');
-    $this->get('/student/dashboard')->assertRedirect(route('verification.notice'));
 
-    $this->post(route('verification.verify'), ['code' => $code])->assertRedirect(route('student.dashboard'));
+    // The password step stays locked until the code is entered.
+    $this->put(route('password.force-change.update'), [
+        'current_password' => '05142003',
+        'password' => 'Mango!Tree#Sky27',
+        'password_confirmation' => 'Mango!Tree#Sky27',
+    ])->assertRedirect(route('verification.notice'));
+    expect($user->fresh()->must_change_password)->toBeTrue();
 
+    // 3. Enter the code: now the new password.
+    $this->post(route('verification.verify'), ['code' => $code])->assertRedirect(route('password.force-change'));
     expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
+    $this->get('/student/dashboard')->assertRedirect(route('password.force-change'));
+    $this->get(route('password.force-change'))->assertOk();
+
+    // 4. Set the new password: the dashboard opens.
+    $this->put(route('password.force-change.update'), [
+        'current_password' => '05142003',
+        'password' => 'Mango!Tree#Sky27',
+        'password_confirmation' => 'Mango!Tree#Sky27',
+    ])->assertRedirect(route('student.dashboard'));
+    expect($user->fresh()->must_change_password)->toBeFalse();
     $this->get('/student/dashboard')->assertOk();
 });
 

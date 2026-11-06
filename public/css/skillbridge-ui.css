@@ -5024,3 +5024,217 @@ button.auth-link:disabled {
 /* "New updates" bar: shown by resources/js/app.js when a live area changed while the user was working in it. */
 .sb-live-updates { position: fixed; z-index: 1080; left: 50%; bottom: 20px; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px); padding: 10px 12px 10px 16px; border: 1px solid var(--sb-border); border-radius: 999px; background: var(--sb-surface); color: var(--sb-ink); box-shadow: 0 8px 24px rgb(0 0 0 / .15); font-size: 14px; transform: translateX(-50%); }
 .sb-live-updates .btn { border-radius: 999px; }
+/* ---------- Messages: Messenger-style layout (conversation list on the left, chat on the right) ---------- */
+
+.msgr {
+    display: grid;
+    grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+    /* Fill the space under the top bar, inside the content frame's 24px top and bottom padding (see below). */
+    height: calc(100vh - var(--sb-topbar-height, 64px) - 48px);
+    height: calc(100dvh - var(--sb-topbar-height, 64px) - 48px);
+    min-height: 420px;
+    overflow: hidden;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-lg);
+    background: var(--sb-surface);
+    box-shadow: var(--sb-shadow-sm);
+}
+
+.msgr-list {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    border-right: 1px solid var(--sb-border);
+    background: var(--sb-surface);
+}
+
+.msgr-list-head {
+    padding: 16px 18px 10px;
+}
+
+.msgr-list-head h2 {
+    margin: 0;
+    color: var(--sb-ink);
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.msgr-list-body {
+    flex: 1 1 auto;
+    padding: 4px 8px 12px;
+    overflow-y: auto;
+}
+
+.msgr-section {
+    padding: 14px 10px 6px;
+    color: var(--sb-muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.msgr-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 12px;
+    color: var(--sb-ink);
+    text-decoration: none;
+    transition: background-color var(--sb-motion-fast) var(--sb-ease);
+}
+
+a.msgr-item:hover { background: var(--sb-red-soft); color: var(--sb-ink); }
+.msgr-item.is-active { background: var(--sb-red-soft); }
+.msgr-item.is-locked { opacity: .75; }
+
+.msgr-avatar {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--sb-red-soft);
+    color: var(--sb-brand-content);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.msgr-item-main {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+    gap: 2px;
+}
+
+.msgr-item-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.msgr-item-top strong {
+    overflow: hidden;
+    font-size: 15px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.msgr-item-top time {
+    flex: 0 0 auto;
+    color: var(--sb-muted);
+    font-size: 12px;
+}
+
+.msgr-item-preview,
+.msgr-item-note {
+    overflow: hidden;
+    color: var(--sb-muted);
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.msgr-item-note { white-space: normal; font-size: 12px; }
+
+.msgr-item.is-unread .msgr-item-top strong,
+.msgr-item.is-unread .msgr-item-preview { color: var(--sb-ink); font-weight: 700; }
+
+.msgr-unread {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--sb-brand);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.msgr-chat {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
+.msgr-chat--empty { align-items: center; justify-content: center; background: var(--sb-canvas); }
+
+/* The chat panel reuses the existing messenger-* pieces; inside the layout it fills the right column. */
+.msgr .messenger-shell {
+    height: auto;
+    min-height: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.msgr-back { display: none; color: var(--sb-brand-content); font-size: 20px; }
+
+@media (max-width: 991.98px) {
+    .msgr { grid-template-columns: 1fr; height: calc(100dvh - 130px); }
+    /* One pane at a time: the list on /messages, the chat on /messages/{user}. */
+    .msgr--index .msgr-chat { display: none; }
+    .msgr--chat .msgr-list { display: none; }
+    .msgr-back { display: inline-flex; }
+}
+
+/* Messages: edit / unsend menu and inline editor on your own bubbles */
+.messenger-row.outgoing { align-items: center; gap: 4px; }
+.msgr-actions { flex: 0 0 auto; opacity: 0; transition: opacity var(--sb-motion-fast) var(--sb-ease); }
+.messenger-row:hover .msgr-actions,
+.msgr-actions:focus-within,
+.msgr-actions.show { opacity: 1; }
+@media (hover: none) { .msgr-actions { opacity: 1; } }
+.msgr-more { display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--sb-muted); cursor: pointer; }
+.msgr-more:hover { background: var(--sb-red-soft); color: var(--sb-brand-content); }
+.msgr-edit { display: grid; gap: 6px; min-width: min(320px, 60vw); }
+.msgr-edit-buttons { display: flex; justify-content: flex-end; gap: 6px; }
+
+/* The Messages page uses the full height: trim the content frame's bottom padding to match the top. */
+.sb-content:has(.msgr) { padding-bottom: 24px; }
+
+/* Messages: text inside your own (red) bubbles stays white; the shell-wide paragraph color would turn it dark. */
+body.skillbridge-app .messenger-shell .messenger-row.outgoing .messenger-bubble,
+body.skillbridge-app .messenger-shell .messenger-row.outgoing .messenger-bubble :is(p, .messenger-message, .messenger-time) {
+    color: #fff;
+}
+
+/* Messages: lock the page to the screen so the chat always fits (the lists and the thread scroll inside). */
+.sb-main:has(.msgr) { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; }
+.sb-content:has(.msgr) { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; padding-bottom: 24px; }
+.sb-content > .msgr { flex: 1 1 auto; height: auto; min-height: 0; }
+a.msgr-item, a.msgr-item:hover, a.msgr-item:focus-visible { text-decoration: none; }
+
+/* Messages: the "You unsent a message." line in your own bubble stays white (Bootstrap's text-muted is !important). */
+body.skillbridge-app .messenger-shell .messenger-row.outgoing .messenger-bubble .text-muted {
+    color: #fff !important;
+    opacity: .85;
+}
+
+/* Messages: the top bar and the page frame keep one fixed size on every chat, whatever the thread holds. */
+.sb-main:has(.msgr) > .sb-topbar { flex: 0 0 auto; }
+.sb-main:has(.msgr) > .sb-content { overflow: hidden; }
+.sb-content > .msgr { overflow: hidden; }
+.msgr-list, .msgr-chat { min-height: 0; overflow: hidden; }
+.msgr-list-body, .messenger-thread { min-height: 0; }
+
+/* Messages: edge to edge. No gap between the top bar and the chat, and the chat fills the whole content area. */
+.sb-content:has(.msgr) { padding: 0; max-width: none; }
+.sb-content > .msgr { border: 0; border-radius: 0; box-shadow: none; }
+.sb-content:has(.msgr) > .alert { margin: 12px 16px 0; }
+
+/* Messages: show only the message; click a bubble to reveal its date and time (and the report flag). */
+.messenger-bubble { cursor: pointer; }
+.messenger-row .messenger-time { display: none; }
+.messenger-row.show-time .messenger-time { display: block; }

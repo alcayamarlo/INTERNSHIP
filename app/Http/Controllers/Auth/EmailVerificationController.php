@@ -107,6 +107,12 @@ class EmailVerificationController extends Controller
         $user->markEmailAsVerified();
         $this->activityLog->log($user, 'email_verified', ['email' => $user->email]);
 
+        // First login: the email is confirmed, so the new password comes next.
+        if ($user->must_change_password) {
+            return redirect()->route('password.force-change')
+                ->with('status', 'Your email is verified. Now set a new password.');
+        }
+
         return redirect()->intended(route($user->dashboardRoute()))
             ->with('status', 'Your email address has been verified.');
     }

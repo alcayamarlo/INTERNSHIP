@@ -22,18 +22,13 @@ function importedStudent(): User
     return $user;
 }
 
-/** Runs the first-login onboarding: new password, add email, enter the emailed code. */
+/** Runs the first-login onboarding in its current order: add email, enter the emailed code, then set a new password. */
 function onboard($test, User $user, string $email): void
 {
     Mail::fake();
 
     $test->post('/login', ['login' => $user->student->student_id_number, 'password' => 'Birthday#2004'])
-        ->assertRedirect(route('password.force-change'));
-    $test->put(route('password.force-change.update'), [
-        'current_password' => 'Birthday#2004',
-        'password' => 'Tr0ub4dor&Lantern',
-        'password_confirmation' => 'Tr0ub4dor&Lantern',
-    ])->assertRedirect(route('verification.notice'));
+        ->assertRedirect(route('verification.notice'));
     $test->post(route('verification.email'), ['email' => $email])->assertRedirect(route('verification.notice'));
 
     $code = null;
@@ -42,7 +37,13 @@ function onboard($test, User $user, string $email): void
 
         return true;
     });
-    $test->post(route('verification.verify'), ['code' => $code])->assertRedirect(route('student.dashboard'));
+    $test->post(route('verification.verify'), ['code' => $code])->assertRedirect(route('password.force-change'));
+
+    $test->put(route('password.force-change.update'), [
+        'current_password' => 'Birthday#2004',
+        'password' => 'Tr0ub4dor&Lantern',
+        'password_confirmation' => 'Tr0ub4dor&Lantern',
+    ])->assertRedirect(route('student.dashboard'));
 }
 
 it('asks for email verification only on the first login', function () {

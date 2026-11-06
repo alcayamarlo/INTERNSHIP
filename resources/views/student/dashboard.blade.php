@@ -31,7 +31,6 @@
         <span class="sb-status sb-status--brand">Profile {{ $profileCompletion }}% complete</span>
     @endif
     <span class="sb-tag"><i class="bi bi-calendar3" aria-hidden="true"></i> {{ now()->format('M d, Y') }}</span>
-    <a href="{{ route('student.internships.index') }}" class="btn btn-primary"><i class="bi bi-search" aria-hidden="true"></i> Browse Internships</a>
 </x-page-header>
 
 <x-dashboard-announcements />

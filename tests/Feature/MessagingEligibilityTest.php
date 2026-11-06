@@ -234,3 +234,44 @@ it('rejects subscribing to another user\'s private channel', function () {
     $this->post('/broadcasting/auth', ['channel_name' => 'private-App.Models.User.'.$setup['studentUser']->id, 'socket_id' => '1234.5678'])
         ->assertOk();
 });
+
+it('lets the sender edit and unsend their own message, and nobody else', function () {
+    $setup = chatSetup();
+    chatSend($setup['studentUser'], $setup['coordinatorUser'])->assertOk();
+    $message = Message::latest('id')->first();
+
+    // Only the sender can touch it.
+    $this->actingAs($setup['coordinatorUser'])->putJson(route('messages.update', $message), ['body' => 'hijack'])->assertForbidden();
+    $this->actingAs($setup['coordinatorUser'])->deleteJson(route('messages.unsend', $message))->assertForbidden();
+
+    // Edit: the text changes and it is marked edited.
+    $this->actingAs($setup['studentUser'])->putJson(route('messages.update', $message), ['body' => 'Fixed typo'])
+        ->assertOk()->assertJsonPath('message', 'Fixed typo')->assertJsonPath('edited', true);
+    $this->putJson(route('messages.update', $message), ['body' => ''])->assertUnprocessable();
+    expect($message->fresh()->body)->toBe('Fixed typo')->and($message->fresh()->isEdited())->toBeTrue();
+
+    // Unsend: both sides see a placeholder instead of the text, and it can no longer be edited.
+    $this->deleteJson(route('messages.unsend', $message))->assertOk();
+    expect($message->fresh()->isUnsent())->toBeTrue();
+    $this->putJson(route('messages.update', $message), ['body' => 'again'])->assertUnprocessable();
+    $this->get(route('messages.show', $setup['coordinatorUser']))->assertSee('You unsent a message.')->assertDontSee('Fixed typo');
+    $this->actingAs($setup['coordinatorUser'])->get(route('messages.show', $setup['studentUser']))
+        ->assertSee('This message was unsent.')->assertDontSee('Fixed typo');
+});
+
+it('removes a message only for the sender when they choose "Remove for you"', function () {
+    $setup = chatSetup();
+    chatSend($setup['studentUser'], $setup['coordinatorUser'])->assertOk();
+    $message = Message::latest('id')->first();
+    $text = $message->body;
+
+    // Only the sender can remove their own copy.
+    $this->actingAs($setup['coordinatorUser'])->deleteJson(route('messages.remove', $message))->assertForbidden();
+
+    $this->actingAs($setup['studentUser'])->deleteJson(route('messages.remove', $message))->assertOk();
+    $this->get(route('messages.show', $setup['coordinatorUser']))->assertDontSee($text);
+
+    // The other person still sees it, and it is not unsent.
+    $this->actingAs($setup['coordinatorUser'])->get(route('messages.show', $setup['studentUser']))->assertSee($text);
+    expect($message->fresh()->isUnsent())->toBeFalse();
+});

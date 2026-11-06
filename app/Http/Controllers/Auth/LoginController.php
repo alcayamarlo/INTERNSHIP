@@ -61,7 +61,8 @@ class LoginController extends Controller
         $user->forceFill(['last_login_at' => now()])->saveQuietly();
         $this->activityLog->log($user, 'login');
 
-        if ($user->must_change_password) {
+        // First login: add and verify the email, then set the new password.
+        if ($user->must_change_password && $user->hasVerifiedEmail()) {
             return redirect()->route('password.force-change');
         }
 

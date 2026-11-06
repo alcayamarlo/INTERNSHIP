@@ -36,6 +36,14 @@
     .nt-item .badge { padding: .3em .6em; font-size: .6875rem; }
     .nt-open:hover .nt-title { color: var(--sb-brand-deep); }
     .nt-foot { padding: 12px 20px; border-top: 1px solid var(--sb-border); }
+    /* Same full-screen treatment as Messages: edge to edge, locked to the screen, only the list scrolls. */
+    .sb-main:has(.nt-card) { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; }
+    .sb-main:has(.nt-card) > .sb-topbar { flex: 0 0 auto; }
+    body.sb-app .sb-main:has(.nt-card) > .sb-content { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; max-width: none; padding: 0; overflow: hidden; }
+    body.sb-app .sb-content > .nt-card { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; margin: 0; border: 0; border-radius: 0; box-shadow: none; }
+    .nt-card .nt-head, .nt-card .nt-foot, .nt-card .nt-bulk, .nt-card .nt-feedback { flex: 0 0 auto; }
+    .nt-card .nt-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-left: 20px; padding-right: 20px; }
+    .sb-main:has(.nt-card) > .sb-content > .alert { margin: 12px 16px 0; }
     @media (max-width: 575.98px) {
         .nt-head { padding: 14px 16px; }
         .nt-bulk, .nt-feedback { padding-left: 16px; padding-right: 16px; }

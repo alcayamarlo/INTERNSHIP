@@ -16,15 +16,23 @@ class EnsurePasswordIsCurrent
     {
         $user = $request->user();
 
-        if ($user && $user->must_change_password && ! $request->routeIs('password.force-change', 'password.force-change.update', 'logout')) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'message' => 'Set a new password before continuing.',
-                    'redirect' => route('password.force-change'),
-                ], 403);
-            }
+        if ($user && $user->must_change_password) {
+            // Order: add and verify the email first, then set the new password.
+            $target = $user->hasVerifiedEmail() ? 'password.force-change' : 'verification.notice';
+            $allowed = $user->hasVerifiedEmail()
+                ? ['password.force-change', 'password.force-change.update', 'logout']
+                : ['verification.*', 'logout'];
 
-            return redirect()->route('password.force-change');
+            if (! $request->routeIs(...$allowed)) {
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'message' => $user->hasVerifiedEmail() ? 'Set a new password before continuing.' : 'Verify your email before continuing.',
+                        'redirect' => route($target),
+                    ], 403);
+                }
+
+                return redirect()->route($target);
+            }
         }
 
         return $next($request);

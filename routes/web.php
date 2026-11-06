@@ -66,17 +66,10 @@ Route::match(['get', 'post'], '/logout', [LoginController::class, 'logout'])
     ->name('logout');
 
 Route::middleware(['auth', 'active'])->group(function () {
-    Route::get('/password/force-change', [\App\Http\Controllers\Auth\ForcePasswordChangeController::class, 'edit'])
-        ->name('password.force-change');
-    Route::put('/password/force-change', [\App\Http\Controllers\Auth\ForcePasswordChangeController::class, 'update'])
-        ->middleware('throttle:password-force-change')
-        ->name('password.force-change.update');
-});
+    // Front-end-only preview of the Gmail -> code -> new password setup flow (mock functions, no backend).
+    Route::view('/account-setup', 'auth.account-setup')->name('account-setup');
 
-Route::middleware(['auth', 'active', 'password.current'])->group(function () {
-    Route::get('/profile/complete', ProfileCompletionController::class)
-        ->name('profile.complete');
-
+    // Step 1-2 of first login: add and verify the email. This must come before the new password.
     Route::get('/email/verify', [EmailVerificationController::class, 'notice'])
         ->name('verification.notice');
     Route::post('/email/verify', [EmailVerificationController::class, 'verify'])
@@ -88,6 +81,17 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
     Route::post('/email/verify/resend', [EmailVerificationController::class, 'resend'])
         ->middleware('throttle:1,1')
         ->name('verification.resend');
+
+    Route::get('/password/force-change', [\App\Http\Controllers\Auth\ForcePasswordChangeController::class, 'edit'])
+        ->name('password.force-change');
+    Route::put('/password/force-change', [\App\Http\Controllers\Auth\ForcePasswordChangeController::class, 'update'])
+        ->middleware('throttle:password-force-change')
+        ->name('password.force-change.update');
+});
+
+Route::middleware(['auth', 'active', 'password.current'])->group(function () {
+    Route::get('/profile/complete', ProfileCompletionController::class)
+        ->name('profile.complete');
 
     Route::middleware('verified')->group(function () {
     Route::get('/search', [SearchController::class, 'index'])->name('search');
@@ -112,6 +116,9 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
+    Route::put('/messages/{message}', [MessageController::class, 'update'])->whereNumber('message')->middleware('throttle:30,1')->name('messages.update');
+    Route::delete('/messages/{message}/me', [MessageController::class, 'removeForMe'])->whereNumber('message')->middleware('throttle:30,1')->name('messages.remove');
+    Route::delete('/messages/{message}', [MessageController::class, 'unsend'])->whereNumber('message')->middleware('throttle:30,1')->name('messages.unsend');
     Route::get('/api/analytics/charts', [AnalyticsController::class, 'chartData'])
         ->middleware('role:admin,coordinator')
         ->name('analytics.charts');
