@@ -258,3 +258,9 @@
 .lm-steps li.is-current .lm-step-dot { background: var(--sb-brand, #E11D2E); border-color: var(--sb-brand, #E11D2E); color: #fff; }
 .lm-steps li.is-done { color: var(--sb-brand, #E11D2E); }
 .lm-steps li.is-done .lm-step-dot { border-color: var(--sb-brand, #E11D2E); }
+
+/* Requirements checklist: three short columns, one per rule */
+.lm-checklist { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 12px; font-size: 12px; }
+.lm-checklist li { align-items: flex-start; gap: 6px; }
+.lm-checklist { font-size: 11px; }
+.lm-checklist li::before { width: 12px; }

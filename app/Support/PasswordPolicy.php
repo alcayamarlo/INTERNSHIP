@@ -11,13 +11,13 @@ use App\Models\User;
  */
 final class PasswordPolicy
 {
-    public const MIN_LENGTH = 12;
+    public const MIN_LENGTH = 8;
 
     public const MAX_LENGTH = 64;
 
     /** Rule key => the message shown when a password breaks it (also the checklist order). */
     public const MESSAGES = [
-        'length' => 'Use 12 to 64 characters.',
+        'length' => 'Use 8 to 64 characters.',
         'uppercase' => 'Add at least one uppercase letter (A-Z).',
         'lowercase' => 'Add at least one lowercase letter (a-z).',
         'number' => 'Add at least one number (0-9).',

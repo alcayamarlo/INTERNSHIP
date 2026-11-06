@@ -110,6 +110,9 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::get('/messages/{user}', [MessageController::class, 'show'])->name('messages.show');
     Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
+    Route::put('/messages/{message}', [MessageController::class, 'update'])->whereNumber('message')->middleware('throttle:30,1')->name('messages.update');
+    Route::delete('/messages/{message}/me', [MessageController::class, 'removeForMe'])->whereNumber('message')->middleware('throttle:30,1')->name('messages.remove');
+    Route::delete('/messages/{message}', [MessageController::class, 'unsend'])->whereNumber('message')->middleware('throttle:30,1')->name('messages.unsend');
     Route::get('/api/analytics/charts', [AnalyticsController::class, 'chartData'])
         ->middleware('role:admin,coordinator')
         ->name('analytics.charts');

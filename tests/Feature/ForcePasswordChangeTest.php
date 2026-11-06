@@ -54,8 +54,8 @@ it('shows the form with the current password field, live checklist, and strength
 it('lists a friendly message for each broken rule, checked on the server', function () {
     $this->actingAs(firstLoginStudent());
 
-    changePassword(['password' => 'juan2008', 'password_confirmation' => 'juan2008'])
-        ->assertSessionHasErrors(['password' => 'Use 12 to 64 characters.'])
+    changePassword(['password' => 'juan200', 'password_confirmation' => 'juan200'])
+        ->assertSessionHasErrors(['password' => 'Use 8 to 64 characters.'])
         ->assertSessionHasErrors(['password' => 'Add at least one uppercase letter (A-Z).'])
         ->assertSessionHasErrors(['password' => 'Add at least one special character, like ! @ # $ or %.']);
 

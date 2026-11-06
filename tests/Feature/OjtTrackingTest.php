@@ -492,3 +492,26 @@ it('shows placements to admins and lets them set the required hours', function (
     $this->actingAs($admin)->get(route('admin.placements.index'))->assertOk()->assertSee('Olivia Intern');
     $this->actingAs($admin)->get(route('admin.academics.index'))->assertOk()->assertSee('Required OJT hours');
 });
+
+it('opens the tab from the URL and keeps each tab limited to its own panel', function () {
+    $fixture = ojtFixture();
+    ojtPlacement($fixture);
+
+    $page = fn (string $query = '') => $this->actingAs($fixture['studentUser'])->get(route('student.ojt.index').$query)->assertOk();
+
+    // Default and invalid values open Progress; the other panels are rendered hidden.
+    foreach (['', '?tab=nonsense'] as $query) {
+        $page($query)->assertSee('id="ojt-tab-progress" class="ojt-tab"', false)
+            ->assertSeeInOrder(['id="ojt-panel-progress"', 'aria-labelledby="ojt-tab-progress"'], false)
+            ->assertSee('aria-selected="true"', false);
+    }
+    $html = $page('?tab=time-record')->getContent();
+    expect($html)->toMatch('/id="ojt-panel-progress"[^>]*\shidden/')
+        ->and($html)->not->toMatch('/id="ojt-panel-time-record"[^>]*\shidden/')
+        ->and($html)->toMatch('/id="ojt-panel-weekly-journal"[^>]*\shidden/');
+
+    // The "add" buttons sit on the right of the tab bar, and only the open tab's button is visible.
+    expect($html)->toMatch('/data-ojt-action="time-record"[^>]*data-bs-target="#dailyEntryModal"(?![^>]*\shidden)/')
+        ->and($html)->toMatch('/data-ojt-action="weekly-journal"[^>]*\shidden/')
+        ->and(\Illuminate\Support\Str::between($html, 'id="ojt-panel-progress"', 'id="ojt-panel-weekly-journal"'))->not->toContain('Add weekly journal');
+});

@@ -4,11 +4,6 @@
 
 @push('styles')
 <style>
-    html { scroll-behavior: smooth; }
-    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-    .ojt-anchor {
-        scroll-margin-top: calc(var(--sb-topbar-height, 64px) + 72px);
-    }
     .ojt-tabs {
         position: sticky;
         top: var(--sb-topbar-height, 64px);
@@ -20,44 +15,39 @@
         background: var(--sb-canvas, var(--sb-surface));
         border-bottom: 1px solid var(--sb-border);
     }
-    .ojt-tabs .btn.active {
+    /* All three tabs share one size, padding, font, radius, and icon placement. */
+    .ojt-tabs .ojt-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.4;
+        background: var(--sb-surface, #fff);
+        border: 1px solid var(--sb-border, #dee2e6);
+        color: var(--sb-text, #212529);
+        transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .1s ease;
+    }
+    .ojt-tabs .ojt-tab:hover { border-color: var(--sb-brand-content, #8f1a27); color: var(--sb-brand-content, #8f1a27); }
+    .ojt-tabs .ojt-tab:active { transform: scale(.97); }
+    .ojt-tabs .ojt-tab:focus-visible { outline: 2px solid var(--sb-brand-content, #8f1a27); outline-offset: 2px; }
+    .ojt-tabs .ojt-tab[aria-selected="true"] {
         background: var(--sb-brand-content, #8f1a27);
         border-color: var(--sb-brand-content, #8f1a27);
         color: #fff;
     }
+    .ojt-tabs .ojt-tab[aria-selected="true"]:hover { filter: brightness(1.08); }
+    .ojt-panel[hidden], .ojt-tabs [hidden] { display: none !important; }
+    .ojt-panel { animation: ojt-fade .18s ease; }
+    @keyframes ojt-fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { .ojt-panel { animation: none; } .ojt-tabs .ojt-tab { transition: none; } }
 </style>
 @endpush
 
 @section('content')
 <x-page-header title="My OJT" subtitle="Log your daily time, submit weekly journals and track your progress toward completion." />
-@if($placement)
-    <nav class="ojt-tabs d-flex gap-2" aria-label="Jump to section">
-        <a href="#ojt-progress" class="btn btn-outline-secondary btn-sm"><i class="bi bi-speedometer2" aria-hidden="true"></i> Progress</a>
-        <a href="#ojt-time-record" class="btn btn-outline-secondary btn-sm"><i class="bi bi-clock-history" aria-hidden="true"></i> Time Record</a>
-        <a href="#ojt-journal" class="btn btn-outline-secondary btn-sm"><i class="bi bi-journal-text" aria-hidden="true"></i> Weekly Journal</a>
-    </nav>
-    @push('scripts')
-    <script>
-        (function () {
-            var tabs = document.querySelectorAll('.ojt-tabs a');
-            var ids = ['ojt-progress', 'ojt-time-record', 'ojt-journal'];
-            function update() {
-                var offset = (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sb-topbar-height'), 10) || 64) + 90;
-                var current = ids[0];
-                ids.forEach(function (id) {
-                    var el = document.getElementById(id);
-                    if (el && el.getBoundingClientRect().top <= offset) current = id;
-                });
-                if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) current = ids[ids.length - 1];
-                tabs.forEach(function (a) { a.classList.toggle('active', a.getAttribute('href') === '#' + current); });
-            }
-            window.addEventListener('scroll', update, { passive: true });
-            update();
-        })();
-    </script>
-    @endpush
-@endif
-
 @if(! $placement)
     <div class="card">
         <div class="card-body">
@@ -67,8 +57,20 @@
         </div>
     </div>
 @else
+    @php
+        $tabs = [
+            'progress' => ['Progress', 'bi-speedometer2'],
+            'time-record' => ['Time Record', 'bi-clock-history'],
+            'weekly-journal' => ['Weekly Journal', 'bi-journal-text'],
+        ];
+        $activeTab = array_key_exists((string) request('tab'), $tabs) ? request('tab') : 'progress';
+        $canLog = $placement->isActive() && ! $placement->start_date->isFuture();
+    @endphp
+
+    {{-- The placement picker sits above the tabs and applies to whichever tab is open. --}}
     @if($placements->count() > 1)
-        <form method="GET" class="mb-3 d-flex gap-2 align-items-center">
+        <form method="GET" class="mb-3 d-flex gap-2 align-items-center" id="placementForm">
+            <input type="hidden" name="tab" value="{{ $activeTab }}" data-ojt-tab-field>
             <label for="placementSelect" class="form-label mb-0 small">Placement</label>
             <select id="placementSelect" name="placement" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
                 @foreach($placements as $option)
@@ -78,37 +80,87 @@
         </form>
     @endif
 
-    <div id="ojt-progress" class="ojt-anchor">
-        @include('ojt.partials.progress', ['placement' => $placement])
+    <div class="ojt-tabs d-flex align-items-center justify-content-between gap-2">
+        <div class="d-flex gap-2" role="tablist" aria-label="OJT sections" data-ojt-tabs>
+            @foreach($tabs as $key => [$label, $icon])
+                <button type="button" role="tab" id="ojt-tab-{{ $key }}" class="ojt-tab" data-tab="{{ $key }}"
+                        aria-controls="ojt-panel-{{ $key }}" aria-selected="{{ $key === $activeTab ? 'true' : 'false' }}"
+                        tabindex="{{ $key === $activeTab ? '0' : '-1' }}">
+                    <i class="bi {{ $icon }}" aria-hidden="true"></i> {{ $label }}
+                </button>
+            @endforeach
+        </div>
+
+        {{-- Action for the open tab, on the right of the tab bar. Progress has none. --}}
+        @if($canLog)
+            <button type="button" class="btn btn-primary btn-sm flex-shrink-0" data-ojt-action="time-record" data-bs-toggle="modal" data-bs-target="#dailyEntryModal" @if($activeTab !== 'time-record') hidden @endif><i class="bi bi-plus-lg" aria-hidden="true"></i> Add daily entry</button>
+            <button type="button" class="btn btn-primary btn-sm flex-shrink-0" data-ojt-action="weekly-journal" data-bs-toggle="modal" data-bs-target="#weeklyJournalModal" @if($activeTab !== 'weekly-journal') hidden @endif><i class="bi bi-plus-lg" aria-hidden="true"></i> Add weekly journal</button>
+        @endif
     </div>
 
-    @if($placement->isActive() && $placement->start_date->isFuture())
-        <div class="alert alert-info">
-            <i class="bi bi-calendar-event" aria-hidden="true"></i>
-            Your OJT starts on {{ $placement->start_date->format('F d, Y') }}. You can log time and submit journals from that date.
-        </div>
-    @elseif($placement->isActive())
-        <div class="row g-4 mb-4">
-            <div class="col-lg-6">
-                <div class="card h-100">
-                    <div class="card-header"><h2 class="h6 mb-0"><i class="bi bi-plus-circle" aria-hidden="true"></i> Log today's time</h2></div>
-                    <div class="card-body d-flex flex-column align-items-start gap-3">
-                        <p class="text-muted mb-0">Record the hours you worked and the tasks you completed today.</p>
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#dailyEntryModal"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add daily entry</button>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="card h-100">
-                    <div class="card-header"><h2 class="h6 mb-0"><i class="bi bi-pencil-square" aria-hidden="true"></i> Weekly journal</h2></div>
-                    <div class="card-body d-flex flex-column align-items-start gap-3">
-                        <p class="text-muted mb-0">Summarise your accomplishments, learnings and challenges for the week.</p>
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#weeklyJournalModal"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add weekly journal</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+    {{-- PROGRESS --}}
+    <section id="ojt-panel-progress" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-progress" @if($activeTab !== 'progress') hidden @endif>
+        @include('ojt.partials.progress', ['placement' => $placement])
+    </section>
 
+    {{-- TIME RECORD --}}
+    <section id="ojt-panel-time-record" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-time-record" @if($activeTab !== 'time-record') hidden @endif>
+        @if($placement->isActive() && $placement->start_date->isFuture())
+            <div class="alert alert-info">
+                <i class="bi bi-calendar-event" aria-hidden="true"></i>
+                Your OJT starts on {{ $placement->start_date->format('F d, Y') }}. You can log time and submit journals from that date.
+            </div>
+        @endif
+        @include('ojt.partials.attendance', ['placement' => $placement, 'mode' => 'student'])
+    </section>
+
+    {{-- WEEKLY JOURNAL --}}
+    <section id="ojt-panel-weekly-journal" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-weekly-journal" @if($activeTab !== 'weekly-journal') hidden @endif>
+        @if($placement->isActive() && $placement->start_date->isFuture())
+            <div class="alert alert-info">
+                <i class="bi bi-calendar-event" aria-hidden="true"></i>
+                Your OJT starts on {{ $placement->start_date->format('F d, Y') }}. You can log time and submit journals from that date.
+            </div>
+        @endif
+        @include('ojt.partials.journals', ['placement' => $placement, 'mode' => 'student'])
+    </section>
+
+    @push('scripts')
+    <script>
+        (function () {
+            var bar = document.querySelector('[data-ojt-tabs]');
+            if (!bar) return;
+            var tabs = [].slice.call(bar.querySelectorAll('[role="tab"]'));
+            var field = document.querySelector('[data-ojt-tab-field]');
+
+            function select(key, focus) {
+                tabs.forEach(function (t) {
+                    var on = t.dataset.tab === key;
+                    t.setAttribute('aria-selected', on ? 'true' : 'false');
+                    t.tabIndex = on ? 0 : -1;
+                    document.getElementById('ojt-panel-' + t.dataset.tab).hidden = !on;
+                    if (on && focus) t.focus();
+                });
+                [].forEach.call(document.querySelectorAll('[data-ojt-action]'), function (b) { b.hidden = b.dataset.ojtAction !== key; });
+                if (field) field.value = key;
+                var url = new URL(location.href);
+                url.searchParams.set('tab', key);
+                try { history.replaceState(null, '', url); } catch (_) {}
+            }
+            tabs.forEach(function (t, i) {
+                t.addEventListener('click', function () { select(t.dataset.tab, false); });
+                t.addEventListener('keydown', function (e) {
+                    var next = e.key === 'ArrowRight' ? i + 1 : e.key === 'ArrowLeft' ? i - 1 : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : null;
+                    if (next === null) return;
+                    e.preventDefault();
+                    select(tabs[(next + tabs.length) % tabs.length].dataset.tab, true);
+                });
+            });
+        })();
+    </script>
+    @endpush
+
+    @if($canLog)
     <div class="modal fade" id="dailyEntryModal" tabindex="-1" aria-labelledby="dailyEntryModalLabel" aria-hidden="true" data-sb-form-modal @if(old('_modal') === 'daily') data-sb-open-on-load @endif>
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
             <div class="modal-content">
@@ -208,12 +260,5 @@
         <script src="{{ asset('js/sb-modals.js') }}"></script>
     @endpush
     @endif
-
-    <div id="ojt-time-record" class="ojt-anchor">
-        @include('ojt.partials.attendance', ['placement' => $placement, 'mode' => 'student'])
-    </div>
-    <div id="ojt-journal" class="ojt-anchor">
-        @include('ojt.partials.journals', ['placement' => $placement, 'mode' => 'student'])
-    </div>
 @endif
 @endsection

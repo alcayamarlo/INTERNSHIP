@@ -16,6 +16,14 @@
     .nt-detail-title { margin: 8px 0 6px; color: var(--sb-ink); font-size: 1.125rem; font-weight: 700; line-height: 1.3; letter-spacing: -.01em; overflow-wrap: anywhere; }
     .nt-detail-text { margin: 0; color: var(--sb-text-soft, var(--sb-ink)); font-size: .9375rem; line-height: 1.6; white-space: pre-line; overflow-wrap: anywhere; }
     .nt-detail-actions { margin-top: 16px; }
+    /* Same full-screen treatment as the notifications list: edge to edge, locked to the screen, the body scrolls inside. */
+    .sb-main:has(.nt-detail) { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; }
+    .sb-main:has(.nt-detail) > .sb-topbar { flex: 0 0 auto; }
+    body.sb-app .sb-main:has(.nt-detail) > .sb-content { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; max-width: none; padding: 0; overflow: hidden; }
+    body.sb-app .sb-content > .nt-detail { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; margin: 0; border: 0; border-radius: 0; box-shadow: none; }
+    .nt-detail .nt-detail-head { flex: 0 0 auto; }
+    .nt-detail .nt-detail-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+    .sb-main:has(.nt-detail) > .sb-content > .alert { margin: 12px 16px 0; }
     @media (max-width: 575.98px) { .nt-detail-head { padding: 14px 16px; } .nt-detail-body { padding: 16px; } }
 </style>
 @endpush

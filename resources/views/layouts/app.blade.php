@@ -170,10 +170,6 @@
         default => [],
     };
 
-    $navGroups['Communication'] = [
-        ['messages.index', 'messages.*', 'bi-chat-dots', 'Messages'],
-    ];
-
 @endphp
 
 
@@ -348,6 +344,12 @@
         {{-- TOP ACTIONS --}}
 
         <div class="sb-top-actions">
+
+            {{-- MESSAGES --}}
+
+            <a href="{{ route('messages.index') }}" class="sb-top-action" aria-label="Messages" title="Messages">
+                <i class="bi bi-chat-dots" aria-hidden="true"></i>
+            </a>
 
             {{-- NOTIFICATIONS --}}
 

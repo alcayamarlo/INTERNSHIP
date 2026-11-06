@@ -16,16 +16,6 @@
     $onCode = $errView === 'code';
     // First-login setup pages (add Gmail, enter code, new password) cannot be closed or switched away from.
     $locked = in_array($authOpen, ['force', 'email', 'code'], true);
-    $setupSteps = function (int $current) {
-        $out = '<ol class="lm-steps" aria-label="Account setup progress">';
-        foreach (['Gmail', 'Verify', 'Password'] as $i => $label) {
-            $n = $i + 1;
-            $cls = $n < $current ? 'is-done' : ($n === $current ? 'is-current' : '');
-            $out .= '<li class="'.$cls.'"'.($n === $current ? ' aria-current="step"' : '').'><span class="lm-step-dot">'.($n < $current ? '&#10003;' : $n).'</span><span>'.$label.'</span></li>';
-        }
-
-        return $out.'</ol>';
-    };
 
     $svg = fn (string $path, string $extra = '') => '<svg '.$extra.' viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'.$path.'</svg>';
     $icoUser = $svg('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>', 'class="lm-ico"');
@@ -283,7 +273,6 @@
             {{-- ================= FIRST LOGIN, STEP 1: ADD GMAIL (real routes; the page posts normally) ================= --}}
             @if ($authOpen === 'email' && Route::has('verification.email'))
             <section data-auth-view="email" data-title="Add your Gmail." data-sub="" data-caption="We'll send a verification code to confirm it's really you." data-focus="lm-su-email" hidden>
-                {!! $setupSteps(1) !!}
                 @if (session('status'))
                     <div class="lm-alert lm-alert-ok" role="status">{{ session('status') }}</div>
                 @endif
@@ -323,7 +312,6 @@
             {{-- ================= FIRST LOGIN, STEP 2: ENTER THE CODE ================= --}}
             @if ($authOpen === 'code' && Route::has('verification.verify'))
             <section data-auth-view="code" data-title="Verify your Gmail." data-sub="" data-caption="Check your Gmail for the 6-digit code, then enter it below." data-focus="lm-su-code-1" hidden>
-                {!! $setupSteps(2) !!}
                 @if (session('status'))
                     <div class="lm-alert lm-alert-ok" role="status">{{ session('status') }}</div>
                 @endif
@@ -371,7 +359,6 @@
             @if ($authOpen === 'force' && Route::has('password.force-change.update'))
             @php $lockedSeconds = $lockedSeconds ?? 0; $lockMin = max(1, (int) ceil($lockedSeconds / 60)); @endphp
             <section data-auth-view="force" data-title="Set a new password." data-sub="" data-caption="Your email is verified. Your account was created with a temporary password. Choose a strong new password to continue." data-focus="lm-fc-current" hidden>
-                {!! $setupSteps(3) !!}
                 @if ($lockedSeconds > 0)
                     <div class="lm-alert lm-alert-bad" role="alert">Too many incorrect attempts. Try again in {{ $lockMin }} {{ \Illuminate\Support\Str::plural('minute', $lockMin) }}.</div>
                 @elseif ($onForce && $errors->any())
@@ -417,12 +404,9 @@
                     @endforeach
 
                     <ul class="lm-checklist" data-pw-checklist aria-label="Password requirements" aria-live="polite">
-                        <li data-rule="length">12 to 64 characters</li>
-                        <li data-rule="uppercase">An uppercase letter (A-Z)</li>
-                        <li data-rule="lowercase">A lowercase letter (a-z)</li>
-                        <li data-rule="number">A number (0-9)</li>
-                        <li data-rule="special">A special character, like ! @ # $ or %</li>
-                        <li data-rule="match">Both new passwords match</li>
+                        <li data-rule="length">8-64 characters</li>
+                        <li data-rule="letters">Upper & lowercase</li>
+                        <li data-rule="digits">Number & symbol</li>
                     </ul>
 
                     <button type="submit" class="lm-submit" data-loading-text="Updating password..." data-pw-submit disabled>
@@ -796,8 +780,8 @@
             var v = fp.value, n = Array.from(v).length;
             var met = {
                 length: n >= policy.min && n <= policy.max,
-                uppercase: /\p{Lu}/u.test(v), lowercase: /\p{Ll}/u.test(v), number: /\p{N}/u.test(v),
-                special: /[^\p{L}\p{N}\s]/u.test(v),
+                letters: /\p{Lu}/u.test(v) && /\p{Ll}/u.test(v),
+                digits: /\p{N}/u.test(v) && /[^\p{L}\p{N}\s]/u.test(v),
                 match: v !== '' && v === fc.value
             };
             fitems.forEach(function (li) { li.classList.toggle('is-met', !!met[li.dataset.rule]); });
@@ -808,6 +792,7 @@
             [].forEach.call(fbars, function (b, i) { b.style.background = i < score ? fcolors[level] : ''; });
             ftext.textContent = level ? level.charAt(0).toUpperCase() + level.slice(1) : 'Not set';
             ftext.style.color = level ? fcolors[level] : '';
+            err(ff2, 'confirm', fc.value !== '' && !met.match ? 'Passwords do not match.' : '', null);
             fsubmit.disabled = fcur.disabled || fcur.value === '' || !Object.keys(met).every(function (k) { return met[k]; });
         };
         [fcur, fp, fc].forEach(function (i) { i.addEventListener('input', fcheck); });
@@ -816,7 +801,7 @@
     }
 
     // ---------- reset: countdown, code boxes, strength ----------
-    var rf =root.querySelector('[data-lm-form="reset"]');
+    var rf = root.querySelector('[data-lm-form="reset"]');
     var timerEl = root.querySelector('[data-reset-countdown]');
     var timer = null;
     function startTimer(expiresAt) {
