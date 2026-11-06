@@ -7,24 +7,40 @@ use App\Models\Announcement;
 use App\Models\AppNotification;
 use App\Models\InternshipApplication;
 use App\Models\User;
+use App\Services\NotificationService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class NotificationController extends Controller
 {
+    /** Tabs on the notifications page; "active" is the inbox (kept as the URL value for old links). */
+    private const VIEWS = ['active', 'archived', 'trash'];
+
+    /** Bulk actions for the selected notifications. */
+    private const BULK_ACTIONS = ['read', 'archive', 'unarchive', 'delete', 'restore', 'force-delete'];
+
+    /** At most this many notifications per bulk request (one page is 15). */
+    private const BULK_LIMIT = 100;
+
+    public function __construct(private NotificationService $notifications) {}
+
     public function index()
     {
-        $view = request()->query('view', 'active');
+        $user = Auth::user();
+        $view = in_array(request()->query('view'), self::VIEWS, true) ? request()->query('view') : 'active';
 
-        $notifications = Auth::user()->appNotifications()
-            ->when($view === 'archived', fn ($query) => $query->whereNotNull('archived_at'), fn ($query) => $query->whereNull('archived_at'))
-            ->latest()
-            ->paginate(15)
-            ->appends(['view' => $view]);
+        $notifications = match ($view) {
+            'archived' => $user->appNotifications()->archived()->latest('archived_at'),
+            'trash' => $user->appNotifications()->onlyTrashed()->latest('deleted_at'),
+            default => $user->appNotifications()->inbox()->latest(),
+        };
 
         return view('notifications.index', [
-            'notifications' => $notifications,
+            'notifications' => $notifications->latest('id')->paginate(15)->appends(['view' => $view]),
             'view' => $view,
+            ...$this->state(),
         ]);
     }
 
@@ -80,25 +96,14 @@ class NotificationController extends Controller
         $this->authorize('update', $notification);
         $notification->markAsRead();
 
-        if (request()->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'unread_count' => Auth::user()->appNotifications()->whereNull('read_at')->whereNull('archived_at')->count(),
-            ]);
-        }
-
-        return back();
+        return $this->respond('Notification marked as read.');
     }
 
     public function markAllRead()
     {
-        Auth::user()->appNotifications()->whereNull('read_at')->whereNull('archived_at')->update(['read_at' => now()]);
+        Auth::user()->appNotifications()->unread()->update(['read_at' => now()]);
 
-        if (request()->wantsJson()) {
-            return response()->json(['success' => true, 'unread_count' => 0]);
-        }
-
-        return back()->with('success', 'All notifications marked as read.');
+        return $this->respond('All notifications marked as read.');
     }
 
     public function archive(AppNotification $notification)
@@ -106,44 +111,142 @@ class NotificationController extends Controller
         $this->authorize('update', $notification);
         $notification->archive();
 
-        if (request()->wantsJson()) {
-            return response()->json(['success' => true, 'archived' => true]);
-        }
-
-        return back()->with('success', 'Notification archived.');
+        return $this->respond('Notification archived.', ['archived' => true]);
     }
 
+    /** Unarchive: back to the inbox. (Route name kept as notifications.restore for existing links.) */
     public function restore(AppNotification $notification)
     {
         $this->authorize('update', $notification);
-        $notification->restore();
+        $notification->unarchive();
 
-        if (request()->wantsJson()) {
-            return response()->json(['success' => true, 'archived' => false]);
+        return $this->respond('Notification moved back to your inbox.', ['archived' => false]);
+    }
+
+    /** Soft delete: moves the notification to Trash, where it can be restored. */
+    public function destroy(AppNotification $notification)
+    {
+        $this->authorize('delete', $notification);
+        // Already in Trash (double click, second tab): nothing to do, still a success.
+        if (! $notification->trashed()) {
+            $notification->delete();
         }
 
-        return back()->with('success', 'Notification restored.');
+        return $this->respond('Notification moved to Trash.');
+    }
+
+    /** Takes a notification out of Trash (back to the inbox or archive it was in). */
+    public function restoreDeleted(AppNotification $notification)
+    {
+        $this->authorize('delete', $notification);
+        if ($notification->trashed()) {
+            $notification->restore();
+        }
+
+        return $this->respond('Notification restored.');
+    }
+
+    /** Permanent delete, allowed only from Trash so nothing is lost by one click. */
+    public function forceDestroy(AppNotification $notification)
+    {
+        $this->authorize('delete', $notification);
+        abort_unless($notification->trashed(), 409, 'Move the notification to Trash before deleting it permanently.');
+        $notification->forceDelete();
+
+        return $this->respond('Notification permanently deleted.');
+    }
+
+    /**
+     * One action on the selected notifications. Only the signed-in user's notifications can
+     * match (the query starts from their own relation), so other users' ids are ignored.
+     * Answers with the ids that changed so the page updates exactly those rows.
+     */
+    public function bulk(Request $request)
+    {
+        $validated = $request->validate([
+            'action' => ['required', Rule::in(self::BULK_ACTIONS)],
+            'ids' => ['required', 'array', 'min:1', 'max:'.self::BULK_LIMIT],
+            'ids.*' => ['integer'],
+        ], [
+            'ids.required' => 'Select at least one notification.',
+            'ids.max' => 'Select at most '.self::BULK_LIMIT.' notifications at a time.',
+        ]);
+
+        $mine = Auth::user()->appNotifications()->whereIn('id', $validated['ids']);
+        $affected = match ($validated['action']) {
+            'read' => $mine->whereNull('read_at'),
+            'archive' => $mine->whereNull('archived_at'),
+            'unarchive' => $mine->whereNotNull('archived_at'),
+            'delete' => $mine,
+            'restore', 'force-delete' => $mine->onlyTrashed(),
+        };
+        $ids = (clone $affected)->pluck('id')->all();
+
+        if ($ids !== []) {
+            match ($validated['action']) {
+                'read' => $affected->update(['read_at' => now()]),
+                'archive' => $affected->update(['archived_at' => now()]),
+                'unarchive' => $affected->update(['archived_at' => null]),
+                'delete' => $affected->delete(),
+                'restore' => $affected->restore(),
+                'force-delete' => $affected->forceDelete(),
+            };
+        }
+
+        $count = count($ids);
+        $noun = $count === 1 ? 'notification' : 'notifications';
+        $message = match ($validated['action']) {
+            'read' => "{$count} {$noun} marked as read.",
+            'archive' => "{$count} {$noun} archived.",
+            'unarchive' => "{$count} {$noun} moved back to your inbox.",
+            'delete' => "{$count} {$noun} moved to Trash.",
+            'restore' => "{$count} {$noun} restored.",
+            'force-delete' => "{$count} {$noun} permanently deleted.",
+        };
+
+        return $this->respond($message, ['ids' => $ids, 'action' => $validated['action']]);
     }
 
     public function archiveAllRead()
     {
         Auth::user()->appNotifications()
             ->whereNotNull('read_at')
-            ->whereNull('archived_at')
+            ->inbox()
             ->update(['archived_at' => now()]);
 
-        if (request()->wantsJson()) {
-            return response()->json(['success' => true, 'unread_count' => Auth::user()->appNotifications()->whereNull('read_at')->whereNull('archived_at')->count()]);
-        }
-
-        return back()->with('success', 'All read notifications have been archived.');
+        return $this->respond('All read notifications have been archived.');
     }
 
     public function unreadJson()
     {
         return response()->json([
-            'count' => Auth::user()->appNotifications()->whereNull('read_at')->whereNull('archived_at')->count(),
-            'items' => Auth::user()->appNotifications()->whereNull('read_at')->whereNull('archived_at')->latest()->take(5)->get(),
+            'count' => $this->notifications->unreadCount(Auth::user()),
+            'items' => Auth::user()->appNotifications()->unread()->latest()->take(5)->get(),
         ]);
+    }
+
+    /** Badge and tab counts after a change, so the page never shows stale numbers. */
+    private function state(): array
+    {
+        $user = Auth::user();
+
+        return [
+            'unread_count' => $this->notifications->unreadCount($user),
+            'counts' => [
+                'active' => $user->appNotifications()->inbox()->count(),
+                'archived' => $user->appNotifications()->archived()->count(),
+                'trash' => $user->appNotifications()->onlyTrashed()->count(),
+            ],
+        ];
+    }
+
+    /** JSON for the page's fetch() calls; a normal redirect when JavaScript is off. */
+    private function respond(string $message, array $extra = [])
+    {
+        if (request()->wantsJson()) {
+            return response()->json(['success' => true, 'message' => $message, ...$this->state(), ...$extra]);
+        }
+
+        return back()->with('success', $message);
     }
 }

@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Mail\EmailVerificationCodeMail;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -89,6 +90,41 @@ class User extends Authenticatable implements MustVerifyEmail
     public function hasVerifiedEmail(): bool
     {
         return $this->email !== null && $this->email_verified_at !== null;
+    }
+
+    /**
+     * $user->email_verified (true/false). Computed from email + email_verified_at rather than a
+     * second column, so the boolean and the timestamp can never disagree.
+     */
+    protected function emailVerified(): Attribute
+    {
+        return Attribute::get(fn (): bool => $this->hasVerifiedEmail());
+    }
+
+    protected static function booted(): void
+    {
+        // A student who switches to a DIFFERENT email must verify the new one: whoever saves it
+        // (student profile, admin edit, anything else) drops the old verification and any
+        // pending code. Saving the same address (any casing/spacing) changes nothing.
+        static::updating(function (User $user): void {
+            if (! $user->isDirty('email') || ! $user->isRole(UserRole::Student)) {
+                return;
+            }
+
+            $old = mb_strtolower(trim((string) $user->getOriginal('email')));
+            $new = mb_strtolower(trim((string) $user->email));
+            if ($old === $new) {
+                return;
+            }
+
+            // Skipped when the same save sets a fresh verification on purpose (admin "verify").
+            if (! $user->isDirty('email_verified_at')) {
+                $user->email_verified_at = null;
+            }
+            $user->verification_code = null;
+            $user->verification_code_expires_at = null;
+            $user->verification_attempts = 0;
+        });
     }
 
     /** Students add or change their own email on the verify page until it is verified. */

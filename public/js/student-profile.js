@@ -227,6 +227,13 @@
                 }
                 if (!response.ok) throw new Error(payload.message || 'Unable to save profile.');
 
+                // Changing the email needs a new verification: the server sends the code and says where to go.
+                if (payload.redirect_url) {
+                    setDirty(form, false);
+                    window.location.assign(payload.redirect_url);
+                    return;
+                }
+
                 if (studentIdField && 'student_id_number' in payload) {
                     studentIdField.value = payload.student_id_number || '';
                     studentIdNotice.hidden = !payload.student_id_needs_correction;

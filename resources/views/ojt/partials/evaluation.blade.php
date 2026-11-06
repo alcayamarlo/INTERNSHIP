@@ -1,7 +1,7 @@
 {{-- Read-only evaluation summary. Expects $placement. --}}
 @php $evaluation = $placement->evaluation; @endphp
 
-<div class="card mb-4">
+<div class="card mb-4" data-live-region="ojt-evaluation-{{ $placement->id }}" data-live-topics="placements">
     <div class="card-header"><h2 class="h6 mb-0"><i class="bi bi-clipboard-check" aria-hidden="true"></i> Supervisor Evaluation</h2></div>
     <div class="card-body">
         @if($evaluation)

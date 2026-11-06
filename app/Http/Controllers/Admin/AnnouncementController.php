@@ -51,14 +51,15 @@ class AnnouncementController extends Controller
             return [$announcement, $recipientIds];
         });
 
+        // Each recipient's email (and live push) goes through the queue: with a queue worker the
+        // admin no longer waits for one Gmail send per user. The bell rows are written right here.
         foreach (User::whereIn('id', $recipientIds)->get() as $user) {
             $this->notificationService->send(
                 $user,
                 'announcement',
                 $announcement->title,
                 str($announcement->content)->limit(120)->value(),
-                ['announcement_id' => $announcement->id],
-                queue: false
+                ['announcement_id' => $announcement->id]
             );
         }
 

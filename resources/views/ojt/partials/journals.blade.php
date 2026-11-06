@@ -1,7 +1,7 @@
 {{-- Weekly journals. Expects $placement and $mode: student | employer | readonly. --}}
 @php $mode ??= 'readonly'; @endphp
 
-<div class="card mb-4">
+<div class="card mb-4" data-live-region="ojt-journals-{{ $placement->id }}" data-live-topics="placements">
     <div class="card-header"><h2 class="h6 mb-0"><i class="bi bi-journal-text" aria-hidden="true"></i> Weekly Journal</h2></div>
     <div class="card-body">
         @forelse($placement->journalEntries as $entry)

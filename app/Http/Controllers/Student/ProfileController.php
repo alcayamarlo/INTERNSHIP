@@ -303,6 +303,29 @@ class ProfileController extends Controller
         $freshStudent = $student->fresh();
         $profileCompletion = $freshStudent->profileCompletionSummary();
 
+        // A new email address is unverified (User::booted cleared it). Send a code to the new address
+        // now and take the student to the code step; the "verified" route guard blocks every other page.
+        if ($user->wasChanged('email') && ! $user->hasVerifiedEmail()) {
+            $this->activityLog->log($user, 'email_changed', ['email' => $user->email]);
+            $sent = $user->sendEmailVerificationNotification();
+            $message = $sent
+                ? "Profile saved. We sent a 6-digit code to {$user->email}. Enter it to verify your new email."
+                : 'Profile saved, but we could not send the code to your new email. Press Resend code to try again.';
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $message,
+                    'redirect_url' => route('verification.notice'),
+                    ...self::completionPayload($profileCompletion),
+                ]);
+            }
+
+            // Same flash keys the verify page already shows (status, or an error under the code field).
+            return $sent
+                ? redirect()->route('verification.notice')->with('status', $message)
+                : redirect()->route('verification.notice')->withErrors(['code' => $message]);
+        }
+
         if ($request->expectsJson()) {
             return response()->json([
                 'message' => 'Profile saved',

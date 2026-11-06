@@ -7,8 +7,11 @@ use App\Models\AcademicSetting;
 use App\Models\Coordinator;
 use App\Models\InternshipApplication;
 use App\Models\Placement;
+use App\Models\Student;
 use App\Models\User;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class PlacementService
 {
@@ -18,12 +21,55 @@ class PlacementService
     ) {}
 
     /**
-     * Opens the OJT record for an accepted application. Safe to call more than once.
+     * Opens the OJT record for an accepted application. Safe to call more than once for the
+     * same application. Call it inside a DB transaction (ApplicantController does), so a
+     * refusal also rolls back the "accepted" status change.
+     *
+     * @throws ValidationException when the student already has an open OJT from another application
      */
     public function openForApplication(InternshipApplication $application): Placement
     {
-        $application->loadMissing('internship', 'student.academicProgram');
+        $application->loadMissing('internship', 'student.academicProgram', 'student.user');
 
+        // Lock the student row so two companies accepting the same student at the same moment
+        // are handled one after the other; the second one then sees the first placement.
+        Student::query()->whereKey($application->student_id)->lockForUpdate()->first();
+
+        $existing = $this->openPlacementFor($application->student_id, exceptApplicationId: $application->id);
+        if ($existing) {
+            throw $this->alreadyPlaced($application);
+        }
+
+        try {
+            return $this->firstOrCreatePlacement($application);
+        } catch (UniqueConstraintViolationException $exception) {
+            // Database backstop (placements_one_open_per_student) for anything the check above missed.
+            throw $this->alreadyPlaced($application);
+        }
+    }
+
+    /** The student's open (pending validation or active) placement, if any. */
+    public function openPlacementFor(int $studentId, ?int $exceptApplicationId = null): ?Placement
+    {
+        return Placement::query()
+            ->where('student_id', $studentId)
+            ->whereIn('status', [Placement::STATUS_PENDING_VALIDATION, Placement::STATUS_ACTIVE])
+            ->when($exceptApplicationId, fn ($query) => $query->where('application_id', '<>', $exceptApplicationId))
+            ->first();
+    }
+
+    private function alreadyPlaced(InternshipApplication $application): ValidationException
+    {
+        $name = $application->student?->user?->name ?? 'This student';
+
+        // The other company is not named: employers should not learn where else a student applied.
+        return ValidationException::withMessages([
+            'status' => "{$name} already has an ongoing OJT placement with another company, so this application cannot be accepted. A student can only have one OJT at a time. Contact the student's coordinator if this needs to change.",
+        ]);
+    }
+
+    private function firstOrCreatePlacement(InternshipApplication $application): Placement
+    {
         return Placement::withTrashed()->firstOrCreate(
             ['application_id' => $application->id],
             [

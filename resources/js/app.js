@@ -144,65 +144,164 @@ document.addEventListener('submit', async (event) => {
     }
 }, true);
 
+// ---------------------------------------------------------------------------
+// Notification actions: bell dropdown (layouts/app.blade.php) and the Notifications
+// page (notifications/index.blade.php). Every response carries unread_count and the
+// Inbox/Archived/Trash counts, so the badge and tabs update without a page refresh.
+// ---------------------------------------------------------------------------
+
+/** Actions after which the notification no longer belongs in the list being shown. */
+const NOTIFICATION_REMOVING_ACTIONS = ['archive', 'unarchive', 'restore', 'delete', 'restore-deleted', 'force-delete'];
+
+/** Every copy of a notification on the page (the dropdown and the page list can both show it). */
+const notificationItems = (id) => document.querySelectorAll(`[data-notification-item][data-notification-id="${CSS.escape(String(id))}"]`);
+
+const markNotificationItemRead = (item) => {
+    item.classList.remove('is-unread', 'bg-light', 'border-start', 'border-primary', 'border-3');
+    item.querySelector('.badge.bg-primary')?.remove();
+    item.querySelector('[data-ajax-notification="read"]')?.remove();
+};
+
+/** Bulk buttons work only while something is selected; "select all" mirrors the row boxes. */
+const syncNotificationSelection = () => {
+    const boxes = [...document.querySelectorAll('[data-notification-select]')];
+    const checked = boxes.filter((box) => box.checked).length;
+    document.querySelectorAll('[data-bulk-action]').forEach((button) => {
+        button.disabled = checked === 0 || button.dataset.busy === 'true';
+    });
+    const selectAll = document.querySelector('[data-notification-select-all]');
+    if (selectAll) {
+        selectAll.checked = boxes.length > 0 && checked === boxes.length;
+        selectAll.indeterminate = checked > 0 && checked < boxes.length;
+        selectAll.disabled = boxes.length === 0;
+    }
+};
+
+const removeNotificationItem = (item) => {
+    const list = item.closest('[data-notification-list]');
+    item.remove();
+    // Last row on the page gone: show this tab's empty state and hide the bulk bar.
+    if (list && !list.querySelector('[data-notification-item]')) {
+        const emptyTemplate = document.querySelector('template[data-notification-empty]');
+        if (emptyTemplate) list.replaceChildren(emptyTemplate.content.cloneNode(true));
+        document.getElementById('ntBulkForm')?.setAttribute('hidden', '');
+    }
+};
+
+const updateNotificationCounts = (counts, unreadCount) => {
+    if (counts) {
+        Object.entries(counts).forEach(([key, value]) => {
+            document.querySelectorAll(`[data-notification-count="${key}"]`).forEach((element) => {
+                element.textContent = String(value);
+            });
+        });
+    }
+    const page = document.querySelector('[data-notification-page]');
+    const summary = page?.querySelector('[data-notification-summary]');
+    if (summary && page.dataset.view === 'active' && unreadCount !== undefined) {
+        summary.textContent = unreadCount > 0
+            ? `You have ${unreadCount} unread notification${unreadCount === 1 ? '' : 's'}.`
+            : "You're all caught up.";
+    }
+};
+
+/** Success/error line on the Notifications page; the dropdown falls back to an alert for errors. */
+const showNotificationFeedback = (message, isError = false) => {
+    const feedback = document.querySelector('[data-notification-feedback]');
+    if (!feedback) {
+        if (isError) window.alert(message);
+        return;
+    }
+    feedback.textContent = message;
+    feedback.classList.toggle('is-error', isError);
+    feedback.classList.toggle('is-success', !isError);
+    feedback.hidden = false;
+};
+
+document.addEventListener('change', (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement)) return;
+    if (target.matches('[data-notification-select-all]')) {
+        document.querySelectorAll('[data-notification-select]').forEach((box) => {
+            box.checked = target.checked;
+        });
+    }
+    if (target.matches('[data-notification-select-all], [data-notification-select]')) {
+        syncNotificationSelection();
+    }
+});
+
 document.addEventListener('submit', async (event) => {
     const form = event.target;
     if (!(form instanceof HTMLFormElement) || !form.dataset.ajaxNotification) return;
 
     event.preventDefault();
     event.stopImmediatePropagation();
-    const submitButton = form.querySelector('button[type="submit"]');
-    if (submitButton?.disabled) return;
-    if (submitButton) submitButton.disabled = true;
+    // Double-click guard: while this form's request runs, further submits are ignored.
+    if (form.dataset.busy === 'true') return;
+
+    const action = form.dataset.ajaxNotification;
+    const submitter = event.submitter instanceof HTMLButtonElement ? event.submitter : null;
+    const buttons = [...form.querySelectorAll('button[type="submit"]')];
+    const body = new FormData(form);
+    // FormData(form) leaves out the clicked button, but the bulk form needs its action value.
+    if (submitter?.name) body.set(submitter.name, submitter.value);
+
+    form.dataset.busy = 'true';
+    buttons.forEach((button) => {
+        button.dataset.busy = 'true';
+        button.disabled = true;
+    });
 
     try {
+        // Always POST; DELETE forms carry _method=DELETE, which Laravel reads.
         const response = await fetch(form.action, {
             method: 'POST',
-            body: new FormData(form),
+            body,
             headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
         });
         const payload = await response.json().catch(() => ({ message: response.status === 413 ? 'The file is too large to upload.' : `Request failed (HTTP ${response.status}). Please try again.` }));
-        if (!response.ok) throw new Error(payload.message || 'Unable to update notification.');
-
-        updateUnreadNotificationBadge(payload.unread_count);
-
-        const action = form.dataset.ajaxNotification;
-        const item = form.closest('[data-notification-item]');
-
-        if (action === 'read') {
-            item?.classList.remove('is-unread', 'bg-light', 'border-start', 'border-primary', 'border-3');
-            item?.querySelector('.badge.bg-primary')?.remove();
-            form.remove();
-            return;
+        if (!response.ok) {
+            const firstError = payload.errors ? Object.values(payload.errors).flat()[0] : null;
+            throw new Error(firstError || payload.message || 'Unable to update notification.');
         }
 
-        if (action === 'archive' || action === 'restore') {
-            item?.remove();
-            return;
-        }
+        if (payload.unread_count !== undefined) updateUnreadNotificationBadge(payload.unread_count);
+        updateNotificationCounts(payload.counts, payload.unread_count);
 
-        if (action === 'read-all') {
-            document.querySelectorAll('[data-notification-item]').forEach((notificationItem) => {
-                notificationItem.classList.remove('is-unread', 'bg-light', 'border-start', 'border-primary', 'border-3');
-                notificationItem.querySelector('.badge.bg-primary')?.remove();
-                notificationItem.querySelector('[data-ajax-notification="read"]')?.remove();
+        const itemId = form.closest('[data-notification-item]')?.dataset.notificationId;
+
+        if (action === 'read' && itemId) {
+            notificationItems(itemId).forEach(markNotificationItemRead);
+        } else if (NOTIFICATION_REMOVING_ACTIONS.includes(action) && itemId) {
+            notificationItems(itemId).forEach(removeNotificationItem);
+        } else if (action === 'bulk') {
+            // Only the ids the server actually changed (it ignores ids that are not this user's).
+            (payload.ids || []).forEach((id) => {
+                notificationItems(id).forEach(payload.action === 'read' ? markNotificationItemRead : removeNotificationItem);
             });
-            form.remove();
-            return;
+            document.querySelectorAll('[data-notification-select]').forEach((box) => {
+                box.checked = false;
+            });
+        } else if (action === 'read-all') {
+            document.querySelectorAll('[data-notification-item]').forEach(markNotificationItemRead);
+        } else if (action === 'archive-all-read') {
+            // Read items leave the inbox: in the dropdown and on the Inbox tab.
+            document.querySelectorAll('[data-notification-item]').forEach((item) => {
+                if (!item.classList.contains('is-unread')) removeNotificationItem(item);
+            });
         }
 
-        if (action === 'archive-all-read') {
-            document.querySelectorAll('[data-notification-item]').forEach((notificationItem) => {
-                const unreadBadge = notificationItem.querySelector('.badge.bg-primary');
-                if (!unreadBadge) {
-                    notificationItem.remove();
-                }
-            });
-            form.remove();
-        }
+        showNotificationFeedback(payload.message || 'Done.');
     } catch (error) {
-        window.alert(error.message || 'Unable to update notification.');
+        showNotificationFeedback(error.message || 'Unable to update notification.', true);
     } finally {
-        if (submitButton?.isConnected) submitButton.disabled = false;
+        delete form.dataset.busy;
+        buttons.forEach((button) => {
+            delete button.dataset.busy;
+            if (button.isConnected) button.disabled = false;
+        });
+        syncNotificationSelection();
     }
 }, true);
 
@@ -295,6 +394,9 @@ document.addEventListener('submit', async (event) => {
     }
 }, true);
 
+// Set by the live listeners below when something changed while this tab was in the background.
+let liveChangesWhileAway = false;
+
 const focusRefreshTarget = document.querySelector('[data-refresh-on-focus]');
 if (focusRefreshTarget) {
     let blurredAt = null;
@@ -302,10 +404,12 @@ if (focusRefreshTarget) {
         blurredAt = Date.now();
     });
     window.addEventListener('focus', () => {
-        if (blurredAt !== null && Date.now() - blurredAt > 3000) {
-            window.location.reload();
-        }
+        // With live updates on, reload only if something actually changed while away
+        // (it used to reload on every return to the tab, which felt slow).
+        const changed = window.Echo ? liveChangesWhileAway : blurredAt !== null && Date.now() - blurredAt > 3000;
         blurredAt = null;
+        liveChangesWhileAway = false;
+        if (changed) window.location.reload();
     });
 }
 
@@ -341,17 +445,127 @@ if (!reducedMotion && 'IntersectionObserver' in window) {
     revealTargets.forEach((target) => target.classList.add('is-visible'));
 }
 
-document.querySelectorAll('#sbContent table').forEach((table) => {
-    const headings = [...table.querySelectorAll('thead th')].map((heading) => heading.textContent.trim());
-    if (!headings.length) return;
+// Mobile table layout: copies each column heading onto its cells. Re-run on live-refreshed areas.
+const labelResponsiveTables = (root) => {
+    root.querySelectorAll('table').forEach((table) => {
+        const headings = [...table.querySelectorAll('thead th')].map((heading) => heading.textContent.trim());
+        if (!headings.length) return;
 
-    table.classList.add('sb-responsive-table');
-    table.querySelectorAll('tbody tr').forEach((row) => {
-        row.querySelectorAll('td').forEach((cell, index) => {
-            if (cell.hasAttribute('colspan') || cell.dataset.label || !headings[index]) return;
-            cell.dataset.label = headings[index];
+        table.classList.add('sb-responsive-table');
+        table.querySelectorAll('tbody tr').forEach((row) => {
+            row.querySelectorAll('td').forEach((cell, index) => {
+                if (cell.hasAttribute('colspan') || cell.dataset.label || !headings[index]) return;
+                cell.dataset.label = headings[index];
+            });
         });
     });
+};
+const mainContent = document.getElementById('sbContent');
+if (mainContent) labelResponsiveTables(mainContent);
+
+// ---------------------------------------------------------------------------
+// Live regions. A page marks areas with data-live-region="unique-name" and
+// data-live-topics="applications placements notifications". When a live event
+// arrives (Echo listeners below), the current page is fetched in the background
+// and each matching area is swapped in place: no full reload, no lost scroll.
+// An area is never swapped while the user is working in it (typing, items
+// selected, a dialog open); a "New updates" bar offers a refresh instead.
+// ---------------------------------------------------------------------------
+
+const LIVE_REFRESH_DELAY_MS = 700;
+let liveRefreshTimer = null;
+let liveRefreshRunning = false;
+let liveTopicsWaiting = new Set();
+
+const liveRegionIsBusy = (region) => {
+    if (document.querySelector('.modal.show, dialog[open]')) return true;
+    const active = document.activeElement;
+    if (active && region.contains(active) && active.matches('input, textarea, select, [contenteditable="true"]')) return true;
+    if (region.querySelector('[aria-busy="true"], form[data-busy="true"], [data-notification-select]:checked')) return true;
+    // Typed or changed but not saved yet.
+    const edited = [...region.querySelectorAll('input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]), textarea')]
+        .some((field) => field.value !== field.defaultValue);
+    const reselected = [...region.querySelectorAll('select')]
+        .some((select) => [...select.options].some((option) => option.selected !== option.defaultSelected));
+    return edited || reselected;
+};
+
+const showLiveUpdatesBar = () => {
+    if (document.getElementById('sbLiveUpdates')) return;
+    const bar = document.createElement('div');
+    bar.id = 'sbLiveUpdates';
+    bar.className = 'sb-live-updates';
+    bar.setAttribute('role', 'status');
+    bar.innerHTML = '<span>This page has new updates.</span>';
+    const refresh = document.createElement('button');
+    refresh.type = 'button';
+    refresh.className = 'btn btn-sm btn-primary';
+    refresh.textContent = 'Refresh';
+    refresh.addEventListener('click', () => window.location.reload());
+    const dismiss = document.createElement('button');
+    dismiss.type = 'button';
+    dismiss.className = 'btn-close';
+    dismiss.setAttribute('aria-label', 'Dismiss');
+    dismiss.addEventListener('click', () => bar.remove());
+    bar.append(refresh, dismiss);
+    document.body.append(bar);
+};
+
+const regionMatches = (region, topics) => topics.has('*')
+    || (region.dataset.liveTopics || '').split(/\s+/).some((topic) => topics.has(topic));
+
+const refreshLiveRegions = async () => {
+    const topics = liveTopicsWaiting;
+    liveTopicsWaiting = new Set();
+    const regions = [...document.querySelectorAll('[data-live-region]')].filter((region) => regionMatches(region, topics));
+    if (!regions.length) return;
+
+    liveRefreshRunning = true;
+    try {
+        const response = await fetch(window.location.href, {
+            headers: { 'Accept': 'text/html', 'X-Live-Refresh': '1' },
+            credentials: 'same-origin',
+            cache: 'no-store'
+        });
+        // Signed out, page gone, or redirected elsewhere: leave the page as it is.
+        if (!response.ok || response.redirected) return;
+        const freshPage = new DOMParser().parseFromString(await response.text(), 'text/html');
+
+        let skipped = false;
+        regions.forEach((region) => {
+            const fresh = freshPage.querySelector(`[data-live-region="${CSS.escape(region.dataset.liveRegion)}"]`);
+            if (!fresh || fresh.innerHTML === region.innerHTML) return;
+            if (liveRegionIsBusy(region)) {
+                skipped = true;
+                return;
+            }
+            const adopted = document.adoptNode(fresh);
+            region.replaceWith(adopted);
+            labelResponsiveTables(adopted);
+        });
+        if (skipped) showLiveUpdatesBar();
+    } catch {
+        // Network blip: the next live event tries again.
+    } finally {
+        liveRefreshRunning = false;
+        if (liveTopicsWaiting.size) scheduleLiveRefresh();
+    }
+};
+
+/** Collects topics and refreshes once after a short pause (several changes arrive together). */
+function scheduleLiveRefresh(topics = []) {
+    topics.forEach((topic) => liveTopicsWaiting.add(topic));
+    if (document.hidden) {
+        liveChangesWhileAway = true;
+        return; // done when the tab is visible again (visibilitychange below)
+    }
+    if (liveRefreshRunning) return; // picked up in refreshLiveRegions' finally
+    window.clearTimeout(liveRefreshTimer);
+    liveRefreshTimer = window.setTimeout(refreshLiveRegions, LIVE_REFRESH_DELAY_MS);
+}
+
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && liveTopicsWaiting.size) scheduleLiveRefresh();
 });
 
 // ---------------------------------------------------------------------------
@@ -441,10 +655,18 @@ if (window.Echo && currentUserId) {
 
         showLiveToast(payload.title, payload.message, payload.show_url);
 
+        // A notification usually means something on this page changed: refresh its live areas.
+        scheduleLiveRefresh(['*']);
+
         // Lets an open chat with that company unlock in place (messages/show.blade.php).
         if (payload.messaging_open_with) {
             window.dispatchEvent(new CustomEvent('sb:messaging-opened', { detail: payload.messaging_open_with }));
         }
+    });
+
+    // Data you can see changed (App\Events\LiveUpdate); payload.topics says which kind.
+    channel.listen('.live.update', (payload) => {
+        scheduleLiveRefresh(Array.isArray(payload.topics) ? payload.topics : ['*']);
     });
 
     channel.listen('.message.sent', (payload) => {

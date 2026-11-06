@@ -17,4 +17,10 @@ class AppNotificationPolicy
     {
         return $this->view($user, $notification);
     }
+
+    /** Delete, restore from Trash, and delete forever: owner only. */
+    public function delete(User $user, AppNotification $notification): bool
+    {
+        return $this->view($user, $notification);
+    }
 }

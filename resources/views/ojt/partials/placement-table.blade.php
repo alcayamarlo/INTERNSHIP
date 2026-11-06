@@ -1,5 +1,5 @@
 {{-- Placement monitoring table. Expects $placements (paginator) and $showRoute (route name taking a placement). --}}
-<div class="card">
+<div class="card" data-live-region="placement-table" data-live-topics="placements">
     <div class="table-responsive">
         <table class="table table-hover mb-0 align-middle sb-table-stack">
             <thead>

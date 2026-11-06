@@ -21,11 +21,17 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        // One collector per request / queue job, so live pings never leak between them.
+        $this->app->scoped(\App\Services\LiveUpdates::class);
     }
 
     public function boot(): void
     {
+        // Live refresh pings for the lists people keep open (see App\Services\LiveUpdates).
+        foreach ([InternshipApplication::class, \App\Models\Placement::class, \App\Models\AttendanceLog::class, \App\Models\JournalEntry::class, \App\Models\Evaluation::class] as $liveModel) {
+            $liveModel::observe(\App\Observers\LiveUpdateObserver::class);
+        }
+
         User::observe(DashboardCacheObserver::class);
         Student::observe(DashboardCacheObserver::class);
         Internship::observe(DashboardCacheObserver::class);

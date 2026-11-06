@@ -199,6 +199,13 @@
         <div class="card">
             <div class="card-header"><h2>Update Status</h2></div>
             <div class="card-body">
+                {{-- The student already has an ongoing OJT from another application, so "Accepted" is not offered. --}}
+                @if($placedElsewhere)
+                    <div class="alert alert-warning small" role="status">
+                        <i class="bi bi-info-circle" aria-hidden="true"></i>
+                        This student already has an ongoing OJT placement with another company, so you can't accept this application right now. A student can only have one OJT at a time.
+                    </div>
+                @endif
                 @if($availableStatuses !== [])
                 <form method="POST" action="{{ route('employer.applicants.status', $application) }}" data-ajax-form data-application-status-form data-ajax-redirect>
                     @csrf @method('PUT')
@@ -209,6 +216,7 @@
                                 <option value="{{ $status->value }}" {{ $application->status === $status ? 'selected' : '' }}>{{ $status->label() }}</option>
                             @endforeach
                         </select>
+                        @error('status')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Interview Date</label>

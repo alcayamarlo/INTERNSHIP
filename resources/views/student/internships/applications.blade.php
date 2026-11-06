@@ -30,7 +30,7 @@
     </div>
 </form>
 
-<div class="card">
+<div class="card" data-live-region="my-applications" data-live-topics="applications">
     @if($applications->count())
     <div class="table-responsive">
         <table class="table table-hover">

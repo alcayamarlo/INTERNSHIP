@@ -56,7 +56,18 @@ class ApplicantController extends Controller
         $profile = $this->companyProfile->for($application->student, Auth::user(), $application);
         $availableStatuses = $application->status->allowedNextStatuses();
 
-        return view('employer.applicants.show', compact('application', 'applicationResume', 'availableStatuses', 'profile'));
+        // One OJT at a time: hide "Accepted" when another company already placed this student.
+        // The server still re-checks on submit (PlacementService::openForApplication).
+        $placedElsewhere = in_array(ApplicationStatus::Accepted, $availableStatuses, true)
+            && $this->placementService->openPlacementFor($application->student_id, $application->id) !== null;
+        if ($placedElsewhere) {
+            $availableStatuses = array_values(array_filter(
+                $availableStatuses,
+                fn (ApplicationStatus $status) => $status !== ApplicationStatus::Accepted
+            ));
+        }
+
+        return view('employer.applicants.show', compact('application', 'applicationResume', 'availableStatuses', 'profile', 'placedElsewhere'));
     }
 
     public function updateStatus(UpdateApplicationStatusRequest $request, InternshipApplication $application)

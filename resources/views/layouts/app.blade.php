@@ -96,7 +96,7 @@
 
     $avatar = \App\Support\Avatar::for($currentUser);
 
-    $unread = $currentUser?->appNotifications()->whereNull('read_at')->whereNull('archived_at')->count() ?? 0;
+    $unread = $currentUser?->appNotifications()->unread()->count() ?? 0;
 
     // [route name, active pattern, icon, label]
     $navGroups = match (true) {
@@ -354,7 +354,7 @@
             {{-- NOTIFICATIONS --}}
 
             @php
-                $recentNotifications = $currentUser->appNotifications()->whereNull('archived_at')->latest()->take(5)->get();
+                $recentNotifications = $currentUser->appNotifications()->inbox()->latest()->take(5)->get();
             @endphp
             <div class="dropdown sb-notification-dropdown">
                 <button type="button" class="sb-top-action" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" aria-label="Notifications{{ $unread ? ', '.$unread.' unread' : '' }}">
@@ -378,9 +378,10 @@
                                     <button type="submit" class="btn btn-sm btn-outline-primary">Mark read</button>
                                 </form>
                             @endif
-                            <form action="{{ route('notifications.archive', $notification) }}" method="POST" class="mt-2" data-ajax-notification="archive" data-confirm="Delete this notification? It will be moved to your archive." data-confirm-title="Delete notification">
+                            {{-- Archive is reversible (Notifications → Archived → Unarchive), so it needs no confirmation. --}}
+                            <form action="{{ route('notifications.archive', $notification) }}" method="POST" class="mt-2" data-ajax-notification="archive">
                                 @csrf
-                                <button type="submit" class="btn btn-sm btn-outline-secondary">Delete (archive)</button>
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Archive</button>
                             </form>
                         </div>
                     @empty

@@ -5,7 +5,7 @@
 @section('content')
 <x-page-header title="OJT Monitoring" subtitle="Validate placements, track hours against the requirement, follow up on students at risk, and clear completed OJTs." />
 
-<div class="row g-3 mb-4">
+<div class="row g-3 mb-4" data-live-region="placement-summary" data-live-topics="placements">
     <div class="col-md-4 col-xl"><x-dashboard-stat-card title="To validate" :value="$summary['pending_validation']" icon="bi-shield-exclamation" tone="warning" :href="route('coordinator.placements.index', ['status' => 'pending_validation'])" /></div>
     <div class="col-md-4 col-xl"><x-dashboard-stat-card title="At risk" :value="$summary['at_risk']" icon="bi-exclamation-triangle" tone="danger" :href="route('coordinator.placements.index', ['status' => 'at_risk'])" /></div>
     <div class="col-md-4 col-xl"><x-dashboard-stat-card title="Ongoing OJT" :value="$summary['ongoing']" icon="bi-person-workspace" tone="info" :href="route('coordinator.placements.index', ['status' => 'ongoing'])" /></div>

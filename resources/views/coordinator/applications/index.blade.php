@@ -10,7 +10,7 @@
     @endif
 </x-page-header>
 
-<div class="row g-3 mb-4" role="list" aria-label="Applications by stage">
+<div class="row g-3 mb-4" role="list" aria-label="Applications by stage" data-live-region="application-stages" data-live-topics="applications placements">
     @foreach($stages as $key => $label)
         <div class="col-6 col-md-3 col-xl" role="listitem">
             <a href="{{ route('coordinator.applications.index', ['stage' => $key] + array_filter(['program_id' => $filters['program_id'] ?? null])) }}" class="card text-decoration-none h-100 {{ ($filters['stage'] ?? null) === $key ? 'border-primary' : '' }}" data-stage="{{ $key }}">
@@ -51,7 +51,7 @@
     </div>
 </form>
 
-<div class="card mb-4">
+<div class="card mb-4" data-live-region="application-list" data-live-topics="applications placements">
     <div class="card-header"><h2>Applications</h2></div>
     <div class="table-responsive">
         <table class="table table-hover mb-0">

@@ -5,7 +5,7 @@
     $hasPending = $logs->contains('status', \App\Models\AttendanceLog::STATUS_PENDING);
 @endphp
 
-<div class="card mb-4">
+<div class="card mb-4" data-live-region="ojt-attendance-{{ $placement->id }}" data-live-topics="placements">
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <h2 class="h6 mb-0"><i class="bi bi-clock" aria-hidden="true"></i> Daily Time Record</h2>
         @if($mode === 'employer' && $hasPending && ! $placement->isCleared())

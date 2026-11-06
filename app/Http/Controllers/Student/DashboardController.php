@@ -41,7 +41,7 @@ class DashboardController extends Controller
             'recommendations' => $recommendations,
             'recentApplications' => $recentApplications,
             'competencyScore' => $competencyScore,
-            'notifications' => Auth::user()->appNotifications()->latest()->take(5)->get(),
+            'notifications' => Auth::user()->appNotifications()->inbox()->latest()->take(5)->get(), // archived and deleted stay out of the dashboard
             'unreadCount' => $this->notificationService->unreadCount(Auth::user()),
         ]);
     }

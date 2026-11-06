@@ -154,7 +154,7 @@
         <p class="employer-page-subtitle">Review student applications</p>
     </div>
 
-    <div class="card">
+    <div class="card" data-live-region="applicants" data-live-topics="applications">
         <div class="table-responsive">
             <table class="table table-hover mb-0">
                 <thead>

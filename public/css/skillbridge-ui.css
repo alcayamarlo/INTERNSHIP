@@ -5020,3 +5020,7 @@ button.auth-link:disabled {
 .sb-section-tab { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; border: 1px solid var(--sb-border); border-radius: 999px; color: var(--sb-text-soft); background: var(--sb-surface); font-size: 14px; font-weight: 600; text-decoration: none; transition: background-color var(--sb-motion-fast) ease, border-color var(--sb-motion-fast) ease, color var(--sb-motion-fast) ease; }
 .sb-section-tab:hover { border-color: var(--sb-brand); color: var(--sb-brand-content); }
 .sb-section-tab.active { border-color: var(--sb-brand); color: #fff; background: var(--sb-brand); }
+
+/* "New updates" bar: shown by resources/js/app.js when a live area changed while the user was working in it. */
+.sb-live-updates { position: fixed; z-index: 1080; left: 50%; bottom: 20px; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px); padding: 10px 12px 10px 16px; border: 1px solid var(--sb-border); border-radius: 999px; background: var(--sb-surface); color: var(--sb-ink); box-shadow: 0 8px 24px rgb(0 0 0 / .15); font-size: 14px; transform: translateX(-50%); }
+.sb-live-updates .btn { border-radius: 999px; }

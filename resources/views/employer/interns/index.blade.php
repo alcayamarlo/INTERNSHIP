@@ -11,7 +11,7 @@
     <a href="{{ route('employer.interns.index', ['status' => 'completed']) }}" class="btn btn-sm {{ $status === 'completed' ? 'btn-primary' : 'btn-outline-primary' }}">Completed</a>
 </div>
 
-<div class="card">
+<div class="card" data-live-region="interns" data-live-topics="placements">
     <div class="table-responsive">
         <table class="table table-hover mb-0 align-middle sb-table-stack">
             <thead>

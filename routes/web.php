@@ -98,6 +98,12 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
     Route::post('/notifications/{notification}/restore', [NotificationController::class, 'restore'])->name('notifications.restore');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
     Route::post('/notifications/archive-all-read', [NotificationController::class, 'archiveAllRead'])->name('notifications.archive-all-read');
+    // Selected notifications: read, archive, unarchive, delete, restore, force-delete (own notifications only).
+    Route::post('/notifications/bulk', [NotificationController::class, 'bulk'])->name('notifications.bulk');
+    // Soft delete to Trash; withTrashed lets a repeated click succeed instead of 404.
+    Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->whereNumber('notification')->withTrashed()->name('notifications.destroy');
+    Route::post('/notifications/{notification}/restore-deleted', [NotificationController::class, 'restoreDeleted'])->whereNumber('notification')->withTrashed()->name('notifications.restore-deleted');
+    Route::delete('/notifications/{notification}/force', [NotificationController::class, 'forceDestroy'])->whereNumber('notification')->withTrashed()->name('notifications.force-destroy');
     Route::get('/api/notifications/unread', [NotificationController::class, 'unreadJson'])->name('notifications.unread');
     // 2x2 picture: private file, served only through StudentPolicy::viewIdPhoto.
     Route::get('/students/{student}/id-photo', [\App\Http\Controllers\Student\IdPhotoController::class, 'show'])->whereNumber('student')->name('students.id-photo');

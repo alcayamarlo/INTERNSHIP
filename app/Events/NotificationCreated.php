@@ -5,17 +5,22 @@ namespace App\Events;
 use App\Models\AppNotification;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Queue\SerializesModels;
 
 /**
- * Pushed to the recipient's private channel the moment an in-app
- * notification is written. Broadcasts now (not queued) since the app's
- * queue connection is sync and there is no guaranteed worker process.
+ * Pushed to the recipient's private channel when an in-app notification is written.
+ *
+ * Queued (ShouldBroadcast), so the Pusher HTTP call (0.2-2 s each) never runs inside the
+ * click that caused it. With QUEUE_CONNECTION=sync it still goes out immediately, exactly
+ * as before; with QUEUE_CONNECTION=database the queue worker sends it about a second later.
  */
-class NotificationCreated implements ShouldBroadcastNow
+class NotificationCreated implements ShouldBroadcast
 {
     use InteractsWithSockets, SerializesModels;
+
+    /** A notification deleted before the worker gets to it is simply skipped. */
+    public bool $deleteWhenMissingModels = true;
 
     public function __construct(public AppNotification $notification) {}
 

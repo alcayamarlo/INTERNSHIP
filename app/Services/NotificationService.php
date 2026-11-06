@@ -67,6 +67,7 @@ class NotificationService
 
     public function unreadCount(User $user): int
     {
-        return $user->appNotifications()->whereNull('read_at')->whereNull('archived_at')->count();
+        // Inbox only: archived and deleted (trashed) notifications never count toward the badge.
+        return $user->appNotifications()->unread()->count();
     }
 }

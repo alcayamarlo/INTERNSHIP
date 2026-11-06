@@ -57,7 +57,7 @@ class DashboardController extends Controller
             'activeInternships' => $activeInternships,
             'recentApplications' => $recentApplications,
             'applicationStats' => $applicationStats,
-            'notifications' => Auth::user()->appNotifications()->latest()->take(5)->get(),
+            'notifications' => Auth::user()->appNotifications()->inbox()->latest()->take(5)->get(), // archived and deleted stay out of the dashboard
         ]);
     }
 }
