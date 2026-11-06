@@ -15,17 +15,24 @@ administrator.
   and application status history.
 - Coordinator evidence review and report generation, plus administrator user
   management, announcements, and reports.
-- Role-based access control, email verification, queued in-app notifications,
-  and protected routes for private documents.
+- Role-based access control, email verification, in-app notifications with
+  archive, Trash, and bulk actions, messaging, and protected routes for
+  private documents.
+- One ongoing OJT per student: a student who already has an open placement
+  cannot be accepted by a second company.
 
 Matching is deterministic and rule-based: verified student competencies are
 compared with internship requirements and proficiency levels. It is not an
 AI/ML model. This project manages internships; it is not a freelance
 marketplace.
 
-Notifications are stored in the application and some notification work is
-queued. Email delivery requires a configured mail transport. The project does
-not provide SMS delivery or promise real-time delivery.
+Notifications are stored in the application as soon as they happen. Their
+email copies and live updates are sent by the queue worker, so keep it running
+(see [Local setup](#local-setup-windowsxampp)). With Pusher configured,
+notifications, chat messages, and the main lists (applicants, placements, OJT
+records, applications, notifications) update on screen without a reload. Other
+pages show changes when they are opened or refreshed. Email delivery requires
+a configured mail transport. The project does not provide SMS delivery.
 
 ## Role-based tutorial: from account setup to OJT completion
 
@@ -62,24 +69,38 @@ missing, confirm that you are signed in with the right role and that the
 account, company, application, or placement has reached the state required
 for that action.
 
-Use the application menu names below as a guide. Menu layout can vary by
-screen size, but role pages are also available from that role's dashboard.
+Use the application menu names below as a guide. Role pages are in the left
+sidebar (on a phone, open it with the menu button). Three things live in the
+top bar instead: **Messages** (chat icon), **Notifications** (bell icon), and
+your **account menu** (your name), which holds your profile page (**My
+Profile**, **Company Profile**, or **Coordinator Profile**) and **Sign out**.
 The application uses separate accounts and permissions; changing the role
 requires an administrator and is not a way to switch between dashboards
 yourself.
 
+Many lists update on their own while you watch them: when another role saves
+something that affects a list you have open, it refreshes in place. If you
+are typing or have items selected at that moment, the list is left alone and a
+**This page has new updates** bar appears; select **Refresh** when you are
+ready.
+
 ### Before using the forms
 
-1. Complete the [local setup](#local-setup-windowsxampp) and sign in at
-   `http://localhost:8000`.
+1. Complete the [local setup](#local-setup-windowsxampp), start the app with
+   `start-dev.bat`, and sign in at `http://127.0.0.1:8000`.
 2. Use an account assigned the role for the task. This project does not define
    a public registration route; an administrator provisions student,
    coordinator, and employer accounts from **Admin → Users → Create User** (or
    imports students). Use a seeded demo account only on a disposable local
    database as described in [Getting Started](GETTING_STARTED.md).
-3. If prompted, change the temporary password and verify the account's email.
-   Email codes require a configured mail transport; with the default `log`
-   mailer, check `storage/logs/laravel.log`.
+3. On the first sign-in, follow the account setup in this order: add your
+   email address, enter the 6-digit code sent to it, then replace the
+   temporary password with a new one. Accounts created by an administrator
+   already have a verified email and go straight to the new-password step.
+   Each step holds you there until it is done. Email codes require a configured mail
+   transport; with the default `log` mailer, check `storage/logs/laravel.log`.
+   Later sign-ins go straight to the dashboard; you are asked for a code again
+   only if you change your email address.
 4. Finish the role profile if the system sends you to profile completion.
    Forms show validation messages when a required value is missing or invalid.
 5. To practice all hand-offs, use one test account per role (the demo users
@@ -96,7 +117,7 @@ yourself.
 | Employer → Administrator | Company profile is saved with accurate company information. | Administrator reviews the company account and verifies it. |
 | Employer → Student | Internship is saved as open and describes programs, duties, and skill requirements. | Student reviews the listing and applies if it is suitable. |
 | Student → Employer | Application is submitted with the requested cover letter/details. | Employer reviews the application and records the next decision. |
-| Employer → Student and Coordinator | Application is accepted, creating an OJT placement. | Student and employer work in the OJT record; coordinator validates and monitors it. |
+| Employer → Student and Coordinator | Application is accepted, creating an OJT placement. A student can have only one ongoing OJT. | Student and employer work in the OJT record; coordinator validates and monitors it. |
 | Student → Employer | Attendance entries and weekly journals are submitted. | Employer reviews the work records and provides the requested evaluation. |
 | Employer → Coordinator | Approved hours and supervisor evaluation are recorded. | Coordinator reviews the OJT and clears it when all completion requirements are met. |
 
@@ -104,9 +125,10 @@ yourself.
 
 1. Open **Admin → Institutions** and create or confirm the institution. Verify
    it before assigning it to new student or coordinator accounts.
-2. Open **Admin → Academics** and confirm the programs and deployment
+2. Open **Admin → Academic settings** and confirm the programs and deployment
    requirements students will use. Configure the required internship hours
-   there; the default is 300 hours.
+   there; the default is 300 hours. Program-specific hours and rules can be
+   set under **Eligibility Criteria**.
 3. Go to **Admin → Users → Create User**. Enter the person's name, email,
    account type, and temporary password. Select the institution for a student
    or coordinator; enter the company name for an employer. For a student,
@@ -115,22 +137,25 @@ yourself.
    The role selection controls which role profile fields are shown. Check the
    email address, role, institution/company, and student ID before submitting.
 4. After the employer completes its company profile in Step 4, return to
-   **Admin → Users**, review the company account, and use the company
-   verification action. Until verification, the employer cannot post
-   internships, browse student profiles, or send invitations.
+   **Admin → Users**, review the company account, and select **Verify
+   company** in its row. Until verification, the employer cannot post
+   internships, browse student profiles, or send invitations. **Unverify
+   company** reverses it.
 5. Use **Admin → Users** to search and filter accounts if you need to confirm
    their role or status. Do not share a temporary password in a public
    channel; tell the user to change it if prompted.
 
 ### Step 2 — Student completes the profile and submits evidence
 
-1. Sign in as a student and open **Profile**. If shown, agree to the privacy
-   statement before saving profile information.
+1. Sign in as a student and open **My Profile** from the account menu. If
+   shown, agree to the privacy statement before saving profile information.
 2. Work through the profile tabs: **Personal**, **Contact**, **Academic**,
    **Skills**, **Experience**, **Portfolio**, **Character Reference**, and
    **Documents**. Complete the required fields and save. Use the profile
-   completion indicator to find missing sections.
-3. Add competencies and their proficiency levels in **Competencies**. Upload
+   completion indicator to find missing sections. If you change your email
+   address on the **Contact** tab, a code is sent to the new address and you
+   must enter it before using the rest of the app.
+3. Add competencies and their proficiency levels in **My Certificates**. Upload
    supporting evidence where requested. Add portfolio items, certificates, or
    other deployment documents from the corresponding profile sections.
 4. Generate a resume from **Resume** after the profile has enough information.
@@ -155,10 +180,10 @@ yourself.
    when the form asks for one. The student can then correct the profile or
    replace the submission and check the result.
 4. Review the student's academic readiness and eligibility where applicable.
-   Use the **Applications** and **Placements** pages to monitor progress once
-   students begin applying or are accepted.
+   Use the **Applications** and **OJT Monitoring** pages to monitor progress
+   once students begin applying or are accepted.
 5. If partner-company documentation needs follow-up, review it under
-   **Companies**. Keep the student and employer informed through the system's
+   **Partner Companies**. Keep the student and employer informed through the system's
    messaging and notifications.
 6. Revisit pending work after the student or employer responds. A review is
    complete only when the corresponding status or decision is saved and the
@@ -167,7 +192,8 @@ yourself.
 
 ### Step 4 — Employer completes its profile and posts an internship
 
-1. Sign in as the employer and open **Profile**. Complete the company name,
+1. Sign in as the employer and open **Company Profile** from the account menu.
+   Complete the company name,
    industry, contact details, and other relevant company information, then
    save. The profile indicates whether admin verification is still pending.
    Ask the administrator to review and verify the company account.
@@ -196,11 +222,13 @@ yourself.
    Review the description, work setup, location, program eligibility,
    requirements, and competencies before applying. Recommendations are
    rule-based matches, not AI decisions.
-2. Open the opportunity and select **Apply**. Complete the application form,
-   including the cover letter if applicable, and submit it once.
-3. Open **Applications** to see the submitted application and its current
-   status. Edit or withdraw it only while the application is in a status that
-   allows those actions.
+2. Open the opportunity and select **Apply Now** (or **Apply** in the list).
+   Complete the application form, including the cover letter if applicable,
+   and submit it once.
+3. Open **Internships → My Applications** to see the submitted application and
+   its current status; it updates on its own when the employer changes it.
+   Edit or withdraw it only while the application is in a status that allows
+   those actions.
 4. The coordinator can monitor applications and placements, but the employer
    is responsible for reviewing and updating each application decision.
 5. Apply only once per opportunity. If the application form returns an error,
@@ -215,8 +243,8 @@ yourself.
 2. Use the status form to choose one of the currently available next statuses.
    The workflow can include **Reviewed**, **Interview**, **Accepted**, or
    **Rejected**; available choices depend on the application's current status.
-   Add interview date and notes when relevant, then save.
-3. The student follows the status from **Applications** and notifications.
+   Add interview date and notes when relevant, then select **Update Status**.
+3. The student follows the status from **My Applications** and notifications.
    When the employer accepts the application, the system creates its OJT
    placement record; the student and coordinator can then follow that record.
 4. Status choices are intentionally limited to valid next steps. For example,
@@ -228,14 +256,20 @@ yourself.
 5. Before accepting, confirm the student and internship are correct.
    Acceptance starts a placement, so the resulting OJT needs its own schedule,
    deployment validation, attendance, and review.
+6. A student can have only one ongoing OJT. If another company has already
+   accepted the student, **Accepted** is not offered and a note on the page
+   explains why (the other company is not named). You can still mark the
+   application **Rejected**. If the arrangement needs to change, the student's
+   coordinator handles it.
 
 ### Step 7 — Coordinator validates the placement before deployment
 
-1. Open **Coordinator → Placements** and filter for placements awaiting
-   validation.
+1. Open **OJT Monitoring** and select the **To validate** card (or choose
+   **To validate** in the status filter). New placements appear here without a
+   reload when an employer accepts a student.
 2. Open the placement and review the listed validation checks. If requirements
-   are still missing, keep the placement pending and enter remarks so the
-   student and employer know what to address.
+   are still missing, enter remarks and select **Keep pending with remarks** so
+   the student and employer know what to address.
 3. When checks pass, select **Validate placement**. If the form presents
    warnings, review and acknowledge them before proceeding.
 4. The coordinator can monitor ongoing hours, flag a placement for follow-up,
@@ -248,14 +282,17 @@ yourself.
 ### Step 8 — Student records OJT attendance and weekly journals
 
 1. Once the placement is active and its start date has arrived, open
-   **Student → OJT**.
-2. For each workday, use **Add daily entry** to enter the date, time in, time
-   out, break, and work/tasks completed. Submit the entry for supervisor review.
-3. Use **Add weekly journal** to summarize accomplishments, learning, and
-   challenges for the week, then submit it.
-4. Return to the OJT page to check progress toward the required hours and see
-   which entries or journals are awaiting review. Correct returned items as
-   needed.
+   **My OJT**. The page has three tabs: **Progress**, **Time Record**, and
+   **Weekly Journal**.
+2. For each workday, open **Time Record** and select **Add daily entry**.
+   Enter the date, time in, time out, break, and work/tasks completed, then
+   select **Submit time entry** for supervisor review.
+3. On **Weekly Journal**, select **Add weekly journal** to summarize
+   accomplishments, learning, and challenges for the week, then select
+   **Submit journal**.
+4. Use **Progress** to check approved hours against the requirement. Entries
+   and journals show their review status, and update on their own when the
+   supervisor approves or rejects them. Correct returned items as needed.
 5. Enter actual work dates and hours, and submit records regularly so the
    employer can review them. Only approved attendance contributes to the
    approved-hours progress; a submitted or pending entry is not yet a
@@ -263,14 +300,16 @@ yourself.
 
 ### Step 9 — Employer supervises the intern and submits an evaluation
 
-1. Open **Employer → Interns** and select the placement. Confirm or update the
-   start and expected end dates in the schedule form.
-2. Review the student's daily attendance and approve or reject entries. Read
-   submitted weekly journals and record the supervisor review.
+1. Open **Interns** and select the placement. Confirm or update the start and
+   expected end dates, then select **Save schedule**.
+2. In **Daily Time Record**, select **Approve** or **Reject** for each entry
+   (a rejection needs a remark), or **Approve all pending**. Read submitted
+   weekly journals and select **Acknowledge** with an optional comment. New
+   entries from the student appear without a reload.
 3. When the coordinator requests a rating, complete the performance
    evaluation form. Rate each criterion from 1 to 5 and add strengths,
    improvement areas, overall comments, and the hiring consideration if
-   appropriate. Submit or update the evaluation.
+   appropriate. Select **Submit evaluation** (or **Update evaluation** later).
 4. Keep reviewing entries until the approved hours meet the required total and
    the evaluation has been submitted. The student can see the OJT progress
    from their own dashboard.
@@ -280,11 +319,11 @@ yourself.
 
 ### Step 10 — Coordinator completes final review and clears the OJT
 
-1. Open **Coordinator → Placements** and select the placement marked for
-   clearance.
+1. Open **OJT Monitoring**, select the **For clearance** card, and open the
+   placement.
 2. Confirm that the required hours have been approved and the employer
-   evaluation is submitted. Use the separate **Reviews** page for any weekly
-   journals or evaluations requiring the coordinator's second review.
+   evaluation is submitted. Use the separate **Report Reviews** page for any
+   weekly journals or evaluations requiring the coordinator's second review.
 3. If the record is complete, choose **Clear and issue certificate**. Add
    optional clearance remarks and confirm the action. Clearing the OJT issues
    the certificate of completion.
@@ -299,9 +338,20 @@ yourself.
 
 ### Shared forms and follow-up
 
-- **Messages** can be used to coordinate between eligible participants.
-- **Notifications** and application/OJT status pages show updates and
-  follow-up actions.
+- **Messages** (chat icon in the top bar) can be used to coordinate between
+  eligible participants. Conversations are listed on the left and the chat on
+  the right. You can edit or unsend your own messages; **unsend** removes it
+  for both people, while **remove for you** only clears your own copy.
+- **Notifications** (bell icon) show updates and follow-up actions. The bell
+  count shows unread items in your inbox. On the **Notifications** page:
+  - **Inbox**, **Archived**, and **Trash** tabs show how many items each holds.
+  - **Archive** moves an item out of the inbox; **Unarchive** brings it back.
+  - **Delete** asks for confirmation and moves the item to **Trash**. From
+    Trash you can **Restore** it or **Delete forever** (this cannot be undone).
+  - Tick several items (or **Select all on this page**) to mark them read,
+    archive, unarchive, delete, or restore them together. **Mark all read**
+    and **Archive all read** act on the whole inbox.
+  - Archived and deleted items do not appear on dashboards or in the bell.
 - Use only files and information that you are authorized to access. Student
   resumes and other protected documents are served through role- and
   ownership-checked pages.
@@ -311,9 +361,10 @@ yourself.
 - Read form errors from top to bottom. Required fields are marked in the
   interface; date, file type/size, and allowed status rules can also prevent a
   save. Correct the fields named in the error message and submit again.
-- Refresh the relevant list or record after saving to confirm the new status
-  is visible. If it is not, check for a validation message instead of assuming
-  that the save succeeded.
+- After saving, check for the success message. Lists that other people are
+  watching update for them automatically; pages without live updates show the
+  change after a refresh. If the new status is not visible, check for a
+  validation message instead of assuming that the save succeeded.
 
 ### Quick completion checklist
 
@@ -360,31 +411,57 @@ php artisan storage:link
 The seeder creates demo users and sample application records. Do not run
 `migrate:fresh` against a database containing data you need to keep.
 
-Start the web application and the database-backed queue worker in separate
-terminals:
+Set `QUEUE_CONNECTION=database` in `.env`. Then start the web server and the
+queue worker together by double-clicking `start-dev.bat`, or by running it from
+a terminal in the project folder:
+
+```powershell
+.\start-dev.bat
+```
+
+It opens two windows: the web server and the queue worker. Keep both open
+while you use the app, and close them to stop it. The queue worker sends
+notification emails and live updates in the background, so clicks do not wait
+for them; without it, they wait in the queue until a worker starts. To start
+them by hand instead, use two terminals:
 
 ```powershell
 php artisan serve
-php artisan queue:work
+php artisan queue:listen --tries=3 --timeout=120 --sleep=1
 ```
 
-For frontend development with Vite hot reload, use a third terminal:
+For frontend development with Vite hot reload, use another terminal:
 
 ```powershell
 npm run dev
 ```
 
-The app is normally available at `http://localhost:8000`.
+Open the app at `http://127.0.0.1:8000`. On Windows, `http://localhost:8000`
+also works, but it is noticeably slower because each request tries IPv6 first.
+
+For speed on XAMPP, enable OPcache in `C:\xampp\php\php.ini` (remove the
+leading `;` from `zend_extension=opcache` and set `opcache.enable=1`,
+`opcache.enable_cli=1`, `opcache.revalidate_freq=0`), then restart the server.
+Without it, every request spends about half a second loading PHP files.
 
 ## Email verification
 
-New registrations are student accounts and are not considered verified until
-they submit the emailed 6-digit code. The code expires after 10 minutes; it is
-stored hashed, and verification is locked after five incorrect submissions.
-The verification page can request another code subject to resend throttling.
-Configure a working `MAIL_*` transport in `.env` to deliver messages. The
-example environment uses the `log` mailer, which writes mail content to the
-Laravel log instead of sending it to an inbox.
+There is no public registration. Accounts created by an administrator are
+marked as email-verified. Imported students start without an email: at their
+first sign-in they add one, enter the 6-digit code sent to it, and then set a
+new password. After that, signing in goes straight to the dashboard.
+
+A student who changes their email address (on the profile **Contact** tab, or
+when an administrator edits it) must verify the new address: a code is sent to
+it and other pages stay locked until it is entered. Saving the same address
+again does not ask for a code.
+
+The code expires after 10 minutes; it is stored hashed, and verification is
+locked after five incorrect submissions. The verification page can request
+another code subject to resend throttling. Configure a working `MAIL_*`
+transport in `.env` to deliver messages. The example environment uses the
+`log` mailer, which writes mail content to the Laravel log instead of sending
+it to an inbox.
 
 ## Tests
 
@@ -439,6 +516,12 @@ Railway checklist:
 - Run `php artisan migrate --force` on every deploy (the 2026-10-20
   migrations normalize emails, archive previously deleted users, and verify
   admin-created accounts).
+- The `2026_11_06_000005` migration adds the one-OJT-per-student rule and
+  stops if any student already has more than one open placement. If it
+  reports student IDs, back up the database, run
+  `database/sql/dedupe_open_placements.sql` one step at a time (read its notes
+  first; it soft-deletes the extra placements and keeps a backup table), then
+  migrate again.
 - Run `php artisan db:health` after migrating (safe, read-only) to catch a
   table whose `id` column lost its `AUTO_INCREMENT` -- this happened on this
   project's own database from what looked like a SQL dump/restore, and every
@@ -446,8 +529,10 @@ Railway checklist:
   the exact `ALTER TABLE` statement for anything it finds.
 - Mount a volume at `/app/storage` or use the `s3_*` disks above. Without
   `storage:link`, profile pictures are still served by `routes/public-files.php`.
-- In-app notifications no longer need a queue worker; only notification
-  emails are queued, so run `php artisan queue:work` if you want them sent.
+- Set `QUEUE_CONNECTION=database` and run a queue worker
+  (`php artisan queue:work`) as its own process. In-app notifications are
+  saved without it, but notification emails, announcement emails, and live
+  updates are sent by the worker.
 - `/health` reports database, cache and queue status.
 
 Generate `APP_KEY` once for a new installation and preserve it across
