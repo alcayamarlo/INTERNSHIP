@@ -68,22 +68,29 @@ The example `.env` uses the database queue connection. Keep a queue worker
 running to process queued notification jobs. In production, configure a
 managed worker and restart it after deployments.
 
-## 4. Configure email
+## 4. Account access and email verification
 
-The example mailer is `log`, so messages are written to the application log
-instead of delivered to a mailbox. To receive verification codes and other
-email, set a working `MAIL_MAILER` and the corresponding mail host, port,
-credentials, and sender values in `.env`.
+Accounts are provisioned by an administrator or included in local seed data;
+the current application does not expose a public registration form. Admin
+created accounts are marked as email-verified. A student account that is
+waiting for email verification must complete the verification page before
+accessing protected pages.
 
-After a new student registers:
+The example mailer is `log`, so verification codes and other mail are written
+to the application log instead of delivered to a mailbox. To receive email,
+set a working `MAIL_MAILER` and the corresponding mail host, port, credentials,
+and sender values in `.env`.
 
-1. Skill-Bridge emails a six-digit verification code.
-2. Enter the code on the verification page within 10 minutes.
-3. If needed, use **Resend code**; resend requests are throttled.
-4. Five incorrect code submissions invalidate the current code.
+If a student needs to verify an email:
 
-The stored code is hashed. Registration and code delivery are separate steps;
-do not assume the account is verified until the code is accepted.
+1. Enter or confirm the email address on the verification page.
+2. Enter the six-digit code sent to that address within 10 minutes. With the
+   default `log` mailer, find the message in `storage/logs/laravel.log`.
+3. If the code expires, use **Resend code**. Five incorrect attempts require a
+   new code.
+
+The code is stored hashed. See the [role-based tutorial](README.md#role-based-tutorial-from-account-setup-to-ojt-completion)
+for the connected account, internship, application, and OJT forms.
 
 ## 5. Try the role workflows
 

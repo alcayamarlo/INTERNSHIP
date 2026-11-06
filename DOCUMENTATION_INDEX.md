@@ -4,8 +4,8 @@ This index lists documentation files currently maintained in the repository.
 
 ## Start here
 
-- [README.md](README.md) - project scope, requirements, setup, verification,
-  queue worker, and security notes.
+- [README.md](README.md) - project scope, requirements, setup, end-to-end
+  role-based tutorial, queue worker, and security notes.
 - [GETTING_STARTED.md](GETTING_STARTED.md) - Windows local installation and
   first-use walkthrough.
 - [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md) - implemented role capabilities,
