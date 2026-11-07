@@ -36,7 +36,7 @@ class ModerationController extends Controller
             ->when($status === 'resolved', fn ($query) => $query->where('status', '<>', ContentReport::STATUS_OPEN))
             ->when($type, fn ($query, string $type) => $query->where('reportable_type', $type))
             ->latest()
-            ->paginate(20)
+            ->paginate(10)
             ->withQueryString();
         $reports->getCollection()->each(fn (ContentReport $report) => $report->setAttribute('summary', ContentReport::describe($report->reportable_type, $report->target())));
 

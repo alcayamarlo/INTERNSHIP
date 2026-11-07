@@ -50,7 +50,7 @@ class CompanyController extends Controller
                 default => $query->whereDate('moa_expires_on', '>', $soon),
             })
             ->orderBy('company_name')
-            ->paginate(20)
+            ->paginate(10)
             ->withQueryString();
 
         return view('coordinator.companies.index', compact('companies', 'filters'));

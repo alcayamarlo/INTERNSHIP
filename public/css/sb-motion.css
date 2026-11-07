@@ -1,0 +1,201 @@
+/* =====================================================================
+   Site-wide motion for every signed-in page (layouts/app.blade.php, all roles).
+   CSS only, subtle: 200-450ms, ease-out.
+
+   - Entry animations run only while <html> has .sb-intro. The layout adds it
+     before first paint and removes it ~2s after load, so content swapped in
+     later (live updates, AJAX lists) does not replay the animation.
+   - Hover, press and focus effects are always on.
+   - prefers-reduced-motion: the layout never adds .sb-intro, and the block at
+     the end removes transitions and transforms.
+   ===================================================================== */
+
+/* ---------- Keyframes (defined once for the whole app) ---------- */
+@keyframes rise {
+    from { opacity: 0; transform: translateY(var(--rise-y, 14px)); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes rowIn {
+    from { opacity: 0; transform: translateX(-12px); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-16px); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes drop {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: none; }
+}
+
+body.sb-app {
+    --sb-motion-ease: cubic-bezier(.22, .8, .3, 1);
+    --sb-lift-shadow: 0 8px 18px color-mix(in srgb, var(--sb-brand) 22%, transparent);
+    --sb-hover-shadow: 0 10px 26px color-mix(in srgb, var(--sb-brand) 10%, transparent);
+}
+
+/* =====================================================================
+   PAGE LOAD (html.sb-intro only)
+   ===================================================================== */
+
+/* Sidebar: brand, then each group label and link, 40ms apart */
+html.sb-intro body.sb-app .sb-brand {
+    animation: slideIn .35s var(--sb-motion-ease) backwards;
+}
+
+html.sb-intro body.sb-app .sb-nav > * {
+    animation: slideIn .35s var(--sb-motion-ease) backwards;
+}
+
+html.sb-intro body.sb-app .sb-nav > :nth-child(1) { animation-delay: 40ms; }
+html.sb-intro body.sb-app .sb-nav > :nth-child(2) { animation-delay: 80ms; }
+html.sb-intro body.sb-app .sb-nav > :nth-child(3) { animation-delay: 120ms; }
+html.sb-intro body.sb-app .sb-nav > :nth-child(4) { animation-delay: 160ms; }
+html.sb-intro body.sb-app .sb-nav > :nth-child(5) { animation-delay: 200ms; }
+html.sb-intro body.sb-app .sb-nav > :nth-child(6) { animation-delay: 240ms; }
+html.sb-intro body.sb-app .sb-nav > :nth-child(7) { animation-delay: 280ms; }
+html.sb-intro body.sb-app .sb-nav > :nth-child(8) { animation-delay: 320ms; }
+html.sb-intro body.sb-app .sb-nav > :nth-child(9) { animation-delay: 360ms; }
+html.sb-intro body.sb-app .sb-nav > :nth-child(10) { animation-delay: 400ms; }
+html.sb-intro body.sb-app .sb-nav > :nth-child(11) { animation-delay: 440ms; }
+html.sb-intro body.sb-app .sb-nav > :nth-child(12) { animation-delay: 480ms; }
+html.sb-intro body.sb-app .sb-nav > :nth-child(13) { animation-delay: 520ms; }
+html.sb-intro body.sb-app .sb-nav > :nth-child(14) { animation-delay: 560ms; }
+html.sb-intro body.sb-app .sb-nav > :nth-child(n + 15) { animation-delay: 600ms; }
+
+/* Top bar, page title and flash messages drop in from above */
+html.sb-intro body.sb-app .sb-topbar {
+    animation: drop .35s var(--sb-motion-ease) backwards;
+}
+
+html.sb-intro body.sb-app .sb-content .sb-page-header {
+    animation: drop .4s var(--sb-motion-ease) 60ms backwards;
+}
+
+html.sb-intro body.sb-app .sb-content > .alert {
+    animation: drop .35s var(--sb-motion-ease) 100ms backwards;
+}
+
+/* Cards and stat tiles rise in, staggered by their position in a row or grid.
+   Pages with their own choreography (admin dashboard, academic settings tabs) are skipped. */
+body.sb-app .sb-content :is(.row, .sb-stat-grid, .sb-layout-2) > :nth-child(2) { --sb-stagger: 1; }
+body.sb-app .sb-content :is(.row, .sb-stat-grid, .sb-layout-2) > :nth-child(3) { --sb-stagger: 2; }
+body.sb-app .sb-content :is(.row, .sb-stat-grid, .sb-layout-2) > :nth-child(4) { --sb-stagger: 3; }
+body.sb-app .sb-content :is(.row, .sb-stat-grid, .sb-layout-2) > :nth-child(5) { --sb-stagger: 4; }
+body.sb-app .sb-content :is(.row, .sb-stat-grid, .sb-layout-2) > :nth-child(6) { --sb-stagger: 5; }
+body.sb-app .sb-content :is(.row, .sb-stat-grid, .sb-layout-2) > :nth-child(n + 7) { --sb-stagger: 6; }
+
+html.sb-intro body.sb-app .sb-content :is(.card, .sb-stat):not(:is(.ad-dashboard, .aa-tabbed, .modal, .dropdown-menu) *) {
+    animation: rise .4s var(--sb-motion-ease) backwards;
+    animation-delay: calc(120ms + var(--sb-stagger, 0) * 60ms);
+}
+
+/* Table rows slide in from the left, 40ms apart (capped so long tables stay quick) */
+html.sb-intro body.sb-app .sb-content .table > tbody > tr:not(:is(.ad-dashboard, .aa-tabbed, .modal) *) {
+    animation: rowIn .35s var(--sb-motion-ease) backwards;
+}
+
+html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(1) { animation-delay: 200ms; }
+html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(2) { animation-delay: 240ms; }
+html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(3) { animation-delay: 280ms; }
+html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(4) { animation-delay: 320ms; }
+html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(5) { animation-delay: 360ms; }
+html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(6) { animation-delay: 400ms; }
+html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(7) { animation-delay: 440ms; }
+html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(8) { animation-delay: 480ms; }
+html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(9) { animation-delay: 520ms; }
+html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(10) { animation-delay: 560ms; }
+html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(n + 11) { animation-delay: 600ms; }
+
+/* =====================================================================
+   HOVER, PRESS, FOCUS (always on)
+   ===================================================================== */
+
+/* Sidebar links nudge right */
+body.sb-app .sb-nav-link {
+    transition: background-color 160ms ease-out, color 160ms ease-out, box-shadow 160ms ease-out, transform 200ms var(--sb-motion-ease);
+}
+
+body.sb-app .sb-nav-link:hover {
+    transform: translateX(4px);
+}
+
+/* Buttons: smooth colour changes, primary lifts, every button presses in */
+body.sb-app .btn {
+    transition: color .2s ease-out, background-color .2s ease-out, border-color .2s ease-out, box-shadow .2s ease-out, transform .2s ease-out;
+}
+
+body.sb-app .btn-primary:hover:not(:disabled):not(.disabled):not(.btn-group > .btn) {
+    transform: translateY(-2px);
+    box-shadow: var(--sb-lift-shadow);
+}
+
+body.sb-app .btn:active:not(:disabled):not(.disabled) {
+    transform: scale(.97);
+}
+
+/* A "+" icon in a button turns a quarter on hover */
+body.sb-app .btn > :is(.bi-plus, .bi-plus-lg, .bi-plus-circle, .bi-plus-circle-fill, .bi-plus-square) {
+    display: inline-block;
+    transition: transform .3s var(--sb-motion-ease);
+}
+
+body.sb-app .btn:hover > :is(.bi-plus, .bi-plus-lg, .bi-plus-circle, .bi-plus-circle-fill, .bi-plus-square) {
+    transform: rotate(90deg);
+}
+
+/* Table rows fade to their (existing) pink hover colour */
+body.sb-app .sb-content .table > tbody > tr > * {
+    transition: background-color .2s ease-out;
+}
+
+/* Cards: soft shadow on hover */
+body.sb-app .sb-content .card {
+    transition: box-shadow .25s ease-out;
+}
+
+body.sb-app .sb-content .card:hover {
+    box-shadow: var(--sb-hover-shadow);
+}
+
+/* Inputs: red border and a 4px soft ring that fades in.
+   Same selectors as skillbridge-dashboard.css (this file loads later), so the
+   top-bar search keeps its own wrapper-only indicator. */
+body.skillbridge-app :is(.form-control, .form-select, .form-check-input) {
+    transition: color .2s ease-out, background-color .2s ease-out, border-color .2s ease-out, box-shadow .25s ease-out;
+}
+
+body.skillbridge-app :is(input, select, textarea):focus,
+body.skillbridge-app :is(input, select, textarea):focus-visible,
+body.skillbridge-app .form-control:focus,
+body.skillbridge-app .form-select:focus {
+    border-color: var(--sb-brand);
+    outline: none;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--sb-brand) 18%, transparent);
+}
+
+/* =====================================================================
+   REDUCED MOTION
+   ===================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    html.sb-intro body.sb-app *,
+    html.sb-intro body.sb-app *::before,
+    html.sb-intro body.sb-app *::after {
+        animation: none !important;
+    }
+
+    body.sb-app :is(.sb-nav-link, .btn, .btn > i, .card, .form-control, .form-select, .form-check-input),
+    body.sb-app .sb-content .table > tbody > tr > * {
+        transition: none !important;
+    }
+
+    body.sb-app .sb-nav-link:hover,
+    body.sb-app .btn:hover,
+    body.sb-app .btn:active,
+    body.sb-app .btn:hover > i {
+        transform: none !important;
+    }
+}

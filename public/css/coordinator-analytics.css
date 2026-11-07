@@ -1,0 +1,163 @@
+/* Coordinator analytics: all five charts on one screen (no tabs).
+   Layout and sizing only; cards, charts, the info note and animations come
+   from the shared stylesheets and the analytics.charts partial.
+   The page markup is unchanged apart from the .an-charts wrapper, so the
+   sb-motion.css entrance (header drop, note drop, card rise staggered by
+   .row position) plays exactly as before.
+   This file loads before skillbridge-ui.css, so rules are scoped under
+   body.sb-app .sb-content:has(> .an-charts) to win over the shared defaults. */
+
+/* ---------- Frame: full width, fills the viewport under the top bar ---------- */
+
+body.sb-app .sb-content:has(> .an-charts) {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: none;
+    padding: 14px 24px 16px;
+}
+
+body.sb-app .sb-content:has(> .an-charts) > * {
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+/* skillbridge-dashboard.css gives the header a 28px bottom margin; the gap spaces it here. */
+body.sb-app .sb-content:has(> .an-charts) > .sb-page-header {
+    margin-bottom: 0;
+}
+
+body.sb-app .sb-content:has(> .an-charts) .sb-page-header .an-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px;
+    margin: 0;
+    color: var(--sb-muted);
+    font-size: 14px;
+}
+
+body.sb-app .sb-content:has(> .an-charts) .an-summary strong {
+    color: var(--sb-ink);
+    font-weight: 700;
+}
+
+/* Slim info note: same colors and text, tighter. */
+body.sb-app .sb-content:has(> .an-charts) > .alert.an-note {
+    --bs-alert-padding-y: 8px;
+    margin: 0;
+    font-size: 12px;
+}
+
+/* ---------- Chart grid: 6 columns, two equal rows ---------- */
+
+body.sb-app .sb-content .an-charts > .row {
+    --bs-gutter-x: 0;
+    --bs-gutter-y: 0;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+    height: 100%;
+    margin: 0 !important; /* overrides Bootstrap .mb-4 */
+}
+
+body.sb-app .sb-content .an-charts > .row > * {
+    grid-column: span 2;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+}
+
+body.sb-app .sb-content .an-charts > .row > :nth-child(n + 4) {
+    grid-column: span 3;
+}
+
+/* Each card: title row, then the chart takes the rest. */
+body.sb-app .sb-content .an-charts .card {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+body.sb-app .sb-content .an-charts .card-header {
+    flex: 0 0 auto;
+    padding: 10px 14px;
+}
+
+body.sb-app .sb-content .an-charts .card-body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    padding: 8px 14px 12px;
+}
+
+/* Chart.js (responsive, maintainAspectRatio: false) sizes the canvas to this box
+   and watches it for resizes, including when the sidebar collapses. */
+body.sb-app .sb-content .an-charts .sb-chart {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* ---------- Desktop: fill the screen; very short windows scroll instead ----------
+   560px under the top bar (a ~624px tall browser viewport) is the smallest height
+   where the charts stay readable. It is what lets a real 1366x768 laptop fit:
+   after the taskbar and browser toolbars its viewport is only ~630-650px tall. */
+
+@media (min-width: 1280px) {
+    body.sb-app .sb-content:has(> .an-charts) {
+        height: calc(100vh - var(--sb-topbar-height, 64px));
+        height: calc(100dvh - var(--sb-topbar-height, 64px));
+        min-height: 560px;
+    }
+
+    body.sb-app .sb-content .an-charts {
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+}
+
+/* ---------- Below ~1280px: two columns, last chart full width, page scrolls ---------- */
+
+@media (max-width: 1279.98px) {
+    body.sb-app .sb-content .an-charts > .row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: none;
+        grid-auto-rows: 300px;
+        height: auto;
+    }
+
+    body.sb-app .sb-content .an-charts > .row > *,
+    body.sb-app .sb-content .an-charts > .row > :nth-child(n + 4) {
+        grid-column: span 1;
+    }
+
+    body.sb-app .sb-content .an-charts > .row > :last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+    }
+}
+
+/* ---------- Below ~768px: one column, 260px cards ---------- */
+
+@media (max-width: 767.98px) {
+    body.sb-app .sb-content:has(> .an-charts) {
+        padding-right: 16px;
+        padding-left: 16px;
+    }
+
+    body.sb-app .sb-content .an-charts > .row {
+        grid-template-columns: minmax(0, 1fr);
+        grid-auto-rows: 260px;
+    }
+
+    body.sb-app .sb-content .an-charts > .row > :last-child:nth-child(odd) {
+        grid-column: auto;
+    }
+}

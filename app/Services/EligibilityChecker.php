@@ -35,19 +35,6 @@ class EligibilityChecker
             $lines[] = $this->line('major_subjects', 'Major subjects passed', $passed, $passed ? 'Confirmed by the coordinator' : 'Not confirmed yet', 'Your coordinator must confirm that all major subjects are passed.');
         }
 
-        if ($rules['max_gwa'] !== null) {
-            $required = number_format($rules['max_gwa'], 2);
-            $passed = $student->gwa !== null && (float) $student->gwa <= $rules['max_gwa'];
-            $lines[] = $this->line(
-                'gwa',
-                'GWA '.$required.' or better',
-                $passed,
-                $student->gwa === null ? 'GWA not on record' : 'GWA '.number_format((float) $student->gwa, 2),
-                $student->gwa === null
-                    ? 'Add your GWA on your profile. Your program requires a GWA of '.$required.' or better.'
-                    : 'Your program requires a GWA of '.$required.' or better.'
-            );
-        }
 
         if ($rules['required_document_ids'] !== []) {
             $missing = $this->missingDocuments($student, $rules['required_document_ids']);

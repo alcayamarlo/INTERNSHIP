@@ -43,7 +43,7 @@ class UserController extends Controller
         }
 
         return view('admin.users.index', [
-            'users' => $query->latest()->paginate(15)->withQueryString(),
+            'users' => $query->latest()->paginate(10)->withQueryString(),
             'view' => $view,
             'roles' => UserRole::all(),
             'assignableRoles' => UserRole::assignable(),

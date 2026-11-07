@@ -107,29 +107,6 @@
     box-shadow: var(--sb-shadow-sm);
 }
 
-.student-groups {
-    display: grid;
-    gap: 16px;
-}
-
-.student-group {
-    overflow: hidden;
-    border: 1px solid var(--sb-border);
-    border-radius: var(--sb-radius-lg);
-    background: var(--sb-surface);
-    box-shadow: var(--sb-shadow-sm);
-}
-
-.student-group-header {
-    display: grid;
-    grid-template-columns: minmax(200px, 1.3fr) minmax(150px, 0.8fr) auto;
-    align-items: center;
-    gap: 16px;
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--sb-border);
-    background: var(--sb-surface-raised);
-}
-
 .student-identity {
     display: flex;
     align-items: center;
@@ -253,6 +230,13 @@
 }
 
 .submission-description {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.submission-heading,
+.submission-meta {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -751,39 +735,8 @@
     }
 }
 
-@media (max-width: 900px) {
-    .student-group-header {
-        grid-template-columns: minmax(0, 1fr) minmax(130px, 0.7fr);
-    }
-
-    .verify-all-button {
-        grid-column: 1 / -1;
-        justify-self: end;
-    }
-
-    .verification-filters {
-        align-items: stretch;
-    }
-
-    .verification-search,
-    .verification-program {
-        flex: 1 1 100%;
-    }
-}
-
 @media (max-width: 620px) {
-    .student-group-header {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 12px;
-        padding: 14px;
-    }
-
-    .student-progress {
-        grid-row: 2;
-    }
-
     .verify-all-button {
-        grid-column: auto;
         width: 100%;
     }
 
@@ -811,10 +764,295 @@
     }
 }
 
+/* =========================================================
+   Split view: full-width frame, one card, student list + detail panel
+========================================================= */
+
+body.sb-app .sb-content:has(> .verification-page) {
+    max-width: none;
+}
+
+@media (min-width: 992px) {
+    body.sb-app .sb-content:has(> .verification-page) {
+        padding: 20px 24px;
+    }
+}
+
+.verification-page {
+    display: grid;
+    gap: 16px;
+}
+
+.verification-page > * {
+    min-width: 0;
+}
+
+/* skillbridge-dashboard.css gives the header a 28px bottom margin; the grid gap spaces it here. */
+body.sb-app .verification-page > .sb-page-header {
+    margin-bottom: 0;
+}
+
+body.sb-app .verification-page .sb-page-header .vq-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px;
+    margin: 0;
+    color: var(--sb-muted);
+    font-size: 14px;
+}
+
+.vq-summary strong {
+    color: var(--sb-ink);
+    font-weight: 700;
+}
+
+/* One card holds the filters and the split. */
+body.sb-app .verification-page .vq-card {
+    overflow: hidden;
+    margin: 0;
+}
+
+.vq-card .verification-filters {
+    margin: 0;
+    padding: 16px;
+    border: 0;
+    border-bottom: 1px solid var(--sb-border);
+    border-radius: 0;
+    background: transparent;
+}
+
+.vq-card .verification-search {
+    flex: 2 1 260px;
+}
+
+.vq-card .verification-program {
+    flex: 1 1 180px;
+}
+
+.vq-chip-count {
+    margin-left: 4px;
+    font-variant-numeric: tabular-nums;
+    opacity: .75;
+}
+
+.vq-split {
+    display: grid;
+    grid-template-columns: 340px minmax(0, 1fr);
+    min-height: 0;
+}
+
+/* Left: student list */
+.vq-list-col {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border-right: 1px solid var(--sb-border);
+    background: var(--sb-surface-raised);
+}
+
+.vq-list-head {
+    margin: 0;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--sb-border);
+    background: var(--sb-red-soft);
+    color: var(--sb-brand-content);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.vq-list {
+    max-height: calc(100vh - 260px);
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.vq-student {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px 10px 13px;
+    border-bottom: 1px solid var(--sb-border);
+    border-left: 3px solid transparent;
+    cursor: pointer;
+    /* Same hover transition as table rows (sb-motion.css). */
+    transition: background-color .2s ease-out;
+}
+
+.vq-student:focus-visible {
+    outline: 2px solid var(--sb-brand-content);
+    outline-offset: -2px;
+}
+
+.vq-student[aria-selected="true"] {
+    border-left-color: var(--sb-brand);
+    background: var(--sb-red-soft);
+}
+
+.vq-student .student-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 13px;
+}
+
+.vq-student-copy {
+    display: grid;
+    min-width: 0;
+}
+
+.vq-student-name,
+.vq-student-meta {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vq-student-name {
+    color: var(--sb-ink);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.vq-student-meta {
+    color: var(--sb-muted);
+    font-size: 12px;
+}
+
+.vq-student-progress {
+    display: grid;
+    justify-items: end;
+    color: var(--sb-ink);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+.vq-student-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--sb-muted);
+    font-size: 11px;
+}
+
+.vq-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--sb-success-ink);
+}
+
+.vq-list-empty {
+    margin: 0;
+    padding: 24px 16px;
+    color: var(--sb-muted);
+    font-size: 14px;
+    text-align: center;
+}
+
+.vq-list-empty[hidden],
+.vq-panel-content[hidden] {
+    display: none;
+}
+
+/* Right: selected student */
+.vq-panel {
+    min-width: 0;
+    max-height: calc(100vh - 260px);
+    overflow-y: auto;
+}
+
+.vq-panel-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 16px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--sb-border);
+    background: var(--sb-surface-raised);
+}
+
+.vq-panel-header .student-name-button {
+    font-size: 17px;
+}
+
+.vq-progress {
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--sb-border);
+}
+
+.vq-more {
+    margin: 4px 20px 16px;
+}
+
+.vq-panel .empty-queue {
+    margin: 16px;
+}
+
+/* Switching students replays the cards' page-load entrance (sb-motion.css `rise`). */
+@media (prefers-reduced-motion: no-preference) {
+    body.sb-app .vq-panel-content.is-entering {
+        animation: rise .4s var(--sb-motion-ease) backwards;
+    }
+}
+
+@media (hover: hover) {
+    .vq-student[aria-selected="false"]:hover {
+        background: var(--sb-hover-neutral);
+    }
+}
+
+/* Below ~1024px: list on top (compact, scrolls), details below. */
+@media (max-width: 1023.98px) {
+    .vq-split {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .vq-list-col {
+        border-right: 0;
+        border-bottom: 1px solid var(--sb-border);
+    }
+
+    .vq-list {
+        max-height: 264px;
+    }
+
+    .vq-panel {
+        max-height: none;
+        overflow: visible;
+    }
+}
+
+/* Below ~640px: filters stack. */
+@media (max-width: 639.98px) {
+    .vq-card .verification-search,
+    .vq-card .verification-program,
+    .vq-card .filter-group {
+        flex: 1 1 100%;
+    }
+
+    .vq-panel-header,
+    .vq-progress {
+        padding-right: 14px;
+        padding-left: 14px;
+    }
+
+    .vq-more {
+        margin-right: 14px;
+        margin-left: 14px;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .progress-track span,
     .drawer-backdrop,
-    .student-drawer {
+    .student-drawer,
+    .vq-student {
         transition: none;
     }
 }

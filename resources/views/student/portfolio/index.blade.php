@@ -160,7 +160,7 @@
 
             <div class="col-md-4">
                 <label class="form-label">File Type</label>
-                <select class="form-select" name="type">
+                <select class="form-select" name="type" onchange="this.form.requestSubmit()">
                     <option value="">All Types</option>
                     @foreach($types as $type)
                         <option value="{{ $type->value }}" {{ $filters['type'] === $type->value ? 'selected' : '' }}>

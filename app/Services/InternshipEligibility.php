@@ -48,7 +48,6 @@ class InternshipEligibility
         return $query
             ->when($rules['require_fourth_year'], fn (Builder $q) => $q->where('year_level', '4th Year'))
             ->when($rules['require_major_subjects_passed'], fn (Builder $q) => $q->where('major_subjects_passed', true))
-            ->when($rules['max_gwa'] !== null, fn (Builder $q) => $q->whereNotNull('gwa')->where('gwa', '<=', $rules['max_gwa']))
             ->when($rules['required_document_ids'] !== [], function (Builder $q) use ($rules) {
                 foreach ($rules['required_document_ids'] as $documentId) {
                     $q->whereHas('deploymentDocuments', fn (Builder $documents) => $documents

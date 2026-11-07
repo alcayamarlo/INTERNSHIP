@@ -49,22 +49,22 @@ it('lets a coordinator set criteria for their program, saving each edit as a new
 
     $this->get(route('coordinator.criteria.index'))->assertOk()->assertSee('BSIT')->assertSee('Set criteria');
 
-    $payload = ['school_year' => $term['school_year'], 'term' => $term['term'], 'require_fourth_year' => '1', 'require_major_subjects_passed' => '1', 'max_gwa' => '2.50', 'required_hours' => '500'];
+    $payload = ['school_year' => $term['school_year'], 'term' => $term['term'], 'require_fourth_year' => '1', 'require_major_subjects_passed' => '1', 'required_hours' => '500'];
     $this->post(route('coordinator.criteria.store', $program), $payload)->assertRedirect()->assertSessionHas('success', 'Criteria saved as version 1.');
-    $this->post(route('coordinator.criteria.store', $program), [...$payload, 'max_gwa' => '2.25', 'notes' => 'Raised for the new term'])
+    $this->post(route('coordinator.criteria.store', $program), [...$payload, 'required_hours' => '520', 'notes' => 'Raised for the new term'])
         ->assertSessionHas('success', 'Criteria saved as version 2.');
 
     $versions = EligibilityCriterion::query()->forTerm($program->id, $term['school_year'], $term['term'])->orderBy('version')->get();
     expect($versions)->toHaveCount(2)
-        ->and((float) $versions[0]->max_gwa)->toBe(2.5)
-        ->and((float) $versions[1]->max_gwa)->toBe(2.25)
+        ->and($versions[0]->required_hours)->toBe(500)
+        ->and($versions[1]->required_hours)->toBe(520)
         ->and(app(EligibilityCriteria::class)->latestFor($program->id, $term['school_year'], $term['term'])->version)->toBe(2);
 
     $this->get(route('coordinator.criteria.show', [$program, ...$term]))
         ->assertOk()
         ->assertSee('Version 2')
         ->assertSee('Version 1')
-        ->assertSee('GWA 2.25 or better')
+        ->assertSee('520 OJT hours')
         ->assertSee('Raised for the new term');
     $this->assertDatabaseHas('system_logs', ['action' => 'eligibility_criteria_saved']);
 });
@@ -75,7 +75,7 @@ it('keeps each term separate', function () {
     $other = $term['term'] === 'first' ? 'second' : 'first';
     $this->actingAs($user);
 
-    $this->post(route('coordinator.criteria.store', $program), ['school_year' => $term['school_year'], 'term' => $other, 'max_gwa' => '2.00'])->assertRedirect();
+    $this->post(route('coordinator.criteria.store', $program), ['school_year' => $term['school_year'], 'term' => $other, 'required_hours' => '400'])->assertRedirect();
 
     expect(app(EligibilityCriteria::class)->latestFor($program->id, $term['school_year'], $term['term']))->toBeNull()
         ->and(app(EligibilityCriteria::class)->latestFor($program->id, $term['school_year'], $other)->version)->toBe(1);
@@ -89,12 +89,12 @@ it('does not let a coordinator manage another coordinator\'s program, but admins
 
     $this->actingAs($outsider)->get(route('coordinator.criteria.index'))->assertOk()->assertDontSee('BSIT');
     $this->get(route('coordinator.criteria.show', $program))->assertForbidden();
-    $this->post(route('coordinator.criteria.store', $program), [...$term, 'max_gwa' => '1.00'])->assertForbidden();
+    $this->post(route('coordinator.criteria.store', $program), [...$term, 'required_hours' => '400'])->assertForbidden();
     expect(EligibilityCriterion::count())->toBe(0);
 
     $admin = User::factory()->create(['role' => UserRole::Admin]);
     $this->actingAs($admin)->get(route('admin.criteria.index'))->assertOk()->assertSee('BSIT');
-    $this->post(route('admin.criteria.store', $program), [...$term, 'max_gwa' => '2.75'])->assertRedirect(route('admin.criteria.show', [$program, ...$term]));
+    $this->post(route('admin.criteria.store', $program), [...$term, 'required_hours' => '450'])->assertRedirect(route('admin.criteria.show', [$program, ...$term]));
     expect(EligibilityCriterion::count())->toBe(1);
 });
 
@@ -103,8 +103,8 @@ it('validates the criteria', function () {
     $term = currentTermQuery();
 
     $this->actingAs($user)
-        ->post(route('coordinator.criteria.store', $program), [...$term, 'max_gwa' => '6', 'required_hours' => '0', 'required_document_ids' => [999999], 'term' => 'winter'])
-        ->assertSessionHasErrors(['max_gwa' => 'Enter a GWA between 1.00 and 5.00.', 'required_hours', 'required_document_ids.0', 'term']);
+        ->post(route('coordinator.criteria.store', $program), [...$term, 'required_hours' => '0', 'required_document_ids' => [999999], 'term' => 'winter'])
+        ->assertSessionHasErrors(['required_hours', 'required_document_ids.0', 'term']);
     expect(EligibilityCriterion::count())->toBe(0);
 });
 
@@ -119,17 +119,17 @@ it('applies the program criteria to eligibility and falls back to the school-wid
     expect($eligibility->reasons($thirdYear))->toBe(['You must be in 4th Year to apply.']);
 
     app(EligibilityCriteria::class)->saveVersion($program, ...array_values(currentTermQuery()), ...[[
-        'require_fourth_year' => false, 'require_major_subjects_passed' => false, 'max_gwa' => 2.50, 'required_hours' => 520, 'required_document_ids' => [],
+        'require_fourth_year' => false, 'require_major_subjects_passed' => true, 'required_hours' => 520, 'required_document_ids' => [],
     ], $user]);
 
-    expect($eligibility->reasons($thirdYear->fresh()))->toBe(['Add your GWA on your profile. Your program requires a GWA of 2.50 or better.']);
-    $good = criteriaStudent($program, ['year_level' => '3rd Year', 'gwa' => 2.10]);
-    $weak = criteriaStudent($program, ['gwa' => 2.90]);
+    expect($eligibility->reasons($thirdYear->fresh()))->toBe([]);
+    $good = criteriaStudent($program, ['year_level' => '3rd Year']);
+    $weak = criteriaStudent($program, ['major_subjects_passed' => false]);
     expect($eligibility->reasons($good))->toBe([])
-        ->and($eligibility->reasons($weak))->toBe(['Your program requires a GWA of 2.50 or better.']);
+        ->and($eligibility->reasons($weak))->toBe(['Your coordinator must confirm that all major subjects are passed.']);
 
     // Other programs keep the global rule.
-    $otherThirdYear = criteriaStudent($otherProgram, ['year_level' => '3rd Year', 'gwa' => 1.50]);
+    $otherThirdYear = criteriaStudent($otherProgram, ['year_level' => '3rd Year']);
     expect($eligibility->reasons($otherThirdYear))->toBe(['You must be in 4th Year to apply.']);
 
     // The query version matches (used by Browse Students).
@@ -140,7 +140,7 @@ it('applies the program criteria to eligibility and falls back to the school-wid
 it('uses the criteria hours for new placements', function () {
     [$user, , $program] = criteriaCoordinator();
     app(EligibilityCriteria::class)->saveVersion($program, ...array_values(currentTermQuery()), ...[[
-        'require_fourth_year' => false, 'require_major_subjects_passed' => false, 'max_gwa' => null, 'required_hours' => 520, 'required_document_ids' => [],
+        'require_fourth_year' => false, 'require_major_subjects_passed' => false, 'required_hours' => 520, 'required_document_ids' => [],
     ], $user]);
     $student = criteriaStudent($program);
     $employerUser = User::factory()->create(['role' => UserRole::Employer]);

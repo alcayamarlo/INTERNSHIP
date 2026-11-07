@@ -37,7 +37,7 @@ class PlacementController extends Controller
             ->when($filter === 'cleared', fn ($query) => $query->whereNotNull('cleared_at'))
             ->when($search !== '', fn ($query) => $query->whereHas('student.user', fn ($users) => $users->where('name', 'like', '%'.$search.'%')))
             ->latest()
-            ->paginate(15)
+            ->paginate(10)
             ->withQueryString();
 
         $scoped = Placement::query()->whereIn('student_id', $coordinator->scopedStudentsQuery()->select('id'));

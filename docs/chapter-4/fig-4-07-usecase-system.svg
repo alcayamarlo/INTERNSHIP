@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="900" viewBox="0 0 1120 900" role="img" aria-label="Use case overview: the administrator creates accounts and verifies companies; students apply and log OJT time; employers post internships, accept applicants and evaluate; accepting opens one OJT placement per student, which the coordinator validates, monitors and clears." ><style>
+text{font-family:Arial,Helvetica,sans-serif;font-size:12.5px;font-weight:500;fill:#000}
+.boundary{fill:#fff;stroke:#000;stroke-width:1.4}
+.boundary-name{font-size:14px;font-weight:700}
+.uc-case ellipse{fill:#fff;stroke:#000;stroke-width:1.3}
+.uc-case.system ellipse{fill:#f2f2f2;stroke:#000;stroke-width:2}
+.assoc{stroke:#000;stroke-width:1.1}
+.dep line{stroke:#000;stroke-width:1.2;stroke-dasharray:5 4}
+.dep.flow line{stroke-dasharray:none;stroke-width:1.5}
+.stereo{font-size:11px;font-style:italic}
+.gen{stroke:#000;stroke-width:1.3}
+.gen-head{fill:#fff;stroke:#000;stroke-width:1.3}
+.actor circle{fill:#fff;stroke:#000;stroke-width:1.7}
+.actor line{stroke:#000;stroke-width:1.7;stroke-linecap:round}
+.actor .actor-name{font-size:13px;font-weight:700}
+</style><rect width="1120" height="900" fill="#ffffff"/><defs>
+  <marker id="open-overview" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10" fill="none" stroke="#000" stroke-width="1.4"/></marker>
+  <marker id="gen-overview" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M0,0 L12,6 L0,12 Z" class="gen-head"/></marker>
+</defs><rect class="boundary" x="160" y="160" width="800" height="560" rx="12"/>
+<text x="178" y="186" class="boundary-name">Skill-Bridge</text>
+<line class="assoc" x1="560" y1="130" x2="430" y2="196"/>
+<line class="assoc" x1="560" y1="130" x2="690" y2="196"/>
+<line class="assoc" x1="94" y1="437" x2="192" y2="330"/>
+<line class="assoc" x1="94" y1="437" x2="192" y2="410"/>
+<line class="assoc" x1="94" y1="437" x2="192" y2="490"/>
+<line class="assoc" x1="94" y1="437" x2="192" y2="570"/>
+<line class="assoc" x1="1026" y1="437" x2="928" y2="330"/>
+<line class="assoc" x1="1026" y1="437" x2="928" y2="410"/>
+<line class="assoc" x1="1026" y1="437" x2="928" y2="490"/>
+<line class="assoc" x1="1026" y1="437" x2="928" y2="570"/>
+<line class="assoc" x1="560" y1="760" x2="268" y2="694"/>
+<line class="assoc" x1="560" y1="760" x2="463" y2="694"/>
+<line class="assoc" x1="560" y1="760" x2="658" y2="694"/>
+<line class="assoc" x1="560" y1="760" x2="853" y2="694"/>
+<g class="uc-case "><ellipse cx="430" cy="222" rx="118" ry="26"/><text text-anchor="middle"><tspan x="430" y="226.5">Create accounts</tspan></text></g>
+<g class="uc-case "><ellipse cx="690" cy="222" rx="118" ry="26"/><text text-anchor="middle"><tspan x="690" y="226.5">Verify company</tspan></text></g>
+<g class="uc-case "><ellipse cx="300" cy="330" rx="108" ry="26"/><text text-anchor="middle"><tspan x="300" y="327">Complete profile and</tspan><tspan x="300" y="342">evidence</tspan></text></g>
+<g class="uc-case "><ellipse cx="300" cy="410" rx="108" ry="26"/><text text-anchor="middle"><tspan x="300" y="414.5">Apply for internship</tspan></text></g>
+<g class="uc-case "><ellipse cx="300" cy="490" rx="108" ry="26"/><text text-anchor="middle"><tspan x="300" y="487">Log time and weekly</tspan><tspan x="300" y="502">journal</tspan></text></g>
+<g class="uc-case "><ellipse cx="300" cy="570" rx="108" ry="26"/><text text-anchor="middle"><tspan x="300" y="574.5">Download certificate</tspan></text></g>
+<g class="uc-case "><ellipse cx="820" cy="330" rx="108" ry="26"/><text text-anchor="middle"><tspan x="820" y="334.5">Post internship</tspan></text></g>
+<g class="uc-case "><ellipse cx="820" cy="410" rx="108" ry="26"/><text text-anchor="middle"><tspan x="820" y="407">Review and accept</tspan><tspan x="820" y="422">applicant</tspan></text></g>
+<g class="uc-case "><ellipse cx="820" cy="490" rx="108" ry="26"/><text text-anchor="middle"><tspan x="820" y="487">Approve time and</tspan><tspan x="820" y="502">journals</tspan></text></g>
+<g class="uc-case "><ellipse cx="820" cy="570" rx="108" ry="26"/><text text-anchor="middle"><tspan x="820" y="574.5">Submit evaluation</tspan></text></g>
+<g class="uc-case "><ellipse cx="268" cy="666" rx="92" ry="28"/><text text-anchor="middle"><tspan x="268" y="663">Verify student</tspan><tspan x="268" y="678">evidence</tspan></text></g>
+<g class="uc-case "><ellipse cx="463" cy="666" rx="92" ry="28"/><text text-anchor="middle"><tspan x="463" y="670.5">Validate placement</tspan></text></g>
+<g class="uc-case "><ellipse cx="658" cy="666" rx="92" ry="28"/><text text-anchor="middle"><tspan x="658" y="663">Monitor OJT</tspan><tspan x="658" y="678">progress</tspan></text></g>
+<g class="uc-case "><ellipse cx="853" cy="666" rx="92" ry="28"/><text text-anchor="middle"><tspan x="853" y="670.5">Clear OJT</tspan></text></g>
+<g class="uc-case system"><ellipse cx="540" cy="410" rx="96" ry="28"/><text text-anchor="middle"><tspan x="540" y="407">Open OJT placement</tspan><tspan x="540" y="422">(one per student)</tspan></text></g>
+<g class="dep"><line x1="712" y1="410" x2="636" y2="410" marker-end="url(#open-overview)"/>
+  <text x="674" y="404" text-anchor="middle" class="stereo">«include»</text></g>
+<g class="dep flow"><line x1="540" y1="438" x2="463" y2="636" marker-end="url(#open-overview)"/><text x="523.5" y="538" text-anchor="middle" class="stereo">then</text></g>
+<g class="actor ">
+  <circle cx="560" cy="32" r="11"/>
+  <line x1="560" y1="43" x2="560" y2="74"/>
+  <line x1="543" y1="53" x2="577" y2="53"/>
+  <line x1="560" y1="74" x2="547" y2="98"/>
+  <line x1="560" y1="74" x2="573" y2="98"/>
+  <text x="560" y="118" text-anchor="middle" class="actor-name">Administrator</text>
+</g>
+<g class="actor ">
+  <circle cx="72" cy="416" r="11"/>
+  <line x1="72" y1="427" x2="72" y2="458"/>
+  <line x1="55" y1="437" x2="89" y2="437"/>
+  <line x1="72" y1="458" x2="59" y2="482"/>
+  <line x1="72" y1="458" x2="85" y2="482"/>
+  <text x="72" y="502" text-anchor="middle" class="actor-name">Student</text>
+</g>
+<g class="actor ">
+  <circle cx="1048" cy="416" r="11"/>
+  <line x1="1048" y1="427" x2="1048" y2="458"/>
+  <line x1="1031" y1="437" x2="1065" y2="437"/>
+  <line x1="1048" y1="458" x2="1035" y2="482"/>
+  <line x1="1048" y1="458" x2="1061" y2="482"/>
+  <text x="1048" y="502" text-anchor="middle" class="actor-name">Employer</text>
+</g>
+<g class="actor ">
+  <circle cx="560" cy="772" r="11"/>
+  <line x1="560" y1="783" x2="560" y2="814"/>
+  <line x1="543" y1="793" x2="577" y2="793"/>
+  <line x1="560" y1="814" x2="547" y2="838"/>
+  <line x1="560" y1="814" x2="573" y2="838"/>
+  <text x="560" y="858" text-anchor="middle" class="actor-name">Coordinator</text>
+</g></svg>

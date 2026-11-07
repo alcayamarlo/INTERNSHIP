@@ -1,0 +1,74 @@
+/* Coordinator dashboard: layout only (grid wrappers, widths, gaps).
+   Card styles, colors and animations come from the shared stylesheets.
+   This file loads before skillbridge-ui.css, so each rule is scoped under
+   body.sb-app .cd-dashboard to win over the shared defaults. */
+
+/* Use the full width beside the sidebar. Below 992px the shared 16-20px
+   padding from skillbridge-sidebar.css still applies. */
+body.sb-app .sb-content:has(> .cd-dashboard) {
+    max-width: none;
+}
+
+@media (min-width: 992px) {
+    body.sb-app .sb-content:has(> .cd-dashboard) {
+        padding: 24px 24px 48px;
+    }
+}
+
+/* Sections stack with one 16px gap; their own bottom margins are dropped. */
+body.sb-app .cd-dashboard {
+    display: grid;
+    gap: 16px;
+}
+
+body.sb-app .cd-dashboard > *,
+body.sb-app .cd-dashboard .sb-layout-2 > * {
+    min-width: 0;
+    margin-bottom: 0 !important; /* overrides the components' Bootstrap .mb-4 */
+}
+
+/* Row 1: four stat cards. */
+body.sb-app .cd-dashboard .cd-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* skillbridge-dashboard.css stretches a lone last card across a 3-column row;
+   every card here sits in its own cell. */
+body.sb-app .cd-dashboard .cd-stats.sb-stat-grid > :nth-child(n) {
+    grid-column: auto;
+}
+
+/* Rows 2-4: 2fr / 1fr from 1024px up (the shared helper stacks below 1200px). */
+body.sb-app .cd-dashboard .sb-layout-2 {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+
+body.sb-app .cd-dashboard .cd-row--top {
+    align-items: stretch;
+}
+
+/* Row 2's cards only render when they have content: use one column if only
+   one renders, and hide the row if neither does. */
+body.sb-app .cd-dashboard .cd-row--top:not(:has(> :nth-child(2))) {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+body.sb-app .cd-dashboard .cd-row--top:not(:has(> *)) {
+    display: none;
+}
+
+@media (max-width: 1023.98px) {
+    body.sb-app .cd-dashboard .cd-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    body.sb-app .cd-dashboard .sb-layout-2 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 639.98px) {
+    body.sb-app .cd-dashboard .cd-stats {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

@@ -24,6 +24,8 @@ class StoreMessageRequest extends FormRequest
         return [
             'body' => ['required', 'string', 'max:5000'],
             'submission_id' => ['required', 'uuid'],
+            // Reply: must be a message in this same chat (checked in MessageController::store).
+            'reply_to_id' => ['nullable', 'integer'],
         ];
     }
 

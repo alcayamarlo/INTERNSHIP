@@ -19,7 +19,7 @@ class InvitationController extends Controller
             ->with(['internship.employer', 'application:id'])
             ->orderByRaw('case when status = ? then 0 else 1 end', [InvitationStatus::Pending->value])
             ->latest()
-            ->paginate(15);
+            ->paginate(10);
 
         return view('student.invitations.index', [
             'invitations' => $invitations,

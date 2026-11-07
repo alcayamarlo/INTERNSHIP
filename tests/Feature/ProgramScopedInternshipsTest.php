@@ -126,3 +126,44 @@ it('lets employers choose which programs an internship is open to', function () 
         ->assertOk()
         ->assertSee('Open to programs');
 });
+
+it('filters by work mode from the filter panel and ignores unknown modes', function () {
+    $f = programScopeFixture();
+    $f['itMatch']->update(['work_setup' => 'hybrid']);
+    $f['itOther']->update(['work_setup' => 'onsite']);
+
+    $this->actingAs($f['studentUser'])->get(route('student.internships.index', ['work_setup' => ['hybrid']]))
+        ->assertOk()
+        ->assertSee('data-internship-id="'.$f['itMatch']->id.'"', false)
+        ->assertDontSee('data-internship-id="'.$f['itOther']->id.'"', false); // the recommendations strip is not filtered
+
+    // An unknown value is ignored rather than hiding everything.
+    $this->actingAs($f['studentUser'])->get(route('student.internships.index', ['work_setup' => ['underwater']]))
+        ->assertOk()
+        ->assertSee('IT Matched Role')
+        ->assertSee('IT Unmatched Role');
+});
+
+it('applies through a resume dialog instead of a dropdown on every card', function () {
+    $f = programScopeFixture();
+    \App\Models\Resume::create(['student_id' => $f['studentUser']->student->id, 'file_path' => 'resumes/test.pdf', 'generated_at' => now()]);
+
+    $html = $this->actingAs($f['studentUser'])->get(route('student.internships.index'))->assertOk()->getContent();
+    expect(substr_count($html, 'name="resume_id"'))->toBe(1)
+        ->and($html)->toContain('id="biApplyModal"')
+        ->and($html)->toContain('data-apply-url="'.route('student.internships.apply', $f['itMatch']).'"');
+});
+
+it('renders a swappable results area so filters apply without clicking Filter', function () {
+    $f = programScopeFixture();
+    $f['itMatch']->update(['work_setup' => 'remote']);
+
+    // The script fetches the same page with the chosen filters and swaps #ibResults in place.
+    $this->actingAs($f['studentUser'])->get(route('student.internships.index', ['work_setup' => ['remote']]))
+        ->assertOk()
+        ->assertSee('id="ibResults"', false)
+        ->assertSee('data-total="1"', false)
+        ->assertSee('data-filter-submit', false) // kept as the no-JavaScript fallback
+        ->assertSee('data-internship-id="'.$f['itMatch']->id.'"', false)
+        ->assertDontSee('data-internship-id="'.$f['itOther']->id.'"', false);
+});

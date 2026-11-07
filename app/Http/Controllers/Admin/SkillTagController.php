@@ -31,7 +31,7 @@ class SkillTagController extends Controller
                 ->when($search !== '', fn ($query) => $query->where('name_normalized', 'like', '%'.CatalogName::normalized($search).'%'))
                 ->when($sort === 'usage', fn ($query) => $query->orderByDesc('student_skills_count'))
                 ->orderBy('name')
-                ->paginate(30)
+                ->paginate(10)
                 ->withQueryString(),
             'allTags' => SkillTag::query()->orderBy('name')->get(['id', 'name']),
             'search' => $search,

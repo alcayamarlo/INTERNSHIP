@@ -38,7 +38,7 @@ class InternController extends Controller
             ->withCount(['journalEntries as unread_journals_count' => fn ($query) => $query->where('status', JournalEntry::STATUS_SUBMITTED)])
             ->when(in_array($status, [Placement::STATUS_ACTIVE, Placement::STATUS_COMPLETED], true), fn ($query) => $query->where('status', $status))
             ->latest()
-            ->paginate(15)
+            ->paginate(10)
             ->withQueryString();
         $companyProfile = app(CompanyVisibleProfile::class);
         $placements->getCollection()->each(fn (Placement $placement) => $placement

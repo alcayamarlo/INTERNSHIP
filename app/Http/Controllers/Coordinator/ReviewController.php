@@ -50,9 +50,9 @@ class ReviewController extends Controller
                 'attendance' => (clone $attendance)->where('status', AttendanceLog::STATUS_REJECTED)->count(),
             ],
             'items' => match ($tab) {
-                'evaluations' => $evaluations->with(['placement.student.user', 'placement.employer', 'evaluator:id,name'])->latest('submitted_at')->paginate(15)->withQueryString(),
-                'attendance' => $attendance->with(['placement.student.user', 'placement.employer', 'reviewer:id,name'])->latest('work_date')->paginate(25)->withQueryString(),
-                default => $reports->with(['placement.student.user', 'placement.employer'])->latest('week_start')->paginate(15)->withQueryString(),
+                'evaluations' => $evaluations->with(['placement.student.user', 'placement.employer', 'evaluator:id,name'])->latest('submitted_at')->paginate(10)->withQueryString(),
+                'attendance' => $attendance->with(['placement.student.user', 'placement.employer', 'reviewer:id,name'])->latest('work_date')->paginate(10)->withQueryString(),
+                default => $reports->with(['placement.student.user', 'placement.employer'])->latest('week_start')->paginate(10)->withQueryString(),
             },
         ]);
     }

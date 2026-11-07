@@ -57,7 +57,7 @@ class StudentBrowseController extends Controller
             ->with(['user', 'studentSkills.skill', 'competencies.learnedSkills'])
             ->orderByDesc('profile_completion')
             ->orderBy('id')
-            ->paginate(12)
+            ->paginate(10)
             ->withQueryString();
 
         $students->setCollection($students->getCollection()->map(fn (Student $student) => $this->visibleProfile->browseCard($student)));

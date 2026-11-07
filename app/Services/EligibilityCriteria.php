@@ -67,7 +67,6 @@ class EligibilityCriteria
             'criterion' => null,
             'require_fourth_year' => (bool) $settings->require_fourth_year_standing,
             'require_major_subjects_passed' => (bool) $settings->require_major_subjects_passed,
-            'max_gwa' => null,
             'required_hours' => null,
             'required_document_ids' => [],
         ];
@@ -97,7 +96,6 @@ class EligibilityCriteria
             'criterion' => $criterion,
             'require_fourth_year' => $criterion->require_fourth_year,
             'require_major_subjects_passed' => $criterion->require_major_subjects_passed,
-            'max_gwa' => $criterion->max_gwa !== null ? (float) $criterion->max_gwa : null,
             'required_hours' => $criterion->required_hours,
             'required_document_ids' => $criterion->requiredDocumentIds(),
         ];

@@ -20,7 +20,7 @@ class PlacementController extends Controller
             ->when($filter === 'for_clearance', fn ($query) => $query->where('status', Placement::STATUS_COMPLETED)->whereNull('cleared_at'))
             ->when($filter === 'cleared', fn ($query) => $query->whereNotNull('cleared_at'))
             ->latest()
-            ->paginate(20)
+            ->paginate(10)
             ->withQueryString();
 
         $summary = [

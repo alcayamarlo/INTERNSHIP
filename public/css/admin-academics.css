@@ -20,3 +20,249 @@
         min-width: 0;
     }
 }
+
+/* =====================================================================
+   Tabbed workspace (admin/academics/index.blade.php, .aa-tabbed)
+   This file is pushed before the shared stylesheets, so rules use a
+   body.sb-app prefix to win on specificity rather than on order.
+   Keyframes (rise, rowIn) and the site-wide hover/focus motion live in sb-motion.css.
+   ===================================================================== */
+
+body.sb-app .aa-tabbed {
+    --aa-ease: cubic-bezier(.22, .8, .3, 1);
+    --aa-lift-shadow: 0 8px 18px color-mix(in srgb, var(--sb-brand) 22%, transparent);
+    --aa-card-shadow: 0 10px 26px color-mix(in srgb, var(--sb-brand) 10%, transparent);
+}
+
+/* ---------- Tabs: pill buttons ---------- */
+body.sb-app .aa-tabbed .aa-tabs {
+    --rise-y: 0px; /* plain fade */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    animation: rise .4s var(--aa-ease) 120ms backwards;
+}
+
+body.sb-app .aa-tabbed .aa-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 8px 18px;
+    border: 1px solid var(--sb-border);
+    border-radius: 999px;
+    background: var(--sb-surface);
+    color: var(--sb-ink);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color .2s ease-out, background-color .2s ease-out, border-color .2s ease-out, box-shadow .2s ease-out, transform .2s ease-out;
+}
+
+body.sb-app .aa-tabbed .aa-tab:hover {
+    border-color: var(--sb-brand);
+    transform: translateY(-2px);
+    box-shadow: var(--aa-lift-shadow);
+}
+
+body.sb-app .aa-tabbed .aa-tab[aria-selected="true"] {
+    border-color: var(--sb-brand);
+    background: var(--sb-brand);
+    color: #fff;
+}
+
+body.sb-app .aa-tabbed .aa-tab:active {
+    transform: scale(.97);
+}
+
+/* ---------- Panels and columns ---------- */
+body.sb-app .aa-tabbed .aa-panel:focus {
+    outline: none;
+}
+
+body.sb-app .aa-tabbed .aa-panel:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--sb-brand) 55%, transparent);
+    outline-offset: 4px;
+    border-radius: 16px;
+}
+
+body.sb-app .aa-tabbed .aa-columns {
+    display: grid;
+    align-items: start;
+    gap: 20px;
+}
+
+body.sb-app .aa-tabbed .aa-columns--wide-left {
+    grid-template-columns: minmax(0, 1fr) 320px;
+}
+
+body.sb-app .aa-tabbed .aa-columns--calendar {
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+}
+
+/* ---------- Cards: rise in when their panel opens ---------- */
+body.sb-app .aa-tabbed .aa-card {
+    margin-bottom: 0;
+    animation: rise .4s var(--aa-ease) backwards;
+    transition: box-shadow .25s ease-out;
+}
+
+body.sb-app .aa-tabbed .aa-card--second {
+    animation-delay: .1s;
+}
+
+body.sb-app .aa-tabbed .aa-card:hover {
+    box-shadow: var(--aa-card-shadow);
+}
+
+/* ---------- Tables: rows slide in, 40ms apart ---------- */
+body.sb-app .aa-tabbed .aa-table tbody tr,
+body.sb-app .aa-tabbed .aa-term-row {
+    animation: rowIn .35s var(--aa-ease) backwards;
+}
+
+body.sb-app .aa-tabbed .aa-table tbody tr td {
+    transition: background-color .2s ease-out;
+}
+
+body.sb-app .aa-tabbed :is(.aa-table tbody tr, .aa-term-row):nth-child(1) { animation-delay: 80ms; }
+body.sb-app .aa-tabbed :is(.aa-table tbody tr, .aa-term-row):nth-child(2) { animation-delay: 120ms; }
+body.sb-app .aa-tabbed :is(.aa-table tbody tr, .aa-term-row):nth-child(3) { animation-delay: 160ms; }
+body.sb-app .aa-tabbed :is(.aa-table tbody tr, .aa-term-row):nth-child(4) { animation-delay: 200ms; }
+body.sb-app .aa-tabbed :is(.aa-table tbody tr, .aa-term-row):nth-child(5) { animation-delay: 240ms; }
+body.sb-app .aa-tabbed :is(.aa-table tbody tr, .aa-term-row):nth-child(6) { animation-delay: 280ms; }
+body.sb-app .aa-tabbed :is(.aa-table tbody tr, .aa-term-row):nth-child(7) { animation-delay: 320ms; }
+body.sb-app .aa-tabbed :is(.aa-table tbody tr, .aa-term-row):nth-child(8) { animation-delay: 360ms; }
+body.sb-app .aa-tabbed :is(.aa-table tbody tr, .aa-term-row):nth-child(9) { animation-delay: 400ms; }
+body.sb-app .aa-tabbed :is(.aa-table tbody tr, .aa-term-row):nth-child(10) { animation-delay: 440ms; }
+body.sb-app .aa-tabbed :is(.aa-table tbody tr, .aa-term-row):nth-child(n + 11) { animation-delay: 480ms; }
+
+/* Wide tables keep their columns and scroll inside the card */
+body.sb-app .aa-tabbed .aa-table {
+    min-width: 720px;
+}
+
+body.sb-app .aa-tabbed .aa-requirements-table {
+    min-width: 760px;
+    table-layout: fixed;
+}
+
+/* Document name takes the spare width; the other columns stay compact */
+body.sb-app .aa-tabbed .aa-requirements-table th:nth-child(2) { width: 170px; }
+body.sb-app .aa-tabbed .aa-requirements-table th:nth-child(3) { width: 96px; }
+body.sb-app .aa-tabbed .aa-requirements-table th:nth-child(4) { width: 118px; }
+body.sb-app .aa-tabbed .aa-requirements-table th:nth-child(5) { width: 170px; }
+
+/* ---------- Term date ranges: rows = terms, columns = start/end month/day ---------- */
+body.sb-app .aa-tabbed .aa-term-grid {
+    container-type: inline-size;
+    display: grid;
+    gap: 10px;
+}
+
+body.sb-app .aa-tabbed :is(.aa-term-head, .aa-term-row) {
+    display: grid;
+    grid-template-columns: 112px repeat(4, minmax(0, 1fr));
+    align-items: start;
+    gap: 10px;
+}
+
+body.sb-app .aa-tabbed .aa-term-head {
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: var(--sb-brand-soft);
+    color: var(--sb-brand-content);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+body.sb-app .aa-tabbed .aa-term-row {
+    padding: 0 10px;
+}
+
+body.sb-app .aa-tabbed .aa-term-name {
+    margin: 0;
+    padding-top: 9px;
+    color: var(--sb-ink);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+body.sb-app .aa-tabbed .aa-term-cell {
+    min-width: 0;
+}
+
+/* Column headers label the grid visually; each field keeps a real <label> for screen readers */
+body.sb-app .aa-tabbed .aa-term-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@container (max-width: 520px) {
+    body.sb-app .aa-tabbed .aa-term-head {
+        display: none;
+    }
+
+    body.sb-app .aa-tabbed .aa-term-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 0;
+    }
+
+    body.sb-app .aa-tabbed .aa-term-name {
+        grid-column: 1 / -1;
+        padding-top: 4px;
+    }
+
+    body.sb-app .aa-tabbed .aa-term-label {
+        position: static;
+        width: auto;
+        height: auto;
+        margin: 0 0 4px;
+        overflow: visible;
+        clip: auto;
+        white-space: normal;
+        display: block;
+        color: var(--sb-muted);
+        font-size: 13px;
+        font-weight: 500;
+    }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1199.98px) {
+    body.sb-app .aa-tabbed :is(.aa-columns--wide-left, .aa-columns--calendar) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 575.98px) {
+    body.sb-app .aa-tabbed .aa-tab {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+}
+
+/* ---------- Reduced motion (page-wide motion rules live in sb-motion.css) ---------- */
+@media (prefers-reduced-motion: reduce) {
+    body.sb-app .aa-tabbed,
+    body.sb-app .aa-tabbed *,
+    body.sb-app .aa-tabbed *::before,
+    body.sb-app .aa-tabbed *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+
+    body.sb-app .aa-tabbed .aa-tab:is(:hover, :active) {
+        transform: none;
+    }
+}

@@ -78,20 +78,17 @@ class EligibilityCriteriaController extends Controller
             'term' => ['required', Rule::in(array_keys($terms['terms']))],
             'require_fourth_year' => ['nullable', 'boolean'],
             'require_major_subjects_passed' => ['nullable', 'boolean'],
-            'max_gwa' => ['nullable', 'numeric', 'between:1,5', 'decimal:0,2'],
             'required_hours' => ['nullable', 'integer', 'between:1,2000'],
             'required_document_ids' => ['nullable', 'array'],
             'required_document_ids.*' => ['integer', Rule::in($this->documentChoices()->modelKeys())],
             'notes' => ['nullable', 'string', 'max:500'],
         ], [
-            'max_gwa.between' => 'Enter a GWA between 1.00 and 5.00.',
             'required_hours.between' => 'Enter required hours between 1 and 2,000.',
         ]);
 
         $criterion = $this->criteria->saveVersion($program, $validated['school_year'], $validated['term'], [
             'require_fourth_year' => $request->boolean('require_fourth_year'),
             'require_major_subjects_passed' => $request->boolean('require_major_subjects_passed'),
-            'max_gwa' => $validated['max_gwa'] ?? null,
             'required_hours' => $validated['required_hours'] ?? null,
             'required_document_ids' => array_values(array_map('intval', $validated['required_document_ids'] ?? [])),
             'notes' => $validated['notes'] ?? null,

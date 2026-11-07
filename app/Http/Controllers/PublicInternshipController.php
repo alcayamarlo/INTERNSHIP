@@ -41,7 +41,7 @@ class PublicInternshipController extends Controller
             $query->where('work_setup', $setup->value);
         }
 
-        $internships = $query->latest()->paginate(9)->withQueryString();
+        $internships = $query->latest()->paginate(10)->withQueryString();
 
         return view('public.internships.index', [
             'internships' => $internships,

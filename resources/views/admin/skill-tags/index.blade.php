@@ -7,7 +7,7 @@
 
 <form method="GET" action="{{ route('admin.skill-tags.index') }}" class="sb-toolbar" role="search" aria-label="Search skill tags">
     <input type="search" name="q" value="{{ $search }}" class="form-control" placeholder="Search tags" aria-label="Search tags">
-    <select name="sort" class="form-select" aria-label="Sort">
+    <select name="sort" class="form-select" aria-label="Sort" onchange="this.form.requestSubmit()">
         <option value="usage" @selected($sort === 'usage')>Most used first</option>
         <option value="name" @selected($sort === 'name')>A to Z</option>
     </select>

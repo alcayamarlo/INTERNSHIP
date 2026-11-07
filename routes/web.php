@@ -119,6 +119,11 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
     Route::put('/messages/{message}', [MessageController::class, 'update'])->whereNumber('message')->middleware('throttle:30,1')->name('messages.update');
     Route::delete('/messages/{message}/me', [MessageController::class, 'removeForMe'])->whereNumber('message')->middleware('throttle:30,1')->name('messages.remove');
     Route::delete('/messages/{message}', [MessageController::class, 'unsend'])->whereNumber('message')->middleware('throttle:30,1')->name('messages.unsend');
+    // Messenger actions: re-render one message (live updates), react, pin, forward.
+    Route::get('/messages/{message}/row', [MessageController::class, 'row'])->whereNumber('message')->name('messages.row');
+    Route::post('/messages/{message}/react', [MessageController::class, 'react'])->whereNumber('message')->middleware('throttle:60,1')->name('messages.react');
+    Route::post('/messages/{message}/pin', [MessageController::class, 'pin'])->whereNumber('message')->middleware('throttle:30,1')->name('messages.pin');
+    Route::post('/messages/{message}/forward', [MessageController::class, 'forward'])->whereNumber('message')->middleware('throttle:30,1')->name('messages.forward');
     Route::get('/api/analytics/charts', [AnalyticsController::class, 'chartData'])
         ->middleware('role:admin,coordinator')
         ->name('analytics.charts');
@@ -359,12 +364,6 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         // Account suspension.
         Route::post('/users/{user}/suspend', [AdminUserController::class, 'suspend'])->name('users.suspend');
         Route::post('/users/{user}/lift-suspension', [AdminUserController::class, 'liftSuspension'])->name('users.lift-suspension');
-        // Institutions.
-        Route::get('/institutions', [\App\Http\Controllers\Admin\InstitutionController::class, 'index'])->name('institutions.index');
-        Route::post('/institutions', [\App\Http\Controllers\Admin\InstitutionController::class, 'store'])->name('institutions.store');
-        Route::put('/institutions/{institution}', [\App\Http\Controllers\Admin\InstitutionController::class, 'update'])->name('institutions.update');
-        Route::post('/institutions/{institution}/verify', [\App\Http\Controllers\Admin\InstitutionController::class, 'verify'])->name('institutions.verify');
-        Route::post('/institutions/{institution}/unverify', [\App\Http\Controllers\Admin\InstitutionController::class, 'unverify'])->name('institutions.unverify');
         // Reported content and moderation.
         Route::get('/moderation', [\App\Http\Controllers\Admin\ModerationController::class, 'index'])->name('moderation.index');
         Route::get('/moderation/{contentReport}', [\App\Http\Controllers\Admin\ModerationController::class, 'show'])->name('moderation.show');

@@ -61,11 +61,11 @@ it('shows a pass/fail line for every rule, including required documents', functi
     $w = workflow(['gwa' => 2.0]);
     $cor = DeploymentRequirement::create(['code' => 'wf-cor', 'name' => 'Certificate of registration (test)', 'is_active' => true, 'on_request' => false, 'upload_source' => DeploymentRequirement::SOURCE_STUDENT, 'sort_order' => 1]);
     app(EligibilityCriteria::class)->saveVersion($w['program'], ...array_values(app(EligibilityCriteria::class)->currentTerm()), ...[[
-        'require_fourth_year' => true, 'require_major_subjects_passed' => true, 'max_gwa' => 2.5, 'required_hours' => null, 'required_document_ids' => [$cor->id],
+        'require_fourth_year' => true, 'require_major_subjects_passed' => true, 'required_hours' => null, 'required_document_ids' => [$cor->id],
     ], $w['coordinatorUser']]);
 
     $check = app(EligibilityChecker::class)->check($w['student']);
-    expect(collect($check['rules'])->pluck('passed', 'key')->all())->toBe(['fourth_year' => true, 'major_subjects' => true, 'gwa' => true, 'documents' => false])
+    expect(collect($check['rules'])->pluck('passed', 'key')->all())->toBe(['fourth_year' => true, 'major_subjects' => true, 'documents' => false])
         ->and($check['eligible'])->toBeFalse();
 
     Portfolio::create(['student_id' => $w['student']->id, 'title' => 'COR', 'type' => 'transcript', 'deployment_requirement_id' => $cor->id, 'file_path' => 'docs/cor.pdf', 'verification_status' => 'submitted']);
@@ -112,9 +112,22 @@ it('shows application stages and unplaced students', function () {
     $this->actingAs($w['coordinatorUser'])->get(route('coordinator.applications.index'))
         ->assertOk()
         ->assertSee('Web Intern')
-        ->assertSee('Students not placed yet (1)')
+        ->assertSeeInOrder(['Students not placed yet', '<span class="ap-tab-count">1</span>'], false)
         ->assertSee('data-unplaced="'.$w['student']->id.'"', false);
     $this->get(route('coordinator.applications.index', ['stage' => 'placed']))->assertOk()->assertSee('No applications match.');
+});
+
+it('searches students not placed yet by name without touching the applications filter', function () {
+    $w = workflow();
+    $row = 'data-unplaced="'.$w['student']->id.'"';
+    $this->actingAs($w['coordinatorUser']);
+
+    // q filters applications only; the not-placed list is unchanged.
+    $this->get(route('coordinator.applications.index', ['q' => 'no-such-name']))->assertOk()->assertSee($row, false);
+    // unplaced_q filters the not-placed list only.
+    $this->get(route('coordinator.applications.index', ['unplaced_q' => 'no-such-name']))->assertOk()
+        ->assertDontSee($row, false)->assertSee('No students match.');
+    $this->get(route('coordinator.applications.index', ['unplaced_q' => $w['student']->user->name]))->assertOk()->assertSee($row, false);
 });
 
 // Step 7

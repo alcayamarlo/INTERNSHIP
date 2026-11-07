@@ -19,7 +19,7 @@ class SkillController extends Controller
             'skills' => Skill::with('skillCategory')
                 ->withCount('internshipRequirements')
                 ->orderBy('name')
-                ->paginate(20),
+                ->paginate(10),
         ]);
     }
 

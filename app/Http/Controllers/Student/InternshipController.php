@@ -64,13 +64,22 @@ class InternshipController extends Controller
             $query->whereHas('requirementsList', fn ($q) => $q->where('requirement_name', 'like', "%{$skill}%"));
         }
 
+        // Work mode checkboxes in the filter panel: any of the ticked modes (unknown values are ignored).
+        $workModes = array_values(array_intersect(
+            array_map('strval', (array) $request->get('work_setup', [])),
+            array_column(\App\Enums\WorkSetup::cases(), 'value'),
+        ));
+        if ($workModes) {
+            $query->whereIn('work_setup', $workModes);
+        }
+
         // Best competency match first, newest first among equal scores.
         $matches = $query->latest()->get()
             ->each(fn (Internship $internship) => $internship->match_percentage = $this->matchingService->calculateMatch($student, $internship))
             ->sortByDesc('match_percentage')
             ->values();
         $page = LengthAwarePaginator::resolveCurrentPage();
-        $internships = (new LengthAwarePaginator($matches->forPage($page, 12)->values(), $matches->count(), 12, $page, [
+        $internships = (new LengthAwarePaginator($matches->forPage($page, 10)->values(), $matches->count(), 10, $page, [
             'path' => $request->url(),
         ]))->withQueryString();
 
@@ -173,12 +182,24 @@ class InternshipController extends Controller
 
     public function applications(Request $request)
     {
+        $studentId = Auth::user()->student->id;
         $query = InternshipApplication::with('internship.employer')
-            ->where('student_id', Auth::user()->student->id);
+            ->where('student_id', $studentId);
 
-        if ($request->filled('status')) {
+        // Status tabs group related statuses: Applied includes Submitted, Accepted includes Completed.
+        $statusTabs = [
+            'applied' => ['applied', 'submitted'],
+            'reviewed' => ['reviewed'],
+            'interview' => ['interview'],
+            'accepted' => ['accepted', 'completed'],
+            'rejected' => ['rejected'],
+        ];
+        $activeStatus = array_key_exists((string) $request->get('status'), $statusTabs) ? (string) $request->get('status') : 'all';
+        if ($activeStatus === 'all' && $request->filled('status')) {
+            // Any other exact status value keeps working as before (e.g. ?status=withdrawn).
             $query->where('status', $request->string('status'));
         }
+
         if ($request->filled('job_title')) {
             $query->whereHas('internship', fn ($q) => $q->where('title', 'like', '%'.$request->job_title.'%'));
         }
@@ -195,17 +216,55 @@ class InternshipController extends Controller
             $query->whereDate('applied_at', '<=', $request->applied_to);
         }
 
-        $applications = $query
-            ->latest('applied_at')
-            ->paginate(10)->withQueryString();
+        // Tab counts follow the text and date filters, but not the status tab itself.
+        $tabCounts = (clone $query)->reorder()->toBase()
+            ->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
+        $tabCounts = collect($statusTabs)->map(fn (array $statuses) => (int) $tabCounts->only($statuses)->sum())
+            ->prepend((int) $tabCounts->sum(), 'all');
 
-        return view('student.internships.applications', compact('applications'));
+        if ($activeStatus !== 'all') {
+            $query->whereIn('status', $statusTabs[$activeStatus]);
+        }
+
+        // Default order: status priority (Accepted, Interview, Reviewed, Applied, Rejected), then newest, then best match.
+        $sort = in_array($request->get('sort'), ['status', 'applied', 'match'], true) ? $request->get('sort') : 'status';
+        $statusRank = "case status when 'accepted' then 1 when 'completed' then 1 when 'interview' then 2 when 'reviewed' then 3 "
+            ."when 'applied' then 4 when 'submitted' then 4 when 'rejected' then 5 else 6 end";
+        match ($sort) {
+            'applied' => $query->orderByDesc('applied_at')->orderByDesc('match_percentage'),
+            'match' => $query->orderByDesc('match_percentage')->orderByDesc('applied_at'),
+            default => $query->orderByRaw($statusRank)->orderByDesc('applied_at')->orderByDesc('match_percentage'),
+        };
+        $query->orderByDesc('id');
+
+        $perPage = in_array((int) $request->get('per_page'), [10, 25, 50], true) ? (int) $request->get('per_page') : 10;
+        $applications = $query->paginate($perPage)->withQueryString();
+
+        // Summary tiles cover every application, whatever filters are on.
+        $all = InternshipApplication::where('student_id', $studentId);
+        $byStatus = (clone $all)->toBase()->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
+        $upcomingInterviews = (clone $all)->with('internship.employer')
+            ->whereNotNull('interview_at')
+            ->where('interview_at', '>=', now())
+            ->whereIn('status', ['interview', 'reviewed', 'applied', 'submitted'])
+            ->orderBy('interview_at')
+            ->take(6)
+            ->get();
+        $summary = [
+            'total' => (int) $byStatus->sum(),
+            'applied' => (int) $byStatus->only(['applied', 'submitted'])->sum(),
+            'reviewed' => (int) $byStatus->get('reviewed', 0),
+            'accepted' => (int) $byStatus->only(['accepted', 'completed'])->sum(),
+            'interviews' => (clone $all)->whereNotNull('interview_at')->where('interview_at', '>=', now())->whereIn('status', ['interview', 'reviewed', 'applied', 'submitted'])->count(),
+        ];
+
+        return view('student.internships.applications', compact('applications', 'summary', 'tabCounts', 'activeStatus', 'sort', 'perPage', 'upcomingInterviews'));
     }
 
     public function showApplication(InternshipApplication $application)
     {
         $this->authorize('view', $application);
-        $application->load(['internship.employer.user', 'statusHistory.actor']);
+        $application->load(['internship.employer.user', 'internship.programs', 'statusHistory.actor', 'resume']);
         return view('student.internships.application-show', compact('application'));
     }
 

@@ -15,7 +15,7 @@ class SkillCategoryController extends Controller
         $this->authorize('viewAny', SkillCategory::class);
 
         return view('admin.skill-categories.index', [
-            'categories' => SkillCategory::withCount('skills')->orderBy('name')->paginate(20),
+            'categories' => SkillCategory::withCount('skills')->orderBy('name')->paginate(10),
         ]);
     }
 

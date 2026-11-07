@@ -32,12 +32,6 @@
 
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label" for="maxGwa">Minimum grade (GWA)</label>
-                        <input id="maxGwa" type="number" step="0.01" min="1" max="5" name="max_gwa" class="form-control @error('max_gwa') is-invalid @enderror" value="{{ old('max_gwa', $current?->max_gwa) }}" placeholder="e.g. 2.50" aria-describedby="maxGwaHint">
-                        <small class="form-text text-muted" id="maxGwaHint">Students need this GWA or better (lower is better). Leave blank for no grade requirement.</small>
-                        @error('max_gwa')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="col-md-6">
                         <label class="form-label" for="requiredHours">Required OJT hours</label>
                         <input id="requiredHours" type="number" min="1" max="2000" name="required_hours" class="form-control @error('required_hours') is-invalid @enderror" value="{{ old('required_hours', $current?->required_hours) }}" placeholder="{{ $program->required_internship_hours ?: 'e.g. 486' }}" aria-describedby="requiredHoursHint">
                         <small class="form-text text-muted" id="requiredHoursHint">Used for new placements this term. Blank uses the program's hours ({{ $program->required_internship_hours ?: 'not set' }}).</small>

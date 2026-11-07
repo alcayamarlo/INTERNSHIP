@@ -129,7 +129,12 @@ class VerificationController extends Controller
             ->map(function (Student $student) {
                 $items = collect()
                     ->concat($student->portfolios->map(fn (Portfolio $item) => $this->formatSubmission('portfolio', $item, $student)))
-                    ->concat($student->resumes->filter(fn (Resume $item) => filled($item->file_path))->map(fn (Resume $item) => $this->formatSubmission('resumes', $item, $student)))
+                    // Only the student's latest generated resume; older versions stay out of the queue.
+                    ->concat($student->resumes
+                        ->filter(fn (Resume $item) => filled($item->file_path))
+                        ->sortByDesc(fn (Resume $item) => [$item->created_at?->getTimestamp() ?? 0, $item->id])
+                        ->take(1)
+                        ->map(fn (Resume $item) => $this->formatSubmission('resumes', $item, $student)))
                     ->sortByDesc('created_at')
                     ->values();
 

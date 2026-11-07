@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="844" viewBox="0 0 960 844" role="img" aria-label="Student use cases, from profile and evidence through applications to OJT time records and the certificate." ><style>
+text{font-family:Arial,Helvetica,sans-serif;font-size:12.5px;font-weight:500;fill:#000}
+.boundary{fill:#fff;stroke:#000;stroke-width:1.4}
+.boundary-name{font-size:14px;font-weight:700}
+.uc-case ellipse{fill:#fff;stroke:#000;stroke-width:1.3}
+.uc-case.system ellipse{fill:#f2f2f2;stroke:#000;stroke-width:2}
+.assoc{stroke:#000;stroke-width:1.1}
+.dep line{stroke:#000;stroke-width:1.2;stroke-dasharray:5 4}
+.dep.flow line{stroke-dasharray:none;stroke-width:1.5}
+.stereo{font-size:11px;font-style:italic}
+.gen{stroke:#000;stroke-width:1.3}
+.gen-head{fill:#fff;stroke:#000;stroke-width:1.3}
+.actor circle{fill:#fff;stroke:#000;stroke-width:1.7}
+.actor line{stroke:#000;stroke-width:1.7;stroke-linecap:round}
+.actor .actor-name{font-size:13px;font-weight:700}
+</style><rect width="960" height="844" fill="#ffffff"/><defs>
+  <marker id="open-student" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10" fill="none" stroke="#000" stroke-width="1.4"/></marker>
+  <marker id="gen-student" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" orient="auto-start-reverse"><path d="M0,0 L12,6 L0,12 Z" class="gen-head"/></marker>
+</defs><rect class="boundary" x="160" y="40" width="780" height="788" rx="12"/>
+<text x="178" y="66" class="boundary-name">Skill-Bridge</text>
+<line class="assoc" x1="92" y1="421" x2="205" y2="104"/>
+<line class="assoc" x1="92" y1="421" x2="205" y2="164"/>
+<line class="assoc" x1="92" y1="421" x2="205" y2="224"/>
+<line class="assoc" x1="92" y1="421" x2="205" y2="284"/>
+<line class="assoc" x1="92" y1="421" x2="205" y2="344"/>
+<line class="assoc" x1="92" y1="421" x2="205" y2="404"/>
+<line class="assoc" x1="92" y1="421" x2="205" y2="464"/>
+<line class="assoc" x1="92" y1="421" x2="205" y2="524"/>
+<line class="assoc" x1="92" y1="421" x2="205" y2="584"/>
+<line class="assoc" x1="92" y1="421" x2="205" y2="644"/>
+<line class="assoc" x1="92" y1="421" x2="205" y2="704"/>
+<line class="assoc" x1="92" y1="421" x2="205" y2="764"/>
+<g class="uc-case "><ellipse cx="370" cy="104" rx="165" ry="24"/><text text-anchor="middle"><tspan x="370" y="108.5">Complete bio-data profile</tspan></text></g>
+<g class="uc-case related "><ellipse cx="790" cy="104" rx="128" ry="22"/><text text-anchor="middle"><tspan x="790" y="101">Request academic record</tspan><tspan x="790" y="116">change</tspan></text></g>
+<g class="dep"><line x1="662" y1="104" x2="535" y2="104" marker-end="url(#open-student)"/>
+  <text x="598.5" y="98" text-anchor="middle" class="stereo">«extend»</text></g>
+<g class="uc-case "><ellipse cx="370" cy="164" rx="165" ry="24"/><text text-anchor="middle"><tspan x="370" y="161">Record certificates and</tspan><tspan x="370" y="176">competencies</tspan></text></g>
+<g class="uc-case "><ellipse cx="370" cy="224" rx="165" ry="24"/><text text-anchor="middle"><tspan x="370" y="221">Upload portfolio and deployment</tspan><tspan x="370" y="236">documents</tspan></text></g>
+<g class="uc-case "><ellipse cx="370" cy="284" rx="165" ry="24"/><text text-anchor="middle"><tspan x="370" y="288.5">Generate resume</tspan></text></g>
+<g class="uc-case "><ellipse cx="370" cy="344" rx="165" ry="24"/><text text-anchor="middle"><tspan x="370" y="348.5">Browse and search internships</tspan></text></g>
+<g class="uc-case related "><ellipse cx="790" cy="344" rx="128" ry="22"/><text text-anchor="middle"><tspan x="790" y="348.5">Rate a recommendation</tspan></text></g>
+<g class="dep"><line x1="662" y1="344" x2="535" y2="344" marker-end="url(#open-student)"/>
+  <text x="598.5" y="338" text-anchor="middle" class="stereo">«extend»</text></g>
+<g class="uc-case "><ellipse cx="370" cy="404" rx="165" ry="24"/><text text-anchor="middle"><tspan x="370" y="408.5">Apply for internship</tspan></text></g>
+<g class="uc-case related "><ellipse cx="790" cy="404" rx="128" ry="22"/><text text-anchor="middle"><tspan x="790" y="408.5">Attach resume</tspan></text></g>
+<g class="dep"><line x1="535" y1="404" x2="662" y2="404" marker-end="url(#open-student)"/>
+  <text x="598.5" y="398" text-anchor="middle" class="stereo">«include»</text></g>
+<g class="uc-case "><ellipse cx="370" cy="464" rx="165" ry="24"/><text text-anchor="middle"><tspan x="370" y="461">Track, edit or withdraw</tspan><tspan x="370" y="476">applications</tspan></text></g>
+<g class="uc-case "><ellipse cx="370" cy="524" rx="165" ry="24"/><text text-anchor="middle"><tspan x="370" y="528.5">Accept or decline invitations</tspan></text></g>
+<g class="uc-case "><ellipse cx="370" cy="584" rx="165" ry="24"/><text text-anchor="middle"><tspan x="370" y="588.5">Log daily time record</tspan></text></g>
+<g class="uc-case "><ellipse cx="370" cy="644" rx="165" ry="24"/><text text-anchor="middle"><tspan x="370" y="648.5">Submit weekly journal</tspan></text></g>
+<g class="uc-case "><ellipse cx="370" cy="704" rx="165" ry="24"/><text text-anchor="middle"><tspan x="370" y="708.5">Track OJT progress</tspan></text></g>
+<g class="uc-case "><ellipse cx="370" cy="764" rx="165" ry="24"/><text text-anchor="middle"><tspan x="370" y="761">Download certificate of</tspan><tspan x="370" y="776">completion</tspan></text></g>
+<g class="actor primary">
+  <circle cx="70" cy="400" r="11"/>
+  <line x1="70" y1="411" x2="70" y2="442"/>
+  <line x1="53" y1="421" x2="87" y2="421"/>
+  <line x1="70" y1="442" x2="57" y2="466"/>
+  <line x1="70" y1="442" x2="83" y2="466"/>
+  <text x="70" y="486" text-anchor="middle" class="actor-name">Student</text>
+</g></svg>

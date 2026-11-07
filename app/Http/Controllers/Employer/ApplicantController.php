@@ -36,7 +36,7 @@ class ApplicantController extends Controller
         )
             ->with(['student.user', 'internship'])
             ->latest('applied_at')
-            ->paginate(15);
+            ->paginate(10);
         $applications->getCollection()->each(fn (InternshipApplication $application) => $application
             ->setAttribute('company_profile', $this->companyProfile->summary($application->student)));
 

@@ -1,0 +1,135 @@
+/* Coordinator partner companies list: responsive filter row and table.
+   The table adapts to its card's width (container query), so it works with
+   the sidebar open or closed:
+     card >= 1000px  full table
+     760-999px       compact: numeric headers wrap, action button shows its icon only
+     < 760px         each company becomes a stacked card (same look as .sb-table-stack)
+   Colors come from the shared --sb-* tokens (light and dark themes).
+   This file loads before skillbridge-ui.css, so rules are scoped under
+   body.sb-app .sb-content to win over the shared table styles. */
+
+/* ---------- Filter row ---------- */
+
+body.sb-app .pc-filter .pc-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px 16px;
+}
+
+body.sb-app .pc-filter .pc-filter-field {
+    flex: 1 1 200px;
+    min-width: 0;
+}
+
+body.sb-app .pc-filter .pc-filter-field--wide {
+    flex: 2 1 280px;
+}
+
+body.sb-app .pc-filter .pc-filter-action {
+    flex: 0 0 auto;
+}
+
+body.sb-app .pc-filter .pc-filter-action .btn {
+    min-width: 160px;
+}
+
+@media (max-width: 575.98px) {
+    body.sb-app .pc-filter .pc-filter-field,
+    body.sb-app .pc-filter .pc-filter-field--wide,
+    body.sb-app .pc-filter .pc-filter-action {
+        flex: 1 1 100%;
+    }
+
+    body.sb-app .pc-filter .pc-filter-action .btn {
+        width: 100%;
+    }
+}
+
+/* ---------- Table ---------- */
+
+body.sb-app .pc-table-card {
+    container: pc-table / inline-size;
+}
+
+/* Compact */
+@container pc-table (max-width: 999.98px) {
+    body.sb-app .sb-content .pc-table thead th.pc-num {
+        white-space: normal;
+    }
+
+    body.sb-app .sb-content .pc-table .pc-action-text {
+        display: none;
+    }
+}
+
+/* Stacked cards */
+@container pc-table (max-width: 759.98px) {
+    body.sb-app .sb-content .pc-table thead {
+        display: none;
+    }
+
+    body.sb-app .sb-content .pc-table,
+    body.sb-app .sb-content .pc-table tbody,
+    body.sb-app .sb-content .pc-table tr {
+        display: block;
+        width: 100%;
+    }
+
+    body.sb-app .sb-content .pc-table tbody {
+        padding: 12px;
+    }
+
+    body.sb-app .sb-content .pc-table tbody tr {
+        margin: 0 0 12px;
+        overflow: hidden;
+        border: 1px solid var(--sb-border);
+        border-radius: var(--sb-radius-md);
+    }
+
+    body.sb-app .sb-content .pc-table tbody tr:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Label on the left, the cell's own lines (name + email, badge + date) on the right. */
+    body.sb-app .sb-content .pc-table tbody td {
+        display: flow-root;
+        width: 100%;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--sb-border);
+        text-align: right;
+    }
+
+    body.sb-app .sb-content .pc-table tbody td:last-child {
+        border-bottom: 0;
+    }
+
+    body.sb-app .sb-content .pc-table tbody td[data-label]::before {
+        float: left;
+        margin-right: 12px;
+        color: var(--sb-muted);
+        font-size: 12px;
+        line-height: 1.8;
+        content: attr(data-label);
+    }
+
+    body.sb-app .sb-content .pc-table tbody td:is(.pc-company, .pc-action, .pc-empty) {
+        text-align: left;
+    }
+
+    body.sb-app .sb-content .pc-table tbody td:is(.pc-company, .pc-action, .pc-empty)::before {
+        display: none;
+    }
+
+    body.sb-app .sb-content .pc-table tbody td.pc-empty {
+        text-align: center;
+    }
+
+    body.sb-app .sb-content .pc-table .pc-action .btn {
+        width: 100%;
+    }
+
+    body.sb-app .sb-content .pc-table .pc-action .pc-action-text {
+        display: inline;
+    }
+}

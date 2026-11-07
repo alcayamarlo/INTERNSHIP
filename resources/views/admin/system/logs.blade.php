@@ -25,7 +25,7 @@
         </div>
         <div class="col-md-3">
             <label class="form-label small" for="logAction">Action</label>
-            <select id="logAction" name="action" class="form-select">
+            <select id="logAction" name="action" class="form-select" onchange="this.form.requestSubmit()">
                 <option value="">Any action</option>
                 @foreach($actions as $action)
                     <option value="{{ $action }}" @selected($filters['action'] === $action)>{{ $action }}</option>
@@ -34,11 +34,12 @@
         </div>
         <div class="col-md-2">
             <label class="form-label small" for="logFrom">From</label>
-            <input id="logFrom" type="date" name="from" value="{{ $filters['from'] }}" class="form-control @error('from') is-invalid @enderror">
+            {{-- Apply once the date is complete (year 1900+), or when it is cleared. --}}
+            <input id="logFrom" type="date" name="from" value="{{ $filters['from'] }}" class="form-control @error('from') is-invalid @enderror" onchange="if (this.value === '' || this.value.slice(0, 4) >= '1900') this.form.requestSubmit()">
         </div>
         <div class="col-md-2">
             <label class="form-label small" for="logTo">To</label>
-            <input id="logTo" type="date" name="to" value="{{ $filters['to'] }}" class="form-control @error('to') is-invalid @enderror">
+            <input id="logTo" type="date" name="to" value="{{ $filters['to'] }}" class="form-control @error('to') is-invalid @enderror" onchange="if (this.value === '' || this.value.slice(0, 4) >= '1900') this.form.requestSubmit()">
             @error('to')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="col-md-2 d-flex gap-2">

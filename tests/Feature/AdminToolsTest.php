@@ -127,26 +127,19 @@ it('does not let an admin suspend themselves', function () {
     expect($admin->fresh()->isSuspended())->toBeFalse();
 });
 
-// 3. Institutions
-it('adds, verifies, and unverifies institutions; only verified ones can be picked for new accounts', function () {
+// 3. Institutions (the admin Institutions page was removed; St. Cecilia's is the only school)
+it('only lets verified institutions be picked for new accounts', function () {
     $admin = adminUser();
     $this->actingAs($admin);
 
-    $this->post(route('admin.institutions.store'), ['name' => 'New College'])->assertRedirect();
-    $institution = Institution::where('name', 'New College')->sole();
+    $institution = Institution::create(['name' => 'New College']);
     expect($institution->isVerified())->toBeFalse();
     $this->get(route('admin.users.create'))->assertOk()->assertDontSee('value="'.$institution->id.'"', false);
     $this->post(route('admin.users.store'), ['name' => 'Coord', 'email' => 'c@example.test', 'role' => 'coordinator', 'institution_id' => $institution->id, 'password' => 'Secret123!', 'password_confirmation' => 'Secret123!'])
         ->assertSessionHasErrors('institution_id');
 
-    $this->post(route('admin.institutions.verify', $institution))->assertRedirect();
-    expect($institution->fresh()->isVerified())->toBeTrue();
+    $institution->update(['verified_at' => now()]);
     $this->get(route('admin.users.create'))->assertSee('value="'.$institution->id.'"', false);
-    $this->assertDatabaseHas('system_logs', ['action' => 'institution_verified']);
-
-    $this->post(route('admin.institutions.unverify', $institution))->assertRedirect();
-    expect($institution->fresh()->isVerified())->toBeFalse();
-    $this->post(route('admin.institutions.store'), ['name' => 'New College'])->assertSessionHasErrors(['name' => 'An institution with this name already exists.']);
 });
 
 // 4. Reports and moderation

@@ -20,7 +20,7 @@
     </div>
     <div class="col-md-4">
         <label class="visually-hidden" for="status">Status</label>
-        <select id="status" name="status" class="form-select">
+        <select id="status" name="status" class="form-select" onchange="this.form.requestSubmit()">
             <option value="">All statuses</option>
             <option value="pending_validation" @selected($filter === 'pending_validation')>To validate</option>
             <option value="at_risk" @selected($filter === 'at_risk')>At risk</option>

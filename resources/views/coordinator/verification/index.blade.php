@@ -6,7 +6,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/coordinator-verification.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/coordinator-verification.css') }}?v={{ @filemtime(public_path('css/coordinator-verification.css')) }}">
 @endpush
 
 @section('content')
@@ -23,69 +23,65 @@
         title="Verification Queue"
         subtitle="Review each student's submissions. Verify with one click; give a reason only when you reject."
         eyebrow="Student submissions"
-    />
+    >
+        <p class="vq-summary" aria-label="Verification summary">
+            <span><strong id="countPending">0</strong> pending</span>
+            <span aria-hidden="true">·</span>
+            <span><strong id="countVerified">0</strong> verified</span>
+            <span aria-hidden="true">·</span>
+            <span><strong id="countRejected">0</strong> rejected</span>
+        </p>
+    </x-page-header>
 
-    <section class="sb-stat-grid" aria-label="Verification summary">
-        <article class="sb-stat">
-            <span class="sb-stat-icon sb-stat-icon--warning" aria-hidden="true"><i class="bi bi-hourglass-split"></i></span>
-            <div class="sb-stat-body">
-                <div class="sb-stat-label">Pending</div>
-                <div class="sb-stat-value" id="countPending">0</div>
+    <section class="card vq-card" aria-label="Student submissions">
+        <div class="verification-filters" role="search" aria-label="Filter submissions">
+            <label class="verification-search">
+                <span class="visually-hidden">Search by student name or student ID</span>
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input id="studentSearch" type="search" placeholder="Search student name or ID…" autocomplete="off">
+            </label>
+
+            <label class="verification-program">
+                <span class="visually-hidden">Filter by program</span>
+                <select id="programFilter">
+                    <option value="">All programs</option>
+                    @foreach($programs as $program)
+                        <option value="{{ $program }}">{{ $program }}</option>
+                    @endforeach
+                </select>
+            </label>
+
+            <div class="filter-group" role="group" aria-label="Verification status">
+                <button type="button" class="filter-chip is-active" data-filter-group="status" data-filter-value="pending" aria-pressed="true">Pending <span class="vq-chip-count" data-status-count="pending"></span></button>
+                <button type="button" class="filter-chip" data-filter-group="status" data-filter-value="verified" aria-pressed="false">Verified <span class="vq-chip-count" data-status-count="verified"></span></button>
+                <button type="button" class="filter-chip" data-filter-group="status" data-filter-value="rejected" aria-pressed="false">Rejected <span class="vq-chip-count" data-status-count="rejected"></span></button>
+                <button type="button" class="filter-chip" data-filter-group="status" data-filter-value="all" aria-pressed="false">Everything <span class="vq-chip-count" data-status-count="all"></span></button>
             </div>
-        </article>
-        <article class="sb-stat">
-            <span class="sb-stat-icon sb-stat-icon--success" aria-hidden="true"><i class="bi bi-patch-check"></i></span>
-            <div class="sb-stat-body">
-                <div class="sb-stat-label">Verified</div>
-                <div class="sb-stat-value" id="countVerified">0</div>
+
+            <div class="filter-group" role="group" aria-label="Submission type">
+                <button type="button" class="filter-chip is-active" data-filter-group="type" data-filter-value="all" aria-pressed="true">All</button>
+                <button type="button" class="filter-chip" data-filter-group="type" data-filter-value="portfolio" aria-pressed="false">Portfolio</button>
             </div>
-        </article>
-        <article class="sb-stat">
-            <span class="sb-stat-icon" aria-hidden="true"><i class="bi bi-x-circle"></i></span>
-            <div class="sb-stat-body">
-                <div class="sb-stat-label">Rejected</div>
-                <div class="sb-stat-value" id="countRejected">0</div>
-            </div>
-        </article>
-    </section>
-
-    <section class="verification-filters" aria-label="Filter submissions">
-        <label class="verification-search">
-            <span class="visually-hidden">Search by student name or student ID</span>
-            <i class="bi bi-search" aria-hidden="true"></i>
-            <input id="studentSearch" type="search" placeholder="Search student name or ID…" autocomplete="off">
-        </label>
-
-        <label class="verification-program">
-            <span class="visually-hidden">Filter by program</span>
-            <select id="programFilter">
-                <option value="">All programs</option>
-                @foreach($programs as $program)
-                    <option value="{{ $program }}">{{ $program }}</option>
-                @endforeach
-            </select>
-        </label>
-
-        <div class="filter-group" role="group" aria-label="Submission type">
-            <button type="button" class="filter-chip is-active" data-filter-group="type" data-filter-value="all" aria-pressed="true">All</button>
-            <button type="button" class="filter-chip" data-filter-group="type" data-filter-value="portfolio" aria-pressed="false">Portfolio</button>
         </div>
 
-        <div class="filter-group" role="group" aria-label="Verification status">
-            <button type="button" class="filter-chip is-active" data-filter-group="status" data-filter-value="pending" aria-pressed="true">Pending</button>
-            <button type="button" class="filter-chip" data-filter-group="status" data-filter-value="verified" aria-pressed="false">Verified</button>
-            <button type="button" class="filter-chip" data-filter-group="status" data-filter-value="rejected" aria-pressed="false">Rejected</button>
-            <button type="button" class="filter-chip" data-filter-group="status" data-filter-value="all" aria-pressed="false">Everything</button>
+        <div class="vq-split">
+            <div class="vq-list-col">
+                <p class="vq-list-head" id="studentListLabel" aria-live="polite">Students · <span id="studentCount">0</span></p>
+                <ul class="vq-list" id="studentList" role="listbox" aria-labelledby="studentListLabel" aria-controls="studentPanel"></ul>
+                <p class="vq-list-empty" id="studentListEmpty" hidden></p>
+            </div>
+
+            <section class="vq-panel" id="studentPanel" aria-label="Selected student">
+                <div class="vq-panel-content" id="studentPanelContent"></div>
+                <div id="emptyQueue" class="empty-queue" hidden>
+                    <span class="empty-queue-icon"><i class="bi bi-inbox" aria-hidden="true"></i></span>
+                    <strong id="emptyQueueTitle">Nothing to review here right now.</strong>
+                    <span>Try another program or status, or clear the search.</span>
+                    <button type="button" id="clearFilters" class="clear-filters">Clear filters</button>
+                </div>
+            </section>
         </div>
     </section>
-
-    <section id="studentGroups" class="student-groups" aria-live="polite" aria-busy="false"></section>
-    <div id="emptyQueue" class="empty-queue" hidden>
-        <span class="empty-queue-icon"><i class="bi bi-inbox" aria-hidden="true"></i></span>
-        <strong>Nothing to review here.</strong>
-        <span>Try another program or status, or clear the search.</span>
-        <button type="button" id="clearFilters" class="clear-filters">Clear filters</button>
-    </div>
 
     <div id="verificationToast" class="verification-toast" role="status" aria-live="polite" hidden>
         <span id="toastMessage"></span>
@@ -174,5 +170,5 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('js/coordinator-verification.js') }}" defer></script>
+    <script src="{{ asset('js/coordinator-verification.js') }}?v={{ @filemtime(public_path('js/coordinator-verification.js')) }}" defer></script>
 @endpush

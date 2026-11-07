@@ -9,7 +9,7 @@
     <div class="card-body row g-3 align-items-end">
         <div class="col-md-4">
             <label class="form-label" for="criteriaSchoolYear">School year</label>
-            <select id="criteriaSchoolYear" name="school_year" class="form-select">
+            <select id="criteriaSchoolYear" name="school_year" class="form-select" onchange="this.form.requestSubmit()">
                 @foreach($schoolYears as $year)
                     <option value="{{ $year }}" @selected($year === $schoolYear)>{{ $year }}</option>
                 @endforeach
@@ -17,7 +17,7 @@
         </div>
         <div class="col-md-4">
             <label class="form-label" for="criteriaTerm">Term</label>
-            <select id="criteriaTerm" name="term" class="form-select">
+            <select id="criteriaTerm" name="term" class="form-select" onchange="this.form.requestSubmit()">
                 @foreach($terms as $key => $label)
                     <option value="{{ $key }}" @selected($key === $term)>{{ $label }}</option>
                 @endforeach

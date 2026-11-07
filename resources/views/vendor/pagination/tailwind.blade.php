@@ -1,6 +1,6 @@
 {{-- Bootstrap markup for the default paginator (this app does not ship Tailwind). --}}
 @if ($paginator->hasPages())
-    <nav class="d-flex justify-content-between align-items-center flex-wrap gap-2" role="navigation" aria-label="Pagination Navigation">
+    <nav class="d-flex flex-column align-items-center gap-2 text-center" role="navigation" aria-label="Pagination Navigation">
 
         <p class="small text-muted mb-0">
             Showing

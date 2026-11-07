@@ -78,6 +78,22 @@ it('groups the coordinator queue and exposes program filters from scoped student
         ->assertDontSee('Web Development');
 });
 
+it('lists only the latest generated resume per student', function () {
+    $fixture = verificationQueueFixture();
+    $older = \App\Models\Resume::create(['student_id' => $fixture['student']->id, 'file_path' => 'resumes/old.pdf', 'content' => [], 'generated_at' => now()->subWeek()]);
+    $older->forceFill(['created_at' => now()->subWeek()])->save();
+    $latest = \App\Models\Resume::create(['student_id' => $fixture['student']->id, 'file_path' => 'resumes/new.pdf', 'content' => [], 'generated_at' => now()]);
+    \App\Models\Resume::create(['student_id' => $fixture['student']->id, 'file_path' => null, 'content' => [], 'generated_at' => now()->addMinute()]);
+
+    $students = $this->actingAs($fixture['coordinatorUser'])
+        ->getJson(route('coordinator.verification.index'))
+        ->assertOk()
+        ->json('students');
+
+    $resumeIds = collect($students[0]['items'])->where('type', 'resumes')->pluck('id')->all();
+    expect($resumeIds)->toBe([$latest->id]);
+});
+
 it('requires a reason for rejection and records review audit data', function () {
     $fixture = verificationQueueFixture();
     $url = route('coordinator.verification.update', [

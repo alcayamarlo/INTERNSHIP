@@ -22,7 +22,7 @@ class InvitationController extends Controller
             ->where('employer_id', $employer->id)
             ->with(['student.user', 'internship:id,title,status,expires_at'])
             ->latest()
-            ->paginate(20);
+            ->paginate(10);
         $visibleProfile = app(CompanyVisibleProfile::class);
 
         return view('employer.invitations.index', [

@@ -133,7 +133,7 @@ class DashboardController extends Controller
             default => $query->orderBy(User::select('name')->whereColumn('users.id', 'students.user_id')),
         };
 
-        $students = $query->paginate(15)->withQueryString();
+        $students = $query->paginate(10)->withQueryString();
 
         $studentIdPattern = StudentIdFormat::pattern();
         $payload = $students->getCollection()->map(

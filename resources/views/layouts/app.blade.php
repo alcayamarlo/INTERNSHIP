@@ -59,6 +59,20 @@
 
     @include('partials.theme-init')
 
+    {{-- Page-load animations (sb-motion.css) run only while <html> has .sb-intro, so content swapped in later does not replay them. --}}
+    <script>
+        (function () {
+            try {
+                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+                var root = document.documentElement;
+                root.classList.add('sb-intro');
+                document.addEventListener('DOMContentLoaded', function () {
+                    setTimeout(function () { root.classList.remove('sb-intro'); }, 2200);
+                });
+            } catch (error) {}
+        })();
+    </script>
+
     {{-- Collapsed-sidebar preference is applied before first paint to avoid a layout jump. --}}
     <script>
         try {
@@ -75,13 +89,19 @@
     <link rel="stylesheet" href="{{ asset('css/skillbridge-dashboard.css') }}?v=1">
     <link rel="stylesheet" href="{{ asset('css/skillbridge-sidebar.css') }}?v={{ @filemtime(public_path('css/skillbridge-sidebar.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-eye-comfort.css') }}?v={{ @filemtime(public_path('css/sb-eye-comfort.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/sb-motion.css') }}?v={{ @filemtime(public_path('css/sb-motion.css')) }}">
+    @if(auth()->user()?->isRole(\App\Enums\UserRole::Admin))
+        {{-- Admin workspace: Inter + admin sidebar/topbar/dashboard styles (loaded last so it wins). --}}
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="{{ asset('css/admin-dashboard.css') }}?v={{ @filemtime(public_path('css/admin-dashboard.css')) }}">
+    @endif
     <script defer src="{{ asset('js/skillbridge-ui.js') }}"></script>
     @vite('resources/js/app.js')
 
 </head>
 
 
-<body class="skillbridge-app sb-app">
+<body class="skillbridge-app sb-app {{ auth()->user()?->isRole(\App\Enums\UserRole::Admin) ? 'sb-admin' : '' }}">
 
 
 @php
@@ -156,7 +176,6 @@
                 ['admin.users.index', 'admin.users.*', 'bi-people', 'Users'],
                 ['admin.placements.index', 'admin.placements.*', 'bi-clock-history', 'OJT Placements'],
                 ['admin.announcements.index', 'admin.announcements.*', 'bi-megaphone', 'Announcements'],
-                ['admin.institutions.index', 'admin.institutions.*', 'bi-bank', 'Institutions'],
                 ['admin.skill-categories.index', 'admin.skill-categories.*', 'bi-tags', 'Skill Categories'],
                 ['admin.skill-tags.index', 'admin.skill-tags.*', 'bi-hash', 'Student Skill Tags'],
             ],

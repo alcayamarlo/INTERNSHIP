@@ -117,6 +117,8 @@ document.addEventListener('submit', async (event) => {
         submitButton.classList.remove('btn-primary');
         submitButton.classList.add('btn-success');
         submitButton.disabled = true;
+        // Lets the page update in place (e.g. the Browse Internships card switches to "Applied").
+        form.dispatchEvent(new CustomEvent('sb:application-submitted', { bubbles: true, detail: payload }));
         form.querySelectorAll('select, textarea').forEach((input) => {
             input.disabled = true;
         });
@@ -673,25 +675,19 @@ if (window.Echo && currentUserId) {
         const thread = document.getElementById('messageThread');
         const onThisThread = thread && thread.dataset.threadUserId === String(payload.sender_id);
 
-        if (onThisThread) {
-            const emptyState = thread.querySelector('.messenger-empty');
-            if (emptyState) emptyState.remove();
-            const row = document.createElement('div');
-            row.className = 'messenger-row incoming';
-            const bubble = document.createElement('div');
-            bubble.className = 'messenger-bubble';
-            const message = document.createElement('p');
-            message.className = 'messenger-message';
-            message.textContent = payload.body;
-            const time = document.createElement('span');
-            time.className = 'messenger-time';
-            time.textContent = payload.created_at;
-            bubble.append(message, time);
-            row.append(bubble);
-            thread.append(row);
-            thread.scrollTop = thread.scrollHeight;
-        } else {
+        if (onThisThread && window.sbChat && payload.row_url) {
+            // The open chat loads the server-rendered message (picture, reply quote, tools).
+            window.sbChat.load(payload.row_url, 'append');
+        } else if (!onThisThread) {
             showLiveToast(`New message from ${payload.sender_name}`, payload.body, payload.thread_url);
+        }
+    });
+
+    // A reaction, pin, edit or unsend in a chat that is open here: re-render that message.
+    channel.listen('.message.updated', (payload) => {
+        const thread = document.getElementById('messageThread');
+        if (thread && thread.dataset.threadUserId === String(payload.thread_user_id) && window.sbChat) {
+            window.sbChat.load(payload.row_url, 'refresh');
         }
     });
 }

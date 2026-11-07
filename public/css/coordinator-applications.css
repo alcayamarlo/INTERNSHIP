@@ -1,0 +1,170 @@
+/* Coordinator applications page: layout, plus the tab bar and stage-chip states.
+   Colors come from the shared --sb-* tokens (light and dark themes); cards,
+   tables, badges and animations come from the shared stylesheets.
+   This file loads before skillbridge-ui.css, so rules are scoped under
+   body.sb-app ... .ap-page to win over the shared defaults. */
+
+/* ---------- Full-width frame ---------- */
+
+body.sb-app .sb-content:has(> .ap-page) {
+    max-width: none;
+}
+
+@media (min-width: 992px) {
+    body.sb-app .sb-content:has(> .ap-page) {
+        padding: 20px 24px;
+    }
+}
+
+body.sb-app .ap-page {
+    display: grid;
+    gap: 16px;
+}
+
+body.sb-app .ap-page > * {
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+/* skillbridge-dashboard.css gives the header a 28px bottom margin; the grid gap spaces it here. */
+body.sb-app .ap-page > .sb-page-header {
+    margin-bottom: 0;
+}
+
+/* ---------- Header summary ---------- */
+
+body.sb-app .ap-page .sb-page-header .ap-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px;
+    margin: 0;
+    color: var(--sb-muted);
+    font-size: 14px;
+}
+
+body.sb-app .ap-page .ap-summary strong {
+    color: var(--sb-ink);
+    font-weight: 700;
+}
+
+/* ---------- Tab bar ---------- */
+
+body.sb-app .ap-page .ap-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 0 16px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--sb-border);
+}
+
+body.sb-app .ap-page .ap-tab {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: -1px;
+    padding: 14px 12px 11px;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: var(--sb-muted);
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+body.sb-app .ap-page .ap-tab:hover {
+    color: var(--sb-ink);
+}
+
+body.sb-app .ap-page .ap-tab:focus-visible {
+    outline: 2px solid var(--sb-brand-content);
+    outline-offset: -2px;
+}
+
+body.sb-app .ap-page .ap-tab[aria-selected="true"] {
+    border-bottom-color: var(--sb-brand);
+    color: var(--sb-brand-content);
+}
+
+body.sb-app .ap-page .ap-tab-count {
+    min-width: 24px;
+    padding: 1px 8px;
+    border: 1px solid var(--sb-border);
+    border-radius: 999px;
+    background: var(--sb-surface-raised);
+    color: var(--sb-muted);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.5;
+    text-align: center;
+}
+
+body.sb-app .ap-page .ap-tab[aria-selected="true"] .ap-tab-count {
+    border-color: var(--sb-brand);
+    background: var(--sb-brand);
+    color: #fff;
+}
+
+body.sb-app .ap-page .ap-tab-label--short {
+    display: none;
+}
+
+body.sb-app .ap-page .ap-panel[hidden] {
+    display: none !important;
+}
+
+/* ---------- Filter row ---------- */
+
+body.sb-app .ap-page .ap-panel-tools {
+    display: grid;
+    gap: 14px;
+    padding: 16px;
+}
+
+body.sb-app .ap-page .ap-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+body.sb-app .ap-page .ap-filter-field {
+    flex: 1 1 150px;
+    min-width: 0;
+}
+
+body.sb-app .ap-page .ap-filter-field--wide {
+    flex: 2 1 220px;
+}
+
+body.sb-app .ap-page .ap-filter-action {
+    flex: 0 0 auto;
+}
+
+/* ---------- Narrow screens ---------- */
+
+@media (max-width: 639.98px) {
+    body.sb-app .ap-page .ap-filter-field,
+    body.sb-app .ap-page .ap-filter-field--wide,
+    body.sb-app .ap-page .ap-filter-action {
+        flex: 1 1 100%;
+    }
+
+    body.sb-app .ap-page .ap-filter-action .btn {
+        width: 100%;
+    }
+
+    body.sb-app .ap-page .ap-tabs {
+        padding: 0 8px;
+    }
+
+    body.sb-app .ap-page .ap-tab-label--long {
+        display: none;
+    }
+
+    body.sb-app .ap-page .ap-tab-label--short {
+        display: inline;
+    }
+}

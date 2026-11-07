@@ -22,7 +22,7 @@ class SystemController extends Controller
     public function logs()
     {
         return view('admin.system.logs', [
-            'logs' => SystemLog::with('user')->latest()->paginate(20),
+            'logs' => SystemLog::with('user')->latest()->paginate(10),
         ]);
     }
 

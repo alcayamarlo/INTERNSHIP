@@ -15,9 +15,17 @@
         undoTimer: null,
         activeStudentId: null,
         returnFocus: null,
+        selectedId: null,
+        expanded: new Set(),
     };
 
-    const groups = document.getElementById('studentGroups');
+    // Split view: student list (listbox) on the left, the selected student's documents on the right.
+    const DOCUMENTS_SHOWN = 6;
+    const studentList = document.getElementById('studentList');
+    const studentListEmpty = document.getElementById('studentListEmpty');
+    const studentCount = document.getElementById('studentCount');
+    const panel = document.getElementById('studentPanel');
+    const panelContent = document.getElementById('studentPanelContent');
     const emptyState = document.getElementById('emptyQueue');
     const drawer = document.getElementById('studentDrawer');
     const backdrop = document.getElementById('studentDrawerBackdrop');
@@ -51,13 +59,16 @@
         && (state.status === 'all' || item.status === state.status)
     );
 
-    const matchesStudent = (student) => {
+    const filtersActive = () => state.search.trim() !== '' || state.program !== '';
+
+    const matchesStudentFilters = (student) => {
         const searchTerm = state.search.trim().toLocaleLowerCase();
         const searchable = `${student.name} ${student.student_id_number ?? ''}`.toLocaleLowerCase();
         return (!searchTerm || searchable.includes(searchTerm))
-            && (!state.program || student.program === state.program)
-            && student.items.some(matchesItem);
+            && (!state.program || student.program === state.program);
     };
+
+    const matchesStudent = (student) => matchesStudentFilters(student) && student.items.some(matchesItem);
 
     const visibleStudents = () => state.students.filter(matchesStudent);
     const visibleItems = () => visibleStudents().flatMap((student) => student.items.filter(matchesItem));
@@ -68,6 +79,20 @@
         document.getElementById('countPending').textContent = counts.pending;
         document.getElementById('countVerified').textContent = counts.verified;
         document.getElementById('countRejected').textContent = counts.rejected;
+
+        // Status switch counts: the documents each status would list under the current search, program and type.
+        const statusCounts = { pending: 0, verified: 0, rejected: 0, all: 0 };
+        state.students.filter(matchesStudentFilters).forEach((student) => {
+            student.items
+                .filter((item) => state.type === 'all' || item.type === state.type)
+                .forEach((item) => {
+                    statusCounts[item.status] += 1;
+                    statusCounts.all += 1;
+                });
+        });
+        document.querySelectorAll('[data-status-count]').forEach((count) => {
+            count.textContent = statusCounts[count.dataset.statusCount];
+        });
     };
 
     const makeProgress = (items, className = 'progress-track') => {
@@ -148,7 +173,12 @@
         const typeTag = create('span', `type-tag type-${item.type}`, getTypeLabel(item.type));
         const subtype = create('span', 'submission-subtype', item.subtype || '');
         const submitted = create('span', 'submission-time', `${item.status_label || 'Submitted'} ${item.submitted || 'recently'}`);
-        description.append(title, typeTag, subtype, submitted);
+        // Line 1: title and type pill. Line 2: muted source and date.
+        const heading = create('div', 'submission-heading');
+        heading.append(title, typeTag);
+        const meta = create('div', 'submission-meta');
+        meta.append(subtype, submitted);
+        description.append(heading, meta);
 
         const actions = create('div', 'submission-actions');
         const view = makeButton('View', 'action-button', () => openFilePreview(item));
@@ -207,12 +237,50 @@
         return row;
     };
 
-    const renderStudent = (student) => {
+    // "BS Information Technology (BSIT)" -> "BSIT"
+    const programCode = (program) => /\(([^)]+)\)\s*$/.exec(program || '')?.[1] || program || 'Program not set';
+    const optionId = (studentId) => `vq-option-${studentId}`;
+    const findStudent = (studentId) => state.students.find((student) => student.id === studentId);
+
+    const renderOption = (student) => {
+        const selected = student.id === state.selectedId;
+        const option = create('li', 'vq-student');
+        option.id = optionId(student.id);
+        option.dataset.studentId = student.id;
+        option.setAttribute('role', 'option');
+        option.setAttribute('aria-selected', String(selected));
+        option.tabIndex = selected ? 0 : -1;
+
+        const copy = create('div', 'vq-student-copy');
+        copy.append(
+            create('span', 'vq-student-name', student.name),
+            create('span', 'vq-student-meta', `${programCode(student.program)} · ${student.year_level || 'Year not set'}`),
+        );
+
+        const { verified, total } = makeProgress(student.items);
+        const progress = create('div', 'vq-student-progress');
+        const label = create('span', 'vq-student-verified');
+        label.append(create('span', 'vq-dot'), document.createTextNode('verified'));
+        progress.append(create('strong', '', `${verified}/${total}`), label);
+
+        option.append(create('span', 'student-avatar', student.initials || '?'), copy, progress);
+        option.addEventListener('click', () => selectStudent(student.id));
+        return option;
+    };
+
+    // Re-runs the entrance animation the cards use on page load (sb-motion.css `rise`).
+    const replayPanelEntrance = () => {
+        panelContent.classList.remove('is-entering');
+        void panelContent.offsetWidth;
+        panelContent.classList.add('is-entering');
+    };
+
+    const renderPanel = (student, animate = false) => {
         const matchingItems = student.items.filter(matchesItem);
-        const card = create('article', 'student-group');
-        const header = create('header', 'student-group-header');
+
+        const header = create('header', 'vq-panel-header');
         const identity = create('div', 'student-identity');
-        identity.append(create('span', 'student-avatar', student.initials || '?'));
+        identity.append(create('span', 'drawer-avatar', student.initials || '?'));
         const identityCopy = create('div', 'student-identity-copy');
         identityCopy.append(
             makeButton(student.name, 'student-name-button', () => openDrawer(student.id)),
@@ -220,28 +288,123 @@
         );
         identity.append(identityCopy);
 
+        const pendingCount = student.items.filter((item) => item.status === 'pending' && item.category !== 'deployment_document').length;
+        const verifyAll = makeButton(`Verify all ${pendingCount} pending`, 'verify-all-button', () => verifyAllPending(student));
+        verifyAll.disabled = pendingCount === 0;
+        header.append(identity, verifyAll);
+
         const progress = makeProgress(student.items);
-        const progressWrap = create('div', 'student-progress');
+        const progressWrap = create('div', 'student-progress vq-progress');
         progressWrap.append(
             create('p', 'student-progress-label', `${progress.verified} of ${progress.total} verified`),
             progress.track,
         );
 
-        const pendingCount = student.items.filter((item) => item.status === 'pending' && item.category !== 'deployment_document').length;
-        const verifyAll = makeButton(`Verify all ${pendingCount} pending`, 'verify-all-button', () => verifyAllPending(student));
-        verifyAll.disabled = pendingCount === 0;
-        header.append(identity, progressWrap, verifyAll);
-
+        const expanded = state.expanded.has(student.id);
+        const shown = expanded ? matchingItems : matchingItems.slice(0, DOCUMENTS_SHOWN);
         const submissions = create('div', 'submission-list');
-        matchingItems.forEach((item) => submissions.append(renderSubmission(student, item)));
-        card.append(header, submissions);
-        return card;
+        shown.forEach((item) => submissions.append(renderSubmission(student, item)));
+
+        const parts = [header, progressWrap, submissions];
+        const hidden = matchingItems.length - shown.length;
+        if (hidden > 0) {
+            const more = makeButton(`Show ${hidden} more document${hidden === 1 ? '' : 's'}`, 'move-pending-button vq-more', () => {
+                state.expanded.add(student.id);
+                renderPanel(student);
+                // Keep keyboard users in place: focus the first newly shown document.
+                panelContent.querySelectorAll('.submission-row')[shown.length]
+                    ?.querySelector('button:not(:disabled), a')?.focus();
+            });
+            parts.push(more);
+        }
+
+        panelContent.replaceChildren(...parts);
+        if (animate) replayPanelEntrance();
     };
+
+    const selectStudent = (studentId, { focus = false, updateHash = true } = {}) => {
+        const student = findStudent(studentId);
+        if (!student) return;
+        const changed = state.selectedId !== studentId;
+        state.selectedId = studentId;
+
+        studentList.querySelectorAll('[role="option"]').forEach((option) => {
+            const selected = Number(option.dataset.studentId) === studentId;
+            option.setAttribute('aria-selected', String(selected));
+            option.tabIndex = selected ? 0 : -1;
+        });
+        const option = document.getElementById(optionId(studentId));
+        if (focus) option?.focus();
+        option?.scrollIntoView({ block: 'nearest' });
+
+        if (changed) {
+            renderPanel(student, true);
+            panel.scrollTop = 0;
+        }
+        if (updateHash) {
+            try { history.replaceState(history.state, '', `#student-${studentId}`); } catch (_) { /* file:// or sandboxed */ }
+        }
+    };
+
+    // Arrow keys, Home and End move focus through the list; Enter or Space selects.
+    studentList.addEventListener('keydown', (event) => {
+        const options = [...studentList.querySelectorAll('[role="option"]')];
+        const current = event.target.closest('[role="option"]');
+        if (!current || !options.length) return;
+        const index = options.indexOf(current);
+
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            selectStudent(Number(current.dataset.studentId), { focus: true });
+            return;
+        }
+        const next = { ArrowDown: index + 1, ArrowUp: index - 1, Home: 0, End: options.length - 1 }[event.key];
+        if (next === undefined) return;
+        event.preventDefault();
+        const target = options[Math.max(0, Math.min(options.length - 1, next))];
+        options.forEach((option) => { option.tabIndex = option === target ? 0 : -1; });
+        target.focus();
+        target.scrollIntoView({ block: 'nearest' });
+    });
+
+    const studentFromHash = () => {
+        const match = /^#student-(\d+)$/.exec(window.location.hash);
+        return match ? Number(match[1]) : null;
+    };
+
+    window.addEventListener('hashchange', () => {
+        const studentId = studentFromHash();
+        if (studentId !== null && visibleStudents().some((student) => student.id === studentId)) {
+            selectStudent(studentId, { updateHash: false });
+        }
+    });
 
     const render = () => {
         const students = visibleStudents();
-        groups.replaceChildren(...students.map(renderStudent));
+        const focusedId = document.activeElement?.closest?.('.vq-student')?.dataset.studentId;
+
+        if (!students.some((student) => student.id === state.selectedId)) {
+            state.selectedId = students[0]?.id ?? null;
+        }
+
+        studentList.replaceChildren(...students.map(renderOption));
+        studentCount.textContent = students.length;
+
+        const emptyTitle = filtersActive() ? 'No students match these filters' : 'Nothing to review here right now.';
+        studentListEmpty.textContent = emptyTitle;
+        studentListEmpty.hidden = students.length > 0;
+        document.getElementById('emptyQueueTitle').textContent = emptyTitle;
         emptyState.hidden = students.length > 0;
+        panelContent.hidden = students.length === 0;
+
+        const selected = findStudent(state.selectedId);
+        if (selected) {
+            renderPanel(selected);
+        } else {
+            panelContent.replaceChildren();
+        }
+        if (focusedId) document.getElementById(optionId(Number(focusedId)))?.focus();
+
         updateCounters();
         if (state.activeStudentId !== null && !drawer.getAttribute('aria-hidden')?.includes('true')) {
             refreshDrawer();
@@ -622,5 +785,21 @@
         if (event.key === 'Escape') closeDrawer();
     });
 
+    // A #student-12 link opens that student; otherwise the first student is selected.
+    const linkedStudent = studentFromHash();
+    if (linkedStudent !== null) {
+        const linked = findStudent(linkedStudent);
+        state.selectedId = linkedStudent;
+        // The default Pending filter would hide a student with nothing pending; show everything instead.
+        if (linked && !linked.items.some(matchesItem)) {
+            state.status = 'all';
+            document.querySelectorAll('[data-filter-group="status"]').forEach((chip) => {
+                const active = chip.dataset.filterValue === 'all';
+                chip.classList.toggle('is-active', active);
+                chip.setAttribute('aria-pressed', String(active));
+            });
+        }
+    }
     render();
+    if (state.selectedId !== null) document.getElementById(optionId(state.selectedId))?.scrollIntoView({ block: 'nearest' });
 })();

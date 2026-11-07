@@ -40,6 +40,8 @@ class ApplicationMonitorController extends Controller
             'stage' => ['nullable', Rule::in(array_keys(self::STAGES))],
             'program_id' => ['nullable', 'integer'],
             'q' => ['nullable', 'string', 'max:100'],
+            // Name search for the "Students not placed yet" tab only; q filters the applications list.
+            'unplaced_q' => ['nullable', 'string', 'max:100'],
         ]);
         $studentIds = $coordinator->scopedStudentsQuery()->select('id');
         $applications = InternshipApplication::query()->whereIn('student_id', $studentIds);
@@ -65,27 +67,33 @@ class ApplicationMonitorController extends Controller
             ->when($filters['program_id'] ?? null, fn ($query, int $programId) => $query->whereHas('student', fn ($students) => $students->where('program_id', $programId)))
             ->when($filters['q'] ?? null, fn ($query, string $term) => $query->whereHas('student.user', fn ($users) => $users->where('name', 'like', '%'.$term.'%')))
             ->latest('applied_at')
-            ->paginate(15)
+            ->paginate(10)
             ->withQueryString();
 
-        $unplaced = $coordinator->scopedStudentsQuery()
+        $unplacedQuery = $coordinator->scopedStudentsQuery()
             ->whereDoesntHave('placements')
+            ->when($filters['program_id'] ?? null, fn ($query, int $programId) => $query->where('program_id', $programId));
+        $unplacedTotal = (clone $unplacedQuery)->count();
+
+        $unplaced = $unplacedQuery
             ->with('user')
             ->withCount(['applications as active_applications_count' => fn ($query) => $query->whereIn('status', array_map(
                 fn (ApplicationStatus $status) => $status->value,
                 array_filter(ApplicationStatus::cases(), fn (ApplicationStatus $status) => $status->isActive())
             ))])
-            ->when($filters['program_id'] ?? null, fn ($query, int $programId) => $query->where('program_id', $programId))
+            ->when($filters['unplaced_q'] ?? null, fn ($query, string $term) => $query->whereHas('user', fn ($users) => $users->where('name', 'like', '%'.$term.'%')))
             ->orderBy('id')
-            ->paginate(15, ['*'], 'unplaced_page')
+            ->paginate(10, ['*'], 'unplaced_page')
             ->withQueryString();
         $eligibleIds = $this->eligibility->constrain(Student::query()->whereKey($unplaced->getCollection()->modelKeys()))->pluck('id')->all();
 
         return view('coordinator.applications.index', [
             'stages' => self::STAGES,
             'counts' => $counts,
+            'totalApplications' => (clone $applications)->count(),
             'applications' => $list,
             'unplaced' => $unplaced,
+            'unplacedTotal' => $unplacedTotal,
             'eligibleIds' => $eligibleIds,
             'filters' => $filters,
             'programs' => Program::query()->where('coordinator_id', $coordinator->id)->orderBy('code')->get(),

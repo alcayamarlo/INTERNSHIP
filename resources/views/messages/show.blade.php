@@ -3,6 +3,22 @@
 @section('title', 'Chat with ' . $contact->name)
 
 @section('content')
+@php
+    $contactAvatar = \App\Support\Avatar::for($contact);
+
+    // Messenger-style time divider: today "3:07 PM", this week "Fri 3:07 PM", older "Nov 2, 3:07 PM".
+    $dividerLabel = function ($at) {
+        $at = $at->copy()->timezone(config('app.timezone'));
+
+        return match (true) {
+            $at->isToday() => $at->format('g:i A'),
+            $at->greaterThanOrEqualTo(now()->subDays(6)->startOfDay()) => $at->format('D g:i A'),
+            $at->isCurrentYear() => $at->format('M j, g:i A'),
+            default => $at->format('M j, Y, g:i A'),
+        };
+    };
+    $previousAt = null;
+@endphp
 <div class="msgr msgr--chat">
     @include('messages.partials.sidebar')
 
@@ -10,7 +26,7 @@
         <div class="messenger-header">
             <div class="messenger-contact">
                 <a href="{{ route('messages.index') }}" class="msgr-back" aria-label="Back to conversations"><i class="bi bi-arrow-left" aria-hidden="true"></i></a>
-                <span class="msgr-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($contact->name, 0, 1)) }}</span>
+                <span class="msgr-avatar" aria-hidden="true"><x-avatar :avatar="$contactAvatar" /></span>
                 <div>
                     <div class="messenger-name">{{ $contact->name }}</div>
                     <div class="messenger-role">{{ $contact->role->label() }}</div>
@@ -19,24 +35,16 @@
             @include('partials.report-button', ['type' => 'user', 'id' => $contact->id, 'label' => $contact->name])
         </div>
 
+        @include('messages.partials.pinned', ['pinned' => $pinned])
+
     <div class="messenger-thread" id="messageThread" data-thread-user-id="{{ $contact->id }}">
         @forelse($messages as $message)
-            @php $mine = $message->sender_id === auth()->id(); $gone = $message->isHidden() || $message->isUnsent(); @endphp
-            <div class="messenger-row {{ $mine ? 'outgoing' : 'incoming' }}" data-message-id="{{ $message->id }}">
-                @if($mine && ! $message->isHidden())
-                    @include('messages.partials.actions', ['message' => $message])
-                @endif
-                <div class="messenger-bubble" tabindex="0" title="Click to show the date and time">
-                    <p class="messenger-message {{ $gone ? 'fst-italic text-muted' : '' }}">{{ $message->displayBody(auth()->id()) }}</p>
-                    <span class="messenger-time">
-                        {{ $message->created_at->format('M d, h:i A') }}
-                        <span data-edited-label>@if($message->isEdited() && ! $gone) &middot; edited @endif</span>
-                        @if(! $mine && ! $gone)
-                            <button type="button" class="btn btn-link btn-sm p-0 ms-1 align-baseline text-muted" data-report-type="message" data-report-id="{{ $message->id }}" data-report-label="this message" aria-label="Report this message"><i class="bi bi-flag" aria-hidden="true"></i></button>
-                        @endif
-                    </span>
-                </div>
-            </div>
+            {{-- A time divider opens the thread and every gap of an hour or more. --}}
+            @if($previousAt === null || abs($previousAt->diffInMinutes($message->created_at)) >= 60)
+                <div class="messenger-divider"><time datetime="{{ $message->created_at->toIso8601String() }}">{{ $dividerLabel($message->created_at) }}</time></div>
+            @endif
+            @php $previousAt = $message->created_at; @endphp
+            @include('messages.partials.message', ['message' => $message])
         @empty
             <div class="messenger-empty">{{ $canSend ? 'No messages yet. Start the conversation below.' : 'No messages yet.' }}</div>
         @endforelse
@@ -49,7 +57,16 @@
         <form method="POST" action="{{ route('messages.store', $contact) }}" class="messenger-form" data-no-loading="true" data-chat-contact-id="{{ $contact->id }}" @unless($canSend) hidden @endunless>
             @csrf
             <input type="hidden" name="submission_id" value="{{ $submissionId }}">
-            <textarea class="messenger-input @error('body') is-invalid @enderror" name="body" rows="1" placeholder="Type your message..." required>{{ old('body') }}</textarea>
+            <input type="hidden" name="reply_to_id" value="">
+            {{-- "Replying to …" bar, shown after clicking Reply on a message --}}
+            <div class="msgr-replying w-100" data-replying hidden>
+                <div class="msgr-replying-main">
+                    <div class="msgr-replying-label">Replying to <strong data-replying-name></strong></div>
+                    <div class="msgr-replying-text" data-replying-text></div>
+                </div>
+                <button type="button" class="msgr-replying-cancel" data-replying-cancel aria-label="Cancel reply"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+            </div>
+            <textarea class="messenger-input @error('body') is-invalid @enderror" name="body" rows="1" placeholder="Type your message..." aria-label="Message" required>{{ old('body', \Illuminate\Support\Str::limit((string) request('draft'), 1000, '')) }}</textarea>
             <button type="submit" class="messenger-send"><i class="bi bi-send-fill"></i> Send</button>
             <div class="messenger-feedback w-100" role="status" aria-live="polite"></div>
             @error('body')
@@ -59,6 +76,35 @@
     </div>
     </section>
 </div>
+
+{{-- Forward: pick who gets a copy of the message --}}
+<div class="modal fade" id="msgrForwardModal" tabindex="-1" aria-labelledby="msgrForwardTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title h5" id="msgrForwardTitle">Forward message</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="msgr-forward-preview" data-forward-preview></p>
+                <div class="msgr-forward-feedback small" role="status" aria-live="polite" data-forward-feedback></div>
+                @if($forwardTargets->isEmpty())
+                    <p class="text-muted mb-0">There is nobody you can forward messages to yet.</p>
+                @else
+                    <ul class="msgr-forward-list">
+                        @foreach($forwardTargets as $person)
+                            <li>
+                                <span class="msgr-avatar" aria-hidden="true"><x-avatar :avatar="\App\Support\Avatar::for($person)" /></span>
+                                <span class="msgr-forward-name">{{ $person->name }}<small>{{ $person->role->label() }}</small></span>
+                                <button type="button" class="btn btn-sm btn-primary" data-forward-to="{{ $person->id }}">Send</button>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -67,33 +113,8 @@
     if (thread) thread.scrollTop = thread.scrollHeight;
 
     const messageForm = document.querySelector('.messenger-form');
-
-    // Only the message shows by default; click (or Enter) on a bubble to reveal its date and time.
-    const toggleTime = (event) => {
-        const bubble = event.target.closest('.messenger-bubble');
-        if (!bubble || event.target.closest('button, a, textarea, .msgr-edit')) return;
-        if (event.type === 'keydown') {
-            if (event.key !== 'Enter' && event.key !== ' ') return;
-            event.preventDefault();
-        }
-        bubble.closest('.messenger-row').classList.toggle('show-time');
-    };
-    thread?.addEventListener('click', toggleTime);
-    thread?.addEventListener('keydown', toggleTime);
-
-    // ---------- edit / unsend your own messages ----------
     const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
     const jsonHeaders = { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrf };
-
-    function actionsHtml(id, updateUrl, unsendUrl, removeUrl) {
-        return '<div class="dropdown msgr-actions" data-update-url="' + updateUrl + '" data-unsend-url="' + unsendUrl + '" data-remove-url="' + removeUrl + '">'
-            + '<button type="button" class="msgr-more" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Message options"><i class="bi bi-three-dots-vertical" aria-hidden="true"></i></button>'
-            + '<ul class="dropdown-menu">'
-            + '<li><button type="button" class="dropdown-item" data-msg-edit><i class="bi bi-pencil" aria-hidden="true"></i> Edit</button></li>'
-            + '<li><button type="button" class="dropdown-item" data-msg-remove><i class="bi bi-eye-slash" aria-hidden="true"></i> Remove for you</button></li>'
-            + '<li><button type="button" class="dropdown-item text-danger" data-msg-unsend><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Unsend for everyone</button></li>'
-            + '</ul></div>';
-    }
 
     async function sendJson(url, method, body) {
         const response = await fetch(url, { method, headers: jsonHeaders, body: body ? JSON.stringify(body) : undefined });
@@ -105,17 +126,194 @@
         return payload;
     }
 
+    // ---------- rows: every message is rendered by the server (messages/partials/message.blade.php) ----------
+    const toElement = (html) => {
+        const template = document.createElement('template');
+        template.innerHTML = html.trim();
+        return template.content.firstElementChild;
+    };
+
+    // Messenger-style divider when an hour or more passed since the last message.
+    function addDividerBefore(atIso) {
+        const rows = thread.querySelectorAll('.messenger-row[data-at]');
+        const last = rows.length ? new Date(rows[rows.length - 1].dataset.at) : null;
+        const at = new Date(atIso);
+        if (last && at - last < 60 * 60 * 1000) return;
+        const divider = document.createElement('div');
+        divider.className = 'messenger-divider';
+        const time = document.createElement('time');
+        time.dateTime = at.toISOString();
+        time.textContent = at.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        divider.append(time);
+        thread.append(divider);
+    }
+
+    function replacePinnedBar(html) {
+        const bar = document.getElementById('msgrPinned');
+        if (bar && typeof html === 'string') bar.replaceWith(toElement(html));
+    }
+
+    // Also used by resources/js/app.js for messages and changes that arrive live.
+    window.sbChat = {
+        append(html) {
+            const row = toElement(html);
+            if (!thread || !row || thread.querySelector('[data-message-id="' + row.dataset.messageId + '"]')) return;
+            thread.querySelector('.messenger-empty')?.remove();
+            addDividerBefore(row.dataset.at);
+            thread.append(row);
+            thread.scrollTop = thread.scrollHeight;
+        },
+        apply(payload) {
+            const current = thread?.querySelector('[data-message-id="' + payload.id + '"]');
+            if (current) {
+                if (payload.html) {
+                    const row = toElement(payload.html);
+                    row.classList.toggle('show-time', current.classList.contains('show-time'));
+                    current.replaceWith(row);
+                } else {
+                    current.remove();
+                }
+            }
+            replacePinnedBar(payload.pinned_html);
+        },
+        async load(rowUrl, mode) {
+            const response = await fetch(rowUrl, { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } });
+            if (!response.ok) return;
+            const payload = await response.json();
+            if (mode === 'append') {
+                if (payload.html) this.append(payload.html);
+                replacePinnedBar(payload.pinned_html);
+            } else {
+                this.apply(payload);
+            }
+        },
+    };
+
+    // ---------- reply ----------
+    const replying = document.querySelector('[data-replying]');
+    function startReply(row) {
+        if (!messageForm || messageForm.hidden) return;
+        messageForm.elements.namedItem('reply_to_id').value = row.dataset.messageId;
+        replying.querySelector('[data-replying-name]').textContent = row.dataset.senderName;
+        replying.querySelector('[data-replying-text]').textContent = row.querySelector('.messenger-message')?.textContent.trim() || '';
+        replying.hidden = false;
+        messageForm.querySelector('.messenger-input').focus();
+    }
+    function cancelReply() {
+        if (!messageForm) return;
+        messageForm.elements.namedItem('reply_to_id').value = '';
+        replying.hidden = true;
+    }
+    document.querySelector('[data-replying-cancel]')?.addEventListener('click', cancelReply);
+
+    // ---------- jump to a quoted or pinned message ----------
+    document.addEventListener('click', (event) => {
+        const jump = event.target.closest('[data-jump-to]');
+        if (!jump) return;
+        const target = document.getElementById('message-' + jump.dataset.jumpTo);
+        if (!target) return;
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target.classList.remove('is-flash');
+        void target.offsetWidth;
+        target.classList.add('is-flash');
+    });
+
+    // ---------- reaction picker: one open at a time, closes on outside click or Escape ----------
+    const closePickers = (except) => thread?.querySelectorAll('.msgr-react-picker:not([hidden])').forEach((picker) => {
+        if (picker !== except) {
+            picker.hidden = true;
+            picker.closest('.messenger-row')?.classList.remove('has-open-tools');
+        }
+    });
+    document.addEventListener('click', (event) => {
+        if (!event.target.closest('.msgr-react, .msgr-reactions')) closePickers();
+    });
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closePickers();
+    });
+
+    // ---------- forward ----------
+    const forwardModalElement = document.getElementById('msgrForwardModal');
+    const forwardModal = forwardModalElement && window.bootstrap ? bootstrap.Modal.getOrCreateInstance(forwardModalElement) : null;
+    let forwardUrl = null;
+    forwardModalElement?.addEventListener('click', async (event) => {
+        const button = event.target.closest('[data-forward-to]');
+        if (!button || !forwardUrl) return;
+        const feedback = forwardModalElement.querySelector('[data-forward-feedback]');
+        button.disabled = true;
+        try {
+            const payload = await sendJson(forwardUrl, 'POST', { to: Number(button.dataset.forwardTo) });
+            feedback.className = 'msgr-forward-feedback small text-success';
+            feedback.textContent = payload.message;
+            button.textContent = 'Sent';
+        } catch (error) {
+            feedback.className = 'msgr-forward-feedback small text-danger';
+            feedback.textContent = error.message;
+            button.disabled = false;
+        }
+    });
+
+    // ---------- message tools ----------
     thread?.addEventListener('click', async (event) => {
-        const row = event.target.closest('.messenger-row.outgoing');
-        const actions = row?.querySelector('.msgr-actions');
-        if (!row || !actions) return;
-        const text = row.querySelector('.messenger-message');
+        const row = event.target.closest('.messenger-row');
+        const tools = row?.querySelector('.msgr-tools');
+        if (!row || !tools) return;
+
+        // Click (or Enter) on a bubble shows its date and time.
+        if (event.target.closest('.messenger-bubble') && !event.target.closest('button, a, textarea, .msgr-edit')) {
+            row.classList.toggle('show-time');
+            return;
+        }
+
+        if (event.target.closest('[data-msg-react-open]')) {
+            const picker = row.querySelector('.msgr-react-picker');
+            if (!picker) return;
+            closePickers(picker);
+            picker.hidden = !picker.hidden;
+            row.classList.toggle('has-open-tools', !picker.hidden);
+            if (!picker.hidden) picker.querySelector('button')?.focus();
+            return;
+        }
+
+        const reaction = event.target.closest('[data-msg-react]');
+        if (reaction) {
+            try {
+                window.sbChat.apply(await sendJson(tools.dataset.reactUrl, 'POST', { emoji: reaction.dataset.msgReact }));
+            } catch (error) {
+                window.alert(error.message);
+            }
+            return;
+        }
+
+        if (event.target.closest('[data-msg-reply]')) {
+            startReply(row);
+            return;
+        }
+
+        if (event.target.closest('[data-msg-pin]')) {
+            try {
+                window.sbChat.apply(await sendJson(tools.dataset.pinUrl, 'POST'));
+            } catch (error) {
+                window.alert(error.message);
+            }
+            return;
+        }
+
+        if (event.target.closest('[data-msg-forward]')) {
+            forwardUrl = tools.dataset.forwardUrl;
+            forwardModalElement.querySelector('[data-forward-preview]').textContent = row.querySelector('.messenger-message')?.textContent.trim() || '';
+            forwardModalElement.querySelector('[data-forward-feedback]').textContent = '';
+            forwardModalElement.querySelectorAll('[data-forward-to]').forEach((button) => { button.disabled = false; button.textContent = 'Send'; });
+            forwardModal?.show();
+            return;
+        }
 
         if (event.target.closest('[data-msg-remove]')) {
             if (!window.confirm('Remove this message for you? The other person will still see it.')) return;
             try {
-                await sendJson(actions.dataset.removeUrl, 'DELETE');
+                await sendJson(tools.dataset.removeUrl, 'DELETE');
                 row.remove();
+                window.sbChat.load(row.dataset.rowUrl, 'refresh'); // refreshes the pinned bar
             } catch (error) {
                 window.alert(error.message);
             }
@@ -125,11 +323,8 @@
         if (event.target.closest('[data-msg-unsend]')) {
             if (!window.confirm('Unsend for everyone? This message will be removed for both of you.')) return;
             try {
-                const payload = await sendJson(actions.dataset.unsendUrl, 'DELETE');
-                text.textContent = payload.message;
-                text.classList.add('fst-italic', 'text-muted');
-                row.querySelector('[data-edited-label]').textContent = '';
-                actions.querySelectorAll('[data-msg-edit], [data-msg-unsend]').forEach((item) => item.closest('li').remove());
+                await sendJson(tools.dataset.unsendUrl, 'DELETE');
+                window.sbChat.load(row.dataset.rowUrl, 'refresh');
             } catch (error) {
                 window.alert(error.message);
             }
@@ -137,7 +332,8 @@
         }
 
         if (event.target.closest('[data-msg-edit]')) {
-            if (row.querySelector('.msgr-edit')) return;
+            const text = row.querySelector('.messenger-message');
+            if (!text || row.querySelector('.msgr-edit')) return;
             const original = text.textContent;
             const form = document.createElement('div');
             form.className = 'msgr-edit';
@@ -157,10 +353,8 @@
                 if (!body) { form.querySelector('.msgr-edit-error').textContent = 'Message cannot be empty.'; return; }
                 if (body === original) { close(); return; }
                 try {
-                    const payload = await sendJson(actions.dataset.updateUrl, 'PUT', { body });
-                    text.textContent = payload.message;
-                    row.querySelector('[data-edited-label]').textContent = payload.edited ? ' · edited' : '';
-                    close();
+                    await sendJson(tools.dataset.updateUrl, 'PUT', { body });
+                    window.sbChat.load(row.dataset.rowUrl, 'refresh');
                 } catch (error) {
                     form.querySelector('.msgr-edit-error').textContent = error.message;
                 }
@@ -173,6 +367,13 @@
         }
     });
 
+    // Keyboard: Enter or Space on a bubble shows its date and time.
+    thread?.addEventListener('keydown', (event) => {
+        const bubble = event.target.closest('.messenger-bubble');
+        if (!bubble || event.target !== bubble || (event.key !== 'Enter' && event.key !== ' ')) return;
+        event.preventDefault();
+        bubble.closest('.messenger-row').classList.toggle('show-time');
+    });
 
     // A live "application reviewed" notification for this company unlocks the chat without a reload.
     window.addEventListener('sb:messaging-opened', (event) => {
@@ -188,6 +389,7 @@
         const sendButton = messageForm.querySelector('.messenger-send');
 
         input.addEventListener('keydown', event => {
+            if (event.key === 'Escape') cancelReply();
             if (event.key !== 'Enter' || event.shiftKey || event.isComposing) return;
 
             event.preventDefault();
@@ -237,30 +439,9 @@
                     return;
                 }
 
-                const emptyState = thread.querySelector('.messenger-empty');
-                if (emptyState) emptyState.remove();
-                const row = document.createElement('div');
-                row.className = 'messenger-row outgoing';
-                row.dataset.messageId = payload.id;
-                row.insertAdjacentHTML('beforeend', actionsHtml(payload.id, payload.update_url, payload.unsend_url, payload.remove_url));
-                const bubble = document.createElement('div');
-                bubble.className = 'messenger-bubble';
-                bubble.tabIndex = 0;
-                bubble.title = 'Click to show the date and time';
-                const message = document.createElement('p');
-                message.className = 'messenger-message';
-                message.textContent = payload.message;
-                const time = document.createElement('span');
-                time.className = 'messenger-time';
-                time.textContent = payload.created_at;
-                const edited = document.createElement('span');
-                edited.dataset.editedLabel = '';
-                time.append(' ', edited);
-                bubble.append(message, time);
-                row.append(bubble);
-                thread.append(row);
-                thread.scrollTop = thread.scrollHeight;
+                if (payload.html) window.sbChat.append(payload.html);
                 input.value = '';
+                cancelReply();
             } catch (error) {
                 feedback.classList.add('text-danger');
                 feedback.textContent = error.message || 'Unable to send message.';

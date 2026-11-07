@@ -144,3 +144,85 @@ it('does not allow a non-student to submit an application', function () {
         ])
         ->assertForbidden();
 });
+
+it('renders the application details for every status with its stepper, next step and actions', function (ApplicationStatus $status, array $expected, array $hidden) {
+    $fixture = studentApplicationFixture();
+    $application = InternshipApplication::create([
+        'internship_id' => $fixture['internship']->id,
+        'student_id' => $fixture['student']->id,
+        'resume_id' => $fixture['resume']->id,
+        'status' => $status,
+        'applied_at' => now()->subDays(5),
+        'interview_at' => $status === ApplicationStatus::Interview ? now()->addDays(3)->setTime(10, 0) : null,
+        'cover_letter' => 'I would love to join.',
+    ]);
+    if ($status !== ApplicationStatus::Applied) {
+        $application->statusHistory()->create(['actor_id' => $fixture['employerUser']->id, 'status' => 'reviewed', 'notes' => 'Looks promising.']);
+    }
+    if ($status !== ApplicationStatus::Applied && $status !== ApplicationStatus::Reviewed) {
+        $application->statusHistory()->create([
+            'actor_id' => $fixture['employerUser']->id,
+            'status' => $status->value,
+            'notes' => $status === ApplicationStatus::Rejected ? 'We chose a candidate with more experience.' : 'Bring a valid ID.',
+            'interview_at' => $application->interview_at,
+        ]);
+    }
+
+    $response = $this->actingAs($fixture['studentUser'])->get(route('student.applications.show', $application))->assertOk()
+        ->assertSee('Application #'.$application->id)
+        ->assertSee('Application submitted')
+        ->assertSee('I would love to join.');
+    foreach ($expected as $text) {
+        $response->assertSee($text);
+    }
+    foreach ($hidden as $text) {
+        $response->assertDontSee($text);
+    }
+})->with([
+    'applied' => [ApplicationStatus::Applied, ['Waiting for employer review', 'Edit application', 'Withdraw application', 'Status updates from the employer will appear here.'], ['Interview schedule']],
+    'reviewed' => [ApplicationStatus::Reviewed, ['Reviewed by the employer', 'Looks promising.'], ['Withdraw application', 'Interview schedule']],
+    'interview' => [ApplicationStatus::Interview, ['Interview schedule', 'See interview details', 'Bring a valid ID.'], ['Withdraw application']],
+    'accepted' => [ApplicationStatus::Accepted, ['You were accepted', 'Open my OJT record', 'Skipped'], ['Withdraw application']],
+    'rejected' => [ApplicationStatus::Rejected, ['Not selected', 'We chose a candidate with more experience.'], ['Withdraw application']],
+]);
+
+it('orders My Applications by status priority and supports tabs, sorting and upcoming interviews', function () {
+    $fixture = studentApplicationFixture();
+    $make = function (string $title, ApplicationStatus $status, int $match, int $daysAgo, ?\Carbon\Carbon $interviewAt = null) use ($fixture) {
+        $internship = Internship::create(['employer_id' => $fixture['employer']->id, 'title' => $title, 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open']);
+
+        return InternshipApplication::create([
+            'internship_id' => $internship->id,
+            'student_id' => $fixture['student']->id,
+            'resume_id' => $fixture['resume']->id,
+            'status' => $status,
+            'match_percentage' => $match,
+            'applied_at' => now()->subDays($daysAgo),
+            'interview_at' => $interviewAt,
+        ]);
+    };
+    $make('Rejected Role', ApplicationStatus::Rejected, 90, 1);
+    $make('Applied Role', ApplicationStatus::Applied, 80, 2);
+    $make('Reviewed Role', ApplicationStatus::Reviewed, 10, 3);
+    $make('Interview Role', ApplicationStatus::Interview, 20, 4, now()->addDays(2));
+    $make('Accepted Role', ApplicationStatus::Accepted, 30, 5);
+
+    $this->actingAs($fixture['studentUser']);
+
+    // Default: Accepted > Interview > Reviewed > Applied > Rejected.
+    $this->get(route('student.applications.index'))->assertOk()
+        ->assertSeeInOrder(['Accepted Role', 'Interview Role', 'Reviewed Role', 'Applied Role', 'Rejected Role'])
+        ->assertSee('Sorted by status')
+        ->assertSee('Upcoming interviews')
+        ->assertSee('data-count-up="5"', false); // total applications tile
+
+    // Sort by match, highest first.
+    $this->get(route('student.applications.index', ['sort' => 'match']))->assertOk()
+        ->assertSeeInOrder(['Rejected Role', 'Applied Role', 'Accepted Role', 'Interview Role', 'Reviewed Role']);
+
+    // A status tab shows only that status; tab counts still cover every status.
+    $this->get(route('student.applications.index', ['status' => 'interview']))->assertOk()
+        ->assertSee('data-total="1"', false)
+        ->assertSee('Interview Role')
+        ->assertDontSee('Reviewed Role');
+});

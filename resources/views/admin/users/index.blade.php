@@ -28,7 +28,8 @@
 <form method="GET" class="sb-toolbar" role="search" aria-label="Filter users">
     <input type="hidden" name="view" value="{{ $view }}">
     <input type="text" class="form-control" name="search" placeholder="Search name or email..." aria-label="Search name or email" value="{{ request('search') }}">
-    <select class="form-select" name="role" aria-label="Filter by role">
+    {{-- Picking a role applies the filter right away (the Filter button still runs a typed search). --}}
+    <select class="form-select" name="role" aria-label="Filter by role" onchange="this.form.requestSubmit()">
         <option value="">All Roles</option>
         @foreach($roles as $role)
             <option value="{{ $role->value }}" {{ request('role') === $role->value ? 'selected' : '' }}>{{ $role->label() }}</option>

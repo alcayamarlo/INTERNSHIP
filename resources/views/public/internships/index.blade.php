@@ -13,7 +13,7 @@
     <form method="GET" class="public-filter" role="search" aria-label="Filter internships">
         <input type="search" name="search" value="{{ request('search') }}" placeholder="Search title or company" aria-label="Search title or company">
         <input type="text" name="location" value="{{ request('location') }}" placeholder="Location" aria-label="Location">
-        <select name="setup" aria-label="Work setup">
+        <select name="setup" aria-label="Work setup" onchange="this.form.requestSubmit()">
             <option value="">Any setup</option>
             @foreach($setups as $setup)
                 <option value="{{ $setup->value }}" @selected(request('setup') === $setup->value)>{{ $setup->label() }}</option>

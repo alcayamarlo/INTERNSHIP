@@ -12,15 +12,91 @@
     box-sizing: border-box;
 }
 
-.students-tools {
+/* ---------- Full-width frame ---------- */
+
+body.sb-app .sb-content:has(> .coordinator-students-page) {
+    max-width: none;
+}
+
+@media (min-width: 992px) {
+    body.sb-app .sb-content:has(> .coordinator-students-page) {
+        padding: 20px 24px;
+    }
+}
+
+.coordinator-students-page {
     display: grid;
-    grid-template-columns: minmax(240px, 1fr) minmax(170px, 0.45fr) minmax(250px, 0.6fr);
-    gap: 12px;
-    margin-bottom: 16px;
-    padding: 12px;
+    gap: 16px;
+}
+
+.coordinator-students-page > * {
+    min-width: 0;
+}
+
+/* skillbridge-dashboard.css gives the header a 28px bottom margin; the grid gap spaces it here. */
+body.sb-app .coordinator-students-page > .sb-page-header {
+    margin-bottom: 0;
+}
+
+/* ---------- Header summary strip (one bordered box, three cells) ---------- */
+
+body.sb-app .coordinator-students-page .students-summary {
+    display: flex;
+    margin: 0;
+    border: 1px solid var(--sb-border);
+    border-radius: var(--sb-radius-md);
+    background: var(--sb-surface);
+}
+
+.students-summary-cell {
+    display: flex;
+    flex-direction: column-reverse; /* markup is label (dt) then number (dd); show the number on top */
+    justify-content: center;
+    min-width: 0;
+    padding: 8px 18px;
+}
+
+.students-summary-cell + .students-summary-cell {
+    border-left: 1px solid var(--sb-border);
+}
+
+.students-summary-cell dd {
+    margin: 0;
+    color: var(--sb-ink);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.students-summary-cell dt {
+    color: var(--sb-muted);
+    font-size: 11px;
+    font-weight: 500;
+}
+
+/* ---------- One card: filter row, card grid, footer ---------- */
+
+.students-panel {
+    overflow: hidden;
     border: 1px solid var(--sb-border);
     border-radius: var(--sb-radius-lg);
     background: var(--sb-surface);
+}
+
+.students-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid var(--sb-border);
+}
+
+.students-search {
+    flex: 3 1 260px;
+}
+
+.students-select {
+    flex: 1 1 160px;
 }
 
 .students-search,
@@ -68,28 +144,78 @@
     color: var(--sb-auth-option-text);
 }
 
+/* ~4 columns on a wide desktop, 3 on a laptop, 2 on a tablet, 1 on a phone. */
 .student-tracking-list {
     display: grid;
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 16px;
+    padding: 16px;
 }
 
+.student-tracking-list[hidden] {
+    display: none;
+}
+
+/* Each card stretches to its row's height; the button sits at the bottom so buttons line up. */
 .student-tracking-row {
-    display: grid;
-    grid-template-columns: minmax(230px, 1.35fr) minmax(130px, 0.75fr) minmax(150px, 0.82fr) minmax(185px, 0.95fr) auto;
-    align-items: center;
-    gap: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
     min-width: 0;
     padding: 16px;
     border: 1px solid var(--sb-border);
-    border-radius: var(--sb-radius-lg);
+    border-radius: var(--sb-radius-md);
     background: var(--sb-surface);
     box-shadow: var(--sb-shadow-sm);
 }
 
 .student-identity,
-.student-column,
 .student-completion {
     min-width: 0;
+}
+
+.student-card-program,
+.student-card-meta {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.student-card-program {
+    color: var(--sb-ink);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.student-card-meta {
+    margin-top: -6px;
+    color: var(--sb-muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.student-tracking-row .student-view-button {
+    width: 100%;
+    margin-top: auto;
+}
+
+.students-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--sb-border);
+}
+
+.students-footer:has(.students-showing:empty):has(.students-pagination:empty) {
+    display: none;
+}
+
+.students-showing {
+    margin: 0;
+    color: var(--sb-muted);
+    font-size: 13px;
 }
 
 .student-identity {
@@ -120,7 +246,7 @@
 .student-full-name {
     overflow: hidden;
     color: var(--sb-ink);
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -129,7 +255,7 @@
 .student-school-id {
     overflow: hidden;
     color: var(--sb-brand-content);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -156,27 +282,6 @@
     line-height: 1.4;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-.student-column strong {
-    display: block;
-    overflow: hidden;
-    color: var(--sb-ink);
-    font-size: 14px;
-    font-weight: 600;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.student-column .student-secondary {
-    display: block;
-    margin-top: 2px;
-}
-
-.student-competency-total {
-    color: var(--sb-ink);
-    font-size: 14px;
-    font-weight: 600;
 }
 
 .student-completion {
@@ -236,6 +341,7 @@
     display: grid;
     justify-items: center;
     gap: 8px;
+    margin: 16px;
     padding: 48px 16px;
     border: 1px dashed var(--sb-control-border);
     border-radius: var(--sb-radius-lg);
@@ -270,7 +376,7 @@
     flex-wrap: wrap;
     justify-content: flex-end;
     gap: 4px;
-    margin-top: 16px;
+    margin-left: auto;
 }
 
 .students-pagination:empty {
@@ -313,51 +419,33 @@
     }
 }
 
-@media (max-width: 1100px) {
-    .students-tools {
-        grid-template-columns: 1fr 1fr;
+/* Below ~640px: filters stack, one card per row, summary cells share the width. */
+@media (max-width: 639.98px) {
+    .students-search,
+    .students-select {
+        flex: 1 1 100%;
     }
 
-    .students-search {
-        grid-column: 1 / -1;
-    }
-
-    .student-tracking-row {
-        grid-template-columns: minmax(220px, 1.2fr) minmax(140px, 0.8fr);
-        gap: 12px 20px;
-    }
-
-    .student-completion {
-        grid-column: 1;
-    }
-
-    .student-view-button {
-        grid-column: 2;
-        justify-self: end;
-    }
-}
-
-@media (max-width: 620px) {
-    .students-tools {
-        grid-template-columns: 1fr;
-    }
-
-    .students-search {
-        grid-column: auto;
-    }
-
-    .student-tracking-row {
+    .student-tracking-list {
         grid-template-columns: minmax(0, 1fr);
-        gap: 12px;
-        padding: 14px;
     }
 
-    .student-completion,
-    .student-view-button {
-        grid-column: auto;
-    }
-
-    .student-view-button {
+    body.sb-app .coordinator-students-page .sb-page-actions,
+    body.sb-app .coordinator-students-page .students-summary {
         width: 100%;
+    }
+
+    .students-summary-cell {
+        flex: 1 1 0;
+        padding: 8px 10px;
+    }
+
+    .students-summary-cell dd {
+        font-size: 18px;
+    }
+
+    .students-pagination {
+        justify-content: center;
+        margin-left: 0;
     }
 }

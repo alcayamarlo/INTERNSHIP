@@ -27,7 +27,7 @@ class AuditLogController extends Controller
         $filters = $this->filters($request);
 
         return view('admin.system.logs', [
-            'logs' => $this->query($filters)->with('user:id,name,email')->latest()->latest('id')->paginate(25)->withQueryString(),
+            'logs' => $this->query($filters)->with('user:id,name,email')->latest()->latest('id')->paginate(10)->withQueryString(),
             'filters' => $filters,
             'actions' => SystemLog::query()->distinct()->orderBy('action')->pluck('action'),
             'repeatedFailures' => $filters['type'] === 'security' ? $this->repeatedFailures() : collect(),

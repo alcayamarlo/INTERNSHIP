@@ -22,7 +22,7 @@
             </div>
             <div class="col-md-3">
                 <label class="form-label" for="filterProgram">Course / program</label>
-                <select id="filterProgram" name="program_id" class="form-select">
+                <select id="filterProgram" name="program_id" class="form-select" onchange="this.form.requestSubmit()">
                     <option value="">Any</option>
                     @foreach($programs as $program)
                         <option value="{{ $program->id }}" @selected((string) ($filters['program_id'] ?? '') === (string) $program->id)>{{ $program->display_name }}</option>
@@ -31,7 +31,7 @@
             </div>
             <div class="col-md-2">
                 <label class="form-label" for="filterYear">Year level</label>
-                <select id="filterYear" name="year_level" class="form-select">
+                <select id="filterYear" name="year_level" class="form-select" onchange="this.form.requestSubmit()">
                     <option value="">Any</option>
                     @foreach($yearLevels as $yearLevel)
                         <option value="{{ $yearLevel }}" @selected(($filters['year_level'] ?? '') === $yearLevel)>{{ $yearLevel }}</option>

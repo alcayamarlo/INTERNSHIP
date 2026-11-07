@@ -15,7 +15,7 @@
             @endphp
             @if($person)
                 <a href="{{ route('messages.show', $person) }}" class="msgr-item {{ $activeId === $person->id ? 'is-active' : '' }} {{ $unread ? 'is-unread' : '' }}" @if($activeId === $person->id) aria-current="page" @endif>
-                    <span class="msgr-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($person->name, 0, 1)) }}</span>
+                    <span class="msgr-avatar" aria-hidden="true"><x-avatar :avatar="\App\Support\Avatar::for($person)" /></span>
                     <span class="msgr-item-main">
                         <span class="msgr-item-top">
                             <strong>{{ $person->name }}</strong>
@@ -58,7 +58,7 @@
             <div class="msgr-section">Start new</div>
             @foreach($newContacts as $person)
                 <a href="{{ route('messages.show', $person) }}" class="msgr-item {{ $activeId === $person->id ? 'is-active' : '' }}">
-                    <span class="msgr-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($person->name, 0, 1)) }}</span>
+                    <span class="msgr-avatar" aria-hidden="true"><x-avatar :avatar="\App\Support\Avatar::for($person)" /></span>
                     <span class="msgr-item-main">
                         <span class="msgr-item-top"><strong>{{ $person->name }}</strong></span>
                         <span class="msgr-item-preview">{{ $person->role->label() }}</span>

@@ -37,6 +37,8 @@ class MessageSent implements ShouldBroadcastNow
             'body' => $this->message->body,
             'created_at' => $this->message->created_at->format('M d, h:i A'),
             'thread_url' => route('messages.show', $this->message->sender_id),
+            // The open chat fetches the rendered message (avatar, reply quote, actions) from here.
+            'row_url' => route('messages.row', $this->message),
         ];
     }
 }

@@ -18,7 +18,6 @@ class EligibilityCriterion extends Model
         'version',
         'require_fourth_year',
         'require_major_subjects_passed',
-        'max_gwa',
         'required_hours',
         'required_document_ids',
         'notes',
@@ -31,7 +30,6 @@ class EligibilityCriterion extends Model
             'version' => 'integer',
             'require_fourth_year' => 'boolean',
             'require_major_subjects_passed' => 'boolean',
-            'max_gwa' => 'decimal:2',
             'required_hours' => 'integer',
             'required_document_ids' => 'array',
         ];

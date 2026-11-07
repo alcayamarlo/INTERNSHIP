@@ -3,6 +3,7 @@
 use App\Enums\ApplicationStatus;
 use App\Enums\UserRole;
 use App\Events\MessageSent;
+use App\Events\MessageUpdated;
 use App\Models\AppNotification;
 use App\Models\Coordinator;
 use App\Models\Employer;
@@ -259,19 +260,116 @@ it('lets the sender edit and unsend their own message, and nobody else', functio
         ->assertSee('This message was unsent.')->assertDontSee('Fixed typo');
 });
 
-it('removes a message only for the sender when they choose "Remove for you"', function () {
+it('removes a message only from your own view with "Remove for you", sent or received', function () {
     $setup = chatSetup();
     chatSend($setup['studentUser'], $setup['coordinatorUser'])->assertOk();
     $message = Message::latest('id')->first();
     $text = $message->body;
 
-    // Only the sender can remove their own copy.
-    $this->actingAs($setup['coordinatorUser'])->deleteJson(route('messages.remove', $message))->assertForbidden();
+    // Someone outside the chat cannot touch it.
+    $outsider = User::factory()->create(['role' => UserRole::Coordinator]);
+    $this->actingAs($outsider)->deleteJson(route('messages.remove', $message))->assertForbidden();
 
+    // The sender removes their copy; the other person still sees it, and it is not unsent.
     $this->actingAs($setup['studentUser'])->deleteJson(route('messages.remove', $message))->assertOk();
     $this->get(route('messages.show', $setup['coordinatorUser']))->assertDontSee($text);
-
-    // The other person still sees it, and it is not unsent.
     $this->actingAs($setup['coordinatorUser'])->get(route('messages.show', $setup['studentUser']))->assertSee($text);
     expect($message->fresh()->isUnsent())->toBeFalse();
+
+    // The receiver can remove it from their own view too.
+    $this->deleteJson(route('messages.remove', $message))->assertOk();
+    $this->get(route('messages.show', $setup['studentUser']))->assertDontSee($text);
+    expect($message->fresh()->receiver_removed_at)->not->toBeNull();
+});
+
+it('lets either person react; picking the same emoji again removes it, and only listed emojis are allowed', function () {
+    Event::fake([MessageUpdated::class]);
+    $setup = chatSetup();
+    chatSend($setup['studentUser'], $setup['coordinatorUser'])->assertOk();
+    $message = Message::latest('id')->first();
+
+    $this->actingAs($setup['coordinatorUser'])->postJson(route('messages.react', $message), ['emoji' => '❤️'])
+        ->assertOk()->assertJsonPath('id', $message->id);
+    expect($message->reactions()->sole()->emoji)->toBe('❤️');
+    Event::assertDispatched(MessageUpdated::class);
+
+    // A different emoji replaces it; the same one again removes it.
+    $this->postJson(route('messages.react', $message), ['emoji' => '😂'])->assertOk();
+    expect($message->reactions()->sole()->emoji)->toBe('😂');
+    $this->postJson(route('messages.react', $message), ['emoji' => '😂'])->assertOk();
+    expect($message->reactions()->count())->toBe(0);
+
+    $this->postJson(route('messages.react', $message), ['emoji' => '🍕'])->assertUnprocessable();
+    $outsider = User::factory()->create(['role' => UserRole::Coordinator]);
+    $this->actingAs($outsider)->postJson(route('messages.react', $message), ['emoji' => '👍'])->assertForbidden();
+});
+
+it('sends a reply that quotes a message in the same chat, and rejects replies to other chats', function () {
+    $setup = chatSetup();
+    chatSend($setup['studentUser'], $setup['coordinatorUser'])->assertOk();
+    $original = Message::latest('id')->first();
+
+    $this->actingAs($setup['coordinatorUser'])->postJson(route('messages.store', $setup['studentUser']), [
+        'body' => 'Got it, thanks.',
+        'submission_id' => (string) Str::uuid(),
+        'reply_to_id' => $original->id,
+    ])->assertOk()->assertJsonPath('success', true);
+    expect(Message::latest('id')->first()->reply_to_id)->toBe($original->id);
+
+    $this->get(route('messages.show', $setup['studentUser']))->assertSee('You replied to '.$setup['studentUser']->name);
+    $this->actingAs($setup['studentUser'])->get(route('messages.show', $setup['coordinatorUser']))
+        ->assertSee($setup['coordinatorUser']->name.' replied to you');
+
+    // A message from a different chat cannot be quoted.
+    $otherCoordinator = User::factory()->create(['role' => UserRole::Coordinator]);
+    $elsewhere = Message::create(['sender_id' => $otherCoordinator->id, 'receiver_id' => $setup['coordinatorUser']->id, 'body' => 'Private']);
+    $this->postJson(route('messages.store', $setup['coordinatorUser']), [
+        'body' => 'Sneaky',
+        'submission_id' => (string) Str::uuid(),
+        'reply_to_id' => $elsewhere->id,
+    ])->assertStatus(422);
+});
+
+it('pins and unpins a message for both people, shown in the pinned bar', function () {
+    $setup = chatSetup();
+    chatSend($setup['studentUser'], $setup['coordinatorUser'])->assertOk();
+    $message = Message::latest('id')->first();
+
+    $this->actingAs($setup['coordinatorUser'])->postJson(route('messages.pin', $message))->assertOk()->assertJsonPath('pinned', true);
+    expect($message->fresh()->isPinned())->toBeTrue()->and($message->fresh()->pinned_by)->toBe($setup['coordinatorUser']->id);
+    $this->actingAs($setup['studentUser'])->get(route('messages.show', $setup['coordinatorUser']))
+        ->assertSee('id="msgrPinned"', false)->assertSee('Unpin');
+
+    $this->postJson(route('messages.pin', $message))->assertOk()->assertJsonPath('pinned', false);
+    expect($message->fresh()->isPinned())->toBeFalse();
+});
+
+it('forwards a copy to someone you can message, and not to someone you cannot', function () {
+    Event::fake([MessageSent::class]);
+    $setup = chatSetup();
+    chatSend($setup['studentUser'], $setup['coordinatorUser'])->assertOk();
+    $message = Message::latest('id')->first();
+    $colleague = User::factory()->create(['role' => UserRole::Admin]);
+
+    $this->actingAs($setup['coordinatorUser'])->postJson(route('messages.forward', $message), ['to' => $colleague->id])
+        ->assertOk()->assertJsonPath('message', 'Forwarded to '.$colleague->name.'.');
+    $copy = Message::latest('id')->first();
+    expect($copy->receiver_id)->toBe($colleague->id)
+        ->and($copy->body)->toBe($message->body)
+        ->and($copy->isForwarded())->toBeTrue();
+
+    // A student cannot forward to another student.
+    $otherStudent = User::factory()->create(['role' => UserRole::Student]);
+    $this->actingAs($setup['studentUser'])->postJson(route('messages.forward', $message), ['to' => $otherStudent->id])->assertForbidden();
+});
+
+it('renders one message for live updates only for the people in the chat', function () {
+    $setup = chatSetup();
+    chatSend($setup['studentUser'], $setup['coordinatorUser'])->assertOk();
+    $message = Message::latest('id')->first();
+
+    $this->actingAs($setup['coordinatorUser'])->getJson(route('messages.row', $message))
+        ->assertOk()->assertJsonPath('id', $message->id)->assertJsonStructure(['html', 'pinned_html']);
+    $outsider = User::factory()->create(['role' => UserRole::Coordinator]);
+    $this->actingAs($outsider)->getJson(route('messages.row', $message))->assertForbidden();
 });

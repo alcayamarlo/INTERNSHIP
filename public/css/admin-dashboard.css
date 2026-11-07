@@ -1,0 +1,591 @@
+/* =====================================================================
+   Admin workspace — "Layout E": red sidebar, two-column dashboard with a right rail.
+   Loaded LAST by layouts/app.blade.php, for admin users only (body.sb-admin).
+   - Sidebar + topbar rules apply to every admin page.
+   - .ad-* rules apply to resources/views/admin/dashboard.blade.php.
+   No new libraries: CSS animations here, chart animations via the existing Chart.js.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   Tokens
+   --------------------------------------------------------------------- */
+body.skillbridge-app.sb-admin {
+    --sb-sidebar-width: 250px;
+    --sb-topbar-height: 60px;
+    --ad-radius: 16px;
+    --ad-pad: 18px;
+    --ad-gap: 20px;
+    --ad-ease: cubic-bezier(.22, .8, .3, 1);
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+
+/* Light theme: the palette from the design */
+:root:not([data-theme="dark"]) body.sb-app.sb-admin {
+    --ad-red: #C8102E;
+    --ad-red-deep: #9E0F26;
+    --ad-red-text: #C8102E;          /* 5.9:1 on white, 5.4:1 on #FBF3F4 */
+    --ad-canvas: #FBF3F4;
+    --ad-surface: #FFFFFF;
+    --ad-border: #F0DDE0;
+    --ad-tile: #FDECEF;
+    --ad-ink: #1F1316;
+    --ad-muted: #6B5A5E;             /* 6.6:1 on white */
+    --ad-ok-ink: #0B7A46;            /* 4.9:1 on its pill */
+    --ad-ok-bg: #E6F6EE;
+    --ad-ok-dot: #16A34A;
+    --ad-hover-shadow: 0 12px 28px rgba(200, 16, 46, .12);
+    --ad-focus: #C8102E;
+    --ad-chart-red: #C8102E;
+    --ad-chart-fill: rgba(200, 16, 46, .10);
+    --ad-chart-grid: rgba(200, 16, 46, .07);
+    --sb-canvas: #FBF3F4;
+}
+
+/* Dark theme: same layout, reuse the existing dark tokens */
+html[data-theme="dark"] body.sb-app.sb-admin {
+    --ad-red: #E11D2E;
+    --ad-red-deep: #9E0F26;
+    --ad-red-text: #FF8F9B;
+    --ad-canvas: var(--sb-canvas);
+    --ad-surface: var(--sb-surface);
+    --ad-border: var(--sb-border);
+    --ad-tile: rgba(225, 29, 46, .16);
+    --ad-ink: var(--sb-ink);
+    --ad-muted: var(--sb-muted);
+    --ad-ok-ink: #7EE2AE;
+    --ad-ok-bg: rgba(22, 163, 74, .16);
+    --ad-ok-dot: #22C55E;
+    --ad-hover-shadow: 0 12px 28px rgba(0, 0, 0, .35);
+    --ad-focus: #FF8F9B;
+    --ad-chart-red: #F05A68;
+    --ad-chart-fill: rgba(240, 90, 104, .14);
+    --ad-chart-grid: rgba(255, 255, 255, .07);
+}
+
+body.sb-app.sb-admin :is(h1, h2, h3, h4, h5, h6),
+body.sb-app.sb-admin :is(button, input, select, textarea) {
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+    letter-spacing: -.01em;
+}
+
+/* ---------------------------------------------------------------------
+   Sidebar (250px, red gradient, white active item)
+   --------------------------------------------------------------------- */
+html:not([data-theme="dark"]) body.sb-app.sb-admin .sb-sidebar {
+    background: linear-gradient(180deg, #C8102E 0%, #9E0F26 100%);
+}
+
+body.sb-app.sb-admin .sb-nav-label {
+    font-size: 12px;
+}
+
+body.sb-app.sb-admin .sb-nav-link {
+    font-size: 14px;
+}
+
+body.sb-app.sb-admin .sb-nav-link.active {
+    background: #fff;
+    color: #C8102E;
+    box-shadow: 0 6px 16px rgba(60, 5, 12, .2);
+}
+
+/* ---------------------------------------------------------------------
+   Topbar (60px, white)
+   --------------------------------------------------------------------- */
+body.sb-app.sb-admin .sb-topbar {
+    border-bottom-color: var(--ad-border);
+}
+
+body.sb-app.sb-admin .sb-topbar-title span {
+    color: var(--ad-muted);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+body.sb-app.sb-admin :is(.sb-top-action, .sb-mobile-toggle, .sb-collapse-toggle, .sb-profile-btn) {
+    border-color: var(--ad-border);
+    transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease;
+}
+
+body.sb-app.sb-admin :is(.sb-top-action, .sb-mobile-toggle, .sb-collapse-toggle, .sb-profile-btn):hover {
+    border-color: var(--ad-red);
+    color: var(--ad-red-text);
+}
+
+body.sb-app.sb-admin .sb-main,
+body.sb-app.sb-admin .sb-content {
+    background: var(--ad-canvas);
+}
+
+/* ---------------------------------------------------------------------
+   Dashboard grid: main (2/3) + right rail (1/3)
+   --------------------------------------------------------------------- */
+body.sb-app.sb-admin .ad-dashboard {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+    align-items: start;
+    gap: var(--ad-gap);
+    color: var(--ad-ink);
+    font-size: 14px;
+}
+
+body.sb-app.sb-admin .ad-dashboard :is(.ad-main, .ad-rail) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ad-gap);
+    min-width: 0;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-main {
+    container-type: inline-size;
+    container-name: ad-main;
+}
+
+/* ---------- Header ---------- */
+body.sb-app.sb-admin .ad-dashboard .ad-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-eyebrow {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--ad-red-text);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-title {
+    margin: 0;
+    color: var(--ad-ink);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -.02em;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-subtitle {
+    margin: 6px 0 0;
+    color: var(--ad-muted);
+    font-size: 14px;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--ad-ok-bg);
+    color: var(--ad-ok-ink);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-status-dot {
+    position: relative;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ad-ok-dot);
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-status-dot::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--ad-ok-dot);
+    animation: ad-pulse 1.8s ease-out infinite;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--ad-border);
+    border-radius: 999px;
+    background: var(--ad-surface);
+    color: var(--ad-muted);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* :not(.btn) matches the specificity of the shared content-link rule in skillbridge-sidebar.css */
+body.sb-app.sb-admin .ad-dashboard a.ad-btn-outline:not(.btn) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 8px 16px;
+    border: 1.5px solid var(--ad-red);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ad-red-text);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 200ms ease, color 200ms ease;
+}
+
+body.sb-app.sb-admin .ad-dashboard a.ad-btn-outline:not(.btn):is(:hover, :focus-visible) {
+    background: var(--ad-red);
+    color: #fff;
+    text-decoration: none;
+}
+
+/* ---------- Cards (rail cards, chart cards, OJT card, KPI cards) ---------- */
+body.sb-app.sb-admin .ad-dashboard :is(.ad-card, .ad-ojt > .card, .sb-stat) {
+    border: 1px solid var(--ad-border);
+    border-radius: var(--ad-radius);
+    background: var(--ad-surface);
+    box-shadow: none;
+    transition: transform 250ms var(--ad-ease), box-shadow 250ms var(--ad-ease);
+}
+
+body.sb-app.sb-admin .ad-dashboard :is(.ad-card, .ad-ojt > .card, .sb-stat):hover {
+    transform: translateY(-4px);
+    box-shadow: var(--ad-hover-shadow);
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-card {
+    padding: var(--ad-pad);
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+body.sb-app.sb-admin .ad-dashboard :is(.ad-card-head, .ad-ojt .card-header) h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: var(--ad-ink);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+body.sb-app.sb-admin .ad-dashboard :is(.ad-card-head, .ad-ojt .card-header) h2 > i {
+    color: var(--ad-red-text);
+}
+
+body.sb-app.sb-admin .ad-dashboard :is(a.ad-card-link, .ad-ojt a.sb-card-link):not(.btn) {
+    flex: 0 0 auto;
+    color: var(--ad-red-text);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+body.sb-app.sb-admin .ad-dashboard :is(a.ad-card-link, .ad-ojt a.sb-card-link):not(.btn):hover {
+    text-decoration: underline;
+}
+
+/* OJT Progress card (shared <x-dashboard-ojt /> component) */
+body.sb-app.sb-admin .ad-dashboard .ad-ojt > .card {
+    margin-bottom: 0 !important; /* the component ships Bootstrap's .mb-4, which is !important */
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-ojt .card-header {
+    padding: var(--ad-pad) var(--ad-pad) 0;
+    border: 0;
+    background: transparent;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-ojt .card-body {
+    padding: 14px var(--ad-pad) var(--ad-pad);
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-ojt .fs-4 {
+    color: var(--ad-ink);
+}
+
+/* ---------- KPI grid: 3 x 2 ---------- */
+body.sb-app.sb-admin .ad-dashboard .ad-kpis {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--ad-gap);
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-kpis .sb-stat {
+    align-items: center;
+    gap: 14px;
+    min-height: 0;
+    padding: var(--ad-pad);
+    color: var(--ad-ink);
+    text-decoration: none;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-kpis a.sb-stat:not(.btn) {
+    color: var(--ad-ink);
+    text-decoration: none;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-kpis .sb-stat-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: var(--ad-tile);
+    color: var(--ad-red-text);
+    font-size: 20px;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-kpis .sb-stat-label {
+    color: var(--ad-muted);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-kpis .sb-stat-value {
+    color: var(--ad-ink);
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -.02em;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-kpis .sb-stat-hint {
+    color: var(--ad-muted);
+    font-size: 13px;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-kpis a.sb-stat .sb-stat-hint {
+    color: var(--ad-red-text);
+    font-weight: 600;
+}
+
+/* ---------- Charts ---------- */
+body.sb-app.sb-admin .ad-dashboard .ad-charts {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-section-head h2 {
+    margin: 0;
+    color: var(--ad-ink);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-section-head p {
+    margin: 4px 0 0;
+    color: var(--ad-muted);
+    font-size: 14px;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-chart-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ad-gap);
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-chart-card--wide {
+    grid-column: 1 / -1;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-chart {
+    height: 260px;
+}
+
+/* ---------- Right rail ---------- */
+body.sb-app.sb-admin .ad-dashboard .ad-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+body.sb-app.sb-admin .ad-dashboard a.ad-action:not(.btn) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 14px;
+    border: 1px solid var(--ad-border);
+    border-radius: 12px;
+    background: var(--ad-surface);
+    color: var(--ad-ink);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: border-color 200ms ease, color 200ms ease;
+}
+
+body.sb-app.sb-admin .ad-dashboard a.ad-action:not(.btn) > i {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--ad-tile);
+    color: var(--ad-red-text);
+    font-size: 17px;
+}
+
+body.sb-app.sb-admin .ad-dashboard a.ad-action:not(.btn):is(:hover, :focus-visible) {
+    border-color: var(--ad-red);
+    color: var(--ad-red-text);
+    text-decoration: none;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-list-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--ad-border);
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-list-item:first-child {
+    padding-top: 0;
+    border-top: 0;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-list-item:last-child {
+    padding-bottom: 0;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-list-body {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-list-title {
+    margin: 0;
+    color: var(--ad-ink);
+    font-size: 14px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-list-title code {
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: var(--ad-tile);
+    color: var(--ad-red-text);
+    font-size: 13px;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-list-text {
+    margin: 2px 0 0;
+    color: var(--ad-muted);
+    font-size: 13px;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-list-meta {
+    flex: 0 0 auto;
+    color: var(--ad-muted);
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-avatar {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--ad-tile);
+    color: var(--ad-red-text);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-empty {
+    margin: 0;
+    color: var(--ad-muted);
+    font-size: 14px;
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-empty p {
+    margin: 0 0 10px;
+}
+
+/* ---------- Focus: visible on every link and button ---------- */
+body.sb-app.sb-admin .ad-dashboard :is(a, button):focus-visible {
+    outline: 3px solid var(--ad-focus);
+    outline-offset: 3px;
+}
+
+/* ---------------------------------------------------------------------
+   Entry animations (rise = fade up 14px, from sb-motion.css; 0.1s stagger via --ad-i)
+   Only during the page-load window (html.sb-intro), so live-updated regions do not replay.
+   "backwards" fill: hidden during the delay, then the hover lift still works.
+   --------------------------------------------------------------------- */
+html.sb-intro body.sb-app.sb-admin .ad-dashboard :is(.ad-reveal, .ad-kpis > .sb-stat) {
+    animation: rise .5s var(--ad-ease) backwards;
+    animation-delay: calc(var(--ad-i, 0) * .1s);
+}
+
+body.sb-app.sb-admin .ad-dashboard .ad-kpis > .sb-stat:nth-child(1) { --ad-i: 2; }
+body.sb-app.sb-admin .ad-dashboard .ad-kpis > .sb-stat:nth-child(2) { --ad-i: 3; }
+body.sb-app.sb-admin .ad-dashboard .ad-kpis > .sb-stat:nth-child(3) { --ad-i: 4; }
+body.sb-app.sb-admin .ad-dashboard .ad-kpis > .sb-stat:nth-child(4) { --ad-i: 5; }
+body.sb-app.sb-admin .ad-dashboard .ad-kpis > .sb-stat:nth-child(5) { --ad-i: 6; }
+body.sb-app.sb-admin .ad-dashboard .ad-kpis > .sb-stat:nth-child(6) { --ad-i: 7; }
+
+@keyframes ad-pulse {
+    0% { opacity: .55; transform: scale(1); }
+    100% { opacity: 0; transform: scale(3); }
+}
+
+/* ---------------------------------------------------------------------
+   Responsive
+   --------------------------------------------------------------------- */
+/* KPI and chart grids respond to the main column's width, not the viewport */
+@container ad-main (max-width: 620px) {
+    body.sb-app.sb-admin .ad-dashboard .ad-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    body.sb-app.sb-admin .ad-dashboard .ad-chart-grid { grid-template-columns: 1fr; }
+}
+
+@container ad-main (max-width: 400px) {
+    body.sb-app.sb-admin .ad-dashboard .ad-kpis { grid-template-columns: 1fr; }
+}
+
+/* Under 900px: one column (the sidebar is already an off-canvas drawer below 992px) */
+@media (max-width: 899.98px) {
+    body.sb-app.sb-admin .ad-dashboard { grid-template-columns: minmax(0, 1fr); }
+    body.sb-app.sb-admin .ad-dashboard .ad-title { font-size: 26px; }
+    body.sb-app.sb-admin .ad-dashboard .ad-header { align-items: flex-start; }
+}
+
+/* ---------------------------------------------------------------------
+   Reduced motion: no entry, pulse, hover-shift or lift animation
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    body.sb-app.sb-admin .ad-dashboard,
+    body.sb-app.sb-admin .ad-dashboard *,
+    body.sb-app.sb-admin .ad-dashboard *::before,
+    body.sb-app.sb-admin .ad-dashboard *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+
+    body.sb-app.sb-admin .ad-dashboard :is(.ad-card, .ad-ojt > .card, .sb-stat):hover {
+        transform: none;
+    }
+}

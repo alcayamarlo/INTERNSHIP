@@ -4,8 +4,25 @@
    tokens so the page follows the light and dark themes. */
 
 .student-profile-page {
+    display: grid;
+    gap: 16px;
     color: var(--sb-ink);
     font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.student-profile-page > * {
+    min-width: 0;
+}
+
+/* Full width beside the sidebar (below 992px the shared 16-20px padding applies). */
+body.sb-app .sb-content:has(> .student-profile-page) {
+    max-width: none;
+}
+
+@media (min-width: 992px) {
+    body.sb-app .sb-content:has(> .student-profile-page) {
+        padding: 16px 24px 20px;
+    }
 }
 
 .student-profile-page * {
@@ -27,8 +44,8 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    min-height: 40px;
-    margin-bottom: 16px;
+    justify-self: start;
+    min-height: 32px;
     color: var(--sb-brand-content);
     font-size: 14px;
     font-weight: 600;
@@ -39,22 +56,23 @@
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
-    gap: 24px;
-    padding: clamp(20px, 3vw, 32px);
+    gap: 20px;
+    padding: 18px 22px;
     overflow: hidden;
     border: 1px solid var(--sb-border);
-    border-radius: var(--sb-radius-lg);
+    border-radius: var(--sb-radius-md);
     background: var(--sb-surface);
     box-shadow: var(--sb-shadow-sm);
 }
 
+/* 68px avatar; its ring is the existing profile-completion ring. */
 .profile-ring {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 112px;
-    height: 112px;
-    padding: 6px;
+    width: 68px;
+    height: 68px;
+    padding: 4px;
     border-radius: 50%;
     background: conic-gradient(var(--profile-color, var(--sb-success-ink)) var(--profile-progress), var(--sb-border) 0);
 }
@@ -68,7 +86,7 @@
     border-radius: 50%;
     background: var(--sb-surface);
     color: var(--sb-ink);
-    font-size: 1.7rem;
+    font-size: 1.15rem;
     font-weight: 700;
     letter-spacing: .04em;
 }
@@ -78,23 +96,23 @@
 }
 
 .profile-hero h1 {
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     color: var(--sb-ink);
-    font-size: clamp(1.55rem, 3vw, 2.1rem);
+    font-size: 24px;
     font-weight: 700;
     letter-spacing: -.03em;
     overflow-wrap: anywhere;
 }
 
 .profile-program-line {
-    margin-bottom: 4px;
+    margin-bottom: 2px;
     color: var(--sb-text-soft);
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
 }
 
 .profile-institution {
-    margin-bottom: 16px;
+    margin-bottom: 10px;
     color: var(--sb-muted);
     font-size: 14px;
 }
@@ -137,14 +155,14 @@
 
 .profile-completion strong {
     color: var(--sb-ink);
-    font-size: clamp(2.2rem, 4vw, 3rem);
+    font-size: 34px;
     font-weight: 700;
     letter-spacing: -.05em;
     line-height: 1;
 }
 
 .profile-completion span {
-    margin-top: 8px;
+    margin-top: 6px;
     color: var(--sb-muted);
     font-size: 14px;
 }
@@ -153,13 +171,13 @@
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 16px;
-    margin: 16px 0;
+    margin: 0;
 }
 
 .profile-stat-card,
 .profile-card {
     border: 1px solid var(--sb-border);
-    border-radius: var(--sb-radius-lg);
+    border-radius: var(--sb-radius-md);
     background: var(--sb-surface);
     box-shadow: var(--sb-shadow-sm);
 }
@@ -167,64 +185,90 @@
 .profile-stat-card {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    min-height: 104px;
-    padding: 18px 20px;
+    gap: 4px;
+    min-width: 0;
+    padding: 12px 16px;
 }
 
 .profile-stat-label {
-    color: var(--sb-muted);
-    font-size: 13px;
-    font-weight: 500;
+    color: var(--sb-brand-content);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
 }
 
 .profile-stat-card strong {
     color: var(--sb-ink);
-    font-size: 1.5rem;
+    font-size: 24px;
     font-weight: 700;
+    line-height: 1.2;
     overflow-wrap: anywhere;
 }
 
 .profile-stat-caption {
-    margin-top: -4px;
+    margin-top: -2px;
     color: var(--sb-warning-ink);
     font-size: 13px;
 }
 
-.profile-columns {
+/* ---------- Three columns, each a vertical stack ---------- */
+
+.profile-grid {
     display: grid;
-    grid-template-columns: minmax(270px, 320px) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1fr);
     align-items: start;
     gap: 16px;
 }
 
-.profile-sidebar,
-.profile-submissions {
-    display: grid;
+.profile-col {
+    display: flex;
+    flex-direction: column;
     gap: 16px;
     min-width: 0;
 }
 
+/* Card: header strip (title + badge/button) and a body. */
 .profile-card {
-    padding: 20px;
+    min-width: 0;
+    overflow: hidden;
 }
 
-.profile-card h2 {
-    margin-bottom: 16px;
+.profile-section-heading.profile-card-head {
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--sb-border);
+}
+
+.profile-card h2,
+.profile-section-heading.profile-card-head h2 {
+    margin: 0;
     color: var(--sb-ink);
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 600;
 }
 
+.profile-card-head form {
+    margin: 0;
+}
+
+.profile-card-body {
+    padding: 14px 18px 16px;
+}
+
+/* Label | value pairs. */
 .profile-details {
     display: grid;
-    gap: 14px;
+    gap: 10px;
     margin: 0;
 }
 
 .profile-details div {
     display: grid;
-    gap: 2px;
+    grid-template-columns: minmax(84px, 38%) minmax(0, 1fr);
+    align-items: baseline;
+    gap: 12px;
 }
 
 .profile-details dt {
@@ -259,7 +303,7 @@
 }
 
 .profile-section-heading h2 {
-    margin-bottom: 16px;
+    margin-bottom: 0;
 }
 
 .profile-count {
@@ -290,18 +334,18 @@
 
 .profile-skill-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
 }
 
 .profile-item-list {
     display: grid;
-    gap: 12px;
+    gap: 10px;
 }
 
 .profile-item-card {
     min-width: 0;
-    padding: 16px;
+    padding: 12px 14px;
     border: 1px solid var(--sb-border);
     border-radius: var(--sb-radius-md);
     background: var(--sb-surface-raised);
@@ -353,7 +397,7 @@
 }
 
 .profile-level {
-    margin-top: 16px;
+    margin-top: 12px;
 }
 
 .profile-level-segments {
@@ -374,7 +418,9 @@
 
 .profile-level-labels {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
+    gap: 2px 8px;
     margin-top: 6px;
     color: var(--sb-muted);
     font-size: 12px;
@@ -453,20 +499,8 @@
     font-size: 12px;
 }
 
-.profile-review-controls {
-    margin-bottom: 16px;
-}
-
-.profile-review-controls .profile-section-heading {
-    align-items: center;
-}
-
-.profile-review-controls .profile-section-heading h2 {
-    margin-bottom: 4px;
-}
-
 .profile-hours-progress {
-    margin: 16px 0;
+    margin: 12px 0 14px;
 }
 
 .profile-hours-progress-track {
@@ -489,7 +523,71 @@
     font-size: 14px;
 }
 
-.profile-readiness-form,
+/* Rendered hours and GWA side by side; checkbox and Save button on their own lines. */
+.profile-readiness-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: end;
+    gap: 12px;
+}
+
+.profile-readiness-form input[type="number"] {
+    width: 100%;
+    min-width: 0;
+}
+
+.profile-readiness-form .profile-checkbox-label {
+    grid-column: 1 / -1;
+    min-height: 0;
+}
+
+.profile-readiness-form > .btn {
+    grid-column: 1 / -1;
+    justify-self: start;
+}
+
+/* Eligibility rule rows: icon, then the text. */
+.profile-rules {
+    display: grid;
+    gap: 6px;
+    margin: 10px 0 14px;
+    font-size: 14px;
+}
+
+.profile-rules li {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    overflow-wrap: anywhere;
+}
+
+/* Reason on its own line, then "Mark not eligible" and "Approve" side by side.
+   The reject form is display: contents so its children join this grid while
+   still submitting with that form. */
+.profile-eligibility-actions {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    gap: 10px;
+}
+
+/* Helper text stays at least 12px. */
+.profile-eligibility-reason .small {
+    font-size: 12px;
+}
+
+.profile-eligibility-reject {
+    display: contents;
+}
+
+.profile-eligibility-reason {
+    grid-column: 1 / -1;
+    min-width: 0;
+}
+
+.profile-eligibility-actions > form:last-child {
+    margin: 0;
+}
+
 .profile-change-request-actions {
     display: flex;
     flex-wrap: wrap;
@@ -593,17 +691,29 @@
     }
 }
 
-@media (max-width: 900px) {
-    .profile-columns {
-        grid-template-columns: 1fr;
+/* Below ~1280px: details | review actions side by side; collections below, full width. */
+@media (max-width: 1279.98px) {
+    .profile-grid {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
     }
 
-    .profile-sidebar {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+    .profile-col-right {
+        display: grid;
+        grid-column: 1 / -1;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        align-items: start;
+    }
+}
+
+/* Below ~768px: one column (details, academic, eligibility, collections, activity). */
+@media (max-width: 767.98px) {
+    .profile-grid {
+        grid-template-columns: minmax(0, 1fr);
     }
 
-    .profile-sidebar .profile-card:first-child {
-        grid-row: span 2;
+    .profile-col-right {
+        display: flex;
+        grid-column: auto;
     }
 
     .profile-stats {
@@ -615,30 +725,26 @@
     .profile-hero {
         grid-template-columns: auto minmax(0, 1fr);
         align-items: start;
-        gap: 16px;
-        padding: 20px;
+        gap: 14px;
+        padding: 16px;
     }
 
-    .profile-readiness-form,
+    .profile-readiness-form {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .profile-readiness-form > .btn {
+        justify-self: stretch;
+    }
+
     .profile-change-request-actions,
     .profile-change-request-actions form {
         flex-direction: column;
         align-items: stretch;
     }
 
-    .profile-readiness-form > *,
     .profile-change-request-actions form > * {
         width: 100%;
-    }
-
-    .profile-ring {
-        width: 76px;
-        height: 76px;
-        padding: 4px;
-    }
-
-    .profile-ring-inner {
-        font-size: 1.15rem;
     }
 
     .profile-hero-main {
@@ -670,21 +776,8 @@
         gap: 12px;
     }
 
-    .profile-stat-card {
-        min-height: 96px;
-        padding: 14px;
-    }
-
     .profile-stat-card strong {
-        font-size: 1.15rem;
-    }
-
-    .profile-sidebar {
-        grid-template-columns: 1fr;
-    }
-
-    .profile-sidebar .profile-card:first-child {
-        grid-row: auto;
+        font-size: 20px;
     }
 
     .profile-skill-grid {

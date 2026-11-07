@@ -40,8 +40,9 @@
         return `${student.verified_submissions_count} of ${student.total_submissions_count} verified`;
     };
 
+    // One card per student: identity, program, year and competencies, completion, View profile.
     const renderStudent = (student) => {
-        const row = node('article', 'student-tracking-row');
+        const row = node('article', 'student-tracking-row student-card');
         const identity = node('div', 'student-identity');
         identity.append(node('span', 'student-avatar', initials(student.name)));
 
@@ -59,16 +60,11 @@
         );
         identity.append(identityCopy);
 
-        const program = node('div', 'student-column');
-        program.append(
-            node('strong', '', student.program || 'Program not set'),
-            node('span', 'student-secondary', student.year_level || 'Year level not set'),
-        );
-
-        const competencies = node('div', 'student-column');
-        competencies.append(
-            node('strong', 'student-competency-total', `${student.competencies_count} competencies`),
-            node('span', 'student-secondary', competencySummary(student)),
+        const program = node('p', 'student-card-program', student.program || 'Program not set');
+        const details = node(
+            'p',
+            'student-card-meta',
+            `${student.year_level || 'Year level not set'} · ${student.competencies_count} competencies (${competencySummary(student)})`,
         );
 
         const completionValue = Math.max(0, Math.min(100, Number(student.profile_completion) || 0));
@@ -79,11 +75,13 @@
         track.append(fill);
         completion.append(track, node('span', 'student-completion-value', `${completionValue}%`));
 
-        const view = node('a', 'student-view-button', 'View');
+        completion.setAttribute('aria-label', `Profile completion ${completionValue}%`);
+
+        const view = node('a', 'student-view-button', 'View profile');
         view.href = student.view_url;
         view.setAttribute('aria-label', `View ${student.name}`);
 
-        row.append(identity, program, competencies, completion, view);
+        row.append(identity, program, details, completion, view);
         return row;
     };
 
@@ -117,10 +115,18 @@
         }));
     };
 
+    const showing = document.getElementById('studentsShowing');
+    const emptyMessage = empty.querySelector('strong').textContent;
+
     const render = (students, meta, summary) => {
         rows.replaceChildren(...students.map(renderStudent));
         rows.setAttribute('aria-busy', 'false');
         empty.hidden = students.length > 0;
+        empty.querySelector('strong').textContent = emptyMessage; // a failed request may have replaced it
+        rows.hidden = students.length === 0;
+        showing.textContent = students.length
+            ? `Showing ${students.length} of ${Number(meta.total).toLocaleString()} student${meta.total === 1 ? '' : 's'}`
+            : '';
         currentPage = meta.current_page;
         lastPage = meta.last_page;
         renderPagination(meta);
@@ -161,7 +167,9 @@
             if (error.name === 'AbortError') return;
             rows.setAttribute('aria-busy', 'false');
             rows.replaceChildren();
+            rows.hidden = true;
             pagination.replaceChildren();
+            showing.textContent = '';
             empty.hidden = false;
             empty.querySelector('strong').textContent = error.message;
         }
