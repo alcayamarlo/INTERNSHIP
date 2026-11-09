@@ -109,16 +109,15 @@ class HealthController extends Controller
     /** The latest error lines from the application log (newest first). */
     private function recentErrors(): array
     {
-        $path = storage_path('logs/laravel.log');
-        if (! is_readable($path)) {
-            return [];
-        }
-
-        $size = filesize($path);
-        $handle = fopen($path, 'rb');
-        fseek($handle, max(0, $size - 262144));
-        $tail = (string) stream_get_contents($handle);
-        fclose($handle);
+        // laravel.log, or dated laravel-YYYY-MM-DD.log files with LOG_STACK=daily. Two files, so
+        // the list is not empty just after the daily log rolls over.
+        $tail = collect(glob(storage_path('logs/laravel*.log')) ?: [])
+            ->filter(fn (string $path) => is_readable($path))
+            ->sortByDesc(fn (string $path) => filemtime($path))
+            ->take(2)
+            ->reverse()
+            ->map(fn (string $path) => $this->tailOf($path))
+            ->implode("\n");
 
         preg_match_all('/^\[(\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2})[^\]]*\] \w+\.(ERROR|CRITICAL|ALERT|EMERGENCY): (.*)$/m', $tail, $matches, PREG_SET_ORDER);
 
@@ -128,6 +127,16 @@ class HealthController extends Controller
             ->take(10)
             ->values()
             ->all();
+    }
+
+    private function tailOf(string $path): string
+    {
+        $handle = fopen($path, 'rb');
+        fseek($handle, max(0, filesize($path) - 262144));
+        $tail = (string) stream_get_contents($handle);
+        fclose($handle);
+
+        return $tail;
     }
 
     public static function bytes(int $bytes): string

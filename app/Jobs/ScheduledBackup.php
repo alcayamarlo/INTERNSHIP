@@ -2,12 +2,12 @@
 
 namespace App\Jobs;
 
+use App\Services\DatabaseBackup;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -17,59 +17,28 @@ class ScheduledBackup implements ShouldQueue
 
     public int $timeout = 300;
 
-    public function handle(): void
+    public function handle(DatabaseBackup $backup): void
     {
         $filename = 'backups/backup_'.now()->format('Y-m-d_His').'.sql';
 
-        $host = config('database.connections.mysql.host', '127.0.0.1');
-        $port = config('database.connections.mysql.port', '3306');
-        $database = config('database.connections.mysql.database');
-        $username = config('database.connections.mysql.username');
-        $password = config('database.connections.mysql.password');
-
-        $command = sprintf(
-            'mysqldump -h %s -P %s -u %s %s > %s 2>&1',
-            escapeshellarg($host),
-            escapeshellarg($port),
-            escapeshellarg($username),
-            escapeshellarg($database),
-            escapeshellarg(storage_path('app/'.$filename))
-        );
-
-        if ($password) {
-            $command = sprintf(
-                'mysqldump -h %s -P %s -u %s -p%s %s > %s 2>&1',
-                escapeshellarg($host),
-                escapeshellarg($port),
-                escapeshellarg($username),
-                escapeshellarg($password),
-                escapeshellarg($database),
-                escapeshellarg(storage_path('app/'.$filename))
-            );
-        }
-
-        exec($command, $output, $returnCode);
-
-        if ($returnCode !== 0) {
-            Log::error("Database backup failed", ['output' => $output]);
-            throw new \RuntimeException('Database backup failed: '.implode("\n", $output));
-        }
+        $backup->dumpTo(Storage::disk('local')->path($filename));
 
         $this->cleanOldBackups();
 
-        Log::info("Database backup completed successfully", ['filename' => $filename]);
+        Log::info('Database backup completed successfully', ['filename' => $filename]);
     }
 
     private function cleanOldBackups(): void
     {
-        $files = Storage::disk('local')->files('backups');
+        $disk = Storage::disk('local');
         $maxBackups = 30;
 
-        if (count($files) > $maxBackups) {
-            $filesToDelete = array_slice($files, 0, count($files) - $maxBackups);
-            foreach ($filesToDelete as $file) {
-                Storage::disk('local')->delete($file);
-            }
-        }
+        $files = collect($disk->files('backups'))
+            ->filter(fn (string $file) => str_ends_with($file, '.sql'))
+            ->sortBy(fn (string $file) => $disk->lastModified($file))
+            ->values();
+
+        $files->take(max(0, $files->count() - $maxBackups))
+            ->each(fn (string $file) => $disk->delete($file));
     }
 }

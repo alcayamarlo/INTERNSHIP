@@ -7,6 +7,7 @@ use App\Http\Requests\Report\GenerateReportRequest;
 use App\Models\Report;
 use App\Models\SystemLog;
 use App\Services\ActivityLogService;
+use App\Services\DatabaseBackup;
 use App\Services\ReportExportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -49,35 +50,21 @@ class SystemController extends Controller
         ]);
     }
 
-    public function backup()
+    public function backup(DatabaseBackup $backups)
     {
-        $config = config('database.connections.mysql', []);
-        $database = $config['database'] ?? null;
-
-        if (empty($database)) {
+        if (empty(config('database.connections.mysql.database'))) {
             return back()->with('error', 'Database backup is unavailable because the MySQL configuration is missing.');
         }
 
         $filename = 'backups/backup_'.now()->format('Y_m_d_His').'.sql';
-        $path = storage_path('app/private/'.$filename);
+        $path = Storage::disk('local')->path($filename);
 
-        if (! is_dir(dirname($path))) {
-            mkdir(dirname($path), 0755, true);
-        }
+        try {
+            $backups->dumpTo($path);
+        } catch (\Throwable $exception) {
+            report($exception);
 
-        $command = sprintf(
-            'mysqldump --user=%s --password=%s --host=%s %s > %s 2>&1',
-            escapeshellarg($config['username'] ?? ''),
-            escapeshellarg($config['password'] ?? ''),
-            escapeshellarg($config['host'] ?? '127.0.0.1'),
-            escapeshellarg($database),
-            escapeshellarg($path)
-        );
-
-        exec($command, $output, $result);
-
-        if ($result !== 0 || ! file_exists($path) || filesize($path) === 0) {
-            return back()->with('error', 'Database backup failed. Ensure mysqldump is available in your PATH and the database connection is valid.');
+            return back()->with('error', 'Database backup failed. Check MYSQLDUMP_PATH in the environment settings and the database connection.');
         }
 
         $this->activityLog->log(Auth::user(), 'database_backup', ['filename' => $filename]);

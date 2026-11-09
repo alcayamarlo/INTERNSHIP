@@ -19,6 +19,9 @@ return [
 
     'default' => env('DB_CONNECTION', 'sqlite'),
 
+    // Full path when mysqldump is not on PATH (for example under XAMPP on Windows).
+    'mysqldump_path' => env('MYSQLDUMP_PATH', 'mysqldump'),
+
     /*
     |--------------------------------------------------------------------------
     | Database Connections

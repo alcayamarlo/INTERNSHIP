@@ -86,8 +86,8 @@ with `files:secure-existing`; public copies are retained unless the explicit
 
 ## Verification snapshot
 
-At the time this summary was updated, the full Pest suite passed **254 tests
-with 2187 assertions**. The suite covers core authentication, role access,
+At the time this summary was updated, the full Pest suite passed **526 tests
+with 3933 assertions**. The suite covers core authentication, role access,
 application transitions, OJT tracking (DTR, journals, evaluation, clearance and
 certificate access), ownership checks, private document access, reports,
 cache invalidation, atomic writes, and shared-file lifecycle behavior.
