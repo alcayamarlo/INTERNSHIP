@@ -78,6 +78,17 @@ class NotificationController extends Controller
             }
         }
 
+        // Job alerts and deadline reminders link to the posting.
+        if (! $relatedUrl && isset($data['internship_id']) && is_numeric($data['internship_id'])) {
+            $internship = \App\Models\Internship::find($data['internship_id']);
+            if ($internship && Auth::user()->isRole(UserRole::Student)) {
+                $relatedUrl = route('student.internships.show', $internship);
+            } elseif ($internship && Auth::user()->isRole(UserRole::Employer)
+                && $internship->employer?->user_id === Auth::id()) {
+                $relatedUrl = route('employer.internships.edit', $internship);
+            }
+        }
+
         if (! $relatedUrl) {
             $contactId = $data['contact_id'] ?? $data['sender_id'] ?? null;
             if (is_numeric($contactId)) {

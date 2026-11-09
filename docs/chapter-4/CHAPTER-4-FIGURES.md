@@ -151,7 +151,7 @@ Image file: `fig-4-10-usecase-employer.svg` / `.png`
 
 Figure 4.10 presents the employer's use cases. The employer manages the
 company profile, posts internships with their competency requirements and
-eligible programs, maintains a skills catalog, browses and shortlists
+eligible programs, browses and shortlists
 students, and sends invitations. The employer reviews applicants and updates
 their status; accepting an applicant opens the OJT placement. During the OJT,
 the employer sets the intern's schedule, approves or rejects time records,

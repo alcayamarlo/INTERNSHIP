@@ -35,6 +35,7 @@ class StoreInternshipRequest extends FormRequest
             'work_setup' => ['required', Rule::enum(WorkSetup::class)],
             'location' => ['nullable', 'string', 'max:255'],
             'status' => ['required', 'in:open,closed'],
+            'expires_at' => $this->deadlineRules(),
             'program_ids' => ['nullable', 'array'],
             'program_ids.*' => ['integer', 'exists:programs,id'],
             'requirement_names' => ['nullable', 'array'],
@@ -47,9 +48,24 @@ class StoreInternshipRequest extends FormRequest
         ];
     }
 
+    /**
+     * Application deadline (a date; applications close at the end of that day).
+     *
+     * @return list<string>
+     */
+    protected function deadlineRules(): array
+    {
+        return ['nullable', 'date_format:Y-m-d', 'after_or_equal:today'];
+    }
+
     public function validated($key = null, $default = null)
     {
         $validated = parent::validated();
+        if (array_key_exists('expires_at', $validated)) {
+            $validated['expires_at'] = filled($validated['expires_at'])
+                ? \Illuminate\Support\Carbon::createFromFormat('Y-m-d', $validated['expires_at'])->endOfDay()
+                : null;
+        }
         $validated['requires_character_reference'] = $this->boolean('requires_character_reference');
         $validated['requested_documents'] = array_values(array_unique($validated['requested_documents'] ?? []));
 
@@ -62,6 +78,8 @@ class StoreInternshipRequest extends FormRequest
             'title.required' => 'Internship title is required.',
             'description.required' => 'Internship description is required.',
             'work_setup.required' => 'Please select a work setup.',
+            'expires_at.after_or_equal' => 'The application deadline cannot be in the past.',
+            'expires_at.date_format' => 'Enter the application deadline as a date.',
         ];
     }
 }

@@ -25,6 +25,7 @@
         ['bi-clock', 'Duration', $internship->duration ?: 'Not stated'],
         ['bi-cash-coin', 'Allowance', $internship->allowance ? '₱'.number_format($internship->allowance, 2).'/mo' : 'Not stated'],
         ['bi-mortarboard', 'Program', $programLabel],
+        ['bi-calendar-event', 'Apply by', $internship->expires_at ? $internship->expires_at->format('M d, Y') : 'No deadline'],
     ];
 
     // Feedback form is collapsed; it opens on its own when it came back with errors.

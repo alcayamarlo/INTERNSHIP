@@ -59,6 +59,12 @@
                     <input type="text" class="form-control" name="duration" value="{{ old('duration', $internship->duration) }}" placeholder="e.g. 3 months">
                 </div>
                 <div class="col-md-4">
+                    <label class="form-label" for="expires_at">Application deadline</label>
+                    <input type="date" id="expires_at" class="form-control @error('expires_at') is-invalid @enderror" name="expires_at" value="{{ old('expires_at', $internship->expires_at?->format('Y-m-d')) }}" @unless($internship->expires_at?->isPast()) min="{{ now()->format('Y-m-d') }}" @endunless aria-describedby="expires_at_help">
+                    <div id="expires_at_help" class="form-text">Optional. Applications close at the end of this day, and students who match get a reminder a few days before.</div>
+                    @error('expires_at')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-4">
                     <label class="form-label">Allowance (₱)</label>
                     <input type="number" step="0.01" min="0" class="form-control" name="allowance" value="{{ old('allowance', $internship->allowance) }}">
                 </div>

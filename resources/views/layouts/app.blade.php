@@ -140,7 +140,6 @@
             ],
             'Hiring' => [
                 ['employer.internships.index', 'employer.internships.*', 'bi-briefcase', 'Internships'],
-                ['employer.skills.index', 'employer.skills.*', 'bi-tags', 'Skills Catalog'],
                 ['employer.applicants.index', 'employer.applicants.*', 'bi-people', 'Applicants'],
                 ['employer.students.index', 'employer.students.*', 'bi-search', 'Browse Students'],
                 ['employer.invitations.index', 'employer.invitations.*', 'bi-envelope-paper', 'Sent Invitations'],

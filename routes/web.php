@@ -25,7 +25,6 @@ use App\Http\Controllers\Employer\ApplicantController;
 use App\Http\Controllers\Employer\DashboardController as EmployerDashboardController;
 use App\Http\Controllers\Employer\InternshipController as EmployerInternshipController;
 use App\Http\Controllers\Employer\ProfileController as EmployerProfileController;
-use App\Http\Controllers\Employer\SkillController as EmployerSkillController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileCompletionController;
@@ -61,13 +60,15 @@ Route::middleware('guest')->group(function () {
     Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update')->middleware('throttle:password-reset-submit');
 });
 
-Route::match(['get', 'post'], '/logout', [LoginController::class, 'logout'])
+Route::post('/logout', [LoginController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
 Route::middleware(['auth', 'active'])->group(function () {
     // Front-end-only preview of the Gmail -> code -> new password setup flow (mock functions, no backend).
-    Route::view('/account-setup', 'auth.account-setup')->name('account-setup');
+    if (! app()->isProduction()) {
+        Route::view('/account-setup', 'auth.account-setup')->name('account-setup');
+    }
 
     // Step 1-2 of first login: add and verify the email. This must come before the new password.
     Route::get('/email/verify', [EmailVerificationController::class, 'notice'])
@@ -176,8 +177,6 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         Route::get('/portfolio/{portfolio}', [PortfolioController::class, 'show'])->name('portfolio.show');
         Route::get('/portfolio/{portfolio}/edit', [PortfolioController::class, 'edit'])->name('portfolio.edit');
         Route::put('/portfolio/{portfolio}', [PortfolioController::class, 'update'])->name('portfolio.update');
-        Route::get('/portfolio/{portfolio}/download', [PortfolioController::class, 'download'])->name('portfolio.download');
-        Route::get('/portfolio/{portfolio}/preview', [PortfolioController::class, 'preview'])->name('portfolio.preview');
         Route::delete('/portfolio/{portfolio}', [PortfolioController::class, 'destroyPortfolio'])->name('portfolio.destroyPortfolio');
 
         // Certificates
@@ -188,8 +187,6 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         Route::get('/resume', [ResumeController::class, 'index'])->name('resume.index');
         Route::post('/resume/generate', [ResumeController::class, 'generate'])->name('resume.generate');
         Route::delete('/resume/{resume}', [ResumeController::class, 'destroy'])->whereNumber('resume')->name('resume.destroy');
-        Route::get('/resume/{resume}/view', [ResumeController::class, 'view'])->name('resume.view');
-        Route::get('/resume/{resume}/download', [ResumeController::class, 'download'])->name('resume.download');
         Route::get('/internships', [StudentInternshipController::class, 'index'])->name('internships.index');
         Route::get('/internships/{internship}', [StudentInternshipController::class, 'show'])->name('internships.show');
         Route::post('/internships/{internship}/recommendation-feedback', [StudentInternshipController::class, 'storeRecommendationFeedback'])->name('internships.recommendation-feedback');
@@ -220,7 +217,6 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         // Posting, browsing students, and inviting need an admin-verified company.
         Route::resource('internships', EmployerInternshipController::class)->except(['show'])
             ->middlewareFor(['create', 'store', 'edit', 'update', 'destroy'], 'company.verified');
-        Route::resource('skills', EmployerSkillController::class)->except(['show']);
         Route::middleware('company.verified')->group(function () {
             Route::post('/internships/{internship}/close', [EmployerInternshipController::class, 'close'])->name('internships.close');
             Route::get('/students', [\App\Http\Controllers\Employer\StudentBrowseController::class, 'index'])->name('students.index');

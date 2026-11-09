@@ -32,6 +32,15 @@ class CompetencyMatchingService
         });
     }
 
+    /**
+     * Uncached score, for alerts sent right after a posting's requirements were saved
+     * (the cached details may still hold the old requirements).
+     */
+    public function freshMatchPercentage(Student $student, Internship $internship): int
+    {
+        return $this->buildRecommendationResult($student, $internship)['match_percentage'];
+    }
+
     public function getRecommendations(Student $student, int $limit = 10)
     {
         $cacheKey = "recommendations_{$student->id}_{$limit}";
