@@ -42,5 +42,5 @@ has received an independent security audit.
 
 ## Test snapshot
 
-The full Pest suite passed **254 tests and 2187 assertions** when this document
+The full Pest suite passed **526 tests and 3933 assertions** when this document
 was updated. Run `php artisan test` to verify against the current working tree.

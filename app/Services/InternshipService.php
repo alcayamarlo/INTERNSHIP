@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\ProficiencyLevel;
+use App\Jobs\SendInternshipAlerts;
 use App\Models\Employer;
 use App\Models\Internship;
 use App\Models\InternshipRequirement;
@@ -15,7 +16,7 @@ class InternshipService
 
     public function create(Employer $employer, array $data, Request $request): Internship
     {
-        return DB::transaction(function () use ($employer, $data, $request) {
+        $internship = DB::transaction(function () use ($employer, $data, $request) {
             $internship = $employer->internships()->create($this->internshipAttributes($data));
             $this->syncRequirements($request, $internship);
             $internship->programs()->sync($data['program_ids'] ?? []);
@@ -26,12 +27,21 @@ class InternshipService
 
             return $internship;
         });
+
+        $this->queueAlerts($internship);
+
+        return $internship;
     }
 
     public function update(Internship $internship, array $data, Request $request): Internship
     {
-        return DB::transaction(function () use ($internship, $data, $request) {
-            $internship->update($this->internshipAttributes($data));
+        $internship = DB::transaction(function () use ($internship, $data, $request) {
+            $internship->fill($this->internshipAttributes($data));
+            if ($internship->isDirty('expires_at')) {
+                // A new deadline gets its own "closing soon" reminder.
+                $internship->deadline_reminded_at = null;
+            }
+            $internship->save();
             $this->syncRequirements($request, $internship);
             $internship->programs()->sync($data['program_ids'] ?? []);
 
@@ -41,6 +51,25 @@ class InternshipService
 
             return $internship;
         });
+
+        $this->queueAlerts($internship);
+
+        return $internship;
+    }
+
+    /** Job alerts go out once, the first time a posting is open and accepting applications. */
+    private function queueAlerts(Internship $internship): void
+    {
+        if ($internship->alerts_sent_at !== null || ! $internship->isAcceptingApplications()) {
+            return;
+        }
+
+        try {
+            SendInternshipAlerts::dispatch($internship->id);
+        } catch (\Throwable $exception) {
+            // The posting is saved either way; alerts are additive.
+            report($exception);
+        }
     }
 
     public function close(Internship $internship): void
@@ -105,6 +134,7 @@ class InternshipService
             'work_setup',
             'location',
             'status',
+            'expires_at',
             'requires_character_reference',
             'requested_documents',
         ])->all();

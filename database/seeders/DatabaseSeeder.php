@@ -32,6 +32,13 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(AcademicCatalogSeeder::class);
 
+        // Everything below is demo data with the known password "password".
+        if (app()->isProduction()) {
+            $this->command?->warn('Production: seeded the academic catalog only, skipped demo accounts.');
+
+            return;
+        }
+
         $institution = Institution::create([
             'name' => "St. Cecilia's College-Cebu, Inc.",
             'address' => 'Cebu South National Highway, Ward II, Minglanilla, Cebu',

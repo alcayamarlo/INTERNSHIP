@@ -80,7 +80,7 @@
 <div class="row g-4">
     <div class="col-lg-8">
         <div class="card">
-            <div class="card-header"><h3 class="h6 mb-0">Latest errors (from storage/logs/laravel.log)</h3></div>
+            <div class="card-header"><h3 class="h6 mb-0">Latest errors (from the application log)</h3></div>
             <ul class="list-group list-group-flush small">
                 @forelse($health['errors'] as $error)
                     <li class="list-group-item"><span class="badge text-bg-danger">{{ $error['level'] }}</span> <span class="text-muted">{{ $error['at'] }}</span><div class="text-break">{{ $error['message'] }}</div></li>

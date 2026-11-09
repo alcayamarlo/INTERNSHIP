@@ -8,7 +8,6 @@ use App\Models\InternshipApplication;
 use App\Models\Resume;
 use App\Services\ResumeBuilderService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 
 class ResumeController extends Controller
@@ -53,28 +52,5 @@ class ResumeController extends Controller
         }
 
         return redirect()->route('student.resume.index')->with('success', 'Resume deleted.');
-    }
-
-    public function download(Resume $resume)
-    {
-        $this->authorize('download', $resume);
-
-        return Storage::disk($this->resumeBuilder->diskFor($resume))->download(
-            $resume->file_path,
-            'resume-'.$resume->student_id.'-'.($resume->generated_at ?? $resume->created_at)->format('Y-m-d-His').'.pdf',
-            ['Content-Type' => 'application/pdf', 'X-Content-Type-Options' => 'nosniff']
-        );
-    }
-
-    public function view(Resume $resume)
-    {
-        $this->authorize('view', $resume);
-
-        return Storage::disk($this->resumeBuilder->diskFor($resume))->response($resume->file_path, null, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline',
-            'X-Content-Type-Options' => 'nosniff',
-            'Cache-Control' => 'private, no-store',
-        ]);
     }
 }

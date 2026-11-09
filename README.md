@@ -419,15 +419,17 @@ a terminal in the project folder:
 .\start-dev.bat
 ```
 
-It opens two windows: the web server and the queue worker. Keep both open
-while you use the app, and close them to stop it. The queue worker sends
-notification emails and live updates in the background, so clicks do not wait
-for them; without it, they wait in the queue until a worker starts. To start
-them by hand instead, use two terminals:
+It opens three windows: the web server, the queue worker, and the scheduler.
+Keep them open while you use the app, and close them to stop it. The queue
+worker sends notification emails and live updates in the background, so clicks
+do not wait for them; without it, they wait in the queue until a worker starts.
+The scheduler runs nightly backups, invitation expiry, and MOA and deadline
+reminders. To start them by hand instead, use three terminals:
 
 ```powershell
 php artisan serve
-php artisan queue:listen --tries=3 --timeout=120 --sleep=1
+php artisan queue:listen --tries=3 --timeout=330 --sleep=1
+php artisan schedule:work
 ```
 
 For frontend development with Vite hot reload, use another terminal:

@@ -1,8 +1,3 @@
-        <div class="public-announcement">
-            <span class="public-announce-dot" aria-hidden="true"></span>
-            Internship readiness and verified competencies, in one place.
-        </div>
-
         <nav class="public-nav" aria-label="Main navigation">
             <div class="public-nav-inner d-flex align-items-center justify-content-between">
                 <a class="public-brand" href="{{ route('home') }}" aria-label="SkillBridge home">

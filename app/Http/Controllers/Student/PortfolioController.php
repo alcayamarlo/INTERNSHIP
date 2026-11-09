@@ -18,9 +18,6 @@ use App\Services\FileUploadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use App\Support\DownloadName;
-use App\Support\UploadDisks;
 
 class PortfolioController extends Controller
 {
@@ -515,53 +512,6 @@ class PortfolioController extends Controller
 
         return redirect()->to(route('student.profile.edit').'#documents')
             ->with('success', 'Certificate deleted successfully!');
-    }
-
-    public function download(Portfolio $portfolio)
-    {
-        $this->authorize('download', $portfolio);
-        $disk = $this->diskWithFile($portfolio->file_path);
-
-        return Storage::disk($disk)->download(
-            $portfolio->file_path,
-            DownloadName::make($portfolio->title, $portfolio->file_path)
-        );
-    }
-
-    public function preview(Portfolio $portfolio)
-    {
-        $this->authorize('preview', $portfolio);
-        $disk = $this->diskWithFile($portfolio->file_path);
-
-        $extension = pathinfo($portfolio->file_path, PATHINFO_EXTENSION);
-        $mimeTypes = [
-            'pdf' => 'application/pdf',
-            'jpg' => 'image/jpeg',
-            'jpeg' => 'image/jpeg',
-            'png' => 'image/png',
-        ];
-
-        abort_unless(isset($mimeTypes[strtolower($extension)]), 404, 'This file type cannot be previewed.');
-
-        return Storage::disk($disk)->response($portfolio->file_path, null, [
-            'Content-Type' => $mimeTypes[strtolower($extension)] ?? 'application/octet-stream',
-            'Content-Disposition' => DownloadName::inline($portfolio->title, $portfolio->file_path),
-            'X-Content-Type-Options' => 'nosniff',
-            'Cache-Control' => 'private, no-store',
-        ]);
-    }
-
-    private function diskWithFile(?string $path): string
-    {
-        abort_unless($path, 404, 'File not found.');
-
-        foreach (UploadDisks::search() as $disk) {
-            if (Storage::disk($disk)->exists($path)) {
-                return $disk;
-            }
-        }
-
-        abort(404, 'File not found.');
     }
 
     private function categoryForType(string $type): PortfolioCategory

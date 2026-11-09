@@ -338,7 +338,9 @@ class DashboardController extends Controller
             'portfolio' => \App\Models\Portfolio::class,
         };
 
-        DB::transaction(function () use ($modelClass, $validated, $coordinator) {
+        $updated = 0;
+
+        DB::transaction(function () use ($modelClass, $validated, $coordinator, &$updated) {
             $items = $modelClass::whereIn('id', $validated['ids'])
                 ->whereIn('verification_status', ['evidence_submitted', 'resubmitted', 'rejected'])
                 ->get();
@@ -351,11 +353,12 @@ class DashboardController extends Controller
                         'review_notes' => $validated['review_notes'] ?? null,
                         'reviewed_at' => now(),
                     ]);
+                    $updated++;
                 }
             }
         });
 
-        return back()->with('success', count($validated['ids']).' '.$validated['type'].'(s) have been '.$validated['verification_status'].'.');
+        return back()->with('success', $updated.' '.$validated['type'].'(s) have been '.$validated['verification_status'].'.');
     }
 
     private function calculatePlacementRate($applications): float
