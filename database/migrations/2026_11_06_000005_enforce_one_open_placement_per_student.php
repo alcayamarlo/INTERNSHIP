@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Schema;
  * are history and are not limited. Placements have no school-year column, so the rule is
  * "one ongoing OJT at a time", which is what a term-based key would approximate anyway.
  *
- * MySQL/MariaDB have no partial indexes, so a stored generated column holds student_id only
+ * MySQL/MariaDB have no partial indexes, so a virtual generated column holds student_id only
  * while the placement is open (NULL otherwise; NULLs never collide in a UNIQUE index).
  * SQLite/PostgreSQL use a partial unique index instead.
  */
@@ -47,7 +47,7 @@ return new class extends Migration
             Schema::table('placements', function (Blueprint $table): void {
                 $table->unsignedBigInteger('open_student_id')
                     ->nullable()
-                    ->storedAs("IF(deleted_at IS NULL AND status IN ('pending_validation','active'), student_id, NULL)")
+                    ->virtualAs("IF(deleted_at IS NULL AND status IN ('pending_validation','active'), student_id, NULL)")
                     ->after('student_id');
                 $table->unique('open_student_id', self::INDEX);
             });
