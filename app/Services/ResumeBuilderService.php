@@ -27,8 +27,16 @@ class ResumeBuilderService
 
     public function build(Student $student): Resume
     {
-        $content = $this->companyProfile->resume($student);
-        $filename = 'resumes/student_'.$student->id.'_'.now()->format('YmdHis').'_'.Str::lower(Str::random(8)).'.pdf';
+        return $this->store($student, $this->companyProfile->resume($student));
+    }
+
+    /**
+     * Saves content as a new resume (newest), then drops the oldest beyond MAX_GENERATED_RESUMES.
+     * Used by Generate and by the editor's "Save as new resume".
+     */
+    public function store(Student $student, array $content): Resume
+    {
+        $filename = $this->newFilename($student);
 
         $disk = UploadDisks::private();
         if (! Storage::disk($disk)->put($filename, $this->render($content, $student))) {
@@ -58,6 +66,61 @@ class ResumeBuilderService
         $student->calculateProfileCompletion();
 
         return $resume;
+    }
+
+    /**
+     * Replaces a resume's content with edited content and re-renders its PDF, so the stored file
+     * (what View, Download, and companies get) matches the editor preview. The new file is written
+     * first; the old one is removed only after the row points at the new one.
+     */
+    public function updateContent(Resume $resume, array $content): Resume
+    {
+        $student = $resume->student;
+        $filename = $this->newFilename($student);
+        $disk = UploadDisks::private();
+        if (! Storage::disk($disk)->put($filename, $this->render($content, $student))) {
+            throw new RuntimeException('Unable to store the edited resume.');
+        }
+
+        $oldPath = $resume->file_path;
+        try {
+            $resume->update(['content' => $content, 'file_path' => $filename]);
+        } catch (\Throwable $exception) {
+            Storage::disk($disk)->delete($filename);
+            throw $exception;
+        }
+
+        if ($oldPath && $oldPath !== $filename) {
+            foreach (UploadDisks::search() as $searchDisk) {
+                Storage::disk($searchDisk)->delete($oldPath);
+            }
+        }
+
+        return $resume;
+    }
+
+    /** PDF bytes for content that may not be saved yet (the editor's Download PDF). */
+    public function pdfFor(array $content, Student $student): string
+    {
+        return $this->render($content, $student);
+    }
+
+    /**
+     * The resume as HTML for the editor's live preview: the same template as the PDF, so what the
+     * student sees is what gets downloaded.
+     */
+    public function previewHtml(array $content): string
+    {
+        return view('student.resume.pdf', [
+            'content' => $content,
+            'photo' => $this->resumePhoto($content),
+            'preview' => true,
+        ])->render();
+    }
+
+    private function newFilename(Student $student): string
+    {
+        return 'resumes/student_'.$student->id.'_'.now()->format('YmdHis').'_'.Str::lower(Str::random(8)).'.pdf';
     }
 
     /**

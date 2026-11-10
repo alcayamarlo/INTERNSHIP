@@ -183,10 +183,7 @@ class CompanyVisibleProfile
         return [
             'version' => 3,
             'name' => $name,
-            'initials' => collect(preg_split('/\s+/u', trim($name)) ?: [])
-                ->filter()
-                ->map(fn (string $part) => mb_strtoupper(mb_substr($part, 0, 1)))
-                ->pipe(fn ($letters) => $letters->count() > 1 ? $letters->first().$letters->last() : $letters->first()) ?? '',
+            'initials' => self::initials($name),
             // The resume photo is only ever the private 2x2 picture, never the profile picture.
             'id_photo_path' => $student->id_photo_path,
             'course' => $student->program,
@@ -318,6 +315,15 @@ class CompanyVisibleProfile
      *
      * @return list<array{label: string, awards: list<array{title: string, meta: string}>}>
      */
+    /** Photo-box initials: first and last word ("Maria Dela Cruz" => "MC"), or one letter for one word. */
+    public static function initials(string $name): string
+    {
+        return collect(preg_split('/\s+/u', trim($name)) ?: [])
+            ->filter()
+            ->map(fn (string $part) => mb_strtoupper(mb_substr($part, 0, 1)))
+            ->pipe(fn ($letters) => $letters->count() > 1 ? $letters->first().$letters->last() : $letters->first()) ?? '';
+    }
+
     private function awards(Student $student): array
     {
         return array_map(fn (array $group) => [

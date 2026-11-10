@@ -29,6 +29,7 @@
                         <td>
                             {{ $generatedAt->format('M d, Y h:i A') }}
                             @if($loop->first)<span class="badge text-bg-success ms-1">Newest</span>@endif
+                            @if(filled($resume->content['edited_at'] ?? null))<span class="badge text-bg-secondary ms-1" data-resume-edited>Edited</span>@endif
                             @if($applicationCount > 0)
                                 <small class="text-muted d-block">Used in {{ $applicationCount }} {{ Str::plural('application', $applicationCount) }}</small>
                             @endif
@@ -40,6 +41,15 @@
                             <a href="{{ route('student.resume.download', $resume, false) }}" class="btn btn-sm btn-primary">
                                 <i class="bi bi-download" aria-hidden="true"></i> Download
                             </a>
+                            @if($resumeContent->isEditable($resume->content))
+                                <a href="{{ route('student.resume.edit', $resume) }}" class="btn btn-sm btn-outline-primary" data-resume-edit>
+                                    <i class="bi bi-pencil-square" aria-hidden="true"></i> Edit
+                                </a>
+                            @else
+                                <span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true" title="Older format. Generate a new resume to edit it.">
+                                    <i class="bi bi-pencil-square" aria-hidden="true"></i> Edit
+                                </span>
+                            @endif
                             <form action="{{ route('student.resume.destroy', $resume, false) }}" method="POST"
                                 data-confirm="Delete the resume generated {{ $generatedAt->format('M d, Y h:i A') }}?{{ $applicationCount > 0 ? ($replacement ? ' Your applications that used it will switch to your newest resume.' : ' Your applications that used it will have no resume until you generate a new one.') : '' }}"
                                 data-confirm-title="Delete resume?" data-confirm-label="Delete">

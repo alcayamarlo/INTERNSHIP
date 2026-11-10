@@ -1,0 +1,370 @@
+/* Resume Editor (student/resume/edit.blade.php) and the ResumePreview component
+   (components/resume-preview.blade.php). Uses the app tokens, so light and dark themes follow along;
+   the preview sheet itself stays white like paper. */
+
+/* ---------- Layout: form left, preview right; stacked (form first) below 1200px ---------- */
+
+.re-page {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(380px, 0.92fr);
+    gap: 20px;
+    align-items: start;
+}
+
+.re-form {
+    display: grid;
+    gap: 16px;
+    min-width: 0;
+}
+
+.re-preview {
+    position: sticky;
+    top: calc(var(--sb-topbar-height, 64px) + 16px);
+    max-height: calc(100vh - var(--sb-topbar-height, 64px) - 32px);
+    overflow-y: auto;
+}
+
+@media (max-width: 1199.98px) {
+    .re-page {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .re-preview {
+        position: static;
+        max-height: none;
+    }
+}
+
+.re-error-summary ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+}
+
+/* ---------- Fields ---------- */
+
+.re-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.re-grid--2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.re-span-2 {
+    grid-column: 1 / -1;
+}
+
+.re-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    min-width: 0;
+}
+
+.re-field > span {
+    color: var(--sb-ink);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.re-field small {
+    color: var(--sb-muted);
+    font-weight: 500;
+}
+
+.re-req {
+    color: var(--sb-brand-content);
+}
+
+.re-subhead {
+    margin: 20px 0 2px;
+    color: var(--sb-ink);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.re-hint {
+    margin: 0 0 8px;
+    color: var(--sb-muted);
+    font-size: 12.5px;
+}
+
+/* ---------- Repeatable lists ---------- */
+
+.re-list {
+    display: grid;
+    gap: 8px;
+}
+
+.re-list.is-empty[data-empty-text]::before {
+    content: attr(data-empty-text);
+    padding: 10px 12px;
+    border: 1px dashed var(--sb-border);
+    border-radius: 12px;
+    color: var(--sb-muted);
+    font-size: 13px;
+}
+
+.re-row {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr) auto;
+    gap: 6px;
+    align-items: center;
+}
+
+.re-value {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px;
+    align-items: center;
+}
+
+.re-row > .re-error,
+.re-value > .re-error {
+    grid-column: 1 / -1;
+    margin-top: 0;
+}
+
+.re-entry {
+    display: grid;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--sb-border);
+    border-radius: 14px;
+    background: var(--sb-surface);
+}
+
+.re-entry-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.re-entry-label {
+    color: var(--sb-brand-content);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.re-item-controls {
+    display: inline-flex;
+    gap: 2px;
+}
+
+.re-icon-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--sb-muted);
+    transition: background-color var(--sb-motion-fast, .15s) ease, color var(--sb-motion-fast, .15s) ease;
+}
+
+.re-icon-btn:hover {
+    background: var(--sb-brand-soft);
+    color: var(--sb-brand-content);
+}
+
+.re-icon-btn--danger:hover {
+    background: var(--sb-danger-bg, var(--sb-brand-soft));
+    color: var(--sb-danger-ink, var(--sb-brand-content));
+}
+
+.re-icon-btn:focus-visible,
+.re-add:focus-visible {
+    outline: 2px solid var(--sb-brand-content);
+    outline-offset: 2px;
+}
+
+/* The first item cannot move up and the last cannot move down. */
+.re-item:first-child > .re-item-controls [data-move="-1"],
+.re-item:first-child > .re-entry-head [data-move="-1"],
+.re-item:last-child > .re-item-controls [data-move="1"],
+.re-item:last-child > .re-entry-head [data-move="1"] {
+    opacity: .35;
+}
+
+.re-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 6px 14px;
+    border: 1px dashed var(--sb-border);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--sb-brand-content);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.re-add:hover {
+    border-color: var(--sb-brand-content);
+    background: var(--sb-brand-soft);
+}
+
+.re-add--small {
+    margin-top: 6px;
+    padding: 4px 10px;
+    font-size: 12.5px;
+}
+
+/* ---------- Action bar (sticks to the bottom of the form column) ---------- */
+
+.re-actions {
+    position: sticky;
+    bottom: 12px;
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--sb-border);
+    border-radius: 18px;
+    background: var(--sb-surface);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, .14);
+}
+
+.re-actions-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.re-save-status {
+    color: var(--sb-muted);
+    font-size: 13px;
+}
+
+.re-save-status[data-tone="warn"] { color: var(--sb-warning-ink, var(--sb-ink)); font-weight: 600; }
+.re-save-status[data-tone="ok"] { color: var(--sb-success-ink, var(--sb-ink)); font-weight: 600; }
+.re-save-status[data-tone="error"] { color: var(--sb-danger-ink, var(--sb-brand-content)); font-weight: 600; }
+
+.re-cancel {
+    color: var(--sb-muted);
+    text-decoration: none;
+}
+
+/* ---------- ResumePreview ---------- */
+
+.rp {
+    overflow: hidden;
+}
+
+.rp-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--sb-border);
+}
+
+.rp-bar h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.rp-status {
+    color: var(--sb-muted);
+    font-size: 12px;
+}
+
+.rp-status[data-tone="busy"] { color: var(--sb-brand-content); }
+.rp-status[data-tone="error"] { color: var(--sb-danger-ink, var(--sb-brand-content)); font-weight: 600; }
+
+.rp-error {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 16px 0;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: var(--sb-warning-bg, var(--sb-brand-soft));
+    color: var(--sb-warning-ink, var(--sb-ink));
+    font-size: 13px;
+}
+
+.rp-error[hidden] {
+    display: none !important;
+}
+
+.rp-stage {
+    position: relative;
+    margin: 16px;
+    overflow: hidden;
+    border-radius: 6px;
+    background: #FFFFFF;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, .18);
+    transition: opacity var(--sb-motion-fast, .15s) ease;
+}
+
+.rp-stage.is-updating {
+    opacity: .72;
+}
+
+.rp-frame {
+    display: block;
+    width: 794px;
+    height: 1123px;
+    border: 0;
+    background: #FFFFFF;
+    transform-origin: 0 0;
+}
+
+.rp-note {
+    margin: 0 16px 16px;
+    color: var(--sb-muted);
+    font-size: 12px;
+}
+
+/* ---------- Phones ---------- */
+
+@media (max-width: 575.98px) {
+    .re-grid--2 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .re-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas: "label controls" "value controls";
+    }
+
+    .re-row > [data-key="label"] { grid-area: label; }
+    .re-row > [data-key="value"] { grid-area: value; }
+    .re-row > .re-item-controls { grid-area: controls; flex-direction: column; }
+
+    .re-actions {
+        bottom: 8px;
+    }
+
+    .re-actions-buttons,
+    .re-actions-buttons .btn {
+        width: 100%;
+    }
+
+    .rp-stage {
+        margin: 12px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .re-icon-btn,
+    .rp-stage {
+        transition: none;
+    }
+}

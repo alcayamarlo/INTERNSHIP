@@ -20,6 +20,12 @@ class ResumePolicy
         return app(PortfolioFileAccess::class)->download($user, $resume);
     }
 
+    /** Only the student who owns the resume may edit it (Resume Editor). */
+    public function update(User $user, Resume $resume): bool
+    {
+        return $this->delete($user, $resume);
+    }
+
     public function delete(User $user, Resume $resume): bool
     {
         return $user->isRole(UserRole::Student)

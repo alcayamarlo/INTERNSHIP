@@ -118,12 +118,25 @@
         .signature-line { border-top: 0.3mm solid var(--resume-text); padding-top: 1mm; }
         .generated { margin-top: 5mm; color: var(--resume-muted); font-size: 8pt; }
     </style>
+    @if($preview ?? false)
+        {{-- Resume Editor live preview (browser, not DomPDF): browsers ignore @page margins, so the
+             same margins are added here and the page gets a white A4 sheet. --}}
+        <style>
+            html { background: #FFFFFF; }
+            body { width: 210mm; min-height: 297mm; padding: 14mm 0 16mm; box-sizing: border-box; position: relative; }
+            .sidebar-band { position: absolute; top: 0; bottom: 0; }
+            .sidebar { top: 14mm; }
+        </style>
+    @endif
 </head>
 <body>
     @php
         $headline = collect([$content['course'] ?? null, $content['school'] ?? null])->filter()->implode(' · ');
         $generatedAt = filled($content['generated_at'] ?? null)
             ? \Illuminate\Support\Carbon::parse($content['generated_at'])->timezone('Asia/Manila')
+            : null;
+        $editedAt = filled($content['edited_at'] ?? null)
+            ? \Illuminate\Support\Carbon::parse($content['edited_at'])->timezone('Asia/Manila')
             : null;
         // Entry sections after Certificates and Honors / awards, in resume order.
         $entrySections = [
@@ -222,7 +235,7 @@
                 <div class="signature-line">Applicant's signature</div>
             </div>
             @if($generatedAt)
-                <p class="generated">Generated {{ $generatedAt->format('M d, Y h:i A') }} (Philippine time)</p>
+                <p class="generated">Generated {{ $generatedAt->format('M d, Y h:i A') }}{{ $editedAt ? ', edited '.$editedAt->format('M d, Y h:i A') : '' }} (Philippine time)</p>
             @endif
         </div>
     </div>

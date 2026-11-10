@@ -187,6 +187,12 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         Route::get('/resume', [ResumeController::class, 'index'])->name('resume.index');
         Route::post('/resume/generate', [ResumeController::class, 'generate'])->name('resume.generate');
         Route::delete('/resume/{resume}', [ResumeController::class, 'destroy'])->whereNumber('resume')->name('resume.destroy');
+        // Resume Editor: edits are stored per resume (its content JSON), never on the profile.
+        Route::get('/resume/{resume}/edit', [ResumeController::class, 'edit'])->whereNumber('resume')->name('resume.edit');
+        Route::post('/resume/{resume}/preview', [ResumeController::class, 'preview'])->whereNumber('resume')->middleware('throttle:120,1')->name('resume.preview');
+        Route::put('/resume/{resume}', [ResumeController::class, 'update'])->whereNumber('resume')->name('resume.update');
+        Route::post('/resume/{resume}/copy', [ResumeController::class, 'storeCopy'])->whereNumber('resume')->name('resume.copy');
+        Route::post('/resume/{resume}/pdf', [ResumeController::class, 'pdf'])->whereNumber('resume')->middleware('throttle:30,1')->name('resume.pdf');
         Route::get('/internships', [StudentInternshipController::class, 'index'])->name('internships.index');
         Route::get('/internships/{internship}', [StudentInternshipController::class, 'show'])->name('internships.show');
         Route::post('/internships/{internship}/recommendation-feedback', [StudentInternshipController::class, 'storeRecommendationFeedback'])->name('internships.recommendation-feedback');
