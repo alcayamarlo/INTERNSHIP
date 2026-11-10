@@ -1,0 +1,122 @@
+/* =====================================================================
+   Employer > Internship Postings (employer/internships/index.blade.php)
+   The list + detail layout is sb-split-inbox.css; this file styles the
+   posting detail. Pushed before the shared stylesheets, so rules use a
+   body.sb-app prefix.
+   ===================================================================== */
+
+body.sb-app .pp-page { --sbx-list-width: 380px; }
+
+/* Flash messages (layout) sit under this page's header: the header moves first. */
+body.sb-app .sb-content:has(> .pp-page) {
+    display: flex;
+    flex-direction: column;
+}
+
+body.sb-app .sb-content:has(> .pp-page) > .sb-page-header { order: -1; }
+
+body.sb-app .pp-page .pp-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body.sb-app .pp-page .pp-title {
+    margin: 0;
+    color: var(--sb-ink);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+body.sb-app .pp-page .pp-actions { flex-shrink: 0; }
+body.sb-app .pp-page .pp-meta { margin: 6px 0 0; color: var(--sb-muted); font-size: 14px; }
+body.sb-app .pp-page .pp-hidden { margin: 10px 0 0; color: var(--sb-danger-ink); font-size: 13px; }
+
+body.sb-app .pp-page .pp-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+}
+
+body.sb-app .pp-page .pp-stat {
+    padding: 12px 14px;
+    border: 1px solid var(--sb-border);
+    border-radius: 12px;
+    background: var(--sb-surface-raised);
+}
+
+body.sb-app .pp-page .pp-stat-label,
+body.sb-app .pp-page .pp-section-title {
+    display: block;
+    margin: 0;
+    color: var(--sb-muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+body.sb-app .pp-page .pp-stat-value {
+    display: block;
+    margin-top: 4px;
+    color: var(--sb-ink);
+    font-size: 20px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+}
+
+body.sb-app .pp-page .pp-stat-note { color: var(--sb-muted); font-size: 12px; }
+
+body.sb-app .pp-page .pp-section { margin-top: 22px; }
+body.sb-app .pp-page .pp-section-title { margin-bottom: 8px; }
+
+body.sb-app .pp-page .pp-section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+body.sb-app .pp-page .pp-link { font-size: 13px; font-weight: 600; }
+
+/* Tags: the same pill as the certificate skills (certificate-wizard.css). */
+body.sb-app .pp-page .pp-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+body.sb-app .pp-page .pp-tags li {
+    padding: 3px 10px;
+    border: 1px solid var(--sb-border);
+    border-radius: 999px;
+    background: var(--sb-surface-raised);
+    color: var(--sb-ink);
+    font-size: 13px;
+}
+
+body.sb-app .pp-page .pp-applicants { margin: 0; padding: 0; list-style: none; }
+
+body.sb-app .pp-page .pp-applicants li {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--sb-border);
+}
+
+body.sb-app .pp-page .pp-applicants li:last-child { border-bottom: 0; }
+body.sb-app .pp-page .pp-applicants a { margin-right: auto; font-weight: 600; }
+body.sb-app .pp-page .pp-muted { margin: 0; color: var(--sb-muted); font-size: 13px; }
+
+@media (max-width: 575.98px) {
+    body.sb-app .pp-page .pp-head { flex-direction: column; }
+}

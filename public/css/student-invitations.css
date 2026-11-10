@@ -1,0 +1,58 @@
+/* =====================================================================
+   Student > Invitations (student/invitations/index.blade.php)
+   The split inbox (tabs, list, detail card, motion) is sb-split-inbox.css;
+   this file styles the invitation detail.
+
+   Reuses student-internships.css: tokens (.ib-page, .ap-page), .ib-card,
+   the status pill (.ap-status) and the stepper (.ap-steps). The stepper line
+   moves at the idFill speed after Accept or Decline, and the new current step
+   rings (apRing). Pushed before the shared stylesheets, so rules use a
+   body.sb-app prefix.
+   ===================================================================== */
+
+/* Narrow panels scroll the stepper sideways instead of squeezing it. */
+body.sb-app .inv-page .inv-stepper { margin: 0 0 22px; overflow-x: auto; padding-bottom: 4px; }
+body.sb-app .inv-page .inv-stepper .ap-steps { min-width: 440px; }
+
+body.sb-app .inv-page .inv-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+body.sb-app .inv-page .inv-title { margin: 0; color: var(--ib-ink); font-size: 20px; font-weight: 700; overflow-wrap: anywhere; }
+body.sb-app .inv-page .inv-company { margin: 6px 0 0; color: var(--ib-ink); font-weight: 600; }
+body.sb-app .inv-page .inv-meta { margin: 2px 0 0; color: var(--ib-muted); font-size: 14px; }
+body.sb-app .inv-page .inv-dates { margin: 12px 0 0; color: var(--ib-muted); font-size: 13px; }
+
+body.sb-app .inv-page .inv-message {
+    margin: 16px 0 0;
+    padding-left: 12px;
+    border-left: 3px solid var(--ib-border);
+    color: var(--ib-ink);
+}
+
+body.sb-app .inv-page .inv-explain {
+    margin-top: 20px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: var(--ap-soft);
+}
+
+body.sb-app .inv-page .inv-explain h3 { margin: 0 0 4px; color: var(--ib-ink); font-size: 14px; font-weight: 700; }
+body.sb-app .inv-page .inv-explain p { margin: 0; color: var(--ib-ink); font-size: 14px; }
+
+body.sb-app .inv-page .inv-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+body.sb-app .inv-page .inv-actions form { margin: 0; }
+body.sb-app .inv-page .inv-hint { margin: 8px 0 0; color: var(--ib-muted); font-size: 13px; }
+
+@media (prefers-reduced-motion: no-preference) {
+    body.sb-app .inv-page .ap-steps::after {
+        transition: width var(--sb-motion-slow, 480ms) var(--sb-ease, ease);
+    }
+
+    body.sb-app .inv-page .ap-step.is-current.is-new .ap-step-dot {
+        animation: apRing var(--sb-motion-base, 220ms) var(--sb-ease, ease) var(--sb-motion-slow, 480ms) backwards;
+    }
+}

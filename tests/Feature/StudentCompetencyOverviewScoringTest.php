@@ -189,3 +189,27 @@ it('renders My Certificates without any verification status badge or toggle', fu
         ->assertDontSee('co-status-rejected', false)
         ->assertDontSee('Coordinator note');
 });
+
+it('lays out My Certificates as a table with a selected-certificate drawer and a profile summary', function () {
+    $student = createOverviewStudent();
+    createOverviewSkill($student, 'Cloud certification', 'certification', 'advanced', ['issuing_organization' => 'DICT / School IT Department']);
+    createOverviewSkill($student, 'Teamwork', 'soft', 'beginner');
+
+    $html = $this->actingAs($student->user)
+        ->get(route('student.competencies.index'))
+        ->assertOk()
+        ->assertSeeInOrder(['>Certificate</th>', '>Type</th>', '>Category</th>', '>Level</th>'], false)
+        ->assertSeeInOrder(['>All</button>', '>Technical</button>', '>Soft skills</button>', '>Certificates</button>'], false)
+        ->assertSee('Selected certificate')
+        ->assertSee('DICT / School IT Department')
+        // Profile summary stays on the page, with the radar chart in a collapsible panel.
+        ->assertSee('Profile strength')
+        ->assertSee('aria-controls="competencyChartPanel"', false)
+        ->assertSee('id="competencyRadar"', false)
+        // Empty filter result offers the add flow.
+        ->assertSee('No certificates match this filter.')
+        ->getContent();
+
+    expect(substr_count($html, 'co-trow is-selected'))->toBe(1)
+        ->and(substr_count($html, 'data-wizard-open'))->toBe(3);
+});

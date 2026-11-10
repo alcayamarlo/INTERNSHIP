@@ -314,3 +314,67 @@ it('lets a student turn off being found by companies', function () {
 
     $this->actingAs($employerUser)->get(route('employer.students.index'))->assertDontSee($student->user->name);
 });
+
+/** The detail panel's first render (the templates after it hold every invitation). */
+function invitationPanel(string $html): string
+{
+    return \Illuminate\Support\Str::between($html, 'id="invDetailPanel"', 'data-inv-swap="templates"');
+}
+
+it('shows invitations as a split inbox with status tabs, a stepper, and days left', function () {
+    [$employerUser, , $internship] = inviteEmployer();
+    $internship->update(['location' => 'Makati City']);
+    $student = inviteStudent();
+    sendInvite($employerUser, $student, $internship)->assertCreated();
+    [$otherUser, , $other] = inviteEmployer('Beta Labs');
+    sendInvite($otherUser, $student, $other)->assertCreated();
+    InternshipInvitation::where('internship_id', $other->id)->sole()->update(['status' => InvitationStatus::Declined, 'responded_at' => now()]);
+
+    $html = $this->actingAs($student->user)->get(route('student.invitations.index'))
+        ->assertOk()
+        ->assertSeeInOrder(['Pending <span class="sbx-tab-count">1</span>', 'Accepted <span class="sbx-tab-count">0</span>', 'Declined <span class="sbx-tab-count">1</span>'], false)
+        ->getContent();
+    $panel = invitationPanel($html);
+
+    // The pending invitation is selected and waits on step 2.
+    expect($panel)->toContain($internship->title)
+        ->toContain('Makati City · Remote')
+        ->toContain('Verified company')
+        ->toContain('days left)')
+        ->toContain('What happens when you accept')
+        ->toContain('data-inv-action="accept"')
+        ->toContain('data-inv-action="decline"')
+        ->toMatch('/<li class="ap-step is-pending is-current"\s+aria-current="step"\s*>\s*<span class="ap-step-dot" aria-hidden="true">2<\/span>\s*<span class="ap-step-label">Your response/');
+});
+
+it('moves an accepted invitation to Company review, then to the outcome once the company decides', function () {
+    [$employerUser, , $internship] = inviteEmployer();
+    $student = inviteStudent();
+    sendInvite($employerUser, $student, $internship)->assertCreated();
+    $invitation = InternshipInvitation::sole();
+    $this->actingAs($student->user)->post(route('student.invitations.accept', $invitation))->assertRedirect();
+
+    $panel = invitationPanel($this->get(route('student.invitations.index', ['tab' => 'accepted']))->assertOk()->getContent());
+    expect($panel)->toMatch('/aria-current="step"\s*>\s*<span class="ap-step-dot" aria-hidden="true">3<\/span>\s*<span class="ap-step-label">Company review/')
+        ->not->toContain('data-inv-action="accept"')
+        ->toContain('View application');
+
+    InternshipApplication::sole()->update(['status' => ApplicationStatus::Accepted]);
+    $panel = invitationPanel($this->get(route('student.invitations.index', ['tab' => 'accepted']))->getContent());
+    expect($panel)->toMatch('/aria-current="step"\s*>\s*<span class="ap-step-dot" aria-hidden="true">4<\/span>\s*<span class="ap-step-label">Outcome<\/span>\s*<span class="ap-step-note">Hired/');
+});
+
+it('shows a lapsed invitation as Expired with Accept disabled, and an empty tab with a browse link', function () {
+    [$employerUser, , $internship] = inviteEmployer();
+    $student = inviteStudent();
+    sendInvite($employerUser, $student, $internship)->assertCreated();
+    InternshipInvitation::sole()->update(['expires_at' => now()->subHour()]);
+
+    $panel = invitationPanel($this->actingAs($student->user)->get(route('student.invitations.index'))->assertOk()->getContent());
+    expect($panel)->toContain('<strong>Expired</strong>')
+        ->toContain('data-inv-accept disabled');
+
+    $this->get(route('student.invitations.index', ['tab' => 'accepted']))
+        ->assertSee('No accepted invitations yet.')
+        ->assertSee(route('student.internships.index'), false);
+});

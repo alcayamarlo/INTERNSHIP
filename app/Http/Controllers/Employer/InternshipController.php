@@ -19,22 +19,34 @@ class InternshipController extends Controller
 
     public function index()
     {
-        $internships = Auth::user()->employer->internships()
+        $employer = Auth::user()->employer;
+        $internships = $employer->internships()
             ->withCount('applications')
+            // The detail panel: competencies, programs, and the three latest applicants.
+            ->with([
+                'requirementsList',
+                'programs',
+                'applications' => fn ($query) => $query->with('student.user')->latest('applied_at')->latest('id')->limit(3),
+            ])
             ->latest()
             ->paginate(10);
 
-        return view('employer.internships.index', compact('internships'));
+        // The list page also holds the "Post New Internship" pop-up, so it gets the form's options.
+        return view('employer.internships.index', [
+            'internships' => $internships,
+            // Tab counts cover every posting, not only this page of the list.
+            'statusCounts' => $employer->internships()->toBase()
+                ->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status'),
+            'internship' => new Internship,
+            ...$this->formOptions(),
+        ]);
     }
 
     public function create()
     {
         return view('employer.internships.form', [
             'internship' => new Internship,
-            'workSetups' => WorkSetup::cases(),
-            'levels' => ProficiencyLevel::cases(),
-            'programs' => Program::orderBy('name')->get(),
-            'onRequestDocuments' => DeploymentRequirement::onRequest()->orderBy('sort_order')->get(['code', 'name']),
+            ...$this->formOptions(),
         ]);
     }
 
@@ -56,10 +68,7 @@ class InternshipController extends Controller
 
         return view('employer.internships.form', [
             'internship' => $internship->load('requirementsList', 'programs'),
-            'workSetups' => WorkSetup::cases(),
-            'levels' => ProficiencyLevel::cases(),
-            'programs' => Program::orderBy('name')->get(),
-            'onRequestDocuments' => DeploymentRequirement::onRequest()->orderBy('sort_order')->get(['code', 'name']),
+            ...$this->formOptions(),
         ]);
     }
 
@@ -89,5 +98,16 @@ class InternshipController extends Controller
         $this->internshipService->close($internship);
 
         return back()->with('success', 'Internship posting closed.');
+    }
+
+    /** Choices for the posting form (create and edit pages, and the pop-up on the list page). */
+    private function formOptions(): array
+    {
+        return [
+            'workSetups' => WorkSetup::cases(),
+            'levels' => ProficiencyLevel::cases(),
+            'programs' => Program::orderBy('name')->get(),
+            'onRequestDocuments' => DeploymentRequirement::onRequest()->orderBy('sort_order')->get(['code', 'name']),
+        ];
     }
 }

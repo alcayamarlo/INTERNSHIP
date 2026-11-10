@@ -1,0 +1,126 @@
+/* =====================================================================
+   Split inbox: status tabs and a list on the left, a detail panel on the
+   right. Shared by Student > Invitations and Employer > Internship Postings.
+
+   Motion is the app's own: the "rise" keyframe at --sb-motion-base for tab
+   and panel changes (as Browse internships' .ib-preview.is-changing), and the
+   .2s ease-out row fades (as .ib-row). Off with reduced motion.
+   Pushed before the shared stylesheets, so rules use a body.sb-app prefix.
+   ===================================================================== */
+
+body.sb-app .sbx {
+    --sbx-list-width: 420px;
+    --sbx-selected-bg: #fde8ea;
+    --sbx-red: #c8102e;
+    --sbx-ink: var(--ib-ink, var(--sb-ink));
+    --sbx-muted: var(--ib-muted, var(--sb-muted));
+    --sbx-border: var(--ib-border, var(--sb-border));
+    --sbx-surface: var(--ib-surface, var(--sb-surface));
+    --sbx-row-hover: var(--ib-row-hover, var(--sb-row-hover, #FFF5F6));
+    --sbx-count-bg: var(--ib-pink, var(--sb-red-soft));
+    --sbx-count-ink: var(--ib-pink-ink, var(--sb-brand-content));
+}
+
+html[data-theme="dark"] body.sb-app .sbx {
+    --sbx-selected-bg: rgba(200, 16, 46, .18);
+    --sbx-red: #f05a6b;
+}
+
+/* ---------- Layout: fixed-width list, flexible detail ---------- */
+body.sb-app .sbx .sbx-split {
+    grid-template-columns: minmax(280px, var(--sbx-list-width)) minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+}
+
+body.sb-app .sbx .sbx-list-card { padding: 16px; }
+
+body.sb-app .sbx .sbx-detail {
+    position: sticky;
+    top: calc(var(--sb-topbar-height, 64px) + 16px);
+    min-height: 320px;
+    padding: 22px 26px;
+}
+
+/* ---------- Status tabs (the app's .sb-section-tab, light red when active) ---------- */
+body.sb-app .sbx .sbx-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+
+body.sb-app .sbx .sbx-tab {
+    min-height: 36px;
+    padding: 0 12px;
+    background: transparent;
+    cursor: pointer;
+}
+
+body.sb-app .sbx .sbx-tab.active {
+    border-color: var(--sbx-red);
+    background: var(--sbx-selected-bg);
+    color: var(--sbx-red);
+}
+
+body.sb-app .sbx .sbx-tab-count {
+    min-width: 22px;
+    padding: 0 7px;
+    border-radius: 999px;
+    background: var(--sbx-count-bg);
+    color: var(--sbx-count-ink);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 20px;
+    text-align: center;
+}
+
+body.sb-app .sbx .sbx-tab.active .sbx-tab-count { background: var(--sbx-surface); color: var(--sbx-red); }
+
+/* ---------- List rows (same fades and selected edge as .ib-row) ---------- */
+body.sb-app .sbx .sbx-list { margin: 0; padding: 0; list-style: none; }
+
+body.sb-app .sbx .sbx-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 14px;
+    border: 0;
+    border-bottom: 1px solid var(--sbx-border);
+    background: transparent;
+    color: var(--sbx-ink);
+    font: inherit;
+    text-align: left;
+    transition: background-color .2s ease-out, box-shadow .2s ease-out;
+}
+
+body.sb-app .sbx .sbx-list > li:last-child > .sbx-row { border-bottom: 0; }
+body.sb-app .sbx .sbx-row:hover { background: var(--sbx-row-hover); }
+body.sb-app .sbx .sbx-row.is-selected { background: var(--sbx-selected-bg); box-shadow: inset 3px 0 0 var(--sbx-red); }
+body.sb-app .sbx .sbx-row:focus-visible { outline: 2px solid color-mix(in srgb, var(--sbx-red) 55%, transparent); outline-offset: -2px; }
+
+body.sb-app .sbx .sbx-row-text { min-width: 0; }
+body.sb-app .sbx .sbx-row-title { display: block; font-weight: 600; overflow-wrap: anywhere; }
+body.sb-app .sbx .sbx-row-meta { display: block; margin-top: 2px; color: var(--sbx-muted); font-size: 12.5px; }
+
+body.sb-app .sbx :is(.sbx-empty, .sbx-placeholder) {
+    margin: 0;
+    padding: 36px 12px;
+    color: var(--sbx-muted);
+    text-align: center;
+}
+
+body.sb-app .sbx .sbx-empty p { margin: 0 0 12px; }
+body.sb-app .sbx .sbx-pages { margin-top: 12px; }
+
+/* ---------- Motion (reused keyframe and speed) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+    body.sb-app .sbx .sbx-list-region.is-changing > *,
+    body.sb-app .sbx .sbx-detail.is-changing > .sbx-detail-body {
+        --rise-y: 8px;
+        animation: rise var(--sb-motion-base, 220ms) var(--sb-motion-ease) both;
+    }
+}
+
+/* ---------- Responsive: list above detail ---------- */
+@media (max-width: 900px) {
+    body.sb-app .sbx .sbx-split { grid-template-columns: minmax(0, 1fr); }
+    body.sb-app .sbx .sbx-detail { position: static; padding: 18px; }
+}

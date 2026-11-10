@@ -59,14 +59,24 @@
 
     @include('partials.theme-init')
 
-    {{-- Page-load animations (sb-motion.css) run only while <html> has .sb-intro, so content swapped in later does not replay them. --}}
+    {{-- Page-load animations (sb-motion.css) run only while <html> has these classes, so content swapped in later does not replay them.
+         .sb-intro (entrances): first page of a visit only; later pages use the quick crossfade in sb-motion.css.
+         .sb-fill (progress bars fill from empty): every page. --}}
     <script>
         (function () {
             try {
                 if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
                 var root = document.documentElement;
-                root.classList.add('sb-intro');
+                var classes = ['sb-fill'];
+                try {
+                    if (!sessionStorage.getItem('sb-intro-played')) {
+                        sessionStorage.setItem('sb-intro-played', '1');
+                        classes.push('sb-intro');
+                    }
+                } catch (storageError) {}
+                classes.forEach(function (name) { root.classList.add(name); });
                 document.addEventListener('DOMContentLoaded', function () {
+                    setTimeout(function () { root.classList.remove('sb-fill'); }, 1600);
                     setTimeout(function () { root.classList.remove('sb-intro'); }, 2200);
                 });
             } catch (error) {}

@@ -1,4 +1,5 @@
 import './bootstrap';
+import { markLiveChanges } from './live-diff';
 
 document.addEventListener('submit', (event) => {
     if (event.defaultPrevented || !(event.target instanceof HTMLFormElement)) return;
@@ -29,8 +30,20 @@ document.addEventListener('submit', (event) => {
     }
 });
 
+// The count the badge shows now, so a rise can pop the badge (sb-motion.css, .sb-badge-pop).
+let shownUnreadCount = Number(document.querySelector('[data-unread-badge]:not([hidden])')?.textContent.replace('+', '')) || 0;
+
+const popBadge = (badge) => {
+    badge.classList.remove('sb-badge-pop');
+    void badge.offsetWidth; // restart the animation if it is still running
+    badge.classList.add('sb-badge-pop');
+    badge.addEventListener('animationend', () => badge.classList.remove('sb-badge-pop'), { once: true });
+};
+
 const updateUnreadNotificationBadge = (value) => {
     const unreadCount = Math.max(0, Number(value) || 0);
+    const rose = unreadCount > shownUnreadCount;
+    shownUnreadCount = unreadCount;
     document.querySelectorAll('[data-unread-badge]').forEach((badge) => {
         badge.textContent = unreadCount > 9 ? '9+' : String(unreadCount);
         badge.hidden = unreadCount === 0;
@@ -47,6 +60,7 @@ const updateUnreadNotificationBadge = (value) => {
             button.append(badge);
         }
     });
+    if (rose) document.querySelectorAll('[data-unread-badge]:not([hidden])').forEach(popBadge);
 };
 
 document.addEventListener('click', async (event) => {
@@ -542,6 +556,7 @@ const refreshLiveRegions = async () => {
                 return;
             }
             const adopted = document.adoptNode(fresh);
+            markLiveChanges(region, adopted);
             region.replaceWith(adopted);
             labelResponsiveTables(adopted);
         });

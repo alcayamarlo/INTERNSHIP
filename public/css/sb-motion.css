@@ -3,8 +3,10 @@
    CSS only, subtle: 200-450ms, ease-out.
 
    - Entry animations run only while <html> has .sb-intro. The layout adds it
-     before first paint and removes it ~2s after load, so content swapped in
-     later (live updates, AJAX lists) does not replay the animation.
+     before first paint on the first page of a visit and removes it ~2s after
+     load, so content swapped in later (live updates, AJAX lists) does not
+     replay the animation. Later pages crossfade instead (PAGE TO PAGE).
+   - Live updates: rows that changed glow briefly (LIVE CHANGES).
    - Hover, press and focus effects are always on.
    - prefers-reduced-motion: the layout never adds .sb-intro, and the block at
      the end removes transitions and transforms.
@@ -175,6 +177,95 @@ body.skillbridge-app .form-select:focus {
     border-color: var(--sb-brand);
     outline: none;
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--sb-brand) 18%, transparent);
+}
+
+/* =====================================================================
+   PAGE TO PAGE
+   Browsers with cross-document view transitions crossfade the content
+   between signed-in pages; others load pages as before. The sidebar and
+   top bar swap without fading so the frame stays still.
+   ===================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+    @view-transition {
+        navigation: auto;
+    }
+}
+
+body.sb-app .sb-sidebar { view-transition-name: sb-sidebar; }
+body.sb-app .sb-topbar { view-transition-name: sb-topbar; }
+
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 180ms;
+}
+
+::view-transition-old(sb-sidebar),
+::view-transition-new(sb-sidebar),
+::view-transition-old(sb-topbar),
+::view-transition-new(sb-topbar) {
+    animation: none;
+}
+
+/* =====================================================================
+   PROGRESS (html.sb-fill only, every page load)
+   Hours, match and completion bars fill from empty to their value. Pages
+   with their own fill (internship match bar on the first page) keep theirs:
+   that rule is more specific.
+   ===================================================================== */
+@keyframes sbFill {
+    from { width: 0; }
+}
+
+html.sb-fill body.sb-app .progress > .progress-bar {
+    animation: sbFill .6s var(--sb-motion-ease) 120ms backwards;
+}
+
+/* =====================================================================
+   NOTIFICATION BADGE
+   Set by resources/js/app.js when the unread count goes up.
+   ===================================================================== */
+@keyframes sbBadgePop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.35); }
+    100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    body.sb-app .sb-badge-pop {
+        animation: sbBadgePop .36s cubic-bezier(.3, 1.6, .5, 1);
+    }
+}
+
+/* =====================================================================
+   LIVE CHANGES
+   Set by resources/js/live-diff.js on rows that changed in a live update.
+   Colour only, no movement, so it also plays with reduced motion. Amber,
+   not the brand red, so a change does not read as an error.
+   ===================================================================== */
+@keyframes sbLiveGlow {
+    from {
+        background-color: color-mix(in srgb, #F59E0B 24%, transparent);
+        box-shadow: inset 3px 0 0 #F59E0B;
+    }
+    to {
+        background-color: transparent;
+        box-shadow: inset 3px 0 0 transparent;
+    }
+}
+
+/* Table cells paint their own background, so the glow goes on the cells. */
+body.sb-app .sb-live-changed:not(tr),
+body.sb-app tr.sb-live-changed > * {
+    animation: sbLiveGlow 1.6s ease-out;
+}
+
+body.sb-app tr.sb-live-changed > :not(:first-child) {
+    animation-name: sbLiveGlowFill;
+}
+
+@keyframes sbLiveGlowFill {
+    from { background-color: color-mix(in srgb, #F59E0B 24%, transparent); }
+    to { background-color: transparent; }
 }
 
 /* =====================================================================

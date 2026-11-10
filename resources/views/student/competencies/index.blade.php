@@ -53,6 +53,8 @@
         --co-dur-hero: 800ms;
         --co-ease-out: cubic-bezier(.16, 1, .3, 1);
         --co-ease-in-out: cubic-bezier(.65, 0, .35, 1);
+        --co-selected-bg: #fde8ea;
+        --co-selected-line: #c8102e;
         color: var(--co-text);
         padding: var(--co-space-2) 0 var(--co-space-6);
     }
@@ -149,11 +151,12 @@
         transform: none;
     }
 
+    /* Table + drawer: same 2fr / 1fr split as .sb-layout-2 (about 65 / 35). */
     #competenciesOverview .co-layout {
         align-items: start;
         display: grid;
         gap: var(--co-space-5);
-        grid-template-columns: minmax(300px, .92fr) minmax(380px, 1.08fr);
+        grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
     }
 
     #competenciesOverview .co-card {
@@ -479,49 +482,41 @@
         margin-top: var(--co-space-1);
     }
 
-    #competenciesOverview .co-right-stack {
+    #competenciesOverview .co-main-col {
         display: grid;
         gap: var(--co-space-5);
         min-width: 0;
     }
 
+    /* Filter tabs: the chip transitions above (colour and border at --co-dur-fast). */
     #competenciesOverview .co-chip-list {
+        border-bottom: 1px solid var(--co-border);
         display: flex;
         flex-wrap: wrap;
-        gap: var(--co-space-2);
-        margin-bottom: var(--co-space-4);
+        gap: var(--co-space-1);
+        margin-bottom: var(--co-space-2);
     }
 
     #competenciesOverview .co-chip {
-        background: var(--co-panel);
-        border: 1px solid var(--co-border-strong);
-        border-radius: var(--co-radius-control);
+        background: transparent;
+        border: 0;
+        border-bottom: 2px solid transparent;
+        border-radius: var(--co-radius-control) var(--co-radius-control) 0 0;
         color: var(--co-secondary);
+        margin-bottom: -1px;
         min-height: 44px;
         padding: var(--co-space-2) var(--co-space-4);
     }
 
     #competenciesOverview .co-chip[aria-pressed="true"] {
-        background: var(--co-accent-soft);
-        border-color: var(--co-accent);
+        border-bottom-color: var(--co-selected-line);
         color: var(--co-accent-text);
         font-weight: 500;
     }
 
-    #competenciesOverview .co-chip:hover {
-        border-color: var(--co-border-strong);
-    }
-
     #competenciesOverview .co-chip:focus-visible {
-        background-color: var(--co-panel);
-        border-color: var(--co-accent);
+        background-color: var(--co-raised);
         color: var(--co-text);
-    }
-
-    #competenciesOverview .co-chip[aria-pressed="true"]:focus-visible {
-        background-color: var(--co-accent-soft);
-        border-color: var(--co-accent);
-        color: var(--co-accent-text);
     }
 
     #competenciesOverview .co-skill-list {
@@ -567,41 +562,60 @@
         transition-duration: var(--co-dur-list-out);
     }
 
-    #competenciesOverview .co-row {
-        align-items: center;
-        background: transparent;
+    /* Certificate table. Hover and the cell fade come from the app's table styles
+       (table-hover, sb-motion.css: background-color .2s ease-out); the selected row
+       uses the same fade. */
+    #competenciesOverview .co-table-card {
+        padding: var(--co-space-3) var(--co-space-5) var(--co-space-4);
+    }
+
+    #competenciesOverview .co-table {
+        margin: 0;
+    }
+
+    #competenciesOverview .co-table th {
+        white-space: nowrap;
+    }
+
+    #competenciesOverview .co-trow {
+        cursor: pointer;
+    }
+
+    #competenciesOverview .co-trow > td {
+        transition: background-color .2s ease-out, box-shadow .2s ease-out;
+    }
+
+    #competenciesOverview .co-trow:focus-within > * {
+        --bs-table-bg-state: var(--bs-table-hover-bg);
+    }
+
+    #competenciesOverview .co-trow.is-selected > * {
+        --bs-table-bg-state: transparent;
+        background-color: var(--co-selected-bg);
+    }
+
+    #competenciesOverview .co-trow.is-selected > :first-child {
+        box-shadow: inset 3px 0 0 var(--co-selected-line);
+    }
+
+    #competenciesOverview .co-row-button {
+        appearance: none;
+        background: none;
         border: 0;
-        border-bottom: 1px solid var(--co-border);
-        border-left: 2px solid transparent;
-        border-radius: 0;
+        border-radius: 4px;
         color: var(--co-text);
-        display: flex;
-        gap: var(--co-space-3);
-        justify-content: space-between;
-        min-height: 48px;
-        padding: var(--co-space-2) var(--co-space-2) var(--co-space-2) var(--co-space-3);
+        font: inherit;
+        font-weight: 500;
+        overflow-wrap: anywhere;
+        padding: 0;
         text-align: left;
-        width: 100%;
     }
 
-    #competenciesOverview .co-row:hover {
-        background: var(--co-raised);
-    }
-
-    #competenciesOverview .co-row[aria-pressed="true"] {
-        background: var(--co-accent-soft);
-        border-left-color: var(--co-accent);
-    }
-
-    #competenciesOverview .co-row:focus-visible {
-        background-color: var(--co-raised);
-        border-color: var(--co-border);
-        border-left-color: var(--co-accent);
-        color: var(--co-text);
-    }
-
-    #competenciesOverview .co-row[aria-pressed="true"]:focus-visible {
-        background-color: var(--co-accent-soft);
+    #competenciesOverview .co-row-issuer {
+        color: var(--co-muted);
+        display: block;
+        font-size: 12px;
+        margin-top: 2px;
     }
 
     #competenciesOverview .co-row-main {
@@ -679,8 +693,12 @@
         color: var(--co-text-on-accent);
     }
 
+    /* Drawer: stays in view beside the table on wide screens. */
     #competenciesOverview .co-detail {
+        border-left: 3px solid var(--co-selected-line);
         min-height: 280px;
+        position: sticky;
+        top: calc(var(--sb-topbar-height, 64px) + var(--co-space-4));
     }
 
     #competenciesOverview .co-detail-content {
@@ -834,9 +852,79 @@
         width: 1px;
     }
 
+    /* Profile summary strip; the radar chart opens below it. */
+    #competenciesOverview .co-summary {
+        margin-bottom: var(--co-space-5);
+        padding: var(--co-space-4) var(--co-space-5);
+    }
+
+    #competenciesOverview .co-summary-row {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--co-space-4) var(--co-space-6);
+    }
+
+    #competenciesOverview .co-summary .co-strength {
+        border-top: 0;
+        margin-top: 0;
+        min-width: 170px;
+        padding-top: 0;
+    }
+
+    #competenciesOverview .co-summary .co-strength-main {
+        align-items: baseline;
+        justify-content: flex-start;
+        gap: var(--co-space-3);
+        margin-top: 2px;
+    }
+
+    #competenciesOverview .co-summary .co-strength-level {
+        font-size: 22px;
+    }
+
+    #competenciesOverview .co-summary .co-stat-grid {
+        flex: 1 1 300px;
+        margin-top: 0;
+    }
+
+    #competenciesOverview .co-chart-toggle {
+        cursor: pointer;
+        gap: var(--co-space-2);
+        margin-left: auto;
+    }
+
+    #competenciesOverview .co-chart-toggle .bi {
+        transition: transform var(--co-dur-base) var(--co-ease-out);
+    }
+
+    #competenciesOverview .co-chart-toggle[aria-expanded="true"] .bi {
+        transform: rotate(180deg);
+    }
+
+    #competenciesOverview .co-chart-panel {
+        border-top: 1px solid var(--co-border);
+        margin-top: var(--co-space-4);
+        padding-top: var(--co-space-4);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme]) #competenciesOverview {
+            --co-selected-bg: color-mix(in srgb, #c8102e 22%, transparent);
+        }
+    }
+
+    :root[data-theme="dark"] #competenciesOverview {
+        --co-selected-bg: color-mix(in srgb, #c8102e 22%, transparent);
+    }
+
     @media (max-width: 900px) {
         #competenciesOverview .co-layout {
             grid-template-columns: minmax(0, 1fr);
+        }
+
+        #competenciesOverview .co-detail {
+            position: static;
         }
     }
 
@@ -940,7 +1028,7 @@
     $selectedSkill = $initialFiltered->first();
     $axisLabels = ['technical' => 'Technical', 'soft' => 'Soft skills', 'certification' => 'Certificates'];
 @endphp
-<main class="co-outer-panel" id="competenciesOverview"
+<div class="co-outer-panel" id="competenciesOverview"
     data-loading="true"
     aria-busy="true"
     data-category="{{ $initialCategory ?? '' }}"
@@ -948,19 +1036,47 @@
     data-groups="{{ json_encode($overview['groups']) }}"
     data-selected-id="{{ $selectedSkill['id'] ?? '' }}"
     data-flash-success="{{ session('success') }}">
-    <header class="co-header">
+    <header class="co-header sb-page-header">
         <div>
             <h1 class="co-title">My Certificates</h1>
             <p class="co-hint">Certificates you earned and the skills you learned in them.</p>
         </div>
-        <div class="d-flex flex-wrap align-items-center gap-3">
-            <button type="button" class="co-primary" data-wizard-open>+ Add a certificate</button>
-        </div>
+        <button type="button" class="co-primary" data-wizard-open>+ Add a certificate</button>
     </header>
 
-    <div class="co-layout">
-        <section class="co-card" aria-labelledby="competencyRadarTitle">
-            <h2 class="co-card-title" id="competencyRadarTitle">Certificate profile</h2>
+    {{-- Profile summary: strength and category scores. The radar chart opens below it. --}}
+    <section class="co-card card co-summary" aria-labelledby="profileStrengthLabel">
+        <div class="co-summary-row">
+            <div class="co-strength">
+                <div class="co-overline" id="profileStrengthLabel">Profile strength</div>
+                <div class="co-strength-main">
+                    <div class="co-strength-level" id="profileStrengthLevel">{{ $overview['profile_strength']['level_label'] }}</div>
+                    <div class="co-strength-average co-number" id="profileStrengthAverage">
+                        @if($overview['profile_strength']['average_points'] !== null)
+                            {{ number_format($overview['profile_strength']['average_points'] / 25, 1) }} avg
+                        @else
+                            No counted skills
+                        @endif
+                    </div>
+                </div>
+            </div>
+            <div class="co-stat-grid" aria-label="Category scores">
+                @foreach($overview['groups'] as $key => $group)
+                    <div class="co-stat">
+                        <span class="co-stat-label">{{ $group['label'] }}</span>
+                        <span class="co-stat-value co-number" data-stat-value="{{ $key }}">{{ number_format($initialScores[$key] ?? 0, 1) }}%</span>
+                    </div>
+                @endforeach
+            </div>
+            <button type="button" class="co-secondary co-chart-toggle" id="competencyChartToggle"
+                    aria-expanded="false" aria-controls="competencyChartPanel">
+                <span data-chart-toggle-label>Show chart</span>
+                <i class="bi bi-chevron-down" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <div class="co-chart-panel" id="competencyChartPanel" hidden>
+            <h2 class="co-sr-only" id="competencyRadarTitle">Certificate profile</h2>
             <div class="co-radar-wrap">
                 <svg class="co-radar" id="competencyRadar" viewBox="0 0 400 320" role="img"
                      aria-label="Certificate scores: Technical {{ number_format($initialScores['technical'] ?? 0, 1) }} percent, Soft skills {{ number_format($initialScores['soft'] ?? 0, 1) }} percent, Certificates {{ number_format($initialScores['certification'] ?? 0, 1) }} percent">
@@ -988,33 +1104,13 @@
                     </button>
                 @endforeach
             </div>
+        </div>
+    </section>
 
-            <section class="co-strength" aria-labelledby="profileStrengthLabel">
-                <div class="co-overline" id="profileStrengthLabel">Profile strength</div>
-                <div class="co-strength-main">
-                    <div class="co-strength-level" id="profileStrengthLevel">{{ $overview['profile_strength']['level_label'] }}</div>
-                    <div class="co-strength-average co-number" id="profileStrengthAverage">
-                        @if($overview['profile_strength']['average_points'] !== null)
-                            {{ number_format($overview['profile_strength']['average_points'] / 25, 1) }} avg
-                        @else
-                            No counted skills
-                        @endif
-                    </div>
-                </div>
-                <div class="co-stat-grid" aria-label="Category scores">
-                    @foreach($overview['groups'] as $key => $group)
-                        <div class="co-stat">
-                            <span class="co-stat-label">{{ $group['label'] }}</span>
-                            <span class="co-stat-value co-number" data-stat-value="{{ $key }}">{{ number_format($initialScores[$key] ?? 0, 1) }}%</span>
-                        </div>
-                    @endforeach
-                </div>
-            </section>
-        </section>
-
-        <div class="co-right-stack">
-            <section class="co-card" aria-labelledby="skillListTitle">
-                <h2 class="co-card-title" id="skillListTitle">Your certificates</h2>
+    <div class="co-layout sb-layout-2">
+        <div class="co-main-col">
+            <section class="co-card card co-table-card" aria-labelledby="skillListTitle">
+                <h2 class="co-sr-only" id="skillListTitle">Your certificates</h2>
                 <div class="co-chip-list" role="group" aria-label="Filter certificates">
                     <button type="button" class="co-chip" data-category="" aria-pressed="{{ $initialCategory ? 'false' : 'true' }}">All</button>
                     @foreach($overview['groups'] as $key => $group)
@@ -1027,37 +1123,49 @@
                     <p>You have no certificates yet. Add a certificate you earned, then list the skills you learned in it.</p>
                     <button type="button" class="co-empty-action" data-wizard-open>+ Add a certificate</button>
                 </div>
-                <div class="co-skill-list {{ $initialFiltered->isEmpty() ? 'co-hidden' : '' }}" id="competencySkillList" aria-live="polite">
+
+                <div class="co-skill-list {{ $initialFiltered->isEmpty() ? 'co-hidden' : '' }}" id="competencySkillList">
                     <div class="co-loading-skeletons" aria-hidden="true">
                         <span class="co-loading-skeleton"></span>
                         <span class="co-loading-skeleton"></span>
                         <span class="co-loading-skeleton"></span>
                     </div>
-                    @foreach($initialFiltered as $skill)
-                        <button type="button" class="co-row" data-skill-id="{{ $skill['id'] }}" aria-pressed="{{ (string) ($selectedSkill['id'] ?? '') === (string) $skill['id'] ? 'true' : 'false' }}">
-                            <span class="co-row-main">
-                                <span class="co-row-name">{{ $skill['name'] }}</span>
-                                <span class="co-row-category">{{ $skill['type_label'] }}@if($skill['skill_type_label']) · {{ $skill['skill_type_label'] }}@endif · {{ $skill['proficiency_label'] }}</span>
-                            </span>
-                        </button>
-                    @endforeach
+                    <table class="table table-hover align-middle sb-table-stack co-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Certificate</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Category</th>
+                                <th scope="col">Level</th>
+                            </tr>
+                        </thead>
+                        <tbody id="competencyTableBody">
+                            @foreach($initialFiltered as $skill)
+                                @php($isSelected = (string) ($selectedSkill['id'] ?? '') === (string) $skill['id'])
+                                <tr class="co-trow {{ $isSelected ? 'is-selected' : '' }}" data-skill-id="{{ $skill['id'] }}">
+                                    <td data-label="Certificate">
+                                        <button type="button" class="co-row-button" aria-pressed="{{ $isSelected ? 'true' : 'false' }}">{{ $skill['name'] }}</button>
+                                        @if($skill['issuing_organization'] ?? null)
+                                            <span class="co-row-issuer">{{ $skill['issuing_organization'] }}</span>
+                                        @endif
+                                    </td>
+                                    <td data-label="Type">{{ $skill['type_label'] }}</td>
+                                    <td data-label="Category">{{ $skill['skill_type_label'] ?: '—' }}</td>
+                                    <td data-label="Level">{{ $skill['proficiency_label'] }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
-                <p class="co-empty {{ ($overview['skills'] && $initialFiltered->isEmpty()) ? '' : 'co-hidden' }}" id="competencyNoResults">No certificates match this filter.</p>
-            </section>
 
-            <section class="co-card co-detail" aria-labelledby="competencyDetailTitle">
-                <h2 class="co-card-title" id="competencyDetailTitle">Selected certificate</h2>
-                <div class="co-detail-content" id="competencyDetailContent">
-                    @if($selectedSkill)
-                        <h3 class="co-detail-name">{{ $selectedSkill['name'] }}</h3>
-                    @else
-                        <div class="co-detail-empty" id="competencyDetailEmpty">Select a certificate to view its details.</div>
-                    @endif
+                <div class="co-empty {{ ($overview['skills'] && $initialFiltered->isEmpty()) ? '' : 'co-hidden' }}" id="competencyNoResults">
+                    <p class="co-empty-title">No certificates match this filter.</p>
+                    <button type="button" class="co-empty-action" data-wizard-open>+ Add a certificate</button>
                 </div>
             </section>
 
             @if($legacyCertificates->isNotEmpty())
-                <section class="co-card" aria-labelledby="legacyCertificatesTitle" id="legacyCertificates">
+                <section class="co-card card" aria-labelledby="legacyCertificatesTitle" id="legacyCertificates">
                     <h2 class="co-card-title" id="legacyCertificatesTitle">Older certificates</h2>
                     <p class="co-hint">These came from your Documents tab. Add the type, skill type, level, and skills so they count in your chart and match score.</p>
                     <ul class="co-legacy-list">
@@ -1084,9 +1192,20 @@
                 </section>
             @endif
         </div>
+
+        <aside class="co-card card co-detail" aria-labelledby="competencyDetailTitle">
+            <h2 class="co-card-title" id="competencyDetailTitle">Selected certificate</h2>
+            <div class="co-detail-content" id="competencyDetailContent">
+                @if($selectedSkill)
+                    <h3 class="co-detail-name">{{ $selectedSkill['name'] }}</h3>
+                @else
+                    <div class="co-detail-empty" id="competencyDetailEmpty">Select a certificate to view its details.</div>
+                @endif
+            </div>
+        </aside>
     </div>
     <div class="save-toast co-toast" id="certificateToast" role="status" aria-live="polite"></div>
-</main>
+</div>
 
 @include('student.competencies.partials.wizard')
 @endsection
@@ -1124,6 +1243,7 @@
     const vertexTooltip = document.getElementById('radarVertexTooltip');
     const chartAnnouncement = document.getElementById('competencyChartAnnouncement');
     const list = document.getElementById('competencySkillList');
+    const tableBody = document.getElementById('competencyTableBody');
     const noResults = document.getElementById('competencyNoResults');
     const detail = document.getElementById('competencyDetailContent');
     const levels = [
@@ -1368,57 +1488,83 @@
             || (category === '__other' ? !(skill.group_keys || []).length : (skill.group_keys || []).includes(category));
     };
 
-    const renderList = (animate = true, initial = false) => {
-        if (!list) return;
+    // While the app-wide entrance runs (html.sb-intro, sb-motion.css rowIn), rows use it
+    // instead of this page's own row fade, so they never animate twice.
+    const introPlaying = () => document.documentElement.classList.contains('sb-intro');
+
+    const buildRow = (skill) => {
+        const row = document.createElement('tr');
+        row.className = 'co-trow';
+        row.dataset.skillId = String(skill.id);
+        const nameCell = document.createElement('td');
+        nameCell.dataset.label = 'Certificate';
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'co-row-button';
+        button.textContent = skill.name;
+        nameCell.append(button);
+        if (skill.issuing_organization) {
+            const issuer = document.createElement('span');
+            issuer.className = 'co-row-issuer';
+            issuer.textContent = skill.issuing_organization;
+            nameCell.append(issuer);
+        }
+        const cell = (label, text) => {
+            const td = document.createElement('td');
+            td.dataset.label = label;
+            td.textContent = text || '—';
+            return td;
+        };
+        row.append(nameCell, cell('Type', skill.type_label), cell('Category', skill.skill_type_label), cell('Level', skill.proficiency_label));
+        return row;
+    };
+
+    const markSelected = () => {
+        tableBody?.querySelectorAll('tr[data-skill-id]').forEach((row) => {
+            const selected = row.dataset.skillId === String(selectedId);
+            row.classList.toggle('is-selected', selected);
+            row.querySelector('.co-row-button')?.setAttribute('aria-pressed', String(selected));
+        });
+    };
+
+    const renderList = (animate = true, initial = false, selectFirst = false) => {
+        if (!list || !tableBody) return;
         window.clearTimeout(listRenderTimer);
         const version = ++listRenderVersion;
         const commit = () => {
             if (version !== listRenderVersion) return;
             const visible = skills.filter(skillVisible);
-            const skeletons = list.querySelector('.co-loading-skeletons');
-            list.replaceChildren(...(skeletons ? [skeletons] : []));
-            visible.forEach((skill, index) => {
-                const row = document.createElement('button');
-                row.type = 'button';
-                row.className = 'co-row';
-                row.dataset.skillId = String(skill.id);
-                row.setAttribute('aria-pressed', String(String(skill.id) === String(selectedId)));
-                const main = document.createElement('span');
-                main.className = 'co-row-main';
-                const name = document.createElement('span');
-                name.className = 'co-row-name';
-                name.textContent = skill.name;
-                const meta = document.createElement('span');
-                meta.className = 'co-row-category';
-                meta.textContent = [skill.type_label, skill.skill_type_label, skill.proficiency_label].filter(Boolean).join(' · ');
-                main.append(name, meta);
-                row.append(main);
-                row.style.opacity = '0';
-                row.style.transition = 'opacity var(--co-dur-crossfade) var(--co-ease-out)';
-                row.style.transitionDelay = `${(initial ? initialRevealMs : 0) + Math.min(index, 7) * rowStaggerMs}ms`;
-                row.addEventListener('click', () => selectSkill(skill.id));
-                list.append(row);
+            const fadeRows = !reduceMotion && !introPlaying();
+            const rows = visible.map((skill, index) => {
+                const row = buildRow(skill);
+                if (fadeRows) {
+                    row.style.opacity = '0';
+                    row.style.transition = 'opacity var(--co-dur-crossfade) var(--co-ease-out)';
+                    row.style.transitionDelay = `${(initial ? initialRevealMs : 0) + Math.min(index, 7) * rowStaggerMs}ms`;
+                }
+                return row;
             });
+            tableBody.replaceChildren(...rows);
             const isEmpty = visible.length === 0;
             list.classList.toggle('co-hidden', isEmpty);
             if (noResults) noResults.classList.toggle('co-hidden', !isEmpty || skills.length === 0);
             list.classList.remove('is-transitioning');
             list.classList.toggle('is-ready', reduceMotion || !animate);
-            if (!visible.some((skill) => String(skill.id) === String(selectedId))) {
+            // A new filter selects its first row; otherwise keep the selection while it is still shown.
+            if (selectFirst || !visible.some((skill) => String(skill.id) === String(selectedId))) {
                 selectedId = visible[0]?.id ?? '';
             }
-            list.querySelectorAll('[data-skill-id]').forEach((row) => {
-                row.setAttribute('aria-pressed', String(row.dataset.skillId === String(selectedId)));
-            });
+            markSelected();
             renderDetail(skills.find((skill) => String(skill.id) === String(selectedId)));
-            if (reduceMotion) {
-                list.querySelectorAll('.co-row').forEach((row) => { row.style.opacity = '1'; });
+            const showRows = () => {
+                if (version !== listRenderVersion) return;
+                list.classList.add('is-ready');
+                rows.forEach((row) => { row.style.opacity = '1'; });
+            };
+            if (fadeRows) {
+                requestAnimationFrame(showRows);
             } else {
-                requestAnimationFrame(() => {
-                    if (version !== listRenderVersion) return;
-                    list.classList.add('is-ready');
-                    list.querySelectorAll('.co-row').forEach((row) => { row.style.opacity = '1'; });
-                });
+                showRows();
             }
         };
 
@@ -1468,16 +1614,35 @@
     };
 
     const selectSkill = (id) => {
-        selectedId = id;
-        list?.querySelectorAll('[data-skill-id]').forEach((row) => {
-            row.setAttribute('aria-pressed', String(row.dataset.skillId === String(id)));
-        });
+        if (String(id) === String(selectedId)) return;
+        selectedId = String(id);
+        markSelected();
         renderDetail(skills.find((skill) => String(skill.id) === String(id)));
     };
 
+    // Rows: click anywhere on the row; keyboard focuses the name button, and
+    // Arrow Up/Down, Home and End move between rows.
+    tableBody?.addEventListener('click', (event) => {
+        const row = event.target.closest('tr[data-skill-id]');
+        if (row) selectSkill(row.dataset.skillId);
+    });
+    tableBody?.addEventListener('keydown', (event) => {
+        if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key) || !event.target.closest('.co-row-button')) return;
+        const buttons = [...tableBody.querySelectorAll('.co-row-button')];
+        const index = buttons.indexOf(event.target);
+        const next = event.key === 'Home' ? 0
+            : event.key === 'End' ? buttons.length - 1
+                : index + (event.key === 'ArrowDown' ? 1 : -1);
+        if (!buttons[next]) return;
+        event.preventDefault();
+        buttons[next].focus();
+        selectSkill(buttons[next].closest('tr').dataset.skillId);
+    });
+
     const setCategory = (key) => {
         finishHydration();
-        category = category === key ? '' : key;
+        if (key === category) return;
+        category = key;
         document.querySelectorAll('#competenciesOverview [data-category]').forEach((chip) => {
             chip.setAttribute('aria-pressed', String(chip.dataset.category === category));
         });
@@ -1487,16 +1652,36 @@
         updateVertices(currentScores);
         if (category) pulseVertex(category);
         updateStrength();
-        renderList();
+        renderList(true, false, true);
     };
 
     document.querySelectorAll('#competenciesOverview [data-category]').forEach((button) => {
         button.addEventListener('click', () => setCategory(button.dataset.category));
     });
 
+    // Chart points toggle their filter: a second click returns to All.
     document.querySelectorAll('#competenciesOverview [data-axis]').forEach((button) => {
-        button.addEventListener('click', () => setCategory(button.dataset.axis));
+        button.addEventListener('click', () => setCategory(category === button.dataset.axis ? '' : button.dataset.axis));
     });
+
+    // Radar chart sits in a collapsible panel under the summary strip; the choice is remembered on this browser.
+    const chartToggle = document.getElementById('competencyChartToggle');
+    const chartPanel = document.getElementById('competencyChartPanel');
+    const showChart = (open) => {
+        chartPanel.hidden = !open;
+        chartToggle.setAttribute('aria-expanded', String(open));
+        chartToggle.querySelector('[data-chart-toggle-label]').textContent = open ? 'Hide chart' : 'Show chart';
+    };
+    if (chartToggle && chartPanel) {
+        let chartOpen = false;
+        try { chartOpen = localStorage.getItem('sb-certificates-chart') === 'open'; } catch (error) {}
+        showChart(chartOpen);
+        chartToggle.addEventListener('click', () => {
+            const open = chartPanel.hidden;
+            showChart(open);
+            try { localStorage.setItem('sb-certificates-chart', open ? 'open' : 'closed'); } catch (error) {}
+        });
+    }
 
     const initialTargets = Object.keys(angleByGroup).reduce((result, key) => {
         result[key] = groupScore(key);
