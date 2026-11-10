@@ -32,7 +32,7 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('images/brand/favicon.svg') }}?v=2">
     <link rel="icon" href="{{ asset('images/brand/favicon.ico') }}?v=2" sizes="any">
     <link rel="apple-touch-icon" href="{{ asset('images/brand/apple-touch-icon.png') }}?v=2">
-    <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}?v={{ @filemtime(public_path('css/skillbridge-ui.css')) }}">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}?v={{ @filemtime(public_path('js/skillbridge-ui.js')) }}"></script>
     <script defer src="{{ asset('js/sb-job-board.js') }}?v=1"></script>
     <link rel="stylesheet" href="{{ asset('css/skillbridge-public.css') }}?v=15">

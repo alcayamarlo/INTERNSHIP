@@ -60,15 +60,12 @@ class ResumeController extends Controller
                 ->with('error', 'This resume uses an older format. Generate a new resume to edit it.');
         }
 
-        $isNewest = $this->resumeBuilder->resumesFor($resume->student)->first()?->is($resume) ?? false;
-
         return view('student.resume.edit', [
             'resume' => $resume,
             'editor' => $this->resumeContent->toEditor($resume->content),
             'previewHtml' => $this->resumeBuilder->previewHtml($resume->content),
             'maxResumes' => ResumeBuilderService::MAX_GENERATED_RESUMES,
-            'resumeCount' => $this->resumeBuilder->resumesFor($resume->student)->count(),
-            'isNewest' => $isNewest,
+            'resumeCount' => Resume::where('student_id', $resume->student_id)->count(),
         ]);
     }
 

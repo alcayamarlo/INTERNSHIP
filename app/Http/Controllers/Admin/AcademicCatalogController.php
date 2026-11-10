@@ -22,7 +22,7 @@ class AcademicCatalogController extends Controller
         $calendar = app(AcademicCalendar::class);
 
         return view('admin.academics.index', [
-            'programs' => Program::with(['coordinator.user'])->withCount(['students', 'majors'])->orderBy('code')->get(),
+            'programs' => Program::with(['coordinator.user', 'majors'])->withCount(['students', 'majors'])->orderBy('code')->get(),
             'deploymentRequirements' => DeploymentRequirement::query()->orderBy('sort_order')->orderBy('id')->get(),
             'settings' => AcademicSetting::current(),
             'monthOptions' => collect(range(1, 12))

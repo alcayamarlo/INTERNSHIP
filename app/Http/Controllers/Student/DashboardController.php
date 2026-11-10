@@ -53,7 +53,6 @@ class DashboardController extends Controller
             'placements' => $placements,
             'recentApplications' => $recentApplications,
             'competencyScore' => $competencyScore,
-            'notifications' => Auth::user()->appNotifications()->inbox()->latest()->take(5)->get(), // archived and deleted stay out of the dashboard
         ]);
     }
 }

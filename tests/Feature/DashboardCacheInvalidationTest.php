@@ -38,13 +38,17 @@ it('invalidates dashboard caches when an application is created or updated', fun
         'status' => 'open',
     ]);
 
+    // The coordinator dashboard's own keys (per coordinator), not hand-written names.
+    $coordinator = \App\Models\Coordinator::create(['user_id' => User::factory()->create(['role' => UserRole::Coordinator])->id, 'institution_id' => $institution->id]);
+    $coordinatorKey = fn (string $name) => \App\Services\DashboardCacheInvalidator::coordinatorKey($name, $coordinator->id, $institution->id);
+
     $keys = [
         'admin_dashboard_stats',
         "student_recent_apps_{$student->id}",
         "employer_all_apps_{$employer->id}",
         "employer_recent_apps_{$employer->id}",
-        "coordinator_stats_{$institution->id}",
-        "coordinator_recent_apps_{$institution->id}",
+        $coordinatorKey('stats'),
+        $coordinatorKey('recent_apps'),
     ];
     foreach ($keys as $key) {
         Cache::put($key, 'stale', 300);
@@ -79,7 +83,10 @@ it('invalidates admin and coordinator user caches when a student account changes
         'profile_completion' => 0,
     ]);
 
-    foreach (['admin_dashboard_stats', 'admin_recent_users', "coordinator_recent_students_{$institution->id}"] as $key) {
+    $coordinator = \App\Models\Coordinator::create(['user_id' => User::factory()->create(['role' => UserRole::Coordinator])->id, 'institution_id' => $institution->id]);
+    $recentStudentsKey = \App\Services\DashboardCacheInvalidator::coordinatorKey('recent_students', $coordinator->id, $institution->id);
+
+    foreach (['admin_dashboard_stats', 'admin_recent_users', $recentStudentsKey] as $key) {
         Cache::put($key, 'stale', 300);
     }
 
@@ -87,7 +94,7 @@ it('invalidates admin and coordinator user caches when a student account changes
 
     expect(Cache::has('admin_dashboard_stats'))->toBeFalse()
         ->and(Cache::has('admin_recent_users'))->toBeFalse()
-        ->and(Cache::has("coordinator_recent_students_{$institution->id}"))->toBeFalse()
+        ->and(Cache::has($recentStudentsKey))->toBeFalse()
         ->and($student->fresh()->institution_id)->toBe($institution->id);
 });
 
@@ -132,4 +139,22 @@ it('invalidates competency score and recommendation caches when evidence changes
     $competency->update(['verification_status' => 'rejected']);
 
     expect(Cache::has("student_comp_score_{$student->id}"))->toBeFalse();
+});
+
+it('refreshes the coordinator dashboard caches it actually wrote when a student changes', function () {
+    $institution = Institution::create(['name' => 'Coordinator Cache University']);
+    $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
+    $coordinator = \App\Models\Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
+    $student = Student::create(['user_id' => User::factory()->create(['role' => UserRole::Student])->id, 'institution_id' => $institution->id]);
+    $key = fn (string $name) => \App\Services\DashboardCacheInvalidator::coordinatorKey($name, $coordinator->id, $institution->id);
+
+    $this->actingAs($coordinatorUser)->get(route('coordinator.dashboard'))->assertOk();
+    expect(Cache::has($key('stats')))->toBeTrue()
+        ->and(Cache::has($key('recent_students')))->toBeTrue();
+
+    $student->update(['program' => 'BS Information Technology']);
+
+    expect(Cache::has($key('stats')))->toBeFalse()
+        ->and(Cache::has($key('recent_students')))->toBeFalse()
+        ->and(Cache::has($key('recent_apps')))->toBeFalse();
 });
