@@ -415,9 +415,26 @@
         const deleteForm = event.target;
         if (!(deleteForm instanceof HTMLFormElement) || !deleteForm.matches('[data-certificate-delete]')) return;
         event.preventDefault();
-        const response = await fetch(deleteForm.action, { method: 'POST', body: new FormData(deleteForm), headers: JSON_HEADERS });
-        const payload = await response.json().catch(() => ({}));
+        // app.js swapped the Delete button to "Working…"; put it back if the delete does not go through.
+        const restoreButton = () => {
+            const button = deleteForm.querySelector('button[aria-busy="true"]');
+            if (!button) return;
+            if (button.dataset.originalContent !== undefined) button.innerHTML = button.dataset.originalContent;
+            button.disabled = false;
+            button.removeAttribute('aria-busy');
+        };
+        let response;
+        let payload = {};
+        try {
+            response = await fetch(deleteForm.action, { method: 'POST', body: new FormData(deleteForm), headers: JSON_HEADERS });
+            payload = await response.json().catch(() => ({}));
+        } catch {
+            restoreButton();
+            showToast('Unable to delete this certificate. Check your connection and try again.');
+            return;
+        }
         if (!response.ok) {
+            restoreButton();
             showToast(payload.message || 'Unable to delete this certificate.');
             return;
         }

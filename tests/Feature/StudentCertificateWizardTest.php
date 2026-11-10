@@ -319,3 +319,21 @@ it('shows certificates with their skills on the employer applicant page', functi
         ->assertOk()
         ->assertSeeInOrder(['<h2>Certificates</h2>', 'Computer Systems Servicing NC II', 'TESDA', 'Troubleshooting'], false);
 });
+
+it('lets a student delete any old certificate, including one that was verified before verification was dropped', function () {
+    $student = certificateStudent();
+    $verified = Certificate::create(['student_id' => $student->id, 'title' => 'AWS Cloud Practitioner', 'issuer' => 'Amazon Web Services']);
+    $verified->forceFill(['verification_status' => 'verified'])->save();
+
+    $this->actingAs($student->user)
+        ->get(route('student.competencies.index'))
+        ->assertOk()
+        ->assertSee('action="'.route('student.certificates.destroy', $verified, false).'"', false);
+
+    $this->deleteJson(route('student.certificates.destroy', $verified))->assertOk();
+    expect(Certificate::count())->toBe(0);
+
+    // Another student's certificate stays protected.
+    $other = Certificate::create(['student_id' => certificateStudent()->id, 'title' => 'Not yours']);
+    $this->deleteJson(route('student.certificates.destroy', $other))->assertForbidden();
+});

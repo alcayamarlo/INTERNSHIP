@@ -413,9 +413,7 @@ it('prevents students from removing protected files and resets certificate revie
     ]);
 
     $this->actingAs($studentUser)
-        ->delete(route('student.certificates.destroy', $certificate))
-        ->assertForbidden();
-    $this->delete(route('student.portfolio.destroyPortfolio', $document))
+        ->delete(route('student.portfolio.destroyPortfolio', $document))
         ->assertForbidden();
     $this->put(route('student.portfolio.update', $document), [
         'title' => 'Replaced consent',
@@ -431,6 +429,11 @@ it('prevents students from removing protected files and resets certificate revie
     $response->assertRedirect(route('student.profile.edit').'#documents');
     expect($certificate->fresh()->verification_status)->toBe('evidence_submitted')
         ->and($certificate->fresh()->file_path)->not->toBe($verifiedPath);
+
+    // Certificates no longer need verification, so the student can delete one even after it was verified.
+    $certificate->forceFill(['verification_status' => 'verified'])->save();
+    $this->delete(route('student.certificates.destroy', $certificate))->assertRedirect();
+    expect(Certificate::find($certificate->id))->toBeNull();
 });
 
 it('resets certificate review metadata after file replacement and metadata-only edits', function () {

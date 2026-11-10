@@ -108,7 +108,8 @@ class PortfolioFileAccess
             return false;
         }
 
-        return ! ($category === PortfolioCategory::Certificate && $file->verification_status === 'verified');
+        // Certificates no longer go through verification, so a student can delete any of their own.
+        return true;
     }
 
     private function category(Model $file): PortfolioCategory

@@ -1214,7 +1214,7 @@
 <link rel="stylesheet" href="{{ asset('css/certificate-wizard.css') }}?v=1">
 @endpush
 @push('scripts')
-<script src="{{ asset('js/certificate-wizard.js') }}?v=1" defer></script>
+<script src="{{ asset('js/certificate-wizard.js') }}?v={{ @filemtime(public_path('js/certificate-wizard.js')) }}" defer></script>
 @endpush
 
 @push('scripts')
