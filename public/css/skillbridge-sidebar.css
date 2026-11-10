@@ -127,7 +127,7 @@ body.sb-app .sb-status--info, body.sb-app .sb-status--brand { background: var(--
 
 /* Links and buttons */
 body.sb-app .sb-content a:not(.btn):not(.dropdown-item):not(.page-link) { color: var(--sb-brand-deep); }
-body.sb-app .sb-content a:not(.btn):hover { text-decoration: underline; }
+body.sb-app .sb-content a:not(.btn):not(.msgr-item):hover { text-decoration: underline; }
 body.sb-app .btn-primary { --bs-btn-bg: var(--sb-brand); --bs-btn-border-color: var(--sb-brand); --bs-btn-color: #fff; --bs-btn-hover-bg: var(--sb-brand-deep); --bs-btn-hover-border-color: var(--sb-brand-deep); --bs-btn-hover-color: #fff; --bs-btn-active-bg: var(--sb-brand-deep); --bs-btn-active-border-color: var(--sb-brand-deep); --bs-btn-disabled-bg: #F3E9EA; --bs-btn-disabled-border-color: #F3E9EA; --bs-btn-disabled-color: #B9A9AC; --bs-btn-focus-shadow-rgb: 225, 29, 46; border-radius: 999px; font-weight: 600; }
 body.sb-app .btn-outline-secondary { --bs-btn-color: var(--sb-ink); --bs-btn-border-color: var(--sb-border); --bs-btn-bg: var(--sb-surface); --bs-btn-hover-bg: var(--sb-brand-soft); --bs-btn-hover-border-color: var(--sb-brand); --bs-btn-hover-color: var(--sb-brand-deep); --bs-btn-active-bg: var(--sb-brand-soft); --bs-btn-active-color: var(--sb-brand-deep); --bs-btn-active-border-color: var(--sb-brand); }
 body.sb-app .btn:disabled, body.sb-app .btn.disabled { opacity: 1; }

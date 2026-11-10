@@ -5214,7 +5214,11 @@ body.skillbridge-app .messenger-shell .messenger-row.outgoing .messenger-bubble 
 .sb-main:has(.msgr) { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; }
 .sb-content:has(.msgr) { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; padding-bottom: 24px; }
 .sb-content > .msgr { flex: 1 1 auto; height: auto; min-height: 0; }
+/* Chat rows never underline (skillbridge-sidebar.css also skips .msgr-item in its link hover rule). */
 a.msgr-item, a.msgr-item:hover, a.msgr-item:focus-visible { text-decoration: none; }
+
+/* Messages: a small gap between chat rows so each person reads as its own card. */
+.msgr-item + .msgr-item { margin-top: 6px; }
 
 /* Messages: the "You unsent a message." line in your own bubble stays white (Bootstrap's text-muted is !important). */
 body.skillbridge-app .messenger-shell .messenger-row.outgoing .messenger-bubble .text-muted {
