@@ -24,6 +24,7 @@ class InvitationController extends Controller
         return view('student.invitations.index', [
             'invitations' => $invitations,
             'hasResume' => Auth::user()->student->resumes()->whereNotNull('file_path')->exists(),
+            'hasOjt' => Auth::user()->student->hasOjt(),
         ]);
     }
 

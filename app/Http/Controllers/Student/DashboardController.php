@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Models\InternshipApplication;
 use App\Services\CompetencyMatchingService;
-use App\Services\NotificationService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
@@ -13,16 +12,28 @@ class DashboardController extends Controller
 {
     public function __construct(
         private CompetencyMatchingService $matchingService,
-        private NotificationService $notificationService
     ) {}
 
     public function index()
     {
         $student = Auth::user()->student;
 
-        $recommendations = $this->matchingService->getRecommendations($student, 5);
+        // Accepting an application opens a placement. Once the student has one, the dashboard shows
+        // OJT progress per company (the same data as My OJT > Progress) instead of recommendations.
+        $placements = $student->placements()
+            ->with(['internship', 'employer'])
+            ->withApprovedHours()
+            ->withPendingHours()
+            ->orderByRaw("case when status = 'active' then 0 when status = 'pending_validation' then 1 else 2 end")
+            ->latest()
+            ->get();
 
-        $recentApplications = Cache::remember("student_recent_apps_{$student->id}", 300, function () use ($student) {
+        $recommendations = $placements->isEmpty()
+            ? $this->matchingService->getRecommendations($student, 5)
+            : collect();
+
+        // Placed students no longer see their applications on the dashboard.
+        $recentApplications = $placements->isNotEmpty() ? collect() : Cache::remember("student_recent_apps_{$student->id}", 300, function () use ($student) {
             return InternshipApplication::with('internship.employer')
                 ->where('student_id', $student->id)
                 ->latest('applied_at')
@@ -39,10 +50,10 @@ class DashboardController extends Controller
         return view('student.dashboard', [
             'student' => $student,
             'recommendations' => $recommendations,
+            'placements' => $placements,
             'recentApplications' => $recentApplications,
             'competencyScore' => $competencyScore,
             'notifications' => Auth::user()->appNotifications()->inbox()->latest()->take(5)->get(), // archived and deleted stay out of the dashboard
-            'unreadCount' => $this->notificationService->unreadCount(Auth::user()),
         ]);
     }
 }

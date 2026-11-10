@@ -134,6 +134,12 @@ class Student extends Model
         return $this->hasMany(Placement::class);
     }
 
+    /** True once an employer accepted the student (an OJT placement exists). They can no longer apply anywhere. */
+    public function hasOjt(): bool
+    {
+        return $this->placements()->exists();
+    }
+
     public function competencies(): HasMany
     {
         return $this->hasMany(StudentCompetency::class);

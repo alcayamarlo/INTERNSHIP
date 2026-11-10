@@ -1,0 +1,144 @@
+/* OJT progress card (resources/views/components/ojt-progress-card.blade.php).
+   Used on the student dashboard once a placement exists. Shares the app tokens and
+   the Bootstrap .progress bar, so the sb-fill page-load animation applies too. */
+
+/* Full-width section at the top of the dashboard: one company fills the row,
+   several sit side by side and wrap on narrower screens. */
+.ojt-pc-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+    gap: 12px;
+}
+
+.ojt-pc {
+    display: grid;
+    gap: 10px;
+    padding: 16px;
+    border: 1px solid var(--sb-border);
+    border-radius: 14px;
+    background: var(--sb-surface);
+}
+
+.ojt-pc.is-finished {
+    border-color: var(--sb-success-border, var(--sb-border));
+}
+
+.ojt-pc-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.ojt-pc-title {
+    min-width: 0;
+}
+
+.ojt-pc-title h3 {
+    margin: 0;
+    color: var(--sb-ink);
+    font-size: 16px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.ojt-pc-title p {
+    margin: 2px 0 0;
+    color: var(--sb-muted);
+    font-size: 13px;
+}
+
+.ojt-pc-head .sb-status,
+.ojt-pc-head .badge {
+    flex: 0 0 auto;
+}
+
+.ojt-pc-hours {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    color: var(--sb-muted);
+    font-size: 14px;
+}
+
+.ojt-pc-hours strong {
+    color: var(--sb-ink);
+    font-size: 20px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.ojt-pc-percent {
+    color: var(--sb-brand-content);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.ojt-pc .progress {
+    height: 10px;
+    margin: 0;
+}
+
+.ojt-pc-note {
+    margin: 0;
+    color: var(--sb-muted);
+    font-size: 13px;
+}
+
+.ojt-pc-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0;
+}
+
+.ojt-pc-stats > div {
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: var(--sb-brand-soft);
+}
+
+.ojt-pc-stats dt {
+    color: var(--sb-muted);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.ojt-pc-stats dd {
+    margin: 2px 0 0;
+    color: var(--sb-ink);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.ojt-pc-stats dd.is-done {
+    color: var(--sb-success-ink, var(--sb-ink));
+}
+
+.ojt-pc-link {
+    justify-self: start;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* Phones: stack the header and fold the three stats into two columns. */
+@media (max-width: 480px) {
+    .ojt-pc {
+        padding: 14px;
+    }
+
+    .ojt-pc-head {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .ojt-pc-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .ojt-pc-stats > div:last-child {
+        grid-column: 1 / -1;
+    }
+}

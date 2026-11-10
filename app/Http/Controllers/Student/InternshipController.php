@@ -90,7 +90,9 @@ class InternshipController extends Controller
             ->pluck('internship_id');
         $resumes = $student->resumes()->latest()->get();
 
-        return view('student.internships.index', compact('internships', 'recommendations', 'appliedInternshipIds', 'resumes', 'scope', 'programName'));
+        $hasOjt = $student->hasOjt();
+
+        return view('student.internships.index', compact('internships', 'recommendations', 'appliedInternshipIds', 'resumes', 'scope', 'programName', 'hasOjt'));
     }
 
     public function show(Internship $internship)
@@ -117,7 +119,9 @@ class InternshipController extends Controller
             ->pluck('name');
         $needsCharacterReference = $internship->requires_character_reference && ! $student->characterReferences()->exists();
 
-        return view('student.internships.show', compact('internship', 'matchPercentage', 'matchDetails', 'hasApplied', 'recommendationFeedback', 'eligibilityReasons', 'resumes', 'requestedDocumentNames', 'needsCharacterReference'));
+        $hasOjt = $student->hasOjt();
+
+        return view('student.internships.show', compact('internship', 'matchPercentage', 'matchDetails', 'hasApplied', 'recommendationFeedback', 'eligibilityReasons', 'resumes', 'requestedDocumentNames', 'needsCharacterReference', 'hasOjt'));
     }
 
     public function storeRecommendationFeedback(Request $request, Internship $internship)

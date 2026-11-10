@@ -172,6 +172,10 @@ class Placement extends Model
 
     public function pendingHours(): float
     {
+        if (array_key_exists('pending_hours', $this->attributes)) {
+            return round((float) $this->attributes['pending_hours'], 2);
+        }
+
         return round((float) $this->attendanceLogs()->where('status', AttendanceLog::STATUS_PENDING)->sum('hours'), 2);
     }
 
@@ -200,6 +204,26 @@ class Placement extends Model
             ['attendanceLogs as approved_hours' => fn ($logs) => $logs->where('status', AttendanceLog::STATUS_APPROVED)],
             'hours'
         );
+    }
+
+    /** Preloads pendingHours() for a list, like withApprovedHours() does for approved hours. */
+    public function scopeWithPendingHours($query)
+    {
+        return $query->withSum(
+            ['attendanceLogs as pending_hours' => fn ($logs) => $logs->where('status', AttendanceLog::STATUS_PENDING)],
+            'hours'
+        );
+    }
+
+    /** Status key for <x-status-badge>, matching statusLabel(). */
+    public function statusKey(): string
+    {
+        return match (true) {
+            $this->isCleared() => 'verified',
+            $this->isCompleted() => 'completed',
+            $this->isPendingValidation() => 'pending',
+            default => 'active',
+        };
     }
 
     public function statusLabel(): string

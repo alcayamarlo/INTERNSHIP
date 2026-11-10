@@ -20,6 +20,15 @@
 
 <x-breadcrumbs :items="[['label' => 'Dashboard', 'url' => route('student.dashboard')], ['label' => 'Internships']]" />
 
+@if($hasOjt ?? false)
+    {{-- One OJT per student: postings stay browsable, but applying is closed. --}}
+    <div class="alert alert-info d-flex flex-wrap align-items-center gap-2" role="status" data-has-ojt>
+        <i class="bi bi-lock-fill" aria-hidden="true"></i>
+        <span>{{ \App\Services\ApplicationService::HAS_OJT_MESSAGE }}</span>
+        <a href="{{ route('student.ojt.index') }}" class="alert-link ms-auto">Go to My OJT →</a>
+    </div>
+@endif
+
 {{-- =========================================================
      HEADER
 ========================================================== --}}

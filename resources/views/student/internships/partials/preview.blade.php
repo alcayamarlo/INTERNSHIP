@@ -77,6 +77,8 @@
         <a href="{{ route('student.internships.show', $internship) }}" class="btn btn-outline-primary">Full details</a>
         @if($applied)
             <a href="{{ route('student.applications.index') }}" class="btn btn-outline-secondary ib-applied" aria-label="Already applied; view My Applications"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Applied · View application</a>
+        @elseif($hasOjt ?? false)
+            <span class="btn btn-outline-secondary disabled" aria-disabled="true" title="{{ \App\Services\ApplicationService::HAS_OJT_MESSAGE }}" data-has-ojt><i class="bi bi-lock-fill" aria-hidden="true"></i> You already have an OJT</span>
         @elseif($resumes->isNotEmpty())
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#biApplyModal"
                     data-apply-id="{{ $internship->id }}"

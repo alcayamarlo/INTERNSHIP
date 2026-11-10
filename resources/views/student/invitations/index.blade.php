@@ -30,7 +30,7 @@
     $selected = $invitations->first(fn ($invitation) => (string) $invitation->id === (string) request('invitation'));
     $activeTab = $selected?->status->value ?? (array_key_exists((string) request('tab'), $tabs) ? request('tab') : 'pending');
     $selected ??= $invitations->first(fn ($invitation) => $invitation->status->value === $activeTab);
-    $detailData = ['displayStatus' => $displayStatus, 'pillClass' => $pillClass, 'hasResume' => $hasResume];
+    $detailData = ['displayStatus' => $displayStatus, 'pillClass' => $pillClass, 'hasResume' => $hasResume, 'hasOjt' => $hasOjt ?? false];
 @endphp
 
 <div class="inv-page sbx ib-page ap-page" id="invitationsPage"

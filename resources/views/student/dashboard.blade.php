@@ -16,9 +16,15 @@
     }
 
     $applications = $recentApplications ?? collect();
-    $notificationCount = (int) ($unreadCount ?? 0);
     $internshipRecommendations = $recommendations ?? collect();
+    // Placed = an employer accepted an application, which opens a placement (the My OJT record).
+    $ojtPlacements = $placements ?? collect();
+    $isPlaced = $ojtPlacements->isNotEmpty();
 @endphp
+
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/ojt-progress-card.css') }}?v={{ @filemtime(public_path('css/ojt-progress-card.css')) }}">
+@endpush
 
 <x-page-header
     title="Student Dashboard"
@@ -34,14 +40,47 @@
 </x-page-header>
 
 <x-dashboard-announcements />
-<x-dashboard-ojt />
+{{-- =========================================================
+    OJT PROGRESS (placed students)
+    Once an employer accepts an application, OJT progress per company leads
+    the dashboard and replaces "Recommended for You" further down. It refreshes
+    live when the employer approves logged hours.
+========================================================= --}}
+
+@if($isPlaced)
+
+    <section class="card mb-4 ojt-progress-section" aria-labelledby="dashboardOjtTitle" data-live-region="dashboard-ojt-progress" data-live-topics="placements">
+
+        <div class="card-header">
+            <h2 id="dashboardOjtTitle">
+                <i class="bi bi-clock-history" aria-hidden="true"></i>
+                OJT Progress
+            </h2>
+
+            @if($ojtPlacements->count() > 1)
+                <span class="sb-tag">{{ $ojtPlacements->count() }} companies</span>
+            @endif
+        </div>
+
+        <div class="card-body ojt-pc-list">
+            @foreach($ojtPlacements as $ojtPlacement)
+                <x-ojt-progress-card :placement="$ojtPlacement" />
+            @endforeach
+        </div>
+
+    </section>
+
+@else
+    <x-dashboard-ojt />
+@endif
 
 
 {{-- =========================================================
     DASHBOARD STATISTICS
 ========================================================= --}}
 
-<div class="sb-stat-grid sb-stat-grid--3">
+{{-- Placed: the applications card is hidden, so the two remaining cards share the row. --}}
+<div class="sb-stat-grid {{ $isPlaced ? '' : 'sb-stat-grid--3' }}">
 
     <x-dashboard-stat-card
         title="Profile Completion"
@@ -68,23 +107,16 @@
         :description="$competencyCount.' skills · avg proficiency'"
     />
 
-    <x-dashboard-stat-card
-        title="Active Applications"
-        :value="$applications->count()"
-        icon="bi-send"
-        tone="info"
-        :href="route('student.applications.index')"
-        description="View all applications →"
-    />
-
-    <x-dashboard-stat-card
-        title="Notifications"
-        :value="$notificationCount"
-        icon="bi-bell"
-        tone="success"
-        :href="route('notifications.index')"
-        description="View all notifications →"
-    />
+    @unless($isPlaced)
+        <x-dashboard-stat-card
+            title="Active Applications"
+            :value="$applications->count()"
+            icon="bi-send"
+            tone="info"
+            :href="route('student.applications.index')"
+            description="View all applications →"
+        />
+    @endunless
 
 </div>
 
@@ -92,8 +124,15 @@
 <div class="sb-layout-2">
 
     {{-- =====================================================
-        RECENT APPLICATIONS
+        RECENT APPLICATIONS (before placement) or GETTING STARTED (placed:
+        other applications no longer matter, so the table is hidden)
     ====================================================== --}}
+
+    @if($isPlaced)
+
+    @include('student.partials.dashboard-getting-started', ['isPlaced' => true])
+
+    @else
 
     <div class="card">
 
@@ -213,12 +252,21 @@
 
     </div>
 
+    @endif
+
 
     {{-- =====================================================
         QUICK ACTIONS
     ====================================================== --}}
 
     <x-dashboard-quick-actions title="Quick Actions" icon="bi-lightning-charge">
+
+        @if($isPlaced)
+            <a href="{{ route('student.ojt.index', ['tab' => 'time-record']) }}" class="list-group-item list-group-item-action">
+                <i class="bi bi-clock-history" aria-hidden="true"></i>
+                Log OJT Time
+            </a>
+        @endif
 
         <a href="{{ route('student.profile.edit') }}" class="list-group-item list-group-item-action">
             <i class="bi bi-person-check" aria-hidden="true"></i>
@@ -245,6 +293,9 @@
 </div>
 
 
+{{-- Before placement only. Once placed, OJT Progress at the top replaces recommendations
+     and Getting Started moves up beside Quick Actions. --}}
+@unless($isPlaced)
 <div class="sb-layout-2">
 
     {{-- =====================================================
@@ -339,65 +390,9 @@
 
     </div>
 
-
-    {{-- =====================================================
-        GETTING STARTED
-    ====================================================== --}}
-
-    <div class="card">
-
-        <div class="card-header">
-            <h2>
-                <i class="bi bi-info-circle" aria-hidden="true"></i>
-                Getting Started
-            </h2>
-        </div>
-
-        <div class="card-body">
-
-            <ol class="sb-steps">
-
-                <li>
-                    <div>
-                        <strong>Complete Profile</strong>
-                        <span>Add your education and background</span>
-                    </div>
-                </li>
-
-                <li>
-                    <div>
-                        <strong>Add Competencies</strong>
-                        <span>Highlight your skills and expertise</span>
-                    </div>
-                </li>
-
-                <li>
-                    <div>
-                        <strong>Build Portfolio</strong>
-                        <span>Showcase your projects and achievements</span>
-                    </div>
-                </li>
-
-                <li>
-                    <div>
-                        <strong>Browse Internships</strong>
-                        <span>Find opportunities matched to your skills</span>
-                    </div>
-                </li>
-
-                <li>
-                    <div>
-                        <strong>Apply &amp; Track</strong>
-                        <span>Submit applications and monitor progress</span>
-                    </div>
-                </li>
-
-            </ol>
-
-        </div>
-
-    </div>
+    @include('student.partials.dashboard-getting-started', ['isPlaced' => false])
 
 </div>
+@endunless
 
 @endsection

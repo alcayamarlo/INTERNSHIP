@@ -515,3 +515,140 @@ it('opens the tab from the URL and keeps each tab limited to its own panel', fun
         ->and($html)->toMatch('/data-ojt-action="weekly-journal"[^>]*\shidden/')
         ->and(\Illuminate\Support\Str::between($html, 'id="ojt-panel-progress"', 'id="ojt-panel-weekly-journal"'))->not->toContain('Add weekly journal');
 });
+
+// ---------- Student dashboard: OJT progress replaces recommendations once placed ----------
+
+function ojtDashboardLog(Placement $placement, float $hours, string $status, int $daysAgo): void
+{
+    AttendanceLog::create([
+        'placement_id' => $placement->id,
+        'work_date' => now()->subDays($daysAgo)->toDateString(),
+        'time_in' => '08:00',
+        'time_out' => '17:00',
+        'break_minutes' => 60,
+        'hours' => $hours,
+        'task_summary' => 'Worked on tickets.',
+        'status' => $status,
+    ]);
+}
+
+it('keeps Recommended for You on the dashboard while the student has no placement', function () {
+    $fixture = ojtFixture();
+
+    $this->actingAs($fixture['studentUser'])
+        ->get(route('student.dashboard'))
+        ->assertOk()
+        ->assertSee('Recommended for You')
+        ->assertSee('Browse Internships')
+        ->assertSee('Recent Applications')
+        ->assertSee('Active Applications')
+        ->assertDontSee('View full OJT progress')
+        ->assertDontSee('Log OJT Time');
+});
+
+it('replaces recommendations with one OJT progress card per placed company', function () {
+    $fixture = ojtFixture();
+    $ongoing = ojtPlacement($fixture, 400);
+    ojtDashboardLog($ongoing, 160, AttendanceLog::STATUS_APPROVED, 3);
+    ojtDashboardLog($ongoing, 8, AttendanceLog::STATUS_PENDING, 2);
+
+    // A second company, already finished.
+    $otherEmployer = Employer::create(['user_id' => User::factory()->create(['role' => UserRole::Employer])->id, 'company_name' => 'Second Co']);
+    $otherInternship = Internship::create(['employer_id' => $otherEmployer->id, 'title' => 'QA Intern', 'description' => 'Test things.', 'status' => 'open']);
+    $otherApplication = InternshipApplication::create(['internship_id' => $otherInternship->id, 'student_id' => $fixture['student']->id, 'status' => ApplicationStatus::Completed, 'match_percentage' => 70]);
+    $finished = Placement::create([
+        'application_id' => $otherApplication->id,
+        'student_id' => $fixture['student']->id,
+        'employer_id' => $otherEmployer->id,
+        'internship_id' => $otherInternship->id,
+        'start_date' => now()->subDays(40)->toDateString(),
+        'required_hours' => 16,
+        'status' => Placement::STATUS_COMPLETED,
+    ]);
+    ojtDashboardLog($finished, 16, AttendanceLog::STATUS_APPROVED, 30);
+
+    $response = $this->actingAs($fixture['studentUser'])->get(route('student.dashboard'))->assertOk();
+
+    $response->assertDontSee('Recommended for You')
+        ->assertDontSee('Browse Internships')
+        // Other applications no longer matter once placed.
+        ->assertDontSee('Recent Applications')
+        ->assertDontSee('Active Applications')
+        ->assertSeeInOrder(['OJT Progress', 'Profile Completion', 'Getting Started', 'Log Daily Time', 'Quick Actions'])
+        ->assertSee('Log OJT Time')
+        ->assertSee('2 companies')
+        // The ongoing placement comes first.
+        ->assertSeeInOrder(['OJT Labs', 'Web Dev Intern', 'Ongoing', '160</strong> / 400 hrs', '40%', '8 hrs', '240 hrs', 'Not yet'], false)
+        ->assertSeeInOrder(['Second Co', 'QA Intern', 'Completed', '16</strong> / 16 hrs', '100%', 'Finished'], false)
+        ->assertSee(route('student.ojt.index', ['placement' => $ongoing->id]), false)
+        ->assertSee(route('student.ojt.index', ['placement' => $finished->id]), false);
+
+    // Same numbers as My OJT > Progress.
+    expect($ongoing->approvedHours())->toBe(160.0)
+        ->and($ongoing->pendingHours())->toBe(8.0)
+        ->and($ongoing->progressPercent())->toBe(40);
+});
+
+it('tells a newly placed student that no hours are logged yet', function () {
+    $fixture = ojtFixture();
+    ojtPlacement($fixture, 400);
+
+    $this->actingAs($fixture['studentUser'])
+        ->get(route('student.dashboard'))
+        ->assertOk()
+        ->assertSee('0</strong> / 400 hrs', false)
+        ->assertSee('No hours logged yet.')
+        ->assertSee('Not yet');
+});
+
+// ---------- One OJT per student: no more applications once placed ----------
+
+it('blocks a placed student from applying to any other internship, directly or through an invitation', function () {
+    $fixture = ojtFixture();
+    ojtPlacement($fixture);
+    $student = $fixture['student'];
+
+    $otherEmployer = Employer::create(['user_id' => User::factory()->create(['role' => UserRole::Employer])->id, 'company_name' => 'Another Co']);
+    $other = Internship::create(['employer_id' => $otherEmployer->id, 'title' => 'Data Intern', 'description' => 'Data work.', 'status' => 'open']);
+    $resume = \App\Models\Resume::create(['student_id' => $student->id, 'file_path' => 'resumes/cv.pdf', 'content' => [], 'generated_at' => now()]);
+    $message = \App\Services\ApplicationService::HAS_OJT_MESSAGE;
+
+    // Direct apply is refused by the server, whatever the page shows.
+    $this->actingAs($fixture['studentUser'])
+        ->postJson(route('student.internships.apply', $other), ['resume_id' => $resume->id])
+        ->assertStatus(422)
+        ->assertJsonPath('message', $message);
+
+    // Accepting an invitation would apply too, so it is refused the same way.
+    $invitation = \App\Models\InternshipInvitation::create([
+        'employer_id' => $otherEmployer->id,
+        'student_id' => $student->id,
+        'internship_id' => $other->id,
+        'invited_by_user_id' => $otherEmployer->user_id,
+        'status' => \App\Enums\InvitationStatus::Pending,
+        'expires_at' => now()->addWeek(),
+    ]);
+    $this->post(route('student.invitations.accept', $invitation))
+        ->assertRedirect(route('student.invitations.index'))
+        ->assertSessionHas('error', $message);
+
+    expect(InternshipApplication::where('internship_id', $other->id)->exists())->toBeFalse();
+
+    // The pages say why instead of offering Apply / Accept.
+    $this->get(route('student.internships.index'))->assertOk()->assertSee($message)->assertDontSee('data-apply-id="'.$other->id.'"', false);
+    $this->get(route('student.internships.show', $other))->assertOk()->assertSee($message)->assertDontSee('id="idApplyModal"', false);
+    $this->get(route('student.invitations.index'))->assertOk()->assertSee($message)->assertDontSee('action="'.route('student.invitations.accept', $invitation).'"', false);
+});
+
+it('still lets a student without an OJT apply', function () {
+    $fixture = ojtFixture();
+    $fixture['student']->forceFill(['year_level' => '4th Year', 'major_subjects_passed' => true])->save();
+    $resume = \App\Models\Resume::create(['student_id' => $fixture['student']->id, 'file_path' => 'resumes/cv.pdf', 'content' => [], 'generated_at' => now()]);
+    $other = Internship::create(['employer_id' => $fixture['employer']->id, 'title' => 'Second Role', 'description' => 'More work.', 'status' => 'open']);
+
+    $this->actingAs($fixture['studentUser'])
+        ->get(route('student.internships.index'))
+        ->assertOk()
+        ->assertDontSee(\App\Services\ApplicationService::HAS_OJT_MESSAGE);
+    $this->postJson(route('student.internships.apply', $other), ['resume_id' => $resume->id])->assertOk();
+});

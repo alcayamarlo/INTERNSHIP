@@ -106,7 +106,14 @@
 
     <div class="inv-actions">
         <a href="{{ route('student.internships.show', $internship) }}" class="btn btn-outline-secondary">View internship</a>
-        @if($invitation->isPending())
+        @if($invitation->isPending() && ($hasOjt ?? false))
+            {{-- One OJT per student: accepting would apply, so it is not offered once placed. Declining still works. --}}
+            <form method="POST" action="{{ route('student.invitations.decline', $invitation) }}" data-inv-action="decline" data-inv-id="{{ $invitation->id }}"
+                data-confirm="Decline this invitation? The company will be told you declined." data-confirm-title="Decline invitation" data-confirm-label="Decline">
+                @csrf
+                <button type="submit" class="btn btn-outline-danger">Decline</button>
+            </form>
+        @elseif($invitation->isPending())
             <form method="POST" action="{{ route('student.invitations.accept', $invitation) }}" data-inv-action="accept" data-inv-id="{{ $invitation->id }}"
                 data-confirm="Accept and apply for {{ $internship->title }}? Your profile and latest resume will be sent to {{ $employer->company_name }}."
                 data-confirm-title="Accept invitation" data-confirm-label="Accept">
@@ -122,7 +129,9 @@
             <a href="{{ route('student.applications.show', $invitation->application_id) }}" class="btn btn-outline-primary">View application</a>
         @endif
     </div>
-    @if($invitation->isPending() && ! $hasResume && $display !== InvitationStatus::Expired)
+    @if($invitation->isPending() && ($hasOjt ?? false))
+        <p class="inv-hint" data-has-ojt><i class="bi bi-lock-fill" aria-hidden="true"></i> {{ \App\Services\ApplicationService::HAS_OJT_MESSAGE }} <a href="{{ route('student.ojt.index') }}">Go to My OJT</a></p>
+    @elseif($invitation->isPending() && ! $hasResume && $display !== InvitationStatus::Expired)
         <p class="inv-hint">Generate your <a href="{{ route('student.resume.index') }}">resume</a> first to accept.</p>
     @endif
 </div>

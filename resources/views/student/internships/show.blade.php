@@ -30,7 +30,8 @@
 
     // Feedback form is collapsed; it opens on its own when it came back with errors.
     $feedbackOpen = $errors->hasAny(['feedback', 'comment']);
-    $canApply = ! $hasApplied && $internship->isAcceptingApplications() && $eligibilityReasons === [] && ! $needsCharacterReference && $resumes->isNotEmpty();
+    $hasOjt = $hasOjt ?? false;
+    $canApply = ! $hasOjt && ! $hasApplied && $internship->isAcceptingApplications() && $eligibilityReasons === [] && ! $needsCharacterReference && $resumes->isNotEmpty();
 @endphp
 
 @section('content')
@@ -173,6 +174,9 @@
             @if($hasApplied)
                 <div class="id-notice id-notice--ok"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> You have already applied to this internship.</div>
                 <a href="{{ route('student.applications.index') }}" class="btn btn-primary w-100">View my applications</a>
+            @elseif($hasOjt)
+                <div class="id-notice" data-has-ojt><i class="bi bi-lock-fill" aria-hidden="true"></i> {{ \App\Services\ApplicationService::HAS_OJT_MESSAGE }}</div>
+                <a href="{{ route('student.ojt.index') }}" class="btn btn-outline-primary w-100">Go to My OJT</a>
             @elseif(! $internship->isAcceptingApplications())
                 <div class="id-notice">{{ $internship->expires_at && $internship->expires_at->isPast() ? 'This internship posting has expired and is no longer accepting applications.' : 'This internship is no longer accepting applications.' }}</div>
             @elseif($eligibilityReasons !== [])

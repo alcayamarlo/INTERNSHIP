@@ -15,6 +15,8 @@ use Illuminate\Validation\ValidationException;
 
 class ApplicationService
 {
+    public const HAS_OJT_MESSAGE = 'You already have an OJT placement, so you can no longer apply to internships.';
+
     public function __construct(
         private CompetencyMatchingService $matchingService,
         private NotificationService $notificationService,
@@ -125,6 +127,11 @@ class ApplicationService
      */
     public function ensureCanApply(Student $student, Internship $internship): void
     {
+        // One OJT per student: once placed, no more applications (direct or via invitation).
+        if ($student->hasOjt()) {
+            throw ValidationException::withMessages(['internship' => self::HAS_OJT_MESSAGE]);
+        }
+
         $eligibilityReasons = $this->eligibility->reasons($student);
         if ($eligibilityReasons !== []) {
             throw ValidationException::withMessages(['eligibility' => $eligibilityReasons]);

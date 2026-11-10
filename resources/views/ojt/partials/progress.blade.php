@@ -3,7 +3,7 @@
     $approved = $placement->approvedHours();
     $pending = $placement->pendingHours();
     $percent = $placement->progressPercent();
-    $statusKey = $placement->isCleared() ? 'verified' : ($placement->isCompleted() ? 'completed' : ($placement->isPendingValidation() ? 'pending' : 'active'));
+    $statusKey = $placement->statusKey();
 @endphp
 
 <div class="card mb-4" data-ojt-progress data-live-region="ojt-progress-{{ $placement->id }}" data-live-topics="placements">
