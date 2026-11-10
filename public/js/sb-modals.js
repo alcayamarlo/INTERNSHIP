@@ -38,14 +38,38 @@
             if (!submitting) form.reset();
         });
 
-        form.addEventListener('submit', function () {
-            submitting = true;
+        function setBusy(busy) {
             document.querySelectorAll('button[type=submit][form="' + form.id + '"], button[type=submit]').forEach(function (button) {
                 if (button.form === form) {
-                    button.disabled = true;
-                    button.setAttribute('aria-busy', 'true');
+                    button.disabled = busy;
+                    if (busy) {
+                        button.setAttribute('aria-busy', 'true');
+                    } else {
+                        button.removeAttribute('aria-busy');
+                    }
                 }
             });
+        }
+
+        form.addEventListener('submit', function () {
+            submitting = true;
+            setBusy(true);
+        });
+
+        // Forms the page sends in the background (fetch) report back with events on the form:
+        // 'sb:form-failed' unlocks it so the user can fix the errors and send again,
+        // 'sb:form-saved' clears it and closes the modal without the unsaved-changes prompt.
+        form.addEventListener('sb:form-failed', function () {
+            submitting = false;
+            setBusy(false);
+        });
+
+        form.addEventListener('sb:form-saved', function () {
+            submitting = false;
+            setBusy(false);
+            form.reset();
+            initial = snapshot(form);
+            window.bootstrap.Modal.getOrCreateInstance(modalEl).hide();
         });
 
         if (modalEl.hasAttribute('data-sb-open-on-load')) {
