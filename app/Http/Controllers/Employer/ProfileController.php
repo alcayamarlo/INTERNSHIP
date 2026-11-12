@@ -27,7 +27,8 @@ class ProfileController extends Controller
             'company_name' => $user->name,
             'contact_person' => $user->name,
         ]);
-        $employerInfo = session('employer_info', []);
+        // Company size is saved on the employer record (it used to live only in the session).
+        $employerInfo = ['company_size' => $employer->company_size];
         $address = $this->parseAddress($employer->address);
 
         return view('employer.profile.edit', [
@@ -79,6 +80,7 @@ class ProfileController extends Controller
                 $employerUpdates = [
                     'company_name' => $validated['company_name'],
                     'industry' => $validated['industry'],
+                    'company_size' => $validated['company_size'] ?? null,
                     'description' => $validated['description'] ?? null,
                     'website' => $validated['website'] ?? null,
                     'logo' => $newLogo ?? $employer->logo,
@@ -104,12 +106,6 @@ class ProfileController extends Controller
         if ($previousLogo && $previousLogo !== $newLogo) {
             $this->fileUpload->delete($previousLogo);
         }
-
-        // Store additional fields
-        session()->put('employer_info', [
-            'company_size' => $validated['company_size'] ?? null,
-            'position' => $validated['position'] ?? null,
-        ]);
 
         if ($request->expectsJson()) {
             return response()->json([

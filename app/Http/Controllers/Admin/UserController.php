@@ -26,7 +26,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $view = in_array($request->query('view'), ['archived', 'suspended'], true) ? $request->query('view') : 'active';
-        $query = User::with('student')
+        $query = User::with(['student', 'employer'])
             ->when($view === 'archived', fn ($query) => $query->whereNotNull('archived_at'))
             ->when($view === 'active', fn ($query) => $query->whereNull('archived_at'))
             ->when($view === 'suspended', fn ($query) => $query->whereNull('archived_at')->whereNotNull('suspended_at')->where(fn ($active) => $active->whereNull('suspended_until')->orWhere('suspended_until', '>', now())));

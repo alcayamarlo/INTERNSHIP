@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Coordinator;
 use App\Models\Internship;
 use App\Models\InternshipApplication;
 use App\Models\Student;
@@ -10,6 +11,15 @@ use Illuminate\Support\Facades\Cache;
 
 class DashboardCacheInvalidator
 {
+    /**
+     * Coordinator dashboard cache key. Coordinators can see different students, so each has their own
+     * copy. The dashboard and the invalidation below both build keys here, so they cannot drift apart.
+     */
+    public static function coordinatorKey(string $name, int $coordinatorId, ?int $institutionId): string
+    {
+        return "coordinator_{$name}_{$coordinatorId}_{$institutionId}";
+    }
+
     public function userChanged(User $user): void
     {
         Cache::forget('admin_dashboard_stats');
@@ -21,8 +31,7 @@ class DashboardCacheInvalidator
         }
 
         if ($student->institution_id) {
-            Cache::forget("coordinator_recent_students_{$student->institution_id}");
-            Cache::forget("coordinator_recent_apps_{$student->institution_id}");
+            $this->forgetCoordinators($student->institution_id, ['recent_students', 'recent_apps']);
         }
 
         $employerIds = InternshipApplication::query()
@@ -41,8 +50,7 @@ class DashboardCacheInvalidator
         Cache::forget('admin_dashboard_stats');
 
         if ($student->institution_id) {
-            Cache::forget("coordinator_recent_students_{$student->institution_id}");
-            Cache::forget("coordinator_recent_apps_{$student->institution_id}");
+            $this->forgetCoordinators($student->institution_id, ['stats', 'recent_students', 'recent_apps']);
         }
     }
 
@@ -59,8 +67,7 @@ class DashboardCacheInvalidator
 
         $institutionId = Student::whereKey($application->student_id)->value('institution_id');
         if ($institutionId) {
-            Cache::forget("coordinator_stats_{$institutionId}");
-            Cache::forget("coordinator_recent_apps_{$institutionId}");
+            $this->forgetCoordinators((int) $institutionId, ['stats', 'recent_apps']);
         }
     }
 
@@ -80,6 +87,16 @@ class DashboardCacheInvalidator
         $student = Student::find($studentId);
         if ($student) {
             app(CompetencyMatchingService::class)->invalidateCache($student);
+        }
+    }
+
+    /** Clears the named dashboard caches of every coordinator at the institution. */
+    private function forgetCoordinators(int $institutionId, array $names): void
+    {
+        foreach (Coordinator::where('institution_id', $institutionId)->pluck('id') as $coordinatorId) {
+            foreach ($names as $name) {
+                Cache::forget(self::coordinatorKey($name, (int) $coordinatorId, $institutionId));
+            }
         }
     }
 }

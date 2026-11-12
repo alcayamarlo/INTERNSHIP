@@ -869,10 +869,10 @@
 
     @stack('styles')
     @include('partials.theme-init')
-    <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}?v={{ @filemtime(public_path('css/skillbridge-ui.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-eye-comfort.css') }}?v={{ @filemtime(public_path('css/sb-eye-comfort.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/auth-photo.css') }}?v={{ @filemtime(public_path('css/auth-photo.css')) }}">
-    <script defer src="{{ asset('js/skillbridge-ui.js') }}"></script>
+    <script defer src="{{ asset('js/skillbridge-ui.js') }}?v={{ @filemtime(public_path('js/skillbridge-ui.js')) }}"></script>
 
 </head>
 

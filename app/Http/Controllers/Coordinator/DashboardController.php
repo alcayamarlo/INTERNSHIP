@@ -10,6 +10,7 @@ use App\Models\Program;
 use App\Models\Student;
 use App\Models\User;
 use App\Models\VerificationActivity;
+use App\Services\DashboardCacheInvalidator;
 use App\Support\StudentIdFormat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,7 +27,7 @@ class DashboardController extends Controller
         $coordinator = Auth::user()->coordinator;
         $institutionId = $coordinator->institution_id;
 
-        $stats = Cache::remember("coordinator_stats_{$coordinator->id}_{$institutionId}", 300, function () use ($coordinator, $institutionId) {
+        $stats = Cache::remember(DashboardCacheInvalidator::coordinatorKey('stats', $coordinator->id, $institutionId), 300, function () use ($coordinator, $institutionId) {
             $studentIds = $coordinator->scopedStudentsQuery()->pluck('id');
 
             $applications = InternshipApplication::whereIn('student_id', $studentIds)->get();
@@ -39,11 +40,11 @@ class DashboardController extends Controller
             ];
         });
 
-        $recentStudents = Cache::remember("coordinator_recent_students_{$coordinator->id}_{$institutionId}", 300, function () use ($coordinator) {
+        $recentStudents = Cache::remember(DashboardCacheInvalidator::coordinatorKey('recent_students', $coordinator->id, $institutionId), 300, function () use ($coordinator) {
             return $coordinator->scopedStudentsQuery()->with('user')->latest()->take(5)->get();
         });
 
-        $recentApplications = Cache::remember("coordinator_recent_apps_{$coordinator->id}_{$institutionId}", 300, function () use ($coordinator) {
+        $recentApplications = Cache::remember(DashboardCacheInvalidator::coordinatorKey('recent_apps', $coordinator->id, $institutionId), 300, function () use ($coordinator) {
             $studentIds = $coordinator->scopedStudentsQuery()->pluck('id');
             return InternshipApplication::with(['student.user', 'internship.employer'])
                 ->whereIn('student_id', $studentIds)

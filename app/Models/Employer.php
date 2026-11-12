@@ -14,6 +14,7 @@ class Employer extends Model
         'user_id',
         'company_name',
         'industry',
+        'company_size',
         'description',
         'website',
         'logo',

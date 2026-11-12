@@ -28,7 +28,8 @@
         @endif
 
         @if($description)
-            <div class="sb-stat-hint">{!! $description !!}</div>
+            {{-- Escaped: plain-text descriptions stay safe; a <x-slot:description> is already HTML and renders as is. --}}
+            <div class="sb-stat-hint">{{ $description }}</div>
         @endif
     </div>
 </{{ $href ? 'a' : 'div' }}>

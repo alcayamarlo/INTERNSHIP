@@ -257,7 +257,7 @@
     </div>
 
     @push('scripts')
-        <script src="{{ asset('js/sb-modals.js') }}"></script>
+        <script src="{{ asset('js/sb-modals.js') }}?v={{ @filemtime(public_path('js/sb-modals.js')) }}"></script>
     @endpush
     @endif
 @endif
