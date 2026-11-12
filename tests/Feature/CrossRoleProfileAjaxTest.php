@@ -79,7 +79,15 @@ it('saves an employer profile and logo asynchronously', function () {
         ->assertJsonStructure(['logo_url']);
 
     expect($employer->fresh()->company_name)->toBe('Updated AJAX Employer')
+        ->and($employer->fresh()->company_size)->toBe('1-10')
         ->and($employer->fresh()->logo)->not->toBeNull();
+
+    // Company size is stored on the record, so it is still selected in a fresh session (after logout).
+    $this->flushSession();
+    $this->actingAs($user->fresh())
+        ->get(route('employer.profile.edit'))
+        ->assertOk()
+        ->assertSee('value="1-10" selected', false);
     Storage::disk('public')->assertExists($employer->fresh()->logo);
 
     $this->get(route('employer.profile.edit'))
