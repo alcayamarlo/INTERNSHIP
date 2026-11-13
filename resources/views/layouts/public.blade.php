@@ -15,10 +15,12 @@
     <link rel="stylesheet" href="{{ asset('css/sb-eye-comfort.css') }}?v={{ @filemtime(public_path('css/sb-eye-comfort.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-nav-controls.css') }}?v={{ @filemtime(public_path('css/sb-nav-controls.css')) }}">
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Manrope:wght@400;500;600&display=swap">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/sb-glass.css') }}?v={{ @filemtime(public_path('css/sb-glass.css')) }}">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}?v={{ @filemtime(public_path('js/skillbridge-ui.js')) }}"></script>
 </head>
-<body class="skillbridge-public">
+<body class="skillbridge-public sb-glass sb-glass-page">
     <main class="public-page">
         @include('partials.public-nav', ['base' => route('home')])
 

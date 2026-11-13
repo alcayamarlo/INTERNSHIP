@@ -264,3 +264,57 @@
 .lm-checklist li { align-items: flex-start; gap: 6px; }
 .lm-checklist { font-size: 11px; }
 .lm-checklist li::before { width: 12px; }
+
+/* ---------- Glass look (matches the landing page): frosted dialog, dark pill buttons, Cormorant titles ---------- */
+.lm-backdrop { background: rgba(42, 37, 34, .38); }
+.lm-dialog { border: 1px solid rgba(255, 255, 255, .72); border-radius: 36px; background: rgba(255, 255, 255, .82); color: #201b19;
+    -webkit-backdrop-filter: blur(20px) saturate(1.15); backdrop-filter: blur(20px) saturate(1.15);
+    box-shadow: 0 12px 32px rgba(60, 40, 30, .12), 0 30px 80px rgba(42, 37, 34, .28); font-family: 'Manrope', system-ui, 'Segoe UI', sans-serif; }
+.lm-head { padding: 28px 32px 8px; color: #201b19; background: none; }
+.lm-head::before { display: none; }
+.lm-brand { color: #201b19; }
+.lm-logo { border: 1px solid rgba(255, 255, 255, .72); background: rgba(255, 255, 255, .9); }
+.lm-title { color: #201b19; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 40px; font-weight: 400; line-height: 1; letter-spacing: -.01em; }
+.lm-title .lm-t2 { color: #5b504b; font-family: 'Manrope', system-ui, sans-serif; font-size: 15px; font-weight: 500; letter-spacing: 0; opacity: 1; }
+.lm-cap { margin: 12px 0 0; color: #5b504b; font-size: 14px; line-height: 1.55; }
+.lm-close { border: 1px solid rgba(255, 255, 255, .72); background: rgba(255, 255, 255, .7); color: #201b19; }
+.lm-close:hover { background: #fff; }
+.lm-close:focus-visible { outline: 3px solid #c8102e; }
+.lm-body { padding: 20px 32px 28px; }
+.lm-label { color: #201b19; font-size: 13px; font-weight: 600; }
+.lm-label span { color: #8f1b2e; }
+.lm-ico { color: #5b504b; }
+.lm-input { height: 52px; border: 1px solid rgba(32, 27, 25, .35); border-radius: 999px; background: rgba(255, 255, 255, .75); color: #201b19; }
+.lm-input::placeholder { color: #675b56; opacity: 1; }
+.lm-input:focus { border-color: #c8102e; box-shadow: 0 0 0 3px rgba(200, 16, 46, .2); }
+.lm-input.is-invalid { border-color: #c8102e; }
+.lm-code-box { border: 1px solid rgba(32, 27, 25, .35); border-radius: 18px; background: rgba(255, 255, 255, .75); }
+.lm-code-box:focus { border-color: #c8102e; box-shadow: 0 0 0 3px rgba(200, 16, 46, .2); }
+.lm-check input:checked + .lm-box { border-color: #2a2522; background: #2a2522; }
+.lm-check input:focus-visible + .lm-box { box-shadow: 0 0 0 3px rgba(200, 16, 46, .35); }
+.lm-link { color: #8f1b2e; }
+.lm-submit { height: 52px; background: #2a2522; box-shadow: none; font-weight: 600; filter: none; will-change: auto; }
+.lm-submit:hover:not(:disabled) { background: #8f1b2e; filter: none; transform: none; }
+.lm-submit--ghost { background: transparent; color: #2a2522; box-shadow: inset 0 0 0 1.5px #2a2522; }
+.lm-submit--ghost:hover:not(:disabled) { background: #2a2522; color: #fff; }
+.lm-foot { border-top-color: rgba(32, 27, 25, .12); color: #5b504b; }
+.lm-info, .lm-trust { color: #5b504b; }
+.lm-info { border-radius: 18px; background: #e9ddd5; }
+.lm-alert { border-radius: 18px; }
+.lm-alert-bad { background: #fbe4e7; color: #8f1b2e; }
+@media (max-width: 480px) { .lm-head { padding: 24px 22px 6px; } .lm-body { padding: 18px 22px 24px; } .lm-title { font-size: 34px; } }
+@media (prefers-reduced-motion: reduce) { .lm-dialog, .lm-backdrop, .lm-submit { transition: none; } }
+
+/* Glass look: forgot-password and reset-password views (code boxes, timer, strength meter, show/hide toggle) */
+.lm-lead { color: #5b504b; font-size: 14px; }
+.lm-hint, .lm-resend, .lm-timer, .lm-strength-text, .lm-trust { color: #5b504b; }
+.lm-timer.is-expired, .lm-error { color: #8f1b2e; }
+.lm-error::before { background: #8f1b2e; }
+.lm-toggle { border-radius: 50%; color: #5b504b; }
+.lm-toggle:hover { background: #fff; color: #201b19; }
+.lm-toggle:focus-visible, .lm-submit:focus-visible { outline: 3px solid #c8102e; outline-offset: 3px; }
+.lm-strength-bars i { height: 5px; background: rgba(32, 27, 25, .16); }
+.lm-success { border-radius: 18px; }
+.lm-caps { border-radius: 14px; }
+.lm-info svg { color: #8f1b2e; }
+.lm-resend .lm-link { color: #8f1b2e; }

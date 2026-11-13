@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SkillBridge · St. Cecilia's College</title>
 <meta name="description" content="Internship readiness and verified competencies for students, coordinators, and employers, in one shared workspace.">
+<script>document.documentElement.classList.add('js');</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Manrope:wght@400;500;600&display=swap">
@@ -15,288 +16,243 @@
 <a class="skip" href="#main">Skip to content</a>
 
 <div class="page">
+<div class="shell">
 
-<!-- ============ HERO ============ -->
-<header class="hero frame" id="top">
-  <!-- Replaceable backdrop: swap this <svg> (or its container) for a real photo later. -->
-  <div class="hero-art" id="hero-art" aria-hidden="true">
-    <svg viewBox="0 0 1440 820" preserveAspectRatio="xMidYMid slice" focusable="false">
-      <defs>
-        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#f4ebe4"/><stop offset=".45" stop-color="#ecd9cc"/><stop offset="1" stop-color="#d9b9a9"/>
-        </linearGradient>
-        <radialGradient id="sun" cx=".62" cy=".38" r=".5">
-          <stop offset="0" stop-color="#fff4e4" stop-opacity=".95"/><stop offset="1" stop-color="#fff4e4" stop-opacity="0"/>
-        </radialGradient>
-        <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#e2c3b4"/><stop offset="1" stop-color="#b78f80"/>
-        </linearGradient>
-      </defs>
-      <rect width="1440" height="820" fill="url(#sky)"/>
-      <rect width="1440" height="820" fill="url(#sun)"/>
-      <path d="M0 520 L180 400 L330 470 L560 330 L760 470 L980 360 L1180 450 L1440 340 V640 H0Z" fill="#d8c4b9"/>
-      <path d="M0 580 L240 470 L430 540 L690 420 L900 540 L1120 470 L1440 560 V680 H0Z" fill="#c4aca0"/>
-      <path d="M0 640 Q300 560 620 620 T1440 600 V680 H0Z" fill="#a8938a"/>
-      <rect y="640" width="1440" height="180" fill="url(#water)"/>
-      <g fill="none" stroke="#2f2724" stroke-width="3">
-        <path d="M820 640 Q1030 440 1240 640"/>
-        <path d="M800 646 H1260" stroke-width="7"/>
-        <path d="M860 598V646M900 568V646M940 548V646M980 538V646M1020 534V646M1060 538V646M1100 548V646M1140 568V646M1180 598V646" stroke-width="1.6"/>
+<!-- ================= HERO ================= -->
+<header class="hero" id="top">
+  <!-- Backdrop: one replaceable element. Swap this <svg> for a real photo later. -->
+  <svg class="hero-art" viewBox="0 0 1240 820" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#f3e9df"/><stop offset=".55" stop-color="#ecd3c3"/><stop offset="1" stop-color="#d9b8a8"/>
+      </linearGradient>
+      <radialGradient id="sun">
+        <stop offset="0" stop-color="#fff6e6" stop-opacity=".95"/><stop offset="1" stop-color="#fff6e6" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#e6c9bb"/><stop offset="1" stop-color="#b99588"/>
+      </linearGradient>
+    </defs>
+    <rect width="1240" height="820" fill="url(#sky)"/>
+    <circle cx="880" cy="360" r="300" fill="url(#sun)"/>
+    <path d="M0 470 L120 400 L210 450 L330 340 L470 460 L560 390 L700 480 L860 370 L1000 460 L1120 400 L1240 470 V620 H0Z" fill="#d6c0b6" opacity=".85"/>
+    <path d="M0 540 L160 470 L300 530 L460 460 L640 540 L800 490 L980 550 L1140 490 L1240 530 V660 H0Z" fill="#b9a29a"/>
+    <rect x="540" y="568" width="700" height="252" fill="url(#water)"/>
+    <path d="M0 600 Q200 540 420 600 T600 610 V820 H0Z" fill="#8f7d77"/>
+    <g stroke="#3b302c" fill="none">
+      <path d="M640 560 Q900 310 1160 560" stroke-width="3"/>
+      <g stroke-width="1.5">
+        <path d="M700 509V560M750 477V560M800 454V560M850 440V560M900 435V560M950 440V560M1000 454V560M1050 477V560M1100 509V560"/>
       </g>
-      <g fill="#2f2724"><path d="M810 646h24l-5 36h-14zM1226 646h24l-5 36h-14z"/></g>
-    </svg>
-  </div>
+    </g>
+    <rect x="620" y="560" width="560" height="9" fill="#3b302c"/>
+    <path d="M626 569 H654 L648 600 H632Z M1146 569 H1174 L1168 600 H1152Z" fill="#3b302c"/>
+    <path d="M660 584 H1160" stroke="#fff6e6" stroke-width="2" opacity=".35"/>
+  </svg>
 
-  <div class="topbar">
-    <a class="logo" href="#top" aria-label="SkillBridge, St. Cecilia's College, home">
-      <span class="logo-mark" aria-hidden="true">
-        <svg viewBox="0 0 32 32"><path d="M3 22 Q16 4 29 22" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M2 23.5h28M9 17v6.5M13 14.5v9M16 13.6v9.9M19 14.5v9M23 17v6.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>
-      </span>
-      <span class="logo-text"><strong>SkillBridge</strong><small>St. Cecilia's College</small></span>
-    </a>
+  <div class="hero-in">
+    <div class="topbar">
+      <a class="logo" href="#top" aria-label="SkillBridge, St. Cecilia's College, home">
+        <svg class="mark" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><rect width="44" height="44" rx="12" fill="#2a2522"/><path d="M8 29 Q22 10 36 29" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M7 30.5H37M15 23.5V30.5M22 20.5V30.5M29 23.5V30.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span class="logo-t"><strong>SkillBridge</strong><small>St. Cecilia's College</small></span>
+      </a>
 
-    <nav class="pillnav" aria-label="Primary">
-      <a href="#how-it-works">How it works</a>
-      <a href="#internships">Internships</a>
-      <a href="#roles">Who it's for</a>
-      <a href="#faq">FAQs</a>
-    </nav>
+      <nav class="pillnav" aria-label="Primary">
+        <a href="#how">How it works</a>
+        <a href="#internships">Internships</a>
+        <a href="#who">Who it's for</a>
+        <a href="#faq">FAQs</a>
+      </nav>
 
-    <div class="top-actions">
-      <button class="icon-btn" type="button" id="searchToggle" aria-label="Search internships" aria-expanded="false" aria-controls="navSearch">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
-      </button>
-      <a class="btn" href="#login"><span class="btn-face">Log in <i class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></i></span></a>
+      <div class="top-r">
+        <button class="icon-btn" type="button" aria-label="Search internships" data-search>
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+        </button>
+        <a class="pill-dark" href="#login">Log in <span class="circ"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+      </div>
     </div>
 
-    <form class="nav-search" id="navSearch" role="search" hidden>
-      <label class="sr" for="navSearchInput">Search internships</label>
-      <input id="navSearchInput" type="search" placeholder="Search internships…" autocomplete="off">
-      <kbd aria-hidden="true">/</kbd>
-    </form>
-  </div>
-
-  <div class="hero-main">
     <nav class="rail glass" aria-label="Who it's for">
-      <a href="#roles" aria-label="Students"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m2.5 9.5 9.5-5 9.5 5-9.5 5z"/><path d="M6.5 12v4.5c0 1.2 2.5 2.5 5.5 2.5s5.5-1.3 5.5-2.5V12"/></svg></a>
-      <a href="#roles" aria-label="Coordinators"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V5h8v15M12 10h8v10M2.5 20h19M7 9h2M7 13h2M15 14h2M15 17h2"/></svg></a>
-      <a href="#roles" aria-label="Employers"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 13h18"/></svg></a>
+      <a href="#who" aria-label="Students" title="Students"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m2.5 9.5 9.5-5 9.5 5-9.5 5z"/><path d="M6.5 12v4.5c0 1.2 2.5 2.5 5.5 2.5s5.5-1.3 5.5-2.5V12"/></svg></a>
+      <a href="#who" aria-label="Coordinators" title="Coordinators"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V5h8v15M12 10h8v10M2.5 20h19M7 9h2M7 13h2M15 14h2M15 17h2"/></svg></a>
+      <a href="#who" aria-label="Employers" title="Employers"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 13h18"/></svg></a>
     </nav>
 
-    <div class="hero-text">
-      <p class="kicker">Student Development and Internship Placement</p>
-      <h1>Build your skills.<br>Move toward<br><span class="grad">what's next.</span></h1>
-      <p class="lead">Track competencies, prepare your internship profile, and connect with opportunities through a shared workspace for students, coordinators, and employers.</p>
-      <div class="hero-actions">
-        <a class="btn btn-lg" href="#login"><span class="btn-face">Sign in to your workspace <i class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></i></span></a>
-        <a class="link-circle" href="#internships"><i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></svg></i><span>12 internships open now</span></a>
+    <div class="hero-main">
+      <div class="hero-l">
+        <p class="cap kicker">Student Development and Internship Placement</p>
+        <h1><span>Build your skills.</span><span>Move toward</span><span class="grad">what's next.</span></h1>
+        <p class="lead">Track competencies, prepare your internship profile, and connect with opportunities through a shared workspace for students, coordinators, and employers.</p>
+        <div class="cta">
+          <a class="pill-dark" href="#login">Sign in to your workspace <span class="circ"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+          <a class="circ-link" href="#internships"><span class="circ-out"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></span>12 internships open now</a>
+        </div>
       </div>
+      <ul class="status" aria-label="Platform highlights">
+        <li>Competency verified</li>
+        <li>Application submitted</li>
+        <li>New internship match</li>
+      </ul>
     </div>
 
-    <ul class="status" aria-label="Platform highlights">
-      <li class="stamp"><span>Competency verified</span></li>
-      <li class="stamp"><span>Application submitted</span></li>
-      <li class="stamp"><span>New internship match</span></li>
-    </ul>
-  </div>
+    <div class="hero-cards">
+      <article class="glass c-feature" aria-label="Featured listing">
+        <div class="thumb" aria-hidden="true">C</div>
+        <div class="cf-t">
+          <div class="cf-row"><span class="cap muted">Open now</span><span class="cap muted">1 / 12</span></div>
+          <h2>Cost Accounting Intern</h2>
+          <p class="meta">Cebu Audit &amp; Tax Advisors</p>
+          <p class="meta">Cebu City · On-site · 3 months</p>
+          <a class="more" href="#internships">View listing →</a>
+        </div>
+      </article>
 
-  <div class="hero-cards">
-    <article class="card-feature glass tilt" data-tilt aria-label="Featured listing">
-      <span class="avatar" aria-hidden="true">C</span>
-      <div class="cf-body">
-        <div class="cf-top"><span class="label">Open now</span><span class="label">1 / 12</span></div>
-        <h2>Cost Accounting Intern</h2>
-        <p class="muted">Cebu Audit &amp; Tax Advisors</p>
-        <p class="muted">Cebu City · On-site · 3 months</p>
-        <a class="textlink" href="#internships">View listing <span aria-hidden="true">→</span></a>
-      </div>
-    </article>
+      <article class="glass c-stats" aria-label="At a glance">
+        <div><strong>12</strong><span>Internships open now</span></div>
+        <div><strong>3</strong><span>Roles: students, coordinators, employers</span></div>
+        <div><strong>3</strong><span>Steps from preparation to placement</span></div>
+      </article>
 
-    <article class="card-stats glass" aria-label="At a glance">
-      <div><strong>12</strong><span>Internships open now</span></div>
-      <div><strong>3</strong><span>Roles: students, coordinators, employers</span></div>
-      <div><strong>3</strong><span>Steps from preparation to placement</span></div>
-    </article>
-
-    <article class="card-dark">
-      <p>Take the next step in your internship journey.</p>
-      <a class="round-btn" href="#login" aria-label="Sign in"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
-    </article>
+      <article class="c-dark">
+        <p>Take the next step in your internship journey.</p>
+        <a class="circ-w" href="#login" aria-label="Sign in"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
+      </article>
+    </div>
   </div>
 </header>
 
-<main id="main">
+<main id="main" class="stack">
 
-<!-- ============ HOW IT WORKS ============ -->
-<section class="panel frame" id="how-it-works" aria-labelledby="how-h">
+<!-- ================= INTERNSHIPS ================= -->
+<section class="panel" id="internships" aria-labelledby="int-h">
   <div class="sec-head">
-    <div>
-      <p class="eyebrow">A connected workflow</p>
-      <h2 id="how-h">From preparation to placement.</h2>
-    </div>
-    <p class="sub">SkillBridge brings the key steps of internship preparation into one role-aware platform.</p>
-  </div>
-  <div class="steps">
-    <article class="glass step" style="--z:0px">
-      <span class="num" aria-hidden="true">01</span>
-      <h3>Build your profile</h3>
-      <p>Record academic and contact details, describe your goals, and keep your resume and portfolio evidence together.</p>
-    </article>
-    <article class="glass step" style="--z:12px">
-      <span class="num" aria-hidden="true">02</span>
-      <h3>Develop competencies</h3>
-      <p>Review skill categories, document your experience, and submit evidence for coordinator review.</p>
-    </article>
-    <article class="glass step" style="--z:24px">
-      <span class="num" aria-hidden="true">03</span>
-      <h3>Explore opportunities</h3>
-      <p>Browse internships, submit applications, and follow application updates from your student workspace.</p>
-    </article>
-  </div>
-</section>
-
-<!-- ============ INTERNSHIPS ============ -->
-<section class="panel frame" id="internships" aria-labelledby="int-h">
-  <div class="sec-head">
-    <div>
-      <p class="eyebrow">Open now</p>
-      <h2 id="int-h">Browse internships.</h2>
-    </div>
+    <div><p class="cap eyebrow">Open now</p><h2 id="int-h">Browse internships.</h2></div>
     <p class="sub">See what is open right now. Log in as a student to apply.</p>
   </div>
 
-  <form class="searchbar" role="search" id="boardSearch">
-    <div class="field">
-      <label for="what">What</label>
-      <input id="what" name="what" type="text" placeholder="Role, company or keyword" autocomplete="off">
-    </div>
-    <div class="field">
-      <label for="where">Where</label>
-      <input id="where" name="where" type="text" placeholder="City or Remote" autocomplete="off">
-    </div>
-    <button class="btn btn-sm" type="submit"><span class="btn-face">Search</span></button>
+  <form class="searchpill glass" role="search" data-board-search>
+    <div class="fld"><label class="cap muted" for="what">What</label><input id="what" type="text" placeholder="Role, company or keyword" autocomplete="off"></div>
+    <div class="fld"><label class="cap muted" for="where">Where</label><input id="where" type="text" placeholder="City or Remote" autocomplete="off"></div>
+    <button class="pill-dark" type="submit">Search</button>
   </form>
 
   <div class="filters">
-    <div class="fgroup" role="group" aria-labelledby="f-type">
-      <span class="label" id="f-type">Work type</span>
-      <button class="chip" type="button" aria-pressed="false"><span>Remote</span></button>
-      <button class="chip" type="button" aria-pressed="false"><span>Hybrid</span></button>
-      <button class="chip" type="button" aria-pressed="false"><span>On-site</span></button>
-    </div>
-    <div class="fgroup" role="group" aria-labelledby="f-dur">
-      <span class="label" id="f-dur">Duration</span>
-      <button class="chip" type="button" aria-pressed="false"><span>3 months</span></button>
-      <button class="chip" type="button" aria-pressed="false"><span>500 hours</span></button>
-    </div>
-    <div class="fgroup" role="group" aria-labelledby="f-loc">
-      <span class="label" id="f-loc">Location</span>
-      <button class="chip" type="button" aria-pressed="false"><span>Cebu City</span></button>
-      <button class="chip" type="button" aria-pressed="false"><span>Panglao, Bohol</span></button>
-    </div>
+    <div class="fgroup" role="group" aria-labelledby="g1"><span class="cap muted" id="g1">Work type</span>
+      <button class="chip" type="button" aria-pressed="false">Remote</button>
+      <button class="chip" type="button" aria-pressed="false">Hybrid</button>
+      <button class="chip" type="button" aria-pressed="false">On-site</button></div>
+    <div class="fgroup" role="group" aria-labelledby="g2"><span class="cap muted" id="g2">Duration</span>
+      <button class="chip" type="button" aria-pressed="false">3 months</button>
+      <button class="chip" type="button" aria-pressed="false">500 hours</button></div>
+    <div class="fgroup" role="group" aria-labelledby="g3"><span class="cap muted" id="g3">Location</span>
+      <button class="chip" type="button" aria-pressed="false">Cebu City</button>
+      <button class="chip" type="button" aria-pressed="false">Panglao, Bohol</button></div>
   </div>
 
-  <p class="count label" role="status">12 internships found</p>
+  <p class="cap muted count" role="status">12 internships found</p>
 
-  <article class="listing">
-    <span class="avatar" aria-hidden="true">C</span>
-    <div class="l-body">
+  <article class="glass listing">
+    <div class="avatar" aria-hidden="true">C</div>
+    <div class="l-t">
       <h3>Cost Accounting Intern</h3>
       <p class="muted">Cebu Audit &amp; Tax Advisors</p>
       <p class="tags"><span>Cebu City</span><span>On-site</span><span>3 months</span></p>
-      <p>For BS Management Accounting students. Support [rest of description]</p>
+      <p class="desc">For BS Management Accounting students. Support [rest of description]</p>
     </div>
-    <a class="btn" href="#login"><span class="btn-face">Log in to apply <i class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></i></span></a>
+    <a class="pill-dark" href="#login">Log in to apply <span class="circ"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
   </article>
-  <p class="placeholder">[11 more listings load here]</p>
+  <p class="ph">[11 more listings load here]</p>
 </section>
 
-<!-- ============ WHO IT'S FOR ============ -->
-<section class="panel frame" id="roles" aria-labelledby="roles-h">
+<!-- ================= HOW IT WORKS ================= -->
+<section class="panel" id="how" aria-labelledby="how-h">
   <div class="sec-head">
-    <div>
-      <p class="eyebrow">Who it's for</p>
-      <h2 id="roles-h">Made for the people who move internships forward.</h2>
-    </div>
+    <div><p class="cap eyebrow">A connected workflow</p><h2 id="how-h">From preparation to placement.</h2></div>
+    <p class="sub">SkillBridge brings the key steps of internship preparation into one role-aware platform.</p>
+  </div>
+  <div class="grid3">
+    <article class="glass step"><span class="num" aria-hidden="true">01</span><h3>Build your profile</h3><p>Record academic and contact details, describe your goals, and keep your resume and portfolio evidence together.</p></article>
+    <article class="glass step"><span class="num" aria-hidden="true">02</span><h3>Develop competencies</h3><p>Review skill categories, document your experience, and submit evidence for coordinator review.</p></article>
+    <article class="glass step"><span class="num" aria-hidden="true">03</span><h3>Explore opportunities</h3><p>Browse internships, submit applications, and follow application updates from your student workspace.</p></article>
+  </div>
+</section>
+
+<!-- ================= WHO IT'S FOR ================= -->
+<section class="panel" id="who" aria-labelledby="who-h">
+  <div class="sec-head">
+    <div><p class="cap eyebrow">Who it's for</p><h2 id="who-h">Made for the people who move internships forward.</h2></div>
     <p class="sub">Each account sees tools aligned to its role and responsibilities.</p>
   </div>
-  <div class="roles">
+  <div class="grid3">
     <article class="glass role">
-      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m2.5 9.5 9.5-5 9.5 5-9.5 5z"/><path d="M6.5 12v4.5c0 1.2 2.5 2.5 5.5 2.5s5.5-1.3 5.5-2.5V12"/></svg></span>
+      <span class="ico-c" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="m2.5 9.5 9.5-5 9.5 5-9.5 5z"/><path d="M6.5 12v4.5c0 1.2 2.5 2.5 5.5 2.5s5.5-1.3 5.5-2.5V12"/></svg></span>
       <h3>Students</h3>
       <ul>
-        <li>Manage your profile, competencies, and portfolio</li>
-        <li>Submit and follow internship applications</li>
-        <li>Track your readiness checklist</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Manage your profile, competencies, and portfolio</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Submit and follow internship applications</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Track your readiness checklist</li>
       </ul>
-      <a class="btn" href="#login"><span class="btn-face">Student sign in <i class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></i></span></a>
+      <a class="pill-dark" href="#login">Student sign in <span class="circ"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
     </article>
     <article class="glass role">
-      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V5h8v15M12 10h8v10M2.5 20h19M7 9h2M7 13h2M15 14h2M15 17h2"/></svg></span>
+      <span class="ico-c" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><path d="M4 20V5h8v15M12 10h8v10M2.5 20h19M7 9h2M7 13h2M15 14h2M15 17h2"/></svg></span>
       <h3>Coordinators</h3>
       <ul>
-        <li>Review student profiles and evidence</li>
-        <li>Follow your assigned students</li>
-        <li>Generate placement reports</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Review student profiles and evidence</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Follow your assigned students</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Generate placement reports</li>
       </ul>
-      <a class="btn btn-light" href="#login"><span class="btn-face">Coordinator sign in</span></a>
+      <a class="pill-light" href="#login">Coordinator sign in</a>
     </article>
     <article class="glass role">
-      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 13h18"/></svg></span>
+      <span class="ico-c" aria-hidden="true"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 13h18"/></svg></span>
       <h3>Employers</h3>
       <ul>
-        <li>Manage your internship postings</li>
-        <li>Review submitted applicants from your employer workspace</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Manage your internship postings</li>
+        <li><svg class="ic chk" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Review submitted applicants from your employer workspace</li>
       </ul>
-      <a class="btn btn-light" href="#login"><span class="btn-face">Employer sign in</span></a>
+      <a class="pill-light" href="#login">Employer sign in</a>
     </article>
   </div>
 </section>
 
-<!-- ============ FAQ ============ -->
-<section class="panel frame" id="faq" aria-labelledby="faq-h">
-  <p class="eyebrow">Frequently asked</p>
-  <h2 id="faq-h">Good to know<br>before you begin.</h2>
-  <!-- FAQ answers were not supplied: each uses a sentence from the page copy. Replace before launch. -->
+<!-- ================= FAQ ================= -->
+<section class="panel" id="faq" aria-labelledby="faq-h">
+  <p class="cap eyebrow">Frequently asked</p>
+  <h2 id="faq-h" class="faq-h">Good to know before you begin.</h2>
+  <!-- FAQ answers were not supplied; each reuses a sentence from the page copy. Replace before launch. -->
   <div class="faq">
-    <details class="glass" open>
-      <summary>How do I get a student account?<i class="plus" aria-hidden="true"></i></summary>
-      <p>Sign in with the account provided by your school to start building your profile and tracking your progress.</p>
-    </details>
-    <details class="glass">
-      <summary>Where can I see current internship openings?<i class="plus" aria-hidden="true"></i></summary>
-      <p>See what is open right now. Log in as a student to apply.</p>
-    </details>
-    <details class="glass">
-      <summary>How are competency submissions reviewed?<i class="plus" aria-hidden="true"></i></summary>
-      <p>Document your experience, and submit evidence for coordinator review.</p>
-    </details>
-    <details class="glass">
-      <summary>Can I track my applications?<i class="plus" aria-hidden="true"></i></summary>
-      <p>Follow application updates from your student workspace.</p>
-    </details>
+    <details class="glass" open><summary>How do I get a student account?<span class="plus" aria-hidden="true"></span></summary><p>Sign in with the account provided by your school to start building your profile and tracking your progress.</p></details>
+    <details class="glass"><summary>Where can I see current internship openings?<span class="plus" aria-hidden="true"></span></summary><p>See what is open right now. Log in as a student to apply.</p></details>
+    <details class="glass"><summary>How are competency submissions reviewed?<span class="plus" aria-hidden="true"></span></summary><p>Document your experience, and submit evidence for coordinator review.</p></details>
+    <details class="glass"><summary>Can I track my applications?<span class="plus" aria-hidden="true"></span></summary><p>Follow application updates from your student workspace.</p></details>
   </div>
 </section>
 
-<!-- ============ CLOSING BAND ============ -->
-<section class="closing frame" id="login" aria-labelledby="close-h">
-  <h2 id="close-h">Take the next step in your internship journey.</h2>
-  <p>Sign in with the account provided by your school to start building your profile and tracking your progress.</p>
-  <a class="btn btn-onink btn-lg" href="#login"><span class="btn-face">Sign in <i class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></i></span></a>
+<!-- ================= CLOSING ================= -->
+<section class="closing" id="login" aria-labelledby="cl-h">
+  <div>
+    <h2 id="cl-h">Take the next step in your internship journey.</h2>
+    <p>Sign in with the account provided by your school to start building your profile and tracking your progress.</p>
+  </div>
+  <a class="pill-inv" href="#login">Sign in <span class="circ"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
 </section>
 
 </main>
 
-<footer class="footer glass frame">
-  <p class="f-about">Internship readiness and verified competencies for students, coordinators, and employers, in one shared workspace.</p>
-  <nav aria-label="Explore"><span class="label">Explore</span>
-    <a href="#how-it-works">How it works</a><a href="#internships">Internships</a><a href="#roles">Who it's for</a><a href="#faq">FAQs</a>
-  </nav>
-  <nav aria-label="Account"><span class="label">Account</span>
-    <a href="#login">Log in</a>
-  </nav>
+<footer class="footer glass">
+  <div>
+    <a class="logo" href="#top" aria-label="SkillBridge, St. Cecilia's College, back to top">
+      <svg class="mark" viewBox="0 0 44 44" aria-hidden="true" focusable="false"><rect width="44" height="44" rx="12" fill="#2a2522"/><path d="M8 29 Q22 10 36 29" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M7 30.5H37M15 23.5V30.5M22 20.5V30.5M29 23.5V30.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span class="logo-t"><strong>SkillBridge</strong><small>St. Cecilia's College</small></span>
+    </a>
+    <p class="f-about">Internship readiness and verified competencies for students, coordinators, and employers, in one shared workspace.</p>
+  </div>
+  <nav aria-label="Explore"><span class="cap muted">Explore</span><a href="#how">How it works</a><a href="#internships">Internships</a><a href="#who">Who it's for</a><a href="#faq">FAQs</a></nav>
+  <nav aria-label="Account"><span class="cap muted">Account</span><a href="#login">Log in</a></nav>
 </footer>
 
+</div>
 </div>
 </body>
 </html>

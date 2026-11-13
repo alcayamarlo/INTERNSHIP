@@ -1,57 +1,51 @@
 (function () {
   'use strict';
 
-  // ---- Chips: toggle aria-pressed (state only, no filtering) ----
-  document.querySelectorAll('.chip').forEach(function (chip) {
-    chip.addEventListener('click', function () {
-      chip.setAttribute('aria-pressed', chip.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+  // Chips: single-select per group; clicking the selected chip clears it. State only, no filtering.
+  document.querySelectorAll('.fgroup').forEach(function (group) {
+    var chips = [].slice.call(group.querySelectorAll('.chip'));
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        var wasOn = chip.getAttribute('aria-pressed') === 'true';
+        chips.forEach(function (c) { c.setAttribute('aria-pressed', 'false'); });
+        if (!wasOn) chip.setAttribute('aria-pressed', 'true');
+      });
     });
   });
 
-  // ---- Header search: toggle button and "/" shortcut (not wired to results) ----
-  var toggle = document.getElementById('searchToggle');
-  var form = document.getElementById('navSearch');
-  var input = document.getElementById('navSearchInput');
-  function setSearch(open) {
-    form.hidden = !open;
-    toggle.setAttribute('aria-expanded', String(open));
-    if (open) input.focus(); else toggle.focus();
-  }
-  toggle.addEventListener('click', function () { setSearch(form.hidden); });
-  form.addEventListener('submit', function (e) { e.preventDefault(); });
-  document.addEventListener('keydown', function (e) {
-    var t = e.target, typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
-    if (e.key === '/' && !typing && !e.metaKey && !e.ctrlKey && !e.altKey) { e.preventDefault(); setSearch(true); }
-    else if (e.key === 'Escape' && !form.hidden) { setSearch(false); }
-  });
-
-  // ---- Internships search form: not wired ----
-  var board = document.getElementById('boardSearch');
+  // Internships search form: visual only.
+  var board = document.querySelector('[data-board-search]');
   if (board) board.addEventListener('submit', function (e) { e.preventDefault(); });
 
-  // ---- Pointer tilt (max 6deg): featured card and hero status labels. Fine pointers only. ----
-  if (!window.matchMedia) return;
-  if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-  var MAX = 6, RANGE = 360, px = 0, py = 0, frame = 0;
-  var targets = [].slice.call(document.querySelectorAll('[data-tilt], .stamp'));
-  function clamp(v) { return Math.max(-1, Math.min(1, v)); }
-  function paint() {
-    frame = 0;
-    targets.forEach(function (el) {
-      var r = el.getBoundingClientRect();
-      var nx = clamp((px - (r.left + r.width / 2)) / RANGE);
-      var ny = clamp((py - (r.top + r.height / 2)) / RANGE);
-      el.style.setProperty('--ry', (nx * MAX).toFixed(2) + 'deg');
-      el.style.setProperty('--rx', (-ny * MAX).toFixed(2) + 'deg');
-    });
-  }
-  document.addEventListener('pointermove', function (e) {
-    px = e.clientX; py = e.clientY;
-    if (!frame) frame = requestAnimationFrame(paint);
-  }, { passive: true });
-  document.addEventListener('pointerleave', function () {
-    targets.forEach(function (el) { el.style.setProperty('--rx', '0deg'); el.style.setProperty('--ry', '0deg'); });
+  // Header search button: scrolls to the internships search and focuses "What".
+  var s = document.querySelector('[data-search]');
+  if (s) s.addEventListener('click', function () {
+    var what = document.getElementById('what');
+    var sec = document.getElementById('internships');
+    if (sec) sec.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    if (what) setTimeout(function () { what.focus({ preventScroll: true }); }, 350);
   });
+
+  // Polish: nav highlight for the section in view, and a gentle reveal.
+  if (!('IntersectionObserver' in window)) return;
+  var links = {};
+  document.querySelectorAll('.pillnav a').forEach(function (a) { links[a.getAttribute('href').slice(1)] = a; });
+  var spy = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      var a = links[en.target.id];
+      if (!a) return;
+      if (en.isIntersecting) {
+        Object.keys(links).forEach(function (k) { links[k].removeAttribute('aria-current'); });
+        a.setAttribute('aria-current', 'true');
+      }
+    });
+  }, { rootMargin: '-40% 0px -50% 0px' });
+  Object.keys(links).forEach(function (id) { var el = document.getElementById(id); if (el) spy.observe(el); });
+
+  var targets = document.querySelectorAll('.panel, .closing, .step, .role, .faq details');
+  targets.forEach(function (el) { el.classList.add('reveal'); });
+  var rev = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('in'); rev.unobserve(en.target); } });
+  }, { threshold: .08 });
+  targets.forEach(function (el) { rev.observe(el); });
 })();

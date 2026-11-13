@@ -1,0 +1,16 @@
+/* Live 3D bridge (sb-bridge.js). Without JS or WebGL the static SVG of the finished bridge shows and the stage buttons stay hidden. */
+html body.sb-glass.skillbridge-public .sb-bridge { margin: 0 0 16px; }
+html body.sb-glass.skillbridge-public .sb-bridge-stage { position: relative; aspect-ratio: 21 / 9; overflow: hidden; border: 1px solid rgba(255,255,255,.72); border-radius: 28px; background: #f3e9e1; box-shadow: 0 12px 32px rgba(60,40,30,.12); }
+html body.sb-glass.skillbridge-public .sb-bridge-stage canvas, html body.sb-glass.skillbridge-public .sb-bridge-fallback { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+html body.sb-glass.skillbridge-public .sb-bridge.is-live .sb-bridge-fallback { display: none; }
+html body.sb-glass.skillbridge-public .sb-bridge-btns { display: none; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+html body.sb-glass.skillbridge-public .sb-bridge.is-live .sb-bridge-btns { display: flex; }
+html body.sb-glass.skillbridge-public .sb-bridge-btn { min-height: 44px; padding: 0 20px; border: 1px solid rgba(255,255,255,.72); border-radius: 999px; background: rgba(255,255,255,.7); color: #201b19; font: 600 14px/1 'Manrope', system-ui, sans-serif; cursor: pointer; transition: background-color 200ms ease, color 200ms ease; }
+html body.sb-glass.skillbridge-public .sb-bridge-btn:hover { background: #fff; }
+html body.sb-glass.skillbridge-public .sb-bridge-btn[aria-pressed="true"] { border-color: #2a2522; background: #2a2522; color: #fff; }
+html body.sb-glass.skillbridge-public .sb-bridge-btn:focus-visible { outline: 3px solid #c8102e; outline-offset: 3px; }
+@media (max-width: 560px) {
+    html body.sb-glass.skillbridge-public .sb-bridge-stage { aspect-ratio: 4 / 3; border-radius: 22px; }
+    html body.sb-glass.skillbridge-public .sb-bridge-btn { flex: 1 1 100%; }
+}
+@media (prefers-reduced-motion: reduce) { html body.sb-glass.skillbridge-public .sb-bridge-btn { transition: none; } }
