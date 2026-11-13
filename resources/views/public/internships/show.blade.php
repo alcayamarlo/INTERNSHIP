@@ -9,35 +9,23 @@
 @endphp
 <section class="public-section">
     <div class="public-detail">
-        <x-breadcrumbs :items="[
-            ['label' => 'Home', 'url' => route('home')],
-            ['label' => 'Internships', 'url' => route('internships.index')],
-            ['label' => $internship->title],
-        ]" />
+        <div class="sb-detail-grid">
+            <div class="sb-detail-main">
+                <div class="sb-detail-head">
+                <x-breadcrumbs :items="[
+                    ['label' => 'Home', 'url' => route('home')],
+                    ['label' => 'Internships', 'url' => route('internships.index')],
+                    ['label' => $internship->title],
+                ]" />
 
-        @if(session('info'))
-            <p class="public-notice" role="status">{{ session('info') }}</p>
-        @endif
+                @if(session('info'))
+                    <p class="public-notice" role="status">{{ session('info') }}</p>
+                @endif
 
-        <h1 class="public-page-title">{{ $internship->title }}</h1>
-        <p class="public-job-company"><i class="bi bi-building" aria-hidden="true"></i> {{ $internship->employer?->company_name }} <x-verified-badge :employer="$internship->employer" /></p>
+                <h1 class="public-page-title">{{ $internship->title }}</h1>
+                <p class="public-job-company"><i class="bi bi-building" aria-hidden="true"></i> {{ $internship->employer?->company_name }} <x-verified-badge :employer="$internship->employer" /></p>
 
-        <ul class="public-job-meta">
-            @if($internship->location)<li><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ $internship->location }}</li>@endif
-            @if($internship->work_setup)<li><i class="bi bi-laptop" aria-hidden="true"></i> {{ $internship->work_setup->label() }}</li>@endif
-            @if($internship->duration)<li><i class="bi bi-clock" aria-hidden="true"></i> {{ $internship->duration }}</li>@endif
-            @if($internship->expires_at)<li><i class="bi bi-calendar-event" aria-hidden="true"></i> Apply by {{ $internship->expires_at->format('M d, Y') }}</li>@endif
-        </ul>
-
-        <div class="public-job-actions">
-            @if($canApply)
-                <a class="public-button public-button-primary" href="{{ route('internships.apply', $internship) }}">Apply</a>
-                @guest<span class="public-apply-note">You will be asked to log in first.</span>@endguest
-            @else
-                <span class="public-apply-note">Only students can apply</span>
-            @endif
-        </div>
-
+                </div>
         <div class="public-detail-body">
             <h2>Description</h2>
             <p>{!! nl2br(e($internship->description)) !!}</p>
@@ -60,6 +48,31 @@
                     @endforeach
                 </ul>
             @endif
+        </div>
+            </div>
+            <aside class="sb-detail-side" aria-label="Internship summary">
+                <div class="sb-side-company">
+                    <span class="sb-side-avatar" aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr((string) ($internship->employer?->company_name ?: $internship->title), 0, 1)) }}</span>
+                    <div><p class="sb-detail-side-label">At a glance</p><p class="sb-side-name">{{ $internship->employer?->company_name }}</p></div>
+                </div>
+                <ul class="public-job-meta">
+                    @if($internship->location)<li><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ $internship->location }}</li>@endif
+                    @if($internship->work_setup)<li><i class="bi bi-laptop" aria-hidden="true"></i> {{ $internship->work_setup->label() }}</li>@endif
+                    @if($internship->duration)<li><i class="bi bi-clock" aria-hidden="true"></i> {{ $internship->duration }}</li>@endif
+                    @if($internship->expires_at)<li><i class="bi bi-calendar-event" aria-hidden="true"></i> Apply by {{ $internship->expires_at->format('M d, Y') }}</li>@endif
+                </ul>
+
+                <div class="public-job-actions">
+                    @if($canApply)
+                        <a class="public-button public-button-primary" href="{{ route('internships.apply', $internship) }}">Apply</a>
+                        @guest<span class="public-apply-note">You will be asked to log in first.</span>@endguest
+                    @else
+                        <span class="public-apply-note">Only students can apply</span>
+                    @endif
+                </div>
+
+                <a class="public-button sb-side-back" href="{{ route('internships.index') }}">All internships</a>
+            </aside>
         </div>
     </div>
 </section>

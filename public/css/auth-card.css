@@ -318,3 +318,63 @@
 .lm-caps { border-radius: 14px; }
 .lm-info svg { color: #8f1b2e; }
 .lm-resend .lm-link { color: #8f1b2e; }
+
+/* =====================================================================================================
+   V4 (black / blue / red): login, forgot-password and reset-password share one look with the landing page.
+   White dialog, black text, blue links and focus rings, red only on the primary button and the small rule.
+   ===================================================================================================== */
+.lm-backdrop { background: rgba(11, 13, 18, .6); }
+.lm-dialog { border: 1px solid rgba(11, 13, 18, .12); border-radius: 32px; background: #fff; color: #0b0d12; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: 0 30px 80px rgba(6, 8, 14, .35); font-family: 'Manrope', system-ui, 'Segoe UI', sans-serif; }
+.lm-head { padding: 32px 32px 8px; color: #0b0d12; background: none; }
+.lm-brand { color: #0b0d12; }
+.lm-logo { border: 1px solid rgba(11, 13, 18, .12); background: #fff; }
+.lm-title { color: #0b0d12; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 40px; font-weight: 400; line-height: 1; letter-spacing: -.01em; }
+.lm-title::before { content: ""; display: block; width: 32px; height: 2px; margin-bottom: 14px; background: #d92d3a; }
+.lm-title .lm-t2 { color: #4a4f5c; }
+.lm-cap { color: #4a4f5c; }
+.lm-close { border: 1px solid rgba(11, 13, 18, .12); background: #fff; color: #0b0d12; box-shadow: 0 3px 0 rgba(6, 8, 14, .28); }
+.lm-close:hover { background: #e3e8f5; }
+.lm-close:focus-visible, .lm-toggle:focus-visible, .lm-submit:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 3px; }
+.lm-label { color: #0b0d12; }
+.lm-label span { color: #b91f2c; }
+.lm-ico { color: #4a4f5c; }
+.lm-input, .lm-code-box { border: 1px solid #6b7080; background: #fff; color: #0b0d12; }
+.lm-input { border-radius: 999px; }
+.lm-code-box { border-radius: 18px; }
+.lm-input::placeholder { color: #5b6070; opacity: 1; }
+.lm-input:focus, .lm-code-box:focus { border-color: #1d4ed8; box-shadow: 0 0 0 3px rgba(29, 78, 216, .25); }
+.lm-input:focus-visible, .lm-code-box:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
+.lm-input.is-invalid { border-color: #b91f2c; }
+.lm-toggle { color: #4a4f5c; }
+.lm-toggle:hover { background: #e3e8f5; color: #0b0d12; }
+.lm-check input:checked + .lm-box { border-color: #1d4ed8; background: #1d4ed8; }
+.lm-check input:focus-visible + .lm-box { box-shadow: 0 0 0 3px rgba(29, 78, 216, .35); }
+.lm-link { color: #1d4ed8; }
+.lm-link:hover { color: #1e3a8a; }
+.lm-resend .lm-link { color: #1d4ed8; }
+.lm-submit { height: 52px; border-radius: 999px; background: #d92d3a; color: #fff; box-shadow: 0 4px 0 rgba(6, 8, 14, .4); font-weight: 600; filter: none; transition: background-color 200ms ease, transform 150ms ease, box-shadow 150ms ease; }
+.lm-submit:hover:not(:disabled) { background: #b91f2c; filter: none; transform: none; }
+.lm-submit:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 rgba(6, 8, 14, .4); }
+.lm-submit--ghost { background: #fff; color: #0b0d12; box-shadow: inset 0 0 0 1.5px #0b0d12, 0 4px 0 rgba(6, 8, 14, .4); }
+.lm-submit--ghost:hover:not(:disabled) { background: #e3e8f5; color: #0b0d12; }
+.lm-foot { border-top-color: rgba(11, 13, 18, .12); color: #4a4f5c; }
+.lm-lead, .lm-hint, .lm-timer, .lm-strength-text, .lm-trust, .lm-info { color: #4a4f5c; }
+.lm-info { background: #e3e8f5; }
+.lm-info svg { color: #1e3a8a; }
+.lm-error, .lm-timer.is-expired { color: #a1121e; }
+.lm-error::before { background: #a1121e; }
+.lm-alert { border-radius: 18px; }
+.lm-alert-bad { border-left: 3px solid #d92d3a; background: #fdecee; color: #0b0d12; }
+.lm-strength-bars i { background: #d5d9e6; }
+.lm-caps { border-radius: 14px; }
+@media (max-width: 480px) { .lm-head { padding: 24px 22px 6px; } .lm-title { font-size: 34px; } }
+@media (prefers-reduced-motion: reduce) { .lm-dialog, .lm-backdrop, .lm-submit, .lm-close { transition: none !important; animation: none !important; } }
+
+/* V4 specificity: the app-wide input/heading rules (red focus border, Bricolage headings) are more specific than the rules above */
+.lm-root .lm-title, .lm-root .lm-title .lm-t1 { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 400; letter-spacing: -.01em; }
+.lm-root .lm-title .lm-t2 { font-family: 'Manrope', system-ui, 'Segoe UI', sans-serif; font-weight: 500; letter-spacing: 0; }
+.lm-root .lm-input:focus, .lm-root .lm-code-box:focus { border-color: #1d4ed8; box-shadow: 0 0 0 3px rgba(29, 78, 216, .25); }
+.lm-root .lm-input.is-invalid, .lm-root .lm-input.is-invalid:focus { border-color: #b91f2c; }
+.lm-root .lm-input, .lm-root .lm-code-box { border-color: #6b7080; }
+.lm-root .lm-input:focus, .lm-root .lm-code-box:focus { border-color: #1d4ed8; }
+.lm-root { --sb-input-border: #6b7080; }
