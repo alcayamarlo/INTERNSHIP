@@ -1,0 +1,68 @@
+/* Shared filter bar for employer student lists (<x-table-filters>). */
+.tf-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--sb-border);
+    border-radius: 16px;
+    background: var(--sb-surface);
+}
+
+.tf-field {
+    flex: 1 1 160px;
+    min-width: 0;
+}
+
+.tf-field--search {
+    flex: 2 1 220px;
+}
+
+.tf-field .form-label {
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--sb-muted);
+}
+
+.tf-actions {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 8px;
+}
+
+.tf-actions [aria-disabled="true"] {
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+/* Results update on their own once table-filters.js runs. */
+.tf-bar.is-enhanced .tf-apply {
+    display: none;
+}
+
+.tf-count {
+    flex: 1 1 100%;
+    margin: 0;
+    color: var(--sb-muted);
+    font-size: 0.85rem;
+}
+
+[data-tf-results].is-loading {
+    opacity: 0.6;
+    transition: opacity 120ms ease;
+}
+
+@media (max-width: 767.98px) {
+    .tf-field,
+    .tf-field--search,
+    .tf-actions {
+        flex: 1 1 100%;
+    }
+
+    .tf-actions .btn {
+        flex: 1 1 0;
+    }
+}

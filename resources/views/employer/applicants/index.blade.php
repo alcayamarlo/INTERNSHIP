@@ -190,7 +190,8 @@
     .employer-page-header { margin-bottom: 14px; }
     .employer-page-title { margin: 0 0 2px; font-size: clamp(24px, 2.4vw, 32px); }
     .employer-page-subtitle { font-size: .95rem; }
-    .ap-layout { grid-template-columns: minmax(0, 1.7fr) minmax(340px, 1fr); gap: 16px; height: calc(100vh - 170px); min-height: 460px; }
+    /* 300px leaves room for the header and the filter bar above the list. */
+    .ap-layout { grid-template-columns: minmax(0, 1.7fr) minmax(340px, 1fr); gap: 16px; height: calc(100vh - 300px); min-height: 460px; }
     .ap-list, .ap-panel-wrap { min-height: 0; height: 100%; }
     .ap-list .table-responsive { overflow-y: auto; }
     .ap-layout .table thead th { position: sticky; top: 0; z-index: 1; padding: .7rem 1rem; }
@@ -251,7 +252,11 @@
         <p class="employer-page-subtitle">Review student applications</p>
     </div>
 
-    <div class="ap-layout" data-live-region="applicants" data-live-topics="applications">
+    <x-table-filters :action="route('employer.applicants.index')" :filters="$filters" :options="$filterOptions"
+                     :showing="$applications->total()" :total="$totalCount" target="#applicantResults" label="Filter applicants" />
+
+    <div class="ap-layout" id="applicantResults" data-tf-results data-live-region="applicants" data-live-topics="applications">
+        <span data-tf-meta data-showing="{{ number_format($applications->total()) }}" data-total="{{ number_format($totalCount) }}" hidden></span>
         <div class="card ap-list">
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
@@ -284,7 +289,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center text-muted py-4">No applicants yet.</td>
+                                <td colspan="5" class="text-center text-muted py-4">{{ $filters->active() ? 'No results found. Try other filters or clear them.' : 'No applicants yet.' }}</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -345,7 +350,7 @@
                     </div>
                 </div>
             @empty
-                <div class="ap-empty">Applicants will appear here once students apply.</div>
+                <div class="ap-empty">{{ $filters->active() ? 'No results found.' : 'Applicants will appear here once students apply.' }}</div>
             @endforelse
         </div>
     </div>

@@ -9,6 +9,11 @@
 
 <p class="small text-muted">Sent today: {{ $sentToday }} of {{ $dailyLimit }}</p>
 
+<x-table-filters :action="route('employer.invitations.index')" :filters="$filters" :options="$filterOptions"
+                 :showing="$invitations->total()" :total="$totalCount" target="#invitationResults" label="Filter sent invitations" />
+
+<div id="invitationResults" data-tf-results>
+<span data-tf-meta data-showing="{{ number_format($invitations->total()) }}" data-total="{{ number_format($totalCount) }}" hidden></span>
 <div class="card">
     <div class="table-responsive">
         <table class="table table-hover mb-0">
@@ -37,11 +42,16 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="text-center text-muted py-4">No invitations sent yet. <a href="{{ route('employer.students.index') }}">Browse students</a> to invite one.</td></tr>
+                    @if($filters->active())
+                        <tr><td colspan="6" class="text-center text-muted py-4">No results found. Try other filters or clear them.</td></tr>
+                    @else
+                        <tr><td colspan="6" class="text-center text-muted py-4">No invitations sent yet. <a href="{{ route('employer.students.index') }}">Browse students</a> to invite one.</td></tr>
+                    @endif
                 @endforelse
             </tbody>
         </table>
     </div>
     @if($invitations->hasPages())<div class="card-footer">{{ $invitations->links() }}</div>@endif
+</div>
 </div>
 @endsection
