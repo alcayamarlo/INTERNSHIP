@@ -1,7 +1,7 @@
 {{-- Public-safe internship card. Expects $internship (with employer). --}}
 @php
     $viewer = auth()->user();
-    $canApply = ! $viewer || $viewer->isRole(\App\Enums\UserRole::Student);
+    $canApply = true; // everyone sees Apply; non-students are told on click that only students can apply
 @endphp
 <article class="public-job-card reveal">
     <h3><a href="{{ route('internships.show', $internship) }}">{{ $internship->title }}</a></h3>

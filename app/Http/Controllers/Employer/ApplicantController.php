@@ -37,8 +37,11 @@ class ApplicantController extends Controller
             ->with(['student.user', 'internship'])
             ->latest('applied_at')
             ->paginate(10);
-        $applications->getCollection()->each(fn (InternshipApplication $application) => $application
-            ->setAttribute('company_profile', $this->companyProfile->summary($application->student)));
+        // The list and the side panel use the same safe subset as Browse Students (no contact details,
+        // IDs or documents). The full profile stays on the Review page.
+        $applications->getCollection()->each(function (InternshipApplication $application) {
+            $application->setAttribute('company_profile', $this->companyProfile->browseCard($application->student));
+        });
 
         return view('employer.applicants.index', compact('applications'));
     }

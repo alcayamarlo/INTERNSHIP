@@ -1,0 +1,108 @@
+/* Student dashboard (resources/views/student/dashboard.blade.php).
+   Scoped to .sd so no other page changes. Uses only the app tokens (--sb-*), so the red/white
+   theme and dark mode keep working. Layout: header, announcement strip, OJT progress,
+   one KPI band, then a main column (table) with a quick-actions rail. */
+
+.sd { --sd-radius: 16px; --sd-gap: 24px; display: grid; gap: var(--sd-gap); }
+.sd > * { margin: 0 !important; min-width: 0; }
+
+/* ---------- Page header ---------- */
+.sd .sb-page-header { align-items: flex-end; margin: 0; padding-bottom: 20px; border-bottom: 1px solid var(--sb-border); }
+.sd .sb-page-header .eyebrow { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 12px; letter-spacing: .14em; }
+.sd .sb-page-header .eyebrow::before { content: ""; width: 24px; height: 2px; border-radius: 2px; background: var(--sb-brand); }
+.sd .sb-page-header h1 { font-size: clamp(30px, 3.2vw, 42px); font-weight: 800; letter-spacing: -.02em; line-height: 1.05; }
+.sd .sb-page-header p { margin-top: 10px; font-size: 16px; max-width: 60ch; }
+
+/* ---------- Cards ---------- */
+.sd .card { border-radius: var(--sd-radius); box-shadow: 0 1px 2px rgba(11, 13, 18, .05), 0 12px 28px -18px rgba(11, 13, 18, .18); overflow: hidden; }
+.sd .card-header { padding: 18px 24px; gap: 10px 16px; }
+.sd .card-header h2 { gap: 12px; font-size: 17px; letter-spacing: -.01em; }
+.sd .card-header h2 > i { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--sb-red-soft); font-size: 16px; }
+.sd .card-body { padding: 24px; }
+.sd .sb-card-link { padding: 6px 12px; border-radius: 999px; background: var(--sb-red-soft); font-size: 13px; transition: background-color 160ms ease, color 160ms ease; }
+.sd .sb-card-link:hover { background: var(--sb-brand); color: #fff; }
+
+/* ---------- Announcements: slim strip with an accent bar ---------- */
+.sd [data-dashboard-announcements] { position: relative; }
+.sd [data-dashboard-announcements]::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--sb-brand); }
+.sd [data-dashboard-announcements] .sb-list-item { padding: 16px 24px 16px 28px; align-items: center; }
+.sd [data-dashboard-announcements] .sb-list-title { font-size: 15px; }
+.sd [data-dashboard-announcements] .sb-list-meta { padding: 4px 10px; border-radius: 999px; background: var(--sb-red-soft); color: var(--sb-brand-content); font-weight: 600; }
+
+/* ---------- OJT progress ---------- */
+.sd .ojt-pc-list { gap: 16px; }
+.sd .ojt-pc { gap: 14px; padding: 22px; border-radius: 14px; background: var(--sb-surface-raised, var(--sb-surface)); }
+.sd .ojt-pc-title h3 { font-size: 17px; }
+.sd .ojt-pc-title p { font-size: 14px; }
+.sd .ojt-pc-hours { align-items: flex-end; font-size: 15px; }
+.sd .ojt-pc-hours strong { font-size: 40px; font-weight: 800; letter-spacing: -.02em; line-height: 1; }
+.sd .ojt-pc-percent { font-size: 18px; }
+.sd .ojt-pc .progress { height: 10px; border-radius: 999px; background: var(--sb-red-soft); }
+.sd .ojt-pc .progress-bar { border-radius: 999px; }
+.sd .ojt-pc-note { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; background: var(--sb-red-soft); font-size: 13px; }
+.sd .ojt-pc-stats { gap: 0; border: 1px solid var(--sb-border); border-radius: 12px; overflow: hidden; }
+.sd .ojt-pc-stats > div { padding: 12px 14px; border-radius: 0; background: transparent; }
+.sd .ojt-pc-stats > div + div { border-left: 1px solid var(--sb-border); }
+.sd .ojt-pc-stats dt { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.sd .ojt-pc-stats dd { margin-top: 4px; font-size: 17px; }
+.sd .ojt-pc-link { font-weight: 700; }
+
+/* ---------- KPI band: one panel, three cells ---------- */
+.sd .sb-stat-grid { gap: 0; margin: 0; border: 1px solid var(--sb-border); border-radius: var(--sd-radius); background: var(--sb-surface); box-shadow: 0 1px 2px rgba(11, 13, 18, .05), 0 12px 28px -18px rgba(11, 13, 18, .18); overflow: hidden; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.sd .sb-stat { align-items: center; gap: 18px; min-height: 0; padding: 26px 28px; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+.sd .sb-stat + .sb-stat { border-left: 1px solid var(--sb-border); }
+.sd .sb-stat-icon { width: 52px; height: 52px; border-radius: 14px; font-size: 22px; }
+.sd .sb-stat-body { flex: 1; }
+.sd .sb-stat-label { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.sd .sb-stat-value { margin-top: 6px; font-size: 40px; font-weight: 800; letter-spacing: -.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+.sd .sb-stat-hint { margin-top: 8px; font-size: 13px; }
+.sd .sb-stat .progress { height: 8px; margin-top: 12px; border-radius: 999px; background: var(--sb-red-soft); }
+.sd .sb-stat .progress-bar { border-radius: 999px; }
+.sd a.sb-stat:hover { background: var(--sb-hover-neutral); }
+.sd a.sb-stat:hover .sb-stat-hint { color: var(--sb-brand-content); }
+@media (max-width: 767.98px) {
+    .sd .sb-stat + .sb-stat { border-left: 0; border-top: 1px solid var(--sb-border); }
+}
+
+/* ---------- Main row: table + rail ---------- */
+.sd .sb-layout-2 { grid-template-columns: minmax(0, 1fr) 360px; gap: var(--sd-gap); align-items: start; }
+@media (max-width: 1199.98px) { .sd .sb-layout-2 { grid-template-columns: minmax(0, 1fr); } }
+
+/* tables */
+.sd .table { margin: 0; --bs-table-bg: transparent; }
+.sd .table thead th { padding: 14px 24px; border-bottom: 1px solid var(--sb-border); background: transparent; color: var(--sb-muted); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+.sd .table tbody td { padding: 18px 24px; border-color: var(--sb-border); vertical-align: middle; font-size: 15px; }
+.sd .table tbody tr:last-child td { border-bottom: 0; }
+.sd .table tbody strong { font-weight: 700; }
+.sd .table-hover > tbody > tr:hover > * { --bs-table-bg-state: var(--sb-hover-neutral); }
+.sd .table .btn-sm { padding: 8px 16px; border-radius: 999px; font-weight: 700; }
+
+/* quick actions rail */
+.sd .list-group-flush { padding: 8px; }
+.sd .list-group-item-action { min-height: 56px; margin: 0; padding: 10px 12px; border: 0; border-radius: 12px; font-size: 15px; }
+.sd .list-group-item-action > i { display: grid; place-items: center; flex: 0 0 36px; width: 36px; height: 36px; border-radius: 10px; background: var(--sb-red-soft); font-size: 16px; transition: background-color 160ms ease, color 160ms ease; }
+.sd .list-group-item-action:hover > i { background: var(--sb-brand); color: #fff; }
+.sd .list-group-item-action::after { transition: transform 160ms ease; }
+.sd .list-group-item-action:hover::after { transform: translateX(3px); color: var(--sb-brand-content); }
+
+/* getting started: connected stepper */
+.sd .sb-steps { position: relative; gap: 0; }
+.sd .sb-steps li { position: relative; align-items: center; gap: 16px; padding: 12px 0; }
+.sd .sb-steps li:not(:last-child)::after { content: ""; position: absolute; left: 15px; top: calc(50% + 18px); bottom: calc(-50% + 18px); width: 2px; background: var(--sb-border); }
+.sd .sb-steps li::before { flex: 0 0 32px; width: 32px; height: 32px; border: 2px solid var(--sb-brand); background: var(--sb-surface); font-size: 13px; z-index: 1; }
+.sd .sb-steps strong { font-size: 15px; }
+.sd .sb-steps span { display: block; margin-top: 2px; font-size: 13px; line-height: 1.4; }
+
+/* empty states */
+.sd .sb-empty { padding: 48px 24px; }
+
+/* ---------- Small screens ---------- */
+@media (max-width: 767.98px) {
+    .sd { --sd-gap: 16px; }
+    .sd .card-header, .sd .card-body { padding-left: 16px; padding-right: 16px; }
+    .sd .table thead th, .sd .table tbody td { padding-left: 16px; padding-right: 16px; }
+    .sd .sb-stat { padding: 20px 18px; }
+    .sd .sb-stat-value { font-size: 34px; }
+    .sd .ojt-pc { padding: 16px; }
+    .sd .ojt-pc-hours strong { font-size: 32px; }
+}

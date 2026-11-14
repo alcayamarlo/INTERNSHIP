@@ -2,7 +2,13 @@
 
 @section('title', 'Employer Dashboard')
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/employer-dashboard.css') }}?v={{ @filemtime(public_path('css/employer-dashboard.css')) }}">
+@endpush
+
 @section('content')
+
+<div class="ed">
 
 @php
     $statTotal = max($applicationStats['total'], 1);
@@ -35,7 +41,7 @@
 
 {{-- Dashboard statistics --}}
 
-<div class="sb-stat-grid sb-stat-grid--3">
+<div class="sb-stat-grid">
 
     <x-dashboard-stat-card
         title="Pending Review"
@@ -72,8 +78,10 @@
 
 </div>
 
-<x-dashboard-announcements />
-<x-dashboard-ojt />
+<div class="ed-pair">
+    <x-dashboard-announcements />
+    <x-dashboard-ojt />
+</div>
 
 
 <div class="sb-layout-2">
@@ -218,5 +226,7 @@
     </div>
 
 </div>
+
+</div>{{-- /.ed --}}
 
 @endsection

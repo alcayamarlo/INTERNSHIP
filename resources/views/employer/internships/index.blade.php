@@ -5,6 +5,7 @@
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/sb-split-inbox.css') }}?v={{ @filemtime(public_path('css/sb-split-inbox.css')) }}">
 <link rel="stylesheet" href="{{ asset('css/employer-postings.css') }}?v={{ @filemtime(public_path('css/employer-postings.css')) }}">
+<link rel="stylesheet" href="{{ asset('css/employer-internship-form.css') }}?v={{ @filemtime(public_path('css/employer-internship-form.css')) }}">
 @endpush
 
 @section('content')
@@ -108,7 +109,7 @@
          unsaved-changes prompt and the reset. If a plain (non-script) submit fails validation, it reopens. --}}
     <div class="modal fade" id="newInternshipModal" tabindex="-1" role="dialog" aria-modal="true"
          aria-labelledby="newInternshipModalLabel" aria-describedby="newInternshipModalHint" aria-hidden="true"
-         style="--bs-modal-width: 760px" data-sb-form-modal @if(old('_modal') === 'newInternship') data-sb-open-on-load @endif>
+         style="--bs-modal-width: 1080px" data-sb-form-modal @if(old('_modal') === 'newInternship') data-sb-open-on-load @endif>
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
             <div class="modal-content">
                 <div class="modal-header align-items-start">
@@ -120,7 +121,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-danger" role="alert" data-form-errors hidden>Please fix the highlighted fields.</div>
-                    <form method="POST" action="{{ route('employer.internships.store') }}" id="newInternshipForm" novalidate>
+                    <form method="POST" action="{{ route('employer.internships.store') }}" id="newInternshipForm" class="pf-page" novalidate>
                         @csrf
                         <input type="hidden" name="_modal" value="newInternship">
                         @include('employer.internships.partials.fields', ['internship' => new \App\Models\Internship])

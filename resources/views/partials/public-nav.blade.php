@@ -9,7 +9,9 @@
                 </button>
                 <div id="publicNavigation">
                     <div class="public-nav-links">
+                        <a href="{{ $base ?? '' }}#top">Home</a>
                         <a href="{{ $base ?? '' }}#how-it-works">How it works</a>
+                        <a href="{{ $base ?? '' }}#about">About</a>
                         <a href="{{ route('internships.index') }}" @if(request()->routeIs('internships.*')) class="is-active" aria-current="page" @endif>Internships</a>
                         <a href="{{ $base ?? '' }}#audiences">Who it's for</a>
                         <a href="{{ $base ?? '' }}#questions">FAQs</a>

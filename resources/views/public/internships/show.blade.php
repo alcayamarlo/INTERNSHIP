@@ -5,7 +5,7 @@
 @section('content')
 @php
     $viewer = auth()->user();
-    $canApply = ! $viewer || $viewer->isRole(\App\Enums\UserRole::Student);
+    $canApply = true; // everyone sees Apply; non-students are told on click that only students can apply
 @endphp
 <section class="public-section">
     <div class="public-detail">

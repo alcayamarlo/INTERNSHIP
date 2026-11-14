@@ -1,0 +1,12 @@
+/* OJT tab buttons: same look as the student's My OJT page (employer intern record uses it too). */
+.ojt-tabs { position: sticky; top: var(--sb-topbar-height, 64px); z-index: 1020; margin: -8px -4px 20px; padding: 10px 4px; overflow-x: auto; white-space: nowrap; background: var(--sb-canvas, var(--sb-surface)); border-bottom: 1px solid var(--sb-border); }
+.ojt-tabs .ojt-tab { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; font-size: 14px; font-weight: 600; line-height: 1.4; background: var(--sb-surface, #fff); border: 1px solid var(--sb-border, #dee2e6); color: var(--sb-text, #212529); transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .1s ease; }
+.ojt-tabs .ojt-tab:hover { border-color: var(--sb-brand-content, #8f1a27); color: var(--sb-brand-content, #8f1a27); }
+.ojt-tabs .ojt-tab:active { transform: scale(.97); }
+.ojt-tabs .ojt-tab:focus-visible { outline: 2px solid var(--sb-brand-content, #8f1a27); outline-offset: 2px; }
+.ojt-tabs .ojt-tab[aria-selected="true"] { background: var(--sb-brand-content, #8f1a27); border-color: var(--sb-brand-content, #8f1a27); color: #fff; }
+.ojt-tabs .ojt-tab[aria-selected="true"]:hover { filter: brightness(1.08); }
+.ojt-panel[hidden], .ojt-tabs [hidden] { display: none !important; }
+.ojt-panel { animation: ojt-fade .18s ease; }
+@keyframes ojt-fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .ojt-panel { animation: none; } .ojt-tabs .ojt-tab { transition: none; } }

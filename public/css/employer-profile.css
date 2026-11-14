@@ -1,0 +1,42 @@
+/* Employer > Company Profile: logo summary on the left, the form in two tidy columns on the right. Scoped to .ep. */
+body.sb-app .ep .sb-page-header { margin-bottom: 14px; align-items: center; }
+body.sb-app .ep .sb-page-header h1 { font-size: clamp(24px, 2.4vw, 32px); letter-spacing: -.02em; }
+body.sb-app .ep .sb-page-header p { margin-top: 2px; font-size: 14.5px; }
+
+/* two columns instead of Bootstrap's 4/8 */
+body.sb-app .ep > .row { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 16px; margin: 0; align-items: start; }
+body.sb-app .ep > .row > [class*="col-"] { width: auto; max-width: none; padding: 0; min-width: 0; }
+body.sb-app .ep .card { margin: 0; border-radius: 16px; }
+body.sb-app .ep .card-header { padding: 14px 22px; }
+body.sb-app .ep .card-header h2 { font-size: 15px; }
+body.sb-app .ep .card-body { padding: 22px; }
+
+/* logo card */
+body.sb-app .ep > .row > :first-child .card-body { display: flex; flex-direction: column; align-items: center; padding: 26px 22px; }
+body.sb-app .ep .sb-logo-box { width: 132px; height: 132px; margin-bottom: 14px !important; border-radius: 22px; }
+body.sb-app .ep .ep-name { margin: 0; color: var(--sb-text); font-size: 18px; font-weight: 800; line-height: 1.25; text-align: center; overflow-wrap: anywhere; }
+body.sb-app .ep .ep-industry { margin: 2px 0 16px; color: var(--sb-muted); font-size: 13.5px; text-align: center; }
+body.sb-app .ep #uploadCompanyLogo { width: 100%; justify-content: center; }
+body.sb-app .ep [data-employer-feedback]:empty { display: none; }
+
+/* form: company name | industry, size | website, description, actions */
+body.sb-app .ep #employerProfileForm { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 18px; }
+body.sb-app .ep #employerProfileForm > .row { display: contents; }
+body.sb-app .ep #employerProfileForm > .row > [class*="col-"] { width: auto; max-width: none; padding: 0; margin: 0; }
+body.sb-app .ep #employerProfileForm .mb-3, body.sb-app .ep #employerProfileForm .mb-4 { margin: 0 !important; }
+body.sb-app .ep .ep-f-desc, body.sb-app .ep .ep-actions { grid-column: 1 / -1; }
+body.sb-app .ep .form-label { margin-bottom: 5px; font-size: 13px; font-weight: 700; color: var(--sb-text); }
+body.sb-app .ep .form-control, body.sb-app .ep .form-select { font-size: 14.5px; }
+body.sb-app .ep textarea.form-control { min-height: 0; height: 120px; resize: vertical; }
+body.sb-app .ep .ep-actions { justify-content: flex-end; padding-top: 14px; border-top: 1px solid var(--sb-border); }
+body.sb-app .ep .ep-actions .btn { min-width: 140px; }
+
+@media (max-width: 991.98px) {
+    body.sb-app .ep > .row { grid-template-columns: minmax(0, 1fr); }
+    body.sb-app .ep > .row > :first-child .card-body { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 4px 16px; text-align: center; }
+}
+@media (max-width: 575.98px) {
+    body.sb-app .ep #employerProfileForm { grid-template-columns: minmax(0, 1fr); }
+    body.sb-app .ep .ep-actions { flex-direction: column-reverse; }
+    body.sb-app .ep .ep-actions .btn { width: 100%; }
+}

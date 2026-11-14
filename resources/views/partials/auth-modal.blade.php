@@ -42,7 +42,7 @@
                 <span>SkillBridge</span>
             </div>
             <h2 id="loginModalTitle" class="lm-title"><span class="lm-t1">Welcome.</span><span class="lm-t2">Sign in to find your internship.</span></h2>
-            <p class="lm-cap">Sign in with the account your school gave you to track your progress, apply to internships, and message employers.</p>
+            <p class="lm-cap">Sign in with your school account to track your progress and apply to internships.</p>
             @unless ($locked)
             <button type="button" class="lm-close" data-lm-close aria-label="Close">
                 {!! $svg('<path d="M6 6l12 12M18 6 6 18"/>', 'style="width:18px;height:18px"') !!}
@@ -53,7 +53,7 @@
         <div class="lm-body">
 
             {{-- ================= LOGIN ================= --}}
-            <section data-auth-view="login" data-title="Welcome back." data-sub="" data-caption="Sign in with the account your school gave you to track your progress, apply to internships, and message employers." data-focus="lm-login" hidden>
+            <section data-auth-view="login" data-title="Welcome back." data-sub="" data-caption="Sign in with your school account to track your progress and apply to internships." data-focus="lm-login" hidden>
                 <div class="lm-alert lm-alert-ok" role="status" data-lm-status @unless ($onLogin && session('status')) hidden @endunless>{{ $onLogin ? session('status') : '' }}</div>
                 @if ($onLogin && $errors->any() && ! $errors->has('login') && ! $errors->has('password'))
                     <div class="lm-alert lm-alert-bad" role="alert">{{ $errors->first() }}</div>
@@ -69,8 +69,9 @@
                             {!! $icoUser !!}
                             <input type="text" id="lm-login" name="login" class="lm-input @if ($onLogin) @error('login') is-invalid @enderror @endif"
                                    value="{{ old('login') }}" placeholder="Email address or school ID"
-                                   autocomplete="username" maxlength="255" required>
+                                   autocomplete="username" maxlength="255" required aria-describedby="lm-login-hint">
                         </div>
+                        <p class="lm-hint" id="lm-login-hint">Use the email address or school ID your school gave you.</p>
                         @if ($onLogin) @error('login')
                             <div class="lm-error" role="alert">{{ $message }}</div>
                         @enderror @endif
@@ -82,9 +83,10 @@
                         <div class="lm-wrap">
                             {!! $icoLock !!}
                             <input type="password" id="lm-password" name="password" class="lm-input @if ($onLogin) @error('password') is-invalid @enderror @endif"
-                                   placeholder="Enter your password" autocomplete="current-password" maxlength="255" required>
+                                   placeholder="Enter your password" autocomplete="current-password" maxlength="255" required aria-describedby="lm-password-hint">
                             <button type="button" class="lm-toggle" data-lm-eye="lm-password" aria-label="Show password" aria-pressed="false">{!! $icoEye !!}</button>
                         </div>
+                        <p class="lm-hint" id="lm-password-hint">Passwords are case-sensitive.</p>
                         @if ($onLogin) @error('password')
                             <div class="lm-error" role="alert">{{ $message }}</div>
                         @enderror @endif

@@ -105,6 +105,10 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="{{ asset('css/admin-dashboard.css') }}?v={{ @filemtime(public_path('css/admin-dashboard.css')) }}">
     @endif
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
+    {{-- Landing-page palette (black / blue / red) for every dashboard; loaded last so it wins over the red theme. --}}
+    <link rel="stylesheet" href="{{ asset('css/sb-landing-theme.css') }}?v={{ @filemtime(public_path('css/sb-landing-theme.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/sb-responsive.css') }}?v={{ @filemtime(public_path('css/sb-responsive.css')) }}">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}?v={{ @filemtime(public_path('js/skillbridge-ui.js')) }}"></script>
     @vite('resources/js/app.js')
 

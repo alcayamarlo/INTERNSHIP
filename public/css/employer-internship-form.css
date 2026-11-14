@@ -1,0 +1,101 @@
+/* Employer > Post / Edit Internship page. Two columns: role details (left), requirements (right).
+   The same fields partial is used in the list page pop-up, which is not affected: everything is scoped to .pf-page. */
+
+body.sb-app .pf-page { display: grid; gap: 16px; }
+body.sb-app .pf-page .pf { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; align-items: start; }
+body.sb-app .pf-page .pf-main, body.sb-app .pf-page .pf-side { min-width: 0; padding: 22px 24px; border: 1px solid var(--sb-border); border-radius: 16px; background: var(--sb-surface); box-shadow: var(--sb-card-shadow, none); }
+body.sb-app .pf-page .pf-side { display: grid; gap: 0; position: sticky; top: 12px; padding: 20px 22px; }
+body.sb-app .pf-page .pf-side hr { margin: 18px 0; border-color: var(--sb-border); opacity: 1; }
+body.sb-app .pf-page .pf-side > hr:first-child { display: none; }
+
+/* labels + fields */
+body.sb-app .pf-page .form-label, body.sb-app .pf-page legend.form-label { margin-bottom: 5px; color: var(--sb-text); font-size: 13px; font-weight: 700; }
+body.sb-app .pf-page .form-control, body.sb-app .pf-page .form-select { font-size: 14.5px; }
+body.sb-app .pf-page .form-text { margin-top: 5px; color: var(--sb-muted); font-size: 12px; line-height: 1.4; }
+body.sb-app .pf-page .pf-side h2 { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--sb-muted); }
+body.sb-app .pf-page .pf-side h2::before { content: ""; display: inline-block; width: 3px; height: 12px; margin-right: 9px; vertical-align: -1px; border-radius: 2px; background: var(--sb-brand); }
+
+/* main grid: title/status, then setup/location/duration/deadline, then programs, then the three text areas */
+body.sb-app .pf-page .pf-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 14px 16px; margin: 0; }
+body.sb-app .pf-page .pf-grid > * { width: auto; max-width: none; margin: 0; padding: 0; min-width: 0; }
+.pf-page .pf-title { grid-column: span 8; order: 1; }
+.pf-page .pf-status { grid-column: span 4; order: 2; }
+.pf-page .pf-setup { grid-column: span 3; order: 3; }
+.pf-page .pf-location { grid-column: span 3; order: 4; }
+.pf-page .pf-duration { grid-column: span 3; order: 5; }
+.pf-page .pf-deadline { grid-column: span 3; order: 6; }
+.pf-page .pf-allowance { grid-column: span 3; order: 7; }
+.pf-page .pf-programs { grid-column: 1 / -1; order: 8; padding: 14px 16px !important; border: 1px solid var(--sb-border); border-radius: 12px; background: var(--sb-surface-raised, var(--sb-surface)); }
+.pf-page .pf-desc { grid-column: 1 / -1; order: 9; }
+.pf-page .pf-resp { grid-column: span 6; order: 10; }
+.pf-page .pf-req { grid-column: span 6; order: 11; }
+body.sb-app .pf-page textarea.form-control { min-height: 0; resize: vertical; }
+
+/* programs: tick-pills in a tidy grid */
+body.sb-app .pf-page .pf-programs fieldset > .d-flex { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px 12px !important; }
+body.sb-app .pf-page .pf-programs .form-check { display: flex; align-items: center; gap: 8px; min-height: 38px; margin: 0; padding: 6px 12px; border: 1px solid var(--sb-border); border-radius: 10px; background: var(--sb-surface); transition: border-color 140ms ease, background-color 140ms ease; }
+body.sb-app .pf-page .pf-programs .form-check:hover { border-color: var(--sb-brand-content); }
+body.sb-app .pf-page .pf-programs .form-check:has(input:checked) { border-color: var(--sb-brand-content); background: var(--sb-brand-soft); }
+body.sb-app .pf-page .pf-programs .form-check-input { float: none; margin: 0; flex: none; }
+body.sb-app .pf-page .pf-programs .form-check-label { font-size: 13.5px; font-weight: 600; line-height: 1.25; }
+
+/* competency requirement rows: compact, one line each */
+body.sb-app .pf-page [data-requirements] { display: grid; gap: 8px; }
+body.sb-app .pf-page .requirement-row { display: grid; grid-template-columns: minmax(0, 1fr) 118px 38px; gap: 8px; margin: 0 !important; }
+body.sb-app .pf-page .requirement-row > * { width: auto; max-width: none; padding: 0; }
+body.sb-app .pf-page .requirement-row .btn { height: 100%; min-height: 38px; padding: 0; }
+body.sb-app .pf-page [data-add-requirement] { white-space: nowrap; }
+
+/* applicant requirements */
+body.sb-app .pf-page .pf-side .form-check-inline { margin: 4px 14px 4px 0; }
+body.sb-app .pf-page .pf-side .small, body.sb-app .pf-page .pf-side .text-muted.small { font-size: 12.5px; }
+
+/* actions */
+body.sb-app .pf-page .pf-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 0 0; }
+body.sb-app .pf-page .pf-actions .btn { min-width: 130px; }
+
+@media (max-width: 1199.98px) {
+    body.sb-app .pf-page .pf { grid-template-columns: minmax(0, 1fr); }
+    body.sb-app .pf-page .pf-side { position: static; }
+}
+@media (max-width: 767.98px) {
+    body.sb-app .pf-page .pf-main, body.sb-app .pf-page .pf-side { padding: 16px; }
+    .pf-page .pf-title, .pf-page .pf-status, .pf-page .pf-setup, .pf-page .pf-location, .pf-page .pf-duration, .pf-page .pf-deadline, .pf-page .pf-allowance, .pf-page .pf-resp, .pf-page .pf-req { grid-column: 1 / -1; }
+    body.sb-app .pf-page .pf-actions { flex-direction: column-reverse; }
+    body.sb-app .pf-page .pf-actions .btn { width: 100%; }
+}
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .pf-page .pf-setup, .pf-page .pf-location, .pf-page .pf-duration, .pf-page .pf-deadline, .pf-page .pf-allowance { grid-column: span 6; }
+}
+
+/* polish: consistent small headings, shorter text areas, wider side column */
+body.sb-app .pf-page .pf { grid-template-columns: minmax(0, 1fr) 400px; }
+body.sb-app .pf-page .pf-side legend, body.sb-app .pf-page .pf-side legend.form-label { margin: 0 0 4px; color: var(--sb-text); font-size: 13px; font-weight: 700; float: none; width: auto; }
+body.sb-app .pf-page .pf-side .form-check-label { font-size: 13.5px; }
+body.sb-app .pf-page .pf-side .form-check { margin-bottom: 0; }
+body.sb-app .pf-page .pf-side > h2.h6 { margin-bottom: 12px; }
+body.sb-app .pf-page textarea.form-control { height: 92px; }
+body.sb-app .pf-page .pf-deadline .form-text { font-size: 11.5px; }
+body.sb-app .pf-page .pf-side legend.fs-6, body.sb-app .pf-page .pf-programs legend.fs-6 { font-size: 13px !important; font-weight: 700; }
+
+/* ---- The same form inside the "Post New Internship" pop-up on the Internships list ---- */
+#newInternshipModal .modal-dialog { max-width: min(1080px, calc(100vw - 24px)); }
+#newInternshipModal .modal-header { padding: 16px 24px 14px; border-bottom: 1px solid var(--sb-border); }
+#newInternshipModal .modal-body { padding: 16px 20px; background: var(--sb-canvas, var(--sb-surface-raised)); }
+#newInternshipModal .modal-footer { padding: 12px 24px; border-top: 1px solid var(--sb-border); }
+body.sb-app #newInternshipModal .pf-page .pf-main, body.sb-app #newInternshipModal .pf-page .pf-side { padding: 18px 20px; box-shadow: none; }
+body.sb-app #newInternshipModal .pf-page .pf { grid-template-columns: minmax(0, 1fr) 340px; }
+body.sb-app #newInternshipModal .pf-page .pf-side { top: 0; }
+body.sb-app #newInternshipModal .pf-page textarea.form-control { height: 84px; }
+@media (max-width: 991.98px) {
+    body.sb-app #newInternshipModal .pf-page .pf { grid-template-columns: minmax(0, 1fr); }
+    body.sb-app #newInternshipModal .pf-page .pf-side { position: static; }
+}
+
+/* compact programs (3 per row) and shorter text areas so the pop-up needs little or no scrolling */
+body.sb-app .pf-page .pf-programs fieldset > .d-flex { grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 6px 10px !important; }
+body.sb-app .pf-page .pf-programs .form-check { min-height: 34px; padding: 4px 10px; }
+body.sb-app .pf-page .pf-programs .form-check-label { font-size: 12.5px; }
+body.sb-app .pf-page .pf-programs { padding: 12px 14px !important; }
+body.sb-app #newInternshipModal .pf-page textarea.form-control { height: 68px; }
+body.sb-app #newInternshipModal .pf-page .pf-grid { gap: 10px 14px; }

@@ -45,6 +45,12 @@ Route::get('/', [PublicInternshipController::class, 'home'])->name('home');
 // (and back afterwards); the real apply flow stays behind auth + role:student under /student.
 Route::get('/internships', [PublicInternshipController::class, 'index'])->name('internships.index');
 Route::get('/internships/{internship}', [PublicInternshipController::class, 'show'])->name('internships.show');
+
+// Public information pages (static copy, no data access).
+Route::view('/how-it-works', 'public.pages.how')->name('pages.how');
+Route::view('/students', 'public.pages.role', ['role' => 'students'])->name('pages.students');
+Route::view('/coordinators', 'public.pages.role', ['role' => 'coordinators'])->name('pages.coordinators');
+Route::view('/faqs', 'public.pages.faqs')->name('pages.faqs');
 Route::get('/internships/{internship}/apply', [PublicInternshipController::class, 'apply'])->name('internships.apply');
 
 Route::middleware('guest')->group(function () {

@@ -13,8 +13,13 @@ use Illuminate\Http\Request;
  */
 class PublicInternshipController extends Controller
 {
-    public function home()
+    public function home(Request $request)
     {
+        // Anyone who is already signed in (admin, coordinator, employer, student) goes straight to their own dashboard.
+        if ($user = $request->user()) {
+            return redirect()->route($user->dashboardRoute());
+        }
+
         $openInternships = $this->publicQuery()->with('requirementsList')->latest()->take(12)->get();
 
         return view('welcome', compact('openInternships'));
@@ -22,6 +27,12 @@ class PublicInternshipController extends Controller
 
     public function index(Request $request)
     {
+        // The standalone page is retired: the internships list opens as a popup on the landing page.
+        // The popup itself still loads this list in the background (an AJAX request), so only direct visits are redirected.
+        if (! $request->ajax()) {
+            return redirect()->to(route('home').'#internships');
+        }
+
         $query = $this->publicQuery();
 
         if ($search = trim((string) $request->query('search'))) {
@@ -41,7 +52,7 @@ class PublicInternshipController extends Controller
             $query->where('work_setup', $setup->value);
         }
 
-        $internships = $query->latest()->paginate(10)->withQueryString();
+        $internships = $query->latest()->paginate(100)->withQueryString();
 
         return view('public.internships.index', [
             'internships' => $internships,
@@ -49,8 +60,17 @@ class PublicInternshipController extends Controller
         ]);
     }
 
-    public function show(Internship $internship)
+    /**
+     * The details page is no longer a standalone page: visitors are sent to the internships popup on the landing page.
+     * It is still rendered for the in-page details popup, which loads it with an XHR request and reads
+     * the description, requirements and facts out of it.
+     */
+    public function show(Request $request, Internship $internship)
     {
+        if (! $request->ajax()) {
+            return redirect()->to(route('home').'#internships');
+        }
+
         abort_unless($this->publicQuery()->whereKey($internship->id)->exists(), 404);
 
         $internship->load('employer', 'requirementsList');
@@ -71,7 +91,7 @@ class PublicInternshipController extends Controller
         }
 
         if (! $user->isRole(UserRole::Student)) {
-            return redirect()->route('internships.show', $internship)
+            return redirect()->to(route('home').'#internships')
                 ->with('info', 'Only students can apply.');
         }
 

@@ -1,0 +1,51 @@
+/* Responsive safety net for every dashboard (phones, tablets, laptops, wide monitors).
+   Loaded last in layouts/app.blade.php. Only adds guards; page-specific layouts stay where they are. */
+
+/* media never wider than its box */
+body.sb-app img, body.sb-app video, body.sb-app canvas { max-width: 100%; }
+body.sb-app img, body.sb-app video { height: auto; }
+body.sb-app .form-control, body.sb-app .form-select { max-width: 100%; }
+body.sb-app pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* grid/flex children may shrink instead of forcing the page wider */
+body.sb-app .sb-content, body.sb-app .sb-main, body.sb-app .card, body.sb-app .row > *,
+body.sb-app .sb-layout-2 > *, body.sb-app .sb-stat-grid > *, body.sb-app .ad-card { min-width: 0; }
+
+/* Bootstrap's .visually-hidden is absolutely positioned: inside a scrolling table it escaped the clip and
+   widened the whole page. Making the scroller the containing block keeps it inside. */
+body.sb-app .table-responsive { position: relative; max-width: 100%; }
+
+/* long words, emails and URLs wrap instead of overflowing */
+body.sb-app .sb-content :is(td, th, dd, li, p, h1, h2, h3) { overflow-wrap: anywhere; }
+body.sb-app .sb-content :is(.table td, .table th) { overflow-wrap: normal; }
+
+/* ---------- Tablets ---------- */
+@media (max-width: 991.98px) {
+    body.sb-app .sb-content { padding: 20px 20px 40px; }
+}
+
+/* ---------- Phones ---------- */
+@media (max-width: 575.98px) {
+    body.sb-app .sb-content { padding: 14px 12px 32px; }
+    body.sb-app .sb-page-header { flex-direction: column; align-items: stretch; gap: 10px; margin-bottom: 14px; }
+    body.sb-app .sb-page-actions { width: 100%; }
+    body.sb-app .sb-page-actions > .btn { flex: 1 1 auto; justify-content: center; }
+    body.sb-app .card-header { padding-inline: 14px; }
+    body.sb-app .card-body { padding: 14px; }
+    body.sb-app .modal-dialog { margin: 8px; }
+    body.sb-app #placementForm { flex-wrap: wrap; }
+    body.sb-app #placementForm select { width: 100% !important; max-width: 100%; }
+    body.sb-app .btn-group, body.sb-app .d-flex.gap-2 { flex-wrap: wrap; }
+}
+
+/* ---------- Touch screens: comfortable tap targets ---------- */
+@media (pointer: coarse) {
+    body.sb-app .btn:not(.btn-sm):not(.btn-close), body.sb-app .form-control:not(.form-control-sm), body.sb-app .form-select:not(.form-select-sm) { min-height: 44px; }
+    body.sb-app .btn-sm { min-height: 38px; }
+    body.sb-app .sb-nav-link { min-height: 46px; }
+}
+
+/* ---------- Very large monitors ---------- */
+@media (min-width: 1920px) {
+    body.sb-app .sb-content { max-width: 1640px; }
+}

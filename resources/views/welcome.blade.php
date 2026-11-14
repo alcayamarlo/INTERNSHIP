@@ -60,12 +60,12 @@
     <div class="public-page">
         <nav class="sb-sticky-nav" data-sticky-nav aria-label="Sections">
             <a class="sb-sticky-brand" href="#top" aria-label="SkillBridge, back to the top"><span class="public-brand-mark" aria-hidden="true"><img src="{{ asset('images/brand/skillbridge-logo-icon.svg') }}?v=2" alt="" width="36" height="36"></span><strong>SkillBridge</strong></a>
-            <div class="sb-sticky-links"><a href="#how-it-works">How it works</a><a href="#internships">Internships</a><a href="#audiences">Who it's for</a><a href="#questions">FAQs</a></div>
+            <div class="sb-sticky-links"><a href="#top">Home</a><a href="#how-it-works">How it works</a><a href="#about">About</a><a href="{{ route('internships.index') }}">Internships</a><a href="#audiences">Who it's for</a><a href="#questions">FAQs</a></div>
             <a class="sb-sticky-login" href="{{ route('login') }}">Log in</a>
         </nav>
         <main id="main-content">
             <section class="public-hero sb-hero" id="top" aria-labelledby="hero-heading">
-                <img class="sb-hero-photo" src="{{ asset('images/scc.webp') }}" alt="Aerial view of the St. Cecilia's College building and the neighbourhood around it" width="1522" height="705" loading="eager" fetchpriority="high" decoding="async">
+                <img class="sb-hero-photo" src="{{ asset('images/landing/hero-building.png') }}" alt="St. Cecilia's College building" width="871" height="631" loading="eager" fetchpriority="high" decoding="async">
                 <div class="sb-hero-veil" aria-hidden="true"></div>
 
                 <div class="sb-hero-in">
@@ -80,7 +80,7 @@
                                 <a class="public-button public-button-primary public-button-lg sb-arrow-btn" href="{{ route('login') }}">Sign in to your workspace <span class="sb-circ"><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span></a>
                             </div>
                             <div class="sb-hero-stats" aria-label="At a glance">
-                                @if ($heroCount > 0)<div><strong>{{ $heroCount }}</strong><span>{{ \Illuminate\Support\Str::plural('Internship', $heroCount) }} open now</span></div>@endif
+                                @if ($heroCount > 0)<div><strong data-count="{{ $heroCount }}">{{ $heroCount }}</strong><span>{{ \Illuminate\Support\Str::plural('Internship', $heroCount) }} open now</span></div>@endif
                                 <div><strong>3</strong><span>Roles: students, coordinators, employers</span></div>
                                 <div><strong>3</strong><span>Steps from preparation to placement</span></div>
                             </div>
@@ -88,6 +88,8 @@
                     </div>
 
                     <div class="sb-stack" aria-hidden="true">
+                        <div class="sb-chip sb-chip-live"><i class="sb-pulse"></i><span>Live</span><strong>{{ $heroCount > 0 ? $heroCount.' open '.\Illuminate\Support\Str::plural('internship', $heroCount) : 'Internships updated daily' }}</strong></div>
+                        <div class="sb-chip sb-chip-ring"><span class="sb-ring" style="--v: 82"><b>82%</b></span><span class="sb-chip-t"><span>Profile</span><strong>Almost ready</strong></span></div>
                         <div class="sb-stack-card" style="--i: 0"><span>Competency verified</span><strong>Your student workspace</strong></div>
                         <div class="sb-stack-card" style="--i: 1"><span>Application submitted</span><strong>{{ $heroFeat ? $heroFeat->title : 'Your student workspace' }}</strong></div>
                         <div class="sb-stack-card" style="--i: 2"><span>New internship match</span><strong>{{ $heroFeatCompany !== '' ? $heroFeatCompany : 'Your student workspace' }}</strong></div>
@@ -95,7 +97,103 @@
                 </div>
             </section>
 
-            @include('partials.job-board', ['openInternships' => $openInternships ?? collect()])
+            {{-- Internships popup. Every "Internships" link on this page opens it over the landing page (public/js/sb-hero.js).
+                 Its listings are loaded from the public internships page the first time it opens. --}}
+            <div class="sb-pop" id="internshipsPop" data-internships-pop data-src="{{ route('internships.index') }}" role="dialog" aria-modal="true" aria-labelledby="sbPopTitle" hidden>
+                <div class="sb-pop-backdrop" data-pop-close></div>
+                <div class="sb-pop-panel" tabindex="-1">
+                    <header class="sb-pop-head">
+                        <div>
+                            <p class="sb-pop-eyebrow">Open now</p>
+                            <h2 id="sbPopTitle">Browse <em>internships.</em></h2>
+                        </div>
+                        <button type="button" class="sb-pop-close" data-pop-close aria-label="Close internships"><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+                    </header>
+                    <div class="sb-pop-body" data-pop-body aria-live="polite"><p class="sb-pop-note">Loading internships&hellip;</p></div>
+                </div>
+            </div>
+
+            {{-- Internship details popup: opens on top of the internships popup (View details). --}}
+            <div class="sb-pop sb-pop2" id="internshipDetailPop" data-detail-pop role="dialog" aria-modal="true" aria-labelledby="sbDetailTitle" hidden>
+                <div class="sb-pop-backdrop" data-detail-close></div>
+                <div class="sb-pop-panel sb-dpanel" tabindex="-1">
+                    <header class="sb-pop-head">
+                        <div>
+                            <p class="sb-pop-eyebrow" data-d-eyebrow></p>
+                            <h2 id="sbDetailTitle" data-d-title></h2>
+                        </div>
+                        <button type="button" class="sb-pop-close" data-detail-close aria-label="Close details"><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+                    </header>
+                    <div class="sb-pop-body sb-d-body" data-d-body aria-live="polite"></div>
+                    <footer class="sb-d-foot">
+                        <p class="sb-d-by" data-d-by></p>
+                        <div class="sb-d-actions">
+                            <a class="public-button public-button-primary" data-d-apply href="#" hidden>Apply</a>
+                            <button type="button" class="public-button" data-detail-close>Done</button>
+                        </div>
+                    </footer>
+                </div>
+            </div>
+
+
+            <section class="public-section sb-features" id="features" aria-labelledby="features-h">
+                <div class="public-section-heading reveal">
+                    <div class="eyebrow">What you can do</div>
+                    <h2 id="features-h">Everything for your internship journey, in one place.</h2>
+                    <p>Build your profile, track your competencies, browse open internships, and follow your applications.</p>
+                </div>
+                <div class="sb-feat">
+                    <ul class="sb-feat-grid is-students" aria-label="Features for students">
+                            <li class="sb-card"><span class="sb-ic-wrap"><svg class="sb-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7Z"/></svg></span><h3>Competency tracking</h3><p>Review skill categories and document your experience for coordinator review.</p></li>
+                            <li class="sb-card"><span class="sb-ic-wrap"><svg class="sb-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg></span><h3>Internship profile</h3><p>Keep your academic details, goals, resume, and portfolio evidence together.</p></li>
+                            <li class="sb-card"><span class="sb-ic-wrap"><svg class="sb-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg></span><h3>Browse and filter internships</h3><p>See what is open right now and narrow it down by course.</p></li>
+                            <li class="sb-card"><span class="sb-ic-wrap"><svg class="sb-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12.5 9.5 17 19 7"/><circle cx="12" cy="12" r="9.5"/></svg></span><h3>Application status</h3><p>Submit applications and follow their updates from your student workspace.</p></li>
+                    </ul>
+                </div>
+                <div class="sb-cta-band reveal">
+                    <div><h3>Ready to start?</h3></div>
+                    <a class="public-button public-button-primary public-button-lg" href="{{ route('login') }}">Sign in to your workspace</a>
+                </div>
+            </section>
+
+            <section class="public-section sb-about" id="about" aria-labelledby="about-h">
+                <div class="sb-about-grid">
+                    <div class="sb-about-copy reveal">
+                        <div class="public-section-heading sb-about-head">
+                            <div class="eyebrow">About SkillBridge</div>
+                            <h2 id="about-h">Built by St. Cecilia's College, for St. Cecilia's students.</h2>
+                        </div>
+                        <p class="sb-about-lead">SkillBridge is the Student Development and Internship Placement workspace of St. Cecilia's College. It brings the key steps of internship preparation into one role-aware platform.</p>
+                        <ul class="sb-about-roles">
+                            <li><strong>Students</strong><span>Manage your profile, competencies, and portfolio.</span></li>
+                            <li><strong>Coordinators</strong><span>Review student profiles and evidence.</span></li>
+                            <li><strong>Employers</strong><span>Manage your internship postings.</span></li>
+                        </ul>
+                    </div>
+                    <figure class="sb-about-photo reveal">
+                        <img src="{{ asset('images/landing/scc-aerial.webp') }}" alt="Aerial view of the St. Cecilia's College building in Cebu" width="1522" height="705" loading="lazy" decoding="async">
+                        <figcaption><i aria-hidden="true"></i>St. Cecilia's College, Cebu</figcaption>
+                    </figure>
+                </div>
+                <ul class="sb-values">
+                        <li class="sb-card reveal"><span class="sb-ic-wrap"><svg class="sb-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 20V6.5L12 3l8 3.5V20"/><path d="M9 20v-6h6v6M9 9h.01M15 9h.01"/></svg></span><h3>Prepare</h3><p>Build your profile and develop your competencies.</p></li>
+                        <li class="sb-card reveal"><span class="sb-ic-wrap"><svg class="sb-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="8" cy="9" r="3"/><circle cx="17" cy="8" r="2.5"/><path d="M2.5 19c.6-3 2.8-4.5 5.5-4.5s4.9 1.5 5.5 4.5M14.5 14.8c.8-.3 1.6-.4 2.5-.4 2.3 0 3.9 1.2 4.5 3.6"/></svg></span><h3>Connect</h3><p>Students, coordinators, and employers share one workspace.</p></li>
+                        <li class="sb-card reveal"><span class="sb-ic-wrap"><svg class="sb-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 13h18"/></svg></span><h3>Place</h3><p>Browse internships and follow your application updates.</p></li>
+                </ul>
+                <div class="sb-about-open reveal">
+                    <ul class="sb-progs" aria-label="Programs">
+                        <li><span class="sb-prog-code">BSBA</span><span class="sb-prog-name">BS Business Administration</span></li>
+                        <li><span class="sb-prog-code">BSHM</span><span class="sb-prog-name">BS Hospitality Management</span></li>
+                        <li><span class="sb-prog-code">BSIT</span><span class="sb-prog-name">BS Information Technology</span></li>
+                        <li><span class="sb-prog-code">BSMA</span><span class="sb-prog-name">BS Management Accounting</span></li>
+                        <li><span class="sb-prog-code">BSTM</span><span class="sb-prog-name">BS Tourism Management</span></li>
+                    </ul>
+                </div>
+                <figure class="sb-mission reveal">
+                    <figcaption>Our mission</figcaption>
+                    <blockquote>To bring internship preparation, verified competencies, and placement together in one shared workspace for students, coordinators, and employers.</blockquote>
+                </figure>
+            </section>
 
             <section class="public-section" id="how-it-works">
                 <div class="public-section-heading reveal">
@@ -127,6 +225,7 @@
                     </ol>
                 </div>
             </section>
+
 
 
             <section class="public-section public-roles" id="audiences">

@@ -10,6 +10,8 @@
                 <nav class="public-footer-col" aria-label="Explore">
                     <h3>Explore</h3>
                     <ul>
+                        <li><a href="{{ $base ?? '' }}#about">About</a></li>
+                        <li><a href="{{ $base ?? '' }}#features">Features</a></li>
                         <li><a href="{{ $base ?? '' }}#how-it-works">How it works</a></li>
                         <li><a href="{{ route('internships.index') }}">Internships</a></li>
                         <li><a href="{{ $base ?? '' }}#audiences">Who it's for</a></li>

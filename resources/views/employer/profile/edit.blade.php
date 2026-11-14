@@ -2,8 +2,13 @@
 
 @section('title', 'Edit Company Profile')
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/employer-profile.css') }}?v={{ @filemtime(public_path('css/employer-profile.css')) }}">
+@endpush
+
 @section('content')
 
+<div class="ep">
 <x-page-header title="Company Profile" subtitle="Update your company information and contact details">
     @if($employer->isVerified())
         <x-verified-badge :employer="$employer" />
@@ -36,6 +41,9 @@
                     <input type="file" name="company_logo" id="logoInput" accept="image/jpeg,image/jpg,image/png">
                 </form>
 
+                <p class="ep-name">{{ $employer->company_name }}</p>
+                @if($employer->industry)<p class="ep-industry">{{ $employer->industry }}</p>@endif
+
                 <button type="button" class="btn btn-outline-primary" id="uploadCompanyLogo">
                     <i class="bi bi-cloud-upload" aria-hidden="true"></i> {{ $employer->logo ? 'Change Logo' : 'Upload Logo' }}
                 </button>
@@ -56,7 +64,7 @@
                     @csrf
                     @method('PUT')
 
-                    <div class="mb-3">
+                    <div class="mb-3 ep-f-name">
                         <label class="form-label" for="company_name">Company Name <span class="text-danger" aria-hidden="true">*</span></label>
                         <input id="company_name" type="text" class="form-control @error('company_name') is-invalid @enderror" name="company_name" value="{{ old('company_name', $employer->company_name) }}" required>
                         @error('company_name')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
@@ -83,19 +91,19 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-3 ep-f-site">
                         <label class="form-label" for="website">Website</label>
                         <input id="website" type="url" class="form-control @error('website') is-invalid @enderror" name="website" placeholder="https://www.example.com" value="{{ old('website', $employer->website) }}">
                         @error('website')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
 
-                    <div class="mb-4">
+                    <div class="mb-4 ep-f-desc">
                         <label class="form-label" for="description">Company Description</label>
                         <textarea id="description" class="form-control @error('description') is-invalid @enderror" name="description" rows="3" placeholder="Describe your company, mission, and culture">{{ old('description', $employer->description) }}</textarea>
                         @error('description')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
 
-                    <div class="d-flex flex-wrap gap-2">
+                    <div class="d-flex flex-wrap gap-2 ep-actions">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-circle" aria-hidden="true"></i> Save Changes
                         </button>
@@ -109,6 +117,7 @@
     </div>
 
 </div>
+</div>{{-- /.ep --}}
 @endsection
 
 @push('scripts')

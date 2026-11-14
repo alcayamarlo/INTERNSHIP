@@ -24,7 +24,10 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/ojt-progress-card.css') }}?v={{ @filemtime(public_path('css/ojt-progress-card.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/student-dashboard.css') }}?v={{ @filemtime(public_path('css/student-dashboard.css')) }}">
 @endpush
+
+<div class="sd">
 
 <x-page-header
     title="Student Dashboard"
@@ -394,5 +397,7 @@
 
 </div>
 @endunless
+
+</div>{{-- /.sd --}}
 
 @endsection

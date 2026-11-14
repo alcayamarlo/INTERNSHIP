@@ -378,3 +378,50 @@
 .lm-root .lm-input, .lm-root .lm-code-box { border-color: #6b7080; }
 .lm-root .lm-input:focus, .lm-root .lm-code-box:focus { border-color: #1d4ed8; }
 .lm-root { --sb-input-border: #6b7080; }
+
+/* ===== Compact sign-in popup: fits the screen without an inner scrollbar ===== */
+.lm-root .lm-dialog { width: min(100%, 420px); max-height: calc(100dvh - 24px); border-radius: 24px; }
+.lm-root .lm-head { padding: 22px 28px 4px; }
+.lm-root .lm-brand { margin-bottom: 10px; font-size: 14px; }
+.lm-root .lm-logo { width: 32px; height: 32px; }
+.lm-root .lm-title::before { margin-bottom: 10px; }
+.lm-root .lm-title, .lm-root .lm-title .lm-t1 { font-size: 32px; line-height: 1; }
+.lm-root .lm-title .lm-t2 { font-size: 13px; }
+.lm-root .lm-cap { margin: 8px 0 0; font-size: 13px; line-height: 1.45; }
+.lm-root .lm-close { top: 14px; right: 14px; width: 36px; height: 36px; }
+.lm-root .lm-body { padding: 14px 28px 20px; }
+.lm-root .lm-alert, .lm-root .lm-success { margin-bottom: 10px; padding: 8px 12px; font-size: 13px; border-radius: 14px; }
+.lm-root .lm-field { margin-bottom: 10px; }
+.lm-root .lm-label { margin-bottom: 4px; font-size: 12.5px; }
+.lm-root .lm-input { height: 46px; font-size: 14.5px; }
+.lm-root .lm-code-box { height: 48px; }
+.lm-root .lm-options { margin: 0 0 14px; font-size: 13px; }
+.lm-root .lm-link { font-size: 13px; }
+.lm-root .lm-submit { height: 48px; font-size: 15px; }
+.lm-root .lm-foot { margin-top: 12px; padding-top: 10px; font-size: 12.5px; }
+.lm-root .lm-trust { margin-top: 8px; font-size: 12px; }
+.lm-root .lm-info { margin-top: 12px; padding: 10px 12px; font-size: 12.5px; }
+.lm-root .lm-dialog { scrollbar-width: thin; scrollbar-color: #c3c9d9 transparent; }
+@media (max-height: 640px) { .lm-root .lm-cap { display: none; } .lm-root .lm-head { padding-top: 16px; } .lm-root .lm-body { padding-top: 10px; } }
+@media (max-width: 480px) { .lm-root .lm-head { padding: 18px 20px 4px; } .lm-root .lm-body { padding: 12px 20px 18px; } .lm-root .lm-title, .lm-root .lm-title .lm-t1 { font-size: 30px; } }
+
+/* ===== Smooth sign-in popup: one calm focus ring, eased hover/focus/open transitions, small helper text ===== */
+.lm-root .lm-hint { margin: 5px 0 0 16px; color: #5b6070; font-size: 12px; line-height: 1.4; transition: color 200ms ease; }
+.lm-root .lm-field:focus-within .lm-hint { color: #1e3a8a; }
+.lm-root .lm-field:has(.lm-error:not(:empty)) .lm-hint { display: none; }
+.lm-root .lm-input, .lm-root .lm-code-box { transition: border-color 220ms ease, box-shadow 220ms ease, background-color 220ms ease; }
+.lm-root .lm-input:focus-visible, .lm-root .lm-code-box:focus-visible { outline: 0; }
+.lm-root .lm-input:focus, .lm-root .lm-code-box:focus { background-color: #fff; border-color: #1d4ed8; box-shadow: 0 0 0 4px rgba(29, 78, 216, .16); }
+.lm-root .lm-ico { transition: color 220ms ease; }
+.lm-root .lm-wrap:focus-within .lm-ico { color: #1d4ed8; }
+.lm-root .lm-toggle, .lm-root .lm-close, .lm-root .lm-link { transition: background-color 200ms ease, color 200ms ease, transform 200ms ease; }
+.lm-root .lm-submit { transition: background-color 220ms ease, transform 160ms ease, box-shadow 160ms ease; }
+.lm-root .lm-backdrop { transition: opacity 320ms cubic-bezier(.22, .61, .36, 1), backdrop-filter 320ms ease, -webkit-backdrop-filter 320ms ease; }
+.lm-root .lm-dialog { transition: opacity 320ms cubic-bezier(.22, .61, .36, 1), transform 360ms cubic-bezier(.22, .61, .36, 1); }
+.lm-root .lm-body [data-auth-view] { transition: opacity 200ms ease; }
+@media (prefers-reduced-motion: reduce) { .lm-root .lm-input, .lm-root .lm-code-box, .lm-root .lm-ico, .lm-root .lm-hint, .lm-root .lm-dialog, .lm-root .lm-backdrop, .lm-root .lm-submit { transition: none !important; } }
+html body .lm-root input.lm-input:focus-visible, html body .lm-root input.lm-code-box:focus-visible, html body .lm-root input.lm-input:focus, html body .lm-root input.lm-code-box:focus { outline: 0 !important; outline-offset: 0 !important; }
+
+/* The short description under the title is always visible (it was hidden on short screens) */
+.lm-root .lm-cap { display: block; margin: 8px 0 0; color: #4a4f5c; opacity: 1; font-size: 13.5px; line-height: 1.45; }
+@media (max-height: 640px) { .lm-root .lm-cap { display: block; } }

@@ -9,7 +9,7 @@
 <x-page-header title="Usage and health" subtitle="How the platform is being used, and whether its parts are running." />
 
 <h2 class="h5 mb-3">Usage</h2>
-<div class="row g-3 mb-4">
+<div class="row g-3 mb-4 sb-usage">
     <div class="col-6 col-md-4 col-xl-2"><x-dashboard-stat-card title="Active (7 days)" :value="$usage['active_7']" icon="bi-person-check" tone="success" /></div>
     <div class="col-6 col-md-4 col-xl-2"><x-dashboard-stat-card title="Active (30 days)" :value="$usage['active_30']" icon="bi-people" tone="info" /></div>
     <div class="col-6 col-md-4 col-xl-2"><x-dashboard-stat-card title="New accounts (30 days)" :value="$usage['new_accounts_30']" icon="bi-person-plus" tone="info" /></div>

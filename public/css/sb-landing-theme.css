@@ -1,0 +1,187 @@
+/* Dashboard theme that matches the landing page: black / blue / red.
+   Loaded LAST in layouts/app.blade.php, light mode only (dark mode keeps its own tokens).
+   Landing palette: ink #0b0d12, blue #1d4ed8 (+ #1e3a8a), red #d92d3a (CTA + accent lines only),
+   blue tint #e3e8f5, page #f4f6fb. */
+
+:root:root:root:not([data-theme="dark"]) body.sb-app,
+:root:root:root:not([data-theme="dark"]) body.skillbridge-app {
+    color-scheme: light;
+    --sb-red: #d92d3a;
+    --sb-red-deep: #b91f2c;
+    --sb-red-soft: #e3e8f5;
+    --sb-brand: #d92d3a;
+    --sb-brand-700: #b91f2c;
+    --sb-brand-deep: #b91f2c;
+    --sb-brand-soft: #e3e8f5;
+    --sb-brand-content: #1d4ed8;
+    --sb-brand-ring: rgba(29, 78, 216, .3);
+    --sb-focus: rgba(29, 78, 216, .4);
+
+    --sb-canvas: #f4f6fb;
+    --sb-bg: #f4f6fb;
+    --sb-surface: #ffffff;
+    --sb-card: #ffffff;
+    --sb-surface-raised: #f7f9fe;
+    --sb-ink: #0b0d12;
+    --sb-text: #0b0d12;
+    --sb-text-soft: #2b2f3a;
+    --sb-muted: #4a4f5c;
+    --sb-border: #dbe1f0;
+    --sb-input-border: #8f99b3;
+    --sb-row-hover: #eef2fb;
+    --sb-hover-neutral: #eef2fb;
+    --sb-track: #dfe6f7;
+    --sb-chart-grid: #e3e8f5;
+    --sb-shadow: 0 10px 30px rgba(11, 13, 18, .07);
+    --sb-card-shadow: 0 10px 30px rgba(11, 13, 18, .07);
+
+    --sb-cyan: #1d4ed8;
+    --sb-cyan-dark: #1e3a8a;
+    --sb-cyan-soft: rgba(29, 78, 216, .06);
+    --sb-cyan-border: rgba(29, 78, 216, .18);
+    --sb-info-ink: #1d4ed8; --sb-info-bg: #e3e8f5; --sb-info-border: rgba(29, 78, 216, .25);
+
+    --sb-side-1: #0b0d12;
+    --sb-side-2: #0d1430;
+    --sb-side-3: #14246b;
+    --sb-side-deep: #0b0d12;
+    --sb-side-ring: #ffffff;
+}
+
+/* Sidebar: black fading into the deep blue of the landing hero */
+html body.sb-app .sb-sidebar,
+html:not([data-theme="dark"]) body.sb-app .sb-sidebar {
+    background: linear-gradient(175deg, #0b0d12 0%, #0d1430 55%, #14246b 100%);
+}
+html[data-theme="dark"] body.sb-app .sb-sidebar { background: linear-gradient(175deg, #07080c 0%, #0a0f24 60%, #0f1a52 100%); }
+body.sb-app .sb-nav-link.active { box-shadow: 0 8px 20px rgba(0, 0, 0, .35); }
+body.sb-app .sb-nav-link.active::before { content: ""; position: absolute; left: -10px; top: 12px; bottom: 12px; width: 3px; border-radius: 2px; background: #d92d3a; }
+body.sb-app .sb-nav-link { position: relative; }
+
+/* Progress: blue fill like the landing accents (red stays on buttons and accent lines) */
+body.sb-app .progress, body.skillbridge-app .progress { background: var(--sb-track); }
+body.sb-app .progress-bar:not(.bg-success):not(.bg-warning):not(.bg-danger) { background: linear-gradient(90deg, #1d4ed8, #3b6cf0); }
+
+/* Primary buttons: the landing red */
+body.sb-app .btn-primary, body.skillbridge-app .btn-primary { --bs-btn-bg: #d92d3a; --bs-btn-border-color: #d92d3a; --bs-btn-hover-bg: #b91f2c; --bs-btn-hover-border-color: #b91f2c; --bs-btn-active-bg: #b91f2c; --bs-btn-active-border-color: #b91f2c; }
+body.sb-app .btn-outline-primary, body.skillbridge-app .btn-outline-primary { --bs-btn-color: #1d4ed8; --bs-btn-border-color: #1d4ed8; --bs-btn-hover-bg: #1d4ed8; --bs-btn-hover-border-color: #1d4ed8; --bs-btn-hover-color: #fff; --bs-btn-active-bg: #1d4ed8; --bs-btn-active-border-color: #1d4ed8; }
+
+/* ---------------------------------------------------------------------
+   DARK mode: same black / blue family as the landing hero (replaces the maroon dark theme)
+   --------------------------------------------------------------------- */
+:root:root:root[data-theme="dark"] body.sb-app,
+:root:root:root[data-theme="dark"] body.skillbridge-app,
+:root:root:root[data-theme="dark"] {
+    color-scheme: dark;
+    --sb-red: #e8404d;
+    --sb-red-deep: #ff7d88;
+    --sb-red-soft: rgba(59, 108, 240, .16);
+    --sb-brand: #e8404d;
+    --sb-brand-700: #d92d3a;
+    --sb-brand-deep: #d92d3a;
+    --sb-brand-soft: rgba(59, 108, 240, .16);
+    --sb-brand-content: #8fb0ff;
+    --sb-brand-ring: rgba(143, 176, 255, .35);
+    --sb-focus: rgba(143, 176, 255, .5);
+
+    --sb-canvas: #0a0c12;
+    --sb-bg: #0a0c12;
+    --sb-surface: #111522;
+    --sb-card: #111522;
+    --sb-surface-raised: #171c2d;
+    --sb-ink: #eef1f8;
+    --sb-text: #eef1f8;
+    --sb-text-soft: #d3d9e8;
+    --sb-muted: #a9b2c8;
+    --sb-border: rgba(160, 178, 230, .16);
+    --sb-input-border: #5c6785;
+    --sb-row-hover: rgba(143, 176, 255, .07);
+    --sb-hover-neutral: rgba(143, 176, 255, .08);
+    --sb-track: #232b45;
+    --sb-chart-grid: rgba(160, 178, 230, .14);
+    --sb-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+    --sb-card-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+
+    --sb-cyan: #8fb0ff;
+    --sb-cyan-dark: #6a93ff;
+    --sb-cyan-soft: rgba(143, 176, 255, .08);
+    --sb-cyan-border: rgba(143, 176, 255, .25);
+    --sb-info-ink: #8fb0ff; --sb-info-bg: rgba(59, 108, 240, .18); --sb-info-border: rgba(143, 176, 255, .3);
+
+    --sb-side-ring: #fff;
+}
+html[data-theme="dark"], html[data-theme="dark"] body.sb-app { background-color: #0a0c12; }
+html[data-theme="dark"] body.sb-app .sb-sidebar { border-right: 1px solid rgba(160, 178, 230, .12); }
+html[data-theme="dark"] body.sb-app .sb-topbar, html[data-theme="dark"] body.sb-app header.sb-topbar { background: #0d111c; border-bottom-color: rgba(160, 178, 230, .12); }
+html[data-theme="dark"] body.sb-app .progress, html[data-theme="dark"] body.skillbridge-app .progress { background: var(--sb-track); }
+html[data-theme="dark"] body.sb-app .progress-bar:not(.bg-success):not(.bg-warning):not(.bg-danger) { background: linear-gradient(90deg, #3b6cf0, #6a93ff); }
+html[data-theme="dark"] .sd .card, html[data-theme="dark"] .sd .sb-stat-grid { box-shadow: 0 0 0 1px rgba(160, 178, 230, .06), 0 18px 36px -24px rgba(0, 0, 0, .8); }
+
+/* Sidebar brand: same wordmark treatment as the landing page header (serif caps) */
+html body.sb-app .sb-brand { gap: 14px; padding: 22px 20px 16px; }
+html body.sb-app .sb-brand-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 24px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; line-height: 1; }
+html body.sb-app .sb-brand-subtitle { margin-top: 6px; color: rgba(255, 255, 255, .72); font-size: 11.5px; font-weight: 600; letter-spacing: .04em; line-height: 1.3; }
+
+/* ---------------------------------------------------------------------
+   Admin workspace: it ships its own red tokens (--ad-*) and a red sidebar.
+   Re-point them to the same landing palette so admin matches student, coordinator and employer.
+   --------------------------------------------------------------------- */
+:root:root:root:not([data-theme="dark"]) body.sb-app.sb-admin {
+    --ad-red: #d92d3a;
+    --ad-red-deep: #b91f2c;
+    --ad-red-text: #1d4ed8;
+    --ad-canvas: #f4f6fb;
+    --ad-surface: #ffffff;
+    --ad-border: #dbe1f0;
+    --ad-tile: #e3e8f5;
+    --ad-ink: #0b0d12;
+    --ad-muted: #4a4f5c;
+    --ad-hover-shadow: 0 12px 28px rgba(11, 13, 18, .12);
+    --ad-focus: #1d4ed8;
+    --ad-chart-red: #1d4ed8;
+    --ad-chart-fill: rgba(29, 78, 216, .10);
+    --ad-chart-grid: rgba(29, 78, 216, .08);
+    --sb-canvas: #f4f6fb;
+}
+:root:root:root[data-theme="dark"] body.sb-app.sb-admin {
+    --ad-red: #e8404d;
+    --ad-red-deep: #d92d3a;
+    --ad-red-text: #8fb0ff;
+    --ad-tile: rgba(59, 108, 240, .16);
+    --ad-focus: #8fb0ff;
+    --ad-chart-red: #6a93ff;
+    --ad-chart-fill: rgba(106, 147, 255, .14);
+    --ad-chart-grid: rgba(160, 178, 230, .10);
+}
+html:root:not([data-theme="dark"]) body.sb-app.sb-admin .sb-sidebar { background: linear-gradient(175deg, #0b0d12 0%, #0d1430 55%, #14246b 100%); }
+html:root[data-theme="dark"] body.sb-app.sb-admin .sb-sidebar { background: linear-gradient(175deg, #07080c 0%, #0a0f24 60%, #0f1a52 100%); }
+body.sb-app.sb-admin .sb-nav-link.active { background: #fff; color: #0b0d12; box-shadow: 0 8px 20px rgba(0, 0, 0, .35); }
+
+/* Admin > Usage and health: equal-height stat tiles, icon on top, no cramped wrapping */
+.sb-usage > [class*="col"] { display: flex; }
+.sb-usage .sb-stat { flex: 1 1 auto; width: 100%; flex-direction: column; align-items: flex-start; gap: 16px; min-height: 0; padding: 20px; }
+.sb-usage .sb-stat-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--sb-brand-soft); color: var(--sb-brand-content); }
+.sb-usage .sb-stat-icon--success { background: var(--sb-success-bg); color: var(--sb-success-ink); }
+.sb-usage .sb-stat-icon--warning { background: var(--sb-warning-bg); color: var(--sb-warning-ink); }
+.sb-usage .sb-stat-body { width: 100%; }
+.sb-usage .sb-stat-label { min-height: 2.6em; color: var(--sb-muted); font-size: 12px; font-weight: 700; letter-spacing: .06em; line-height: 1.3; text-transform: uppercase; }
+.sb-usage .sb-stat-value { margin-top: 6px; font-size: clamp(24px, 2.2vw, 32px); font-weight: 800; line-height: 1.1; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* Four stat cards in one row (employer dashboard): no orphan card on a second line */
+body.sb-app .sb-stat-grid--4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px; }
+body.sb-app .sb-stat-grid--4 .sb-stat { min-height: 0; padding: 20px; gap: 14px; align-items: flex-start; }
+body.sb-app .sb-stat-grid--4 .sb-stat-icon { width: 46px; height: 46px; border-radius: 12px; }
+body.sb-app .sb-stat-grid--4 .sb-stat-label { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+body.sb-app .sb-stat-grid--4 .sb-stat-value { margin-top: 4px; font-size: 34px; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; }
+body.sb-app .sb-stat-grid--4 .sb-stat-hint { margin-top: 6px; font-size: 13px; }
+body.sb-app .sb-stat-grid--4 a.sb-stat { text-decoration: none; }
+body.sb-app .sb-stat-grid--4 a.sb-stat .sb-stat-label, body.sb-app .sb-stat-grid--4 a.sb-stat .sb-stat-value { text-decoration: none; }
+body.sb-app .sb-stat-grid--4 a.sb-stat .sb-stat-hint { color: var(--sb-brand-content); font-weight: 600; }
+@media (max-width: 1099.98px) { body.sb-app .sb-stat-grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 575.98px) { body.sb-app .sb-stat-grid--4 { grid-template-columns: 1fr; } }
+
+/* CTA band on phones: the button wraps inside the band instead of running past its edge */
+@media (max-width: 640px) {
+    html body.sb-glass.skillbridge-public .sb-cta-band { padding: 22px 18px; }
+    html body.sb-glass.skillbridge-public .sb-cta-band .public-button { box-sizing: border-box; width: 100%; max-width: 100%; white-space: normal; text-align: center; }
+}

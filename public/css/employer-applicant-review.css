@@ -1,0 +1,95 @@
+/* Employer > Applicant review: fits one screen. Summary strip + tabs on the left, actions/status on the right. */
+.ar-wrap .sb-page-header { margin-bottom: 14px; align-items: center; }
+.ar-wrap .sb-page-header h1 { font-size: clamp(24px, 2.4vw, 32px); letter-spacing: -.02em; }
+.ar-wrap .sb-page-header p { margin-top: 2px; font-size: 14.5px; }
+
+.ar { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
+.ar-main { display: grid; gap: 12px; min-width: 0; }
+.ar-aside { display: grid; gap: 12px; position: sticky; top: 12px; min-width: 0; }
+.ar .card { margin: 0 !important; border-radius: 14px; }
+
+/* summary strip */
+.ar-summary { display: grid; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, auto)); gap: 8px 28px; align-items: center; padding: 14px 20px; }
+.ar-sum-item { display: grid; gap: 4px; min-width: 0; }
+.ar-sum-item strong { font-size: 15px; }
+.ar-sum-label { color: var(--sb-muted); font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.ar-sum-item .badge { justify-self: start; font-size: 13px; }
+
+/* tabs */
+.ar-tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 12px 0; border-bottom: 1px solid var(--sb-border); }
+.ar-tab { position: relative; padding: 10px 14px; border: 0; background: transparent; color: var(--sb-muted); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; border-radius: 8px 8px 0 0; }
+.ar-tab:hover { color: var(--sb-text); background: var(--sb-hover-neutral); }
+.ar-tab.is-active { color: var(--sb-brand-content); }
+.ar-tab.is-active::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--sb-brand); }
+.ar-tab:focus-visible { outline: 3px solid var(--sb-focus, #1d4ed8); outline-offset: -3px; }
+
+/* panels: only the panel scrolls, and only if the content is taller than the screen allows */
+.ar-panel { padding: 18px 20px 20px; max-height: calc(100vh - 330px); min-height: 260px; overflow-y: auto; }
+.ar-panel[hidden] { display: none; }
+.ar-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px 28px; }
+.ar-group h2 { margin: 0 0 10px; color: var(--sb-muted); font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.ar-group dl { display: grid; gap: 10px; margin: 0; }
+.ar-group dl > div { display: grid; gap: 1px; min-width: 0; }
+.ar-group dt { color: var(--sb-muted); font-size: 12px; font-weight: 600; }
+.ar-group dd { margin: 0; color: var(--sb-text); font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.ar-block { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--sb-border); }
+.ar-cols + .ar-block, .ar-panel > .ar-block:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.ar-cols + .ar-block { margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--sb-border); }
+.ar-group p { margin: 0; font-size: 14px; line-height: 1.55; }
+.ar-note { color: var(--sb-muted); font-size: 13px; }
+.ar-meta { display: block; color: var(--sb-muted); font-weight: 500; }
+.ar-awards dd ul, .ar-links, .ar-list, .ar-files { margin: 0; padding: 0; list-style: none; }
+.ar-links { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; }
+.ar-list li { padding: 10px 0; border-bottom: 1px solid var(--sb-border); font-size: 14px; }
+.ar-list li:last-child { border-bottom: 0; }
+.ar-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.ar-certs { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; }
+.ar-files li { border-bottom: 1px solid var(--sb-border); }
+.ar-files li:last-child { border-bottom: 0; }
+.ar-group .sb-tile { margin: 0; }
+
+/* aside */
+.ar-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 14px; }
+.ar-actions .btn { padding: 8px 10px; font-size: 14px; white-space: nowrap; }
+.ar-actions .ar-wide { grid-column: 1 / -1; }
+.ar-aside .card-header { padding: 12px 16px; }
+.ar-aside .card-header h2 { font-size: 15px; }
+.ar-aside .card-body { padding: 14px 16px; }
+.ar-aside .mb-3 { margin-bottom: .6rem !important; }
+.ar-aside .form-label { margin-bottom: 3px; font-size: 13px; font-weight: 700; }
+.ar-aside .form-control, .ar-aside .form-select { padding-block: 8px; font-size: 14px; }
+
+@media (max-width: 1199.98px) {
+    .ar { grid-template-columns: minmax(0, 1fr); }
+    .ar-aside { position: static; }
+    .ar-panel { max-height: none; }
+}
+@media (max-width: 767.98px) {
+    .ar-summary { grid-template-columns: 1fr 1fr; }
+    .ar-sum-wide { grid-column: 1 / -1; }
+    .ar-tabs { overflow-x: auto; flex-wrap: nowrap; }
+    .ar-tab { white-space: nowrap; }
+}
+
+/* ---- Overview: balanced columns, label/value on one line, sections never split or orphaned ---- */
+.ar-cols { display: block; column-width: 300px; column-gap: 36px; }
+.ar-cols > .ar-group { break-inside: avoid; margin: 0 0 22px; }
+.ar-group h2 { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; padding-bottom: 8px; border-bottom: 1px solid var(--sb-border); color: var(--sb-text); font-size: 12px; letter-spacing: .12em; }
+.ar-group h2::before { content: ""; width: 3px; height: 12px; border-radius: 2px; background: var(--sb-brand); }
+.ar-group dl { gap: 0; }
+.ar-group dl > div { grid-template-columns: 108px minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 7px 0; border-bottom: 1px dashed var(--sb-border); }
+.ar-group dl > div:last-child { border-bottom: 0; }
+.ar-group dt { font-size: 12.5px; }
+.ar-group dd { font-size: 14px; line-height: 1.4; }
+.ar-awards dd { font-weight: 500; }
+.ar-awards dd li { padding: 2px 0; }
+.ar-panel { max-height: calc(100vh - 300px); padding: 18px 22px 8px; }
+@media (max-width: 575.98px) { .ar-group dl > div { grid-template-columns: 1fr; gap: 1px; } }
+
+/* Balanced 2 columns on laptops (3 on wide screens): label above value so values get the full column width */
+.ar-panel { container-type: inline-size; }
+.ar-cols { column-width: 225px; column-gap: 28px; }
+.ar-group dl > div { grid-template-columns: 1fr; gap: 1px; padding: 6px 0; }
+.ar-group dt { font-size: 12px; }
+.ar-cols > .ar-group { margin-bottom: 18px; }
+.ar-panel { max-height: calc(100vh - 290px); }

@@ -2,23 +2,46 @@
 
 @section('title', 'Intern · '.($profile['name'] ?? 'OJT'))
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/ojt-tabs.css') }}?v={{ @filemtime(public_path('css/ojt-tabs.css')) }}">
+@endpush
+
 @section('content')
+@php
+    // Same tab buttons as the student's My OJT page, plus the employer-only Evaluation tab.
+    $tabs = [
+        'progress' => ['Progress', 'bi-speedometer2'],
+        'time-record' => ['Time Record', 'bi-clock-history'],
+        'weekly-journal' => ['Weekly Journal', 'bi-journal-text'],
+        'evaluation' => ['Evaluation', 'bi-clipboard-check'],
+    ];
+    $activeTab = array_key_exists((string) request('tab'), $tabs) ? request('tab') : 'progress';
+    // A failed evaluation submit reopens the Evaluation tab.
+    if (! request('tab') && ($errors->hasAny(['strengths', 'improvements', 'comments', 'would_hire']) || collect($errors->keys())->contains(fn ($key) => str_starts_with($key, 'scores')))) {
+        $activeTab = 'evaluation';
+    }
+@endphp
 <x-page-header :title="$profile['name'] ?? 'Intern'" subtitle="OJT supervision record">
     <a href="{{ route('employer.interns.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back</a>
-    @if($placement->student?->user)
-        <a href="{{ route('messages.show', $placement->student->user) }}" class="btn btn-outline-primary"><i class="bi bi-chat-dots" aria-hidden="true"></i> Message</a>
-    @endif
 </x-page-header>
 
+<div class="ojt-tabs d-flex align-items-center justify-content-between gap-2">
+    <div class="d-flex gap-2" role="tablist" aria-label="OJT sections" data-ojt-tabs>
+        @foreach($tabs as $key => [$label, $icon])
+            <button type="button" role="tab" id="ojt-tab-{{ $key }}" class="ojt-tab" data-tab="{{ $key }}"
+                    aria-controls="ojt-panel-{{ $key }}" aria-selected="{{ $key === $activeTab ? 'true' : 'false' }}"
+                    tabindex="{{ $key === $activeTab ? '0' : '-1' }}">
+                <i class="bi {{ $icon }}" aria-hidden="true"></i> {{ $label }}
+            </button>
+        @endforeach
+    </div>
+</div>
+
+{{-- Progress: hours, coordinator, emergency contact and the OJT schedule --}}
+<section id="ojt-panel-progress" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-progress" @if($activeTab !== 'progress') hidden @endif>
 @include('ojt.partials.progress', ['placement' => $placement])
 
 @include('employer.partials.coordinator-contact', ['student' => $placement->student])
-
-@if($placement->evaluation?->coordinator_review_status === 'returned')
-    <div class="alert alert-warning" role="status" data-evaluation-returned>
-        <i class="bi bi-arrow-return-left" aria-hidden="true"></i> The coordinator returned your evaluation: {{ $placement->evaluation->coordinator_comment }} Update it below and save.
-    </div>
-@endif
 
 @if(! empty($profile['emergency_contact']))
     <div class="card mb-4">
@@ -51,8 +74,25 @@
     </div>
 @endif
 
+</section>
+
+{{-- Time Record --}}
+<section id="ojt-panel-time-record" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-time-record" @if($activeTab !== 'time-record') hidden @endif>
 @include('ojt.partials.attendance', ['placement' => $placement, 'mode' => 'employer'])
+</section>
+
+{{-- Weekly Journal --}}
+<section id="ojt-panel-weekly-journal" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-weekly-journal" @if($activeTab !== 'weekly-journal') hidden @endif>
 @include('ojt.partials.journals', ['placement' => $placement, 'mode' => 'employer'])
+</section>
+
+{{-- Evaluation --}}
+<section id="ojt-panel-evaluation" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-evaluation" @if($activeTab !== 'evaluation') hidden @endif>
+@if($placement->evaluation?->coordinator_review_status === 'returned')
+    <div class="alert alert-warning" role="status" data-evaluation-returned>
+        <i class="bi bi-arrow-return-left" aria-hidden="true"></i> The coordinator returned your evaluation: {{ $placement->evaluation->coordinator_comment }} Update it below and save.
+    </div>
+@endif
 
 <div class="card mb-4">
     <div class="card-header"><h2 class="h6 mb-0"><i class="bi bi-clipboard-check" aria-hidden="true"></i> Performance evaluation</h2></div>
@@ -118,4 +158,34 @@
         @endif
     </div>
 </div>
+</section>
+
+<script>
+    (function () {
+        var bar = document.querySelector('[data-ojt-tabs]');
+        if (!bar) return;
+        var tabs = [].slice.call(bar.querySelectorAll('[role="tab"]'));
+        function select(key, focus) {
+            tabs.forEach(function (t) {
+                var on = t.dataset.tab === key;
+                t.setAttribute('aria-selected', on ? 'true' : 'false');
+                t.tabIndex = on ? 0 : -1;
+                document.getElementById('ojt-panel-' + t.dataset.tab).hidden = !on;
+                if (on && focus) t.focus();
+            });
+            var url = new URL(window.location.href);
+            url.searchParams.set('tab', key);
+            try { history.replaceState(null, '', url); } catch (_) {}
+        }
+        tabs.forEach(function (t, i) {
+            t.addEventListener('click', function () { select(t.dataset.tab, false); });
+            t.addEventListener('keydown', function (e) {
+                var next = e.key === 'ArrowRight' ? i + 1 : e.key === 'ArrowLeft' ? i - 1 : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : null;
+                if (next === null) return;
+                e.preventDefault();
+                select(tabs[(next + tabs.length) % tabs.length].dataset.tab, true);
+            });
+        });
+    })();
+</script>
 @endsection
