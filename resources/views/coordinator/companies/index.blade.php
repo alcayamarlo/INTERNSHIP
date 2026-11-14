@@ -7,7 +7,11 @@
 @endpush
 
 @section('content')
-<x-page-header title="Partner companies" subtitle="Contacts, MOA status, postings, and your students placed with each company. Open a company to set its MOA dates or mark a posting not suitable." />
+<x-page-header title="Partner companies" subtitle="Contacts, MOA status, postings, and your students placed with each company. Open a company to set its MOA dates or mark a posting not suitable.">
+    <a href="{{ route('coordinator.companies.invitations.index') }}#invite" class="btn btn-primary"><i class="bi bi-envelope-plus" aria-hidden="true"></i> Invite a company</a>
+</x-page-header>
+
+@include('coordinator.companies.partials.tabs')
 
 <form method="GET" action="{{ route('coordinator.companies.index') }}" class="card mb-4 pc-filter" role="search" aria-label="Filter companies">
     <div class="card-body pc-filter-row">

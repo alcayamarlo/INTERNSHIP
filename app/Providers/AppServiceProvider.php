@@ -76,6 +76,13 @@ class AppServiceProvider extends ServiceProvider
         // Burst guard on top of the daily invitation limit in InvitationService.
         RateLimiter::for('invitations', fn (Request $request) => Limit::perMinute(10)->by('invitations:'.($request->user()?->id ?: $request->ip())));
 
+        // Guest company-invitation pages: opening the link and submitting the form.
+        RateLimiter::for('company-invitation', fn (Request $request) => $request->isMethod('post')
+            ? Limit::perMinute(5)->by('company-invitation-submit:'.$request->ip())
+            : Limit::perMinute(20)->by('company-invitation:'.$request->ip()));
+        // Coordinators sending or resending company invitations.
+        RateLimiter::for('company-invitation-send', fn (Request $request) => Limit::perMinute(10)->by('company-invitation-send:'.($request->user()?->id ?: $request->ip())));
+
         Gate::define('message.send', function (User $user, User $recipient) {
             return app(MessagePolicy::class)->send($user, $recipient);
         });

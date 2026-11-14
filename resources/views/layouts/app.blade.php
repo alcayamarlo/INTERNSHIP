@@ -187,6 +187,7 @@
                 ['admin.academics.index', 'admin.academics.*', 'bi-mortarboard', 'Academic settings'],
                 ['admin.criteria.index', 'admin.criteria.*', 'bi-list-check', 'Eligibility Criteria'],
                 ['admin.users.index', 'admin.users.*', 'bi-people', 'Users'],
+                ['admin.company-invitations.index', 'admin.company-invitations.*', 'bi-envelope-paper', 'Company Invitations'],
                 ['admin.placements.index', 'admin.placements.*', 'bi-clock-history', 'OJT Placements'],
                 ['admin.announcements.index', 'admin.announcements.*', 'bi-megaphone', 'Announcements'],
                 ['admin.skill-categories.index', 'admin.skill-categories.*', 'bi-tags', 'Skill Categories'],
