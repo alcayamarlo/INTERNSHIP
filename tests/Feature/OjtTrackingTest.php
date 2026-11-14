@@ -15,6 +15,8 @@ use App\Models\Placement;
 use App\Models\Program;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\WeeklyReportService;
+use Carbon\CarbonImmutable;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -63,6 +65,22 @@ function ojtPlacement(array $fixture, int $requiredHours = 16): Placement
         'status' => Placement::STATUS_ACTIVE,
         'rating_requested_at' => now(),
     ]);
+}
+
+/** The school's Final Performance Evaluation payload: full marks, or a fixed value capped per factor. */
+function ojtFinal(array $overrides = [], ?int $each = null): array
+{
+    $rate = fn (array $factors) => collect($factors)->map(fn ($factor) => $each === null ? $factor['points'] : min($each, $factor['points']))->all();
+
+    return [
+        'department_assigned' => 'IT Department',
+        'field_of_training' => 'Software Developer Trainee',
+        'supervisor_designation' => 'Solutions Architect',
+        'work_scores' => $rate(Evaluation::WORK_FACTORS),
+        'trait_scores' => $rate(Evaluation::TRAIT_FACTORS),
+        'comments' => 'Reliable and quick to learn.',
+        ...$overrides,
+    ];
 }
 
 function ojtScores(int $score = 4): array
@@ -141,8 +159,9 @@ it('runs the full OJT lifecycle through completion, clearance and certificate', 
 
     $this->actingAs($fixture['studentUser'])->post(route('student.ojt.journals.store', $placement), [
         'week_start' => now()->subDays(2)->toDateString(),
-        'title' => 'First week',
-        'accomplishments' => 'Onboarding and first tickets.',
+        'challenges' => 'Setting up the local environment.',
+        'actions_taken' => 'Paired with a senior developer.',
+        'learnings' => 'How the deployment pipeline works.',
     ])->assertSessionHas('success');
     $journal = $placement->journalEntries()->first();
     expect($journal->week_start->isMonday())->toBeTrue();
@@ -150,7 +169,8 @@ it('runs the full OJT lifecycle through completion, clearance and certificate', 
     $this->actingAs($fixture['employerUser'])
         ->patch(route('employer.interns.journals.review', [$placement, $journal]), ['supervisor_comment' => 'Great start.'])
         ->assertSessionHas('success');
-    expect($journal->fresh()->status)->toBe(JournalEntry::STATUS_ACKNOWLEDGED);
+    expect($journal->fresh()->status)->toBe(JournalEntry::STATUS_ACKNOWLEDGED)
+        ->and($journal->fresh()->daily_snapshot)->toHaveCount(5); // Mon-Fri frozen at certification
 
     // Coordinator cannot clear before completion.
     $this->actingAs($fixture['coordinatorUser'])
@@ -158,7 +178,7 @@ it('runs the full OJT lifecycle through completion, clearance and certificate', 
         ->assertForbidden();
 
     $this->actingAs($fixture['employerUser'])
-        ->post(route('employer.interns.evaluation.store', $placement), ['scores' => ojtScores(5), 'would_hire' => 1, 'comments' => 'Excellent.'])
+        ->post(route('employer.interns.evaluation.store', $placement), ojtFinal(['comments' => 'Excellent.']))
         ->assertSessionHas('success');
     expect($placement->fresh()->isActive())->toBeTrue();
 
@@ -188,7 +208,7 @@ it('runs the full OJT lifecycle through completion, clearance and certificate', 
 
     // Locked once cleared.
     $this->actingAs($fixture['employerUser'])
-        ->post(route('employer.interns.evaluation.store', $placement), ['scores' => ojtScores(1)])
+        ->post(route('employer.interns.evaluation.store', $placement), ojtFinal([], 1))
         ->assertSessionHas('error');
     expect((float) $placement->evaluation->fresh()->average_score)->toBe(5.0);
 });
@@ -199,7 +219,7 @@ it('blocks an employer from submitting a rating until the coordinator requests o
     $placement->update(['rating_requested_at' => null, 'rating_requested_by_user_id' => null]);
 
     $this->actingAs($fixture['employerUser'])
-        ->post(route('employer.interns.evaluation.store', $placement), ['scores' => ojtScores()])
+        ->post(route('employer.interns.evaluation.store', $placement), ojtFinal())
         ->assertSessionHas('error');
 
     expect($placement->fresh()->evaluation)->toBeNull();
@@ -217,7 +237,7 @@ it('blocks an employer from submitting a rating until the coordinator requests o
     ]);
 
     $this->actingAs($fixture['employerUser'])
-        ->post(route('employer.interns.evaluation.store', $placement), ['scores' => ojtScores()])
+        ->post(route('employer.interns.evaluation.store', $placement), ojtFinal())
         ->assertSessionHas('success');
 
     expect($placement->fresh()->evaluation)->not->toBeNull();
@@ -266,7 +286,7 @@ it('denies a coordinator from requesting or viewing a rating for a student assig
         ->assertSessionHas('success');
 });
 
-it('keeps a pre-existing evaluation visible and editable even without a formal rating request', function () {
+it('keeps a pre-existing 1-5 evaluation visible and unchanged, even without a formal rating request', function () {
     $fixture = ojtFixture();
     $placement = ojtPlacement($fixture);
     $placement->update(['rating_requested_at' => null, 'rating_requested_by_user_id' => null]);
@@ -279,18 +299,23 @@ it('keeps a pre-existing evaluation visible and editable even without a formal r
         'submitted_at' => now(),
     ]);
 
-    // The employer can still update a rating that was submitted before this feature existed.
+    // A rating submitted on the old 1-5 form still shows, but is never rewritten (kept as is).
     $this->actingAs($fixture['employerUser'])
         ->get(route('employer.interns.show', $placement))
         ->assertOk()
-        ->assertSee('Update evaluation', false)
-        ->assertDontSee('No rating requested yet');
+        ->assertSee('kept as is')
+        ->assertSee('Supervisor Evaluation')
+        ->assertDontSee('No final evaluation requested yet')
+        ->assertDontSee('Submit final evaluation');
 
     $this->actingAs($fixture['employerUser'])
-        ->post(route('employer.interns.evaluation.store', $placement), ['scores' => ojtScores(5), 'comments' => 'Updated.'])
-        ->assertSessionHas('success');
+        ->post(route('employer.interns.evaluation.store', $placement), ojtFinal(['comments' => 'Updated.']))
+        ->assertSessionHas('error');
 
-    expect($placement->fresh()->evaluation->comments)->toBe('Updated.');
+    $evaluation = $placement->fresh()->evaluation;
+    expect($evaluation->isLegacy())->toBeTrue()
+        ->and($evaluation->comments)->toBeNull()
+        ->and((float) $evaluation->average_score)->toBe(4.0);
 });
 
 it('never shows the employer rating to the student, even after one is submitted', function () {
@@ -298,7 +323,7 @@ it('never shows the employer rating to the student, even after one is submitted'
     $placement = ojtPlacement($fixture);
 
     $this->actingAs($fixture['employerUser'])
-        ->post(route('employer.interns.evaluation.store', $placement), ['scores' => ojtScores(5), 'comments' => 'Secret rating comment'])
+        ->post(route('employer.interns.evaluation.store', $placement), ojtFinal(['comments' => 'Secret rating comment']))
         ->assertSessionHas('success');
 
     $response = $this->actingAs($fixture['studentUser'])->get(route('student.ojt.index'))->assertOk();
@@ -308,7 +333,7 @@ it('never shows the employer rating to the student, even after one is submitted'
 
     // A student hitting the employer-only rating endpoint is rejected by role middleware.
     $this->actingAs($fixture['studentUser'])
-        ->post(route('employer.interns.evaluation.store', $placement), ['scores' => ojtScores()])
+        ->post(route('employer.interns.evaluation.store', $placement), ojtFinal())
         ->assertForbidden();
 });
 
@@ -340,7 +365,7 @@ it('blocks other users from viewing or changing a placement', function () {
 
     $this->actingAs($other['employerUser'])->get(route('employer.interns.show', $placement))->assertForbidden();
     $this->actingAs($other['employerUser'])
-        ->post(route('employer.interns.evaluation.store', $placement), ['scores' => ojtScores()])
+        ->post(route('employer.interns.evaluation.store', $placement), ojtFinal())
         ->assertForbidden();
 
     $this->actingAs($other['studentUser'])
@@ -373,7 +398,7 @@ it('locks hours after completion and clearance', function () {
     ]);
 
     $this->actingAs($fixture['employerUser'])
-        ->post(route('employer.interns.evaluation.store', $placement), ['scores' => ojtScores()])
+        ->post(route('employer.interns.evaluation.store', $placement), ojtFinal())
         ->assertSessionHas('success');
     expect($placement->fresh()->isCompleted())->toBeTrue();
 
@@ -404,7 +429,7 @@ it('notifies the coordinator when an OJT completes', function () {
     ]);
 
     $this->actingAs($fixture['employerUser'])
-        ->post(route('employer.interns.evaluation.store', $placement), ['scores' => ojtScores()]);
+        ->post(route('employer.interns.evaluation.store', $placement), ojtFinal());
 
     $this->assertDatabaseHas('notifications', [
         'user_id' => $fixture['coordinatorUser']->id,
@@ -651,4 +676,198 @@ it('still lets a student without an OJT apply', function () {
         ->assertOk()
         ->assertDontSee(\App\Services\ApplicationService::HAS_OJT_MESSAGE);
     $this->postJson(route('student.internships.apply', $other), ['resume_id' => $resume->id])->assertOk();
+});
+
+// ---------------------------------------------------------------------------
+// Phase 3: Final Performance Evaluation (school form) and weekly Activity Narrative Report
+// ---------------------------------------------------------------------------
+
+/** A time record for one day of a placement. */
+function ojtLog(Placement $placement, string $date, float $hours, string $task, string $status = AttendanceLog::STATUS_APPROVED): AttendanceLog
+{
+    return AttendanceLog::create([
+        'placement_id' => $placement->id, 'work_date' => $date, 'time_in' => '08:00', 'time_out' => '17:00',
+        'break_minutes' => 60, 'hours' => $hours, 'task_summary' => $task, 'status' => $status,
+    ]);
+}
+
+function ojtReport(array $overrides = []): array
+{
+    return [
+        'week_start' => now()->toDateString(),
+        'challenges' => 'Mixed emotions while wrapping up.',
+        'actions_taken' => 'Finished pending tasks and documented my work.',
+        'learnings' => 'Proper task completion and accountability.',
+        ...$overrides,
+    ];
+}
+
+it('saves the school final evaluation, maps it to the 1-5 scale, and completes the OJT', function () {
+    $fixture = ojtFixture();
+    $placement = ojtPlacement($fixture, 8);
+    ojtLog($placement, now()->subDay()->toDateString(), 8, 'Built the login page.');
+
+    // Max rating per factor is enforced, and the text fields are required.
+    $this->actingAs($fixture['employerUser'])
+        ->post(route('employer.interns.evaluation.store', $placement), ojtFinal(['work_scores' => [...ojtFinal()['work_scores'], 'knowledge' => 26]]))
+        ->assertSessionHasErrors('work_scores.knowledge');
+    foreach (['department_assigned', 'field_of_training', 'supervisor_designation', 'comments'] as $field) {
+        $this->post(route('employer.interns.evaluation.store', $placement), ojtFinal([$field => '']))->assertSessionHasErrors($field);
+    }
+
+    // Work 95% (punctuality 8, attendance 12) and traits 100% => ((95 + 100) / 2) / 20 = 4.875.
+    $payload = ojtFinal(['certified_by_name' => 'Arvin Diaz', 'certified_by_position' => 'HR Officer']);
+    $payload['work_scores']['punctuality'] = 8;
+    $payload['work_scores']['attendance'] = 12;
+    $this->post(route('employer.interns.evaluation.store', $placement), $payload)->assertSessionHas('success');
+
+    $evaluation = $placement->fresh()->evaluation;
+    expect($evaluation->form_version)->toBe(Evaluation::FORM_SCHOOL)
+        ->and($evaluation->work_total)->toBe(95)
+        ->and($evaluation->trait_total)->toBe(100)
+        ->and((float) $evaluation->average_score)->toBe(4.88)
+        ->and($evaluation->supervisor_designation)->toBe('Solutions Architect')
+        ->and($placement->fresh()->department)->toBe('IT Department')
+        ->and($fixture['employer']->fresh()->position)->toBe('Solutions Architect') // saved back to a blank profile
+        ->and($placement->fresh()->isCompleted())->toBeTrue();
+
+    // A later change to the profile title does not alter the signed snapshot.
+    $fixture['employer']->update(['position' => 'CTO']);
+    expect($evaluation->fresh()->supervisor_designation)->toBe('Solutions Architect');
+
+    // Printable for the student, the supervisor and the coordinator; not for another company.
+    foreach ([$fixture['studentUser'], $fixture['employerUser'], $fixture['coordinatorUser']] as $allowed) {
+        $this->actingAs($allowed)->get(route('ojt.evaluations.print', $placement))->assertOk()->assertHeader('content-type', 'application/pdf');
+    }
+    $this->actingAs(ojtFixture()['employerUser'])->get(route('ojt.evaluations.print', $placement))->assertForbidden();
+});
+
+it('still renders an old 1-5 evaluation unchanged and has no school-form PDF for it', function () {
+    $fixture = ojtFixture();
+    $placement = ojtPlacement($fixture);
+    Evaluation::create(['placement_id' => $placement->id, 'evaluator_user_id' => $fixture['employerUser']->id, 'scores' => ojtScores(4),
+        'average_score' => 4, 'strengths' => 'Punctual', 'would_hire' => true, 'submitted_at' => now()]);
+
+    $this->actingAs($fixture['coordinatorUser'])->get(route('coordinator.placements.show', $placement))->assertOk()
+        ->assertSee('Supervisor Evaluation')->assertSee('4.00')->assertSee('Strengths:')->assertDontSee('Final Performance Evaluation</h2>', false);
+    $this->get(route('ojt.evaluations.print', $placement))->assertNotFound();
+});
+
+it('lets the coordinator request the final evaluation with a due date', function () {
+    $fixture = ojtFixture();
+    $placement = ojtPlacement($fixture);
+    $placement->update(['rating_requested_at' => null]);
+    $this->actingAs($fixture['coordinatorUser']);
+
+    $this->post(route('coordinator.placements.request-rating', $placement), ['rating_due_on' => now()->subDay()->toDateString()])->assertSessionHasErrors('rating_due_on');
+    $this->post(route('coordinator.placements.request-rating', $placement), ['rating_due_on' => now()->addDays(5)->toDateString()])->assertSessionHas('success');
+    expect($placement->fresh()->rating_due_on->toDateString())->toBe(now()->addDays(5)->toDateString());
+
+    $this->get(route('coordinator.placements.show', $placement))->assertSee('Final evaluation request')->assertSee('Re-request final evaluation');
+    $this->actingAs($fixture['employerUser'])->get(route('employer.interns.show', $placement))->assertSee('Due '.now()->addDays(5)->format('M d, Y'));
+});
+
+it('numbers weekly reports from the Monday-to-Friday week containing the OJT start', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-04-22 10:00:00'));
+    $fixture = ojtFixture();
+    $placement = ojtPlacement($fixture);
+    $placement->update(['start_date' => '2026-01-28']); // a Wednesday: week 1 is Jan 26-30
+
+    expect($placement->weekNumberFor(CarbonImmutable::parse('2026-01-30')))->toBe(1)
+        ->and($placement->weekNumberFor(CarbonImmutable::parse('2026-02-02')))->toBe(2)
+        ->and($placement->weekNumberFor(CarbonImmutable::parse('2026-04-24')))->toBe(13)
+        ->and($placement->weekNumberFor(CarbonImmutable::parse('2026-01-23')))->toBeNull();
+
+    $this->actingAs($fixture['studentUser'])->post(route('student.ojt.journals.store', $placement), ojtReport(['week_start' => '2026-04-21']))->assertSessionHas('success');
+    $entry = $placement->journalEntries()->sole();
+    expect($entry->week_number)->toBe(13)
+        ->and($entry->title)->toBe('Week 13 – Activity Narrative Report')
+        ->and($entry->inclusiveDates())->toBe('April 20 - 24, 2026')
+        ->and(app(WeeklyReportService::class)->periodLabel($entry))->toBe('FINALS (Week 13)');
+
+    // Before the OJT start, and the same week twice, are refused.
+    $this->post(route('student.ojt.journals.store', $placement), ojtReport(['week_start' => '2026-01-20']))->assertSessionHasErrors('week_start');
+    $this->post(route('student.ojt.journals.store', $placement), ojtReport(['week_start' => '2026-04-23']))->assertSessionHasErrors('week_start');
+});
+
+it('requires the three narrative sections', function () {
+    $fixture = ojtFixture();
+    $placement = ojtPlacement($fixture);
+    $this->actingAs($fixture['studentUser']);
+
+    foreach (['challenges', 'actions_taken', 'learnings'] as $section) {
+        $this->post(route('student.ojt.journals.store', $placement), ojtReport([$section => '']))->assertSessionHasErrors($section);
+    }
+    expect($placement->journalEntries()->count())->toBe(0);
+});
+
+it('builds Mon-Fri rows with absences, freezes them at certification, and allows reopening', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-04-25 10:00:00'));
+    $fixture = ojtFixture();
+    $placement = ojtPlacement($fixture);
+    $placement->update(['start_date' => '2026-01-28']);
+    ojtLog($placement, '2026-04-20', 8.05, 'Continued work on the remaining features of the system.');
+    ojtLog($placement, '2026-04-22', 8.35, 'Finalization of the Attendance Management System.');
+    ojtLog($placement, '2026-04-23', 8, 'Continued work on the remaining features of the system');
+    ojtLog($placement, '2026-04-24', 5.7, 'Awarding of the Certificate of Completion');
+    ojtLog($placement, '2026-04-21', 9, 'Rejected entry', AttendanceLog::STATUS_REJECTED); // not part of the record
+
+    $this->actingAs($fixture['studentUser'])->post(route('student.ojt.journals.store', $placement), ojtReport(['week_start' => '2026-04-20']))->assertSessionHas('success');
+    $entry = $placement->journalEntries()->sole();
+    $rows = app(WeeklyReportService::class)->dailyRows($entry);
+    expect(array_column($rows, 'day'))->toBe(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'])
+        ->and(array_column($rows, 'hours_label'))->toBe(['8 hrs and 3 mins', '-', '8 hrs and 21 mins', '8 hrs', '5 hrs and 42 mins'])
+        ->and($rows[1]['activity'])->toBe('');
+
+    // Another company's supervisor cannot certify or print it.
+    $other = ojtFixture();
+    $this->actingAs($other['employerUser'])->patch(route('employer.interns.journals.review', [$placement, $entry]))->assertForbidden();
+    $this->get(route('ojt.journals.print', $entry))->assertForbidden();
+
+    // Certify: rows are frozen and the student can no longer delete it.
+    $this->actingAs($fixture['employerUser'])->patch(route('employer.interns.journals.review', [$placement, $entry]), ['supervisor_comment' => 'Well done.'])->assertSessionHas('success');
+    expect($entry->fresh()->isCertified())->toBeTrue()->and($entry->fresh()->daily_snapshot)->toHaveCount(5);
+    AttendanceLog::where('placement_id', $placement->id)->whereDate('work_date', '2026-04-20')->update(['hours' => 2, 'task_summary' => 'Edited later']);
+    $frozen = app(WeeklyReportService::class)->dailyRows($entry->fresh());
+    expect($frozen[0]['hours_label'])->toBe('8 hrs and 3 mins')->and($frozen[0]['activity'])->toBe('Continued work on the remaining features of the system.');
+    $this->actingAs($fixture['studentUser'])->delete(route('student.ojt.journals.destroy', [$placement, $entry]))->assertSessionHas('error');
+    expect(JournalEntry::find($entry->id))->not->toBeNull();
+
+    // The printed report renders for the student, supervisor and coordinator.
+    foreach ([$fixture['studentUser'], $fixture['employerUser'], $fixture['coordinatorUser']] as $allowed) {
+        $this->actingAs($allowed)->get(route('ojt.journals.print', $entry))->assertOk()->assertHeader('content-type', 'application/pdf');
+    }
+
+    // Reopen (supervisor, then coordinator after a second certification) clears the snapshot.
+    $this->actingAs($fixture['employerUser'])->patch(route('employer.interns.journals.reopen', [$placement, $entry]))->assertSessionHas('success');
+    expect($entry->fresh()->isCertified())->toBeFalse()->and($entry->fresh()->daily_snapshot)->toBeNull();
+    expect(app(WeeklyReportService::class)->dailyRows($entry->fresh())[0]['hours_label'])->toBe('2 hrs');
+    $this->patch(route('employer.interns.journals.review', [$placement, $entry]))->assertSessionHas('success');
+    $this->actingAs($other['coordinatorUser'])->post(route('coordinator.reviews.journals.reopen', $entry))->assertForbidden();
+    $this->actingAs($fixture['coordinatorUser'])->post(route('coordinator.reviews.journals.reopen', $entry))->assertSessionHas('success');
+    expect($entry->fresh()->isCertified())->toBeFalse();
+});
+
+it('formats hours from minutes the way the school form writes them', function () {
+    $format = fn (int $minutes) => WeeklyReportService::formatMinutes($minutes);
+
+    expect($format(483))->toBe('8 hrs and 3 mins')
+        ->and($format(480))->toBe('8 hrs')
+        ->and($format(342))->toBe('5 hrs and 42 mins')
+        ->and($format(61))->toBe('1 hr and 1 min')
+        ->and($format(42))->toBe('42 mins')
+        ->and($format(0))->toBe('-');
+});
+
+it('saves the supervisor job title and the trainee department', function () {
+    $fixture = ojtFixture();
+    $placement = ojtPlacement($fixture);
+    $this->actingAs($fixture['employerUser']);
+
+    $this->put(route('employer.interns.schedule', $placement), ['start_date' => $placement->start_date->toDateString(), 'department' => 'IT Department'])->assertSessionHas('success');
+    expect($placement->fresh()->department)->toBe('IT Department');
+
+    $this->get(route('employer.profile.edit'))->assertOk()->assertSee('Your job title');
+    $this->put(route('employer.profile.update'), ['company_name' => 'OJT Labs', 'industry' => 'IT', 'position' => 'Solutions Architect'])->assertSessionHasNoErrors();
+    expect($fixture['employer']->fresh()->position)->toBe('Solutions Architect');
 });

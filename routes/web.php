@@ -145,6 +145,9 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
     Route::get('/ojt/placements/{placement}/certificate', OjtCertificateController::class)->name('ojt.certificate');
     // Monthly Evaluation PDF: student (own), supervisor (own company), managing coordinator, admin (AppraisalPolicy::view).
     Route::get('/ojt/appraisals/{appraisal}/print', [\App\Http\Controllers\AppraisalController::class, 'print'])->name('ojt.appraisals.print');
+    // Printable school forms (PlacementPolicy::view): weekly Activity Narrative Report and Final Performance Evaluation.
+    Route::get('/ojt/journals/{journalEntry}/print', [\App\Http\Controllers\OjtFormPrintController::class, 'journal'])->name('ojt.journals.print');
+    Route::get('/ojt/placements/{placement}/evaluation/print', [\App\Http\Controllers\OjtFormPrintController::class, 'evaluation'])->name('ojt.evaluations.print');
 
     Route::prefix('student')->name('student.')->middleware('role:student')->group(function () {
         Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
@@ -261,6 +264,7 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         Route::patch('/interns/{placement}/attendance/{attendanceLog}', [EmployerInternController::class, 'reviewAttendance'])->name('interns.attendance.review');
         Route::post('/interns/{placement}/attendance/approve-all', [EmployerInternController::class, 'approveAllAttendance'])->name('interns.attendance.approve-all');
         Route::patch('/interns/{placement}/journals/{journalEntry}', [EmployerInternController::class, 'reviewJournal'])->name('interns.journals.review');
+        Route::patch('/interns/{placement}/journals/{journalEntry}/reopen', [EmployerInternController::class, 'reopenJournal'])->name('interns.journals.reopen');
         Route::post('/interns/{placement}/evaluation', [EmployerInternController::class, 'storeEvaluation'])->name('interns.evaluation.store');
         Route::post('/interns/appraisals/{appraisal}', [\App\Http\Controllers\AppraisalController::class, 'submitSupervisor'])->name('interns.appraisals.rate');
     });
@@ -329,6 +333,7 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         // Second review of weekly reports and evaluations after the supervisor.
         Route::get('/reviews', [\App\Http\Controllers\Coordinator\ReviewController::class, 'index'])->name('reviews.index');
         Route::post('/reviews/journals/{journalEntry}', [\App\Http\Controllers\Coordinator\ReviewController::class, 'reviewJournal'])->name('reviews.journals');
+        Route::post('/reviews/journals/{journalEntry}/reopen', [\App\Http\Controllers\Coordinator\ReviewController::class, 'reopenJournal'])->name('reviews.journals.reopen');
         Route::post('/reviews/evaluations/{evaluation}', [\App\Http\Controllers\Coordinator\ReviewController::class, 'reviewEvaluation'])->name('reviews.evaluations');
         // Institutional statistics and exports.
         Route::get('/statistics', [\App\Http\Controllers\Coordinator\StatisticsController::class, 'index'])->name('statistics.index');

@@ -58,6 +58,8 @@ class AcademicSettingsRequest extends FormRequest
             // Null (never saved) keeps the defaults: Jan Prelim, Feb Midterm, Mar Prefinals, Apr Finals.
             'evaluation_period_labels' => ['sometimes', 'nullable', 'array:'.implode(',', range(1, 12))],
             'evaluation_period_labels.*' => ['nullable', 'string', 'max:30'],
+            // Days after a week's Friday that its Activity Narrative Report is due.
+            'journal_due_days' => ['sometimes', 'required', 'integer', 'between:0,14'],
         ];
     }
 

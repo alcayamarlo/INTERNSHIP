@@ -61,7 +61,7 @@
         $tabs = [
             'progress' => ['Progress', 'bi-speedometer2'],
             'time-record' => ['Time Record', 'bi-clock-history'],
-            'weekly-journal' => ['Weekly Journal', 'bi-journal-text'],
+            'weekly-journal' => ['Weekly Report', 'bi-journal-text'],
             'monthly-evaluation' => ['Monthly Evaluation', 'bi-clipboard-data'],
         ];
         $activeTab = array_key_exists((string) request('tab'), $tabs) ? request('tab') : 'progress';
@@ -99,7 +99,7 @@
         {{-- Action for the open tab, on the right of the tab bar. Progress has none. --}}
         @if($canLog)
             <button type="button" class="btn btn-primary btn-sm flex-shrink-0" data-ojt-action="time-record" data-bs-toggle="modal" data-bs-target="#dailyEntryModal" @if($activeTab !== 'time-record') hidden @endif><i class="bi bi-plus-lg" aria-hidden="true"></i> Add daily entry</button>
-            <button type="button" class="btn btn-primary btn-sm flex-shrink-0" data-ojt-action="weekly-journal" data-bs-toggle="modal" data-bs-target="#weeklyJournalModal" @if($activeTab !== 'weekly-journal') hidden @endif><i class="bi bi-plus-lg" aria-hidden="true"></i> Add weekly journal</button>
+            <button type="button" class="btn btn-primary btn-sm flex-shrink-0" data-ojt-action="weekly-journal" data-bs-toggle="modal" data-bs-target="#weeklyJournalModal" @if($activeTab !== 'weekly-journal') hidden @endif><i class="bi bi-plus-lg" aria-hidden="true"></i> Add weekly report</button>
         @endif
     </div>
 
@@ -223,7 +223,7 @@
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2 class="modal-title h5" id="weeklyJournalModalLabel">Add weekly journal</h2>
+                    <h2 class="modal-title h5" id="weeklyJournalModalLabel">Add weekly activity narrative report</h2>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -232,27 +232,27 @@
 <input type="hidden" name="_modal" value="weekly">
                             <div class="row g-2">
                                 <div class="col-md-5">
-                                    <label class="form-label" for="week_start">Any day in the week</label>
+                                    <label class="form-label" for="week_start">Any day in the week <span class="text-danger" aria-hidden="true">*</span></label>
                                     <input type="date" id="week_start" name="week_start" value="{{ old('week_start', now()->toDateString()) }}" max="{{ now()->toDateString() }}" class="form-control @error('week_start') is-invalid @enderror" required>
                                     @error('week_start')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
-                                <div class="col-md-7">
-                                    <label class="form-label" for="title">Title</label>
-                                    <input id="title" name="title" value="{{ old('title') }}" maxlength="255" class="form-control @error('title') is-invalid @enderror" required>
-                                    @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                <div class="col-md-7 d-flex align-items-end">
+                                    <p class="small text-muted mb-1">The daily activity table (dates, activities, hours) is filled in from your time records for that week.</p>
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label" for="accomplishments">Accomplishments</label>
-                                    <textarea id="accomplishments" name="accomplishments" rows="2" class="form-control @error('accomplishments') is-invalid @enderror" required>{{ old('accomplishments') }}</textarea>
-                                    @error('accomplishments')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                    <label class="form-label" for="challenges">Difficulties encountered <span class="text-danger" aria-hidden="true">*</span></label>
+                                    <textarea id="challenges" name="challenges" rows="3" maxlength="5000" class="form-control @error('challenges') is-invalid @enderror" required>{{ old('challenges') }}</textarea>
+                                    @error('challenges')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="form-label" for="learnings">Learnings</label>
-                                    <textarea id="learnings" name="learnings" rows="2" class="form-control">{{ old('learnings') }}</textarea>
+                                <div class="col-12">
+                                    <label class="form-label" for="actions_taken">Actions taken <span class="text-danger" aria-hidden="true">*</span></label>
+                                    <textarea id="actions_taken" name="actions_taken" rows="3" maxlength="5000" class="form-control @error('actions_taken') is-invalid @enderror" required>{{ old('actions_taken') }}</textarea>
+                                    @error('actions_taken')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="form-label" for="challenges">Challenges</label>
-                                    <textarea id="challenges" name="challenges" rows="2" class="form-control">{{ old('challenges') }}</textarea>
+                                <div class="col-12">
+                                    <label class="form-label" for="learnings">Learning insights <span class="text-danger" aria-hidden="true">*</span></label>
+                                    <textarea id="learnings" name="learnings" rows="3" maxlength="5000" class="form-control @error('learnings') is-invalid @enderror" required>{{ old('learnings') }}</textarea>
+                                    @error('learnings')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
                             
@@ -260,7 +260,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary" form="weeklyJournalForm">Submit journal</button>
+                    <button type="submit" class="btn btn-primary" form="weeklyJournalForm">Submit report</button>
                 </div>
             </div>
         </div>

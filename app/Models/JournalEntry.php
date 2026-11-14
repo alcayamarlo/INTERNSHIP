@@ -14,10 +14,13 @@ class JournalEntry extends Model
     protected $fillable = [
         'placement_id',
         'week_start',
+        'week_number',
         'title',
         'accomplishments',
         'learnings',
         'challenges',
+        'actions_taken',
+        'daily_snapshot',
         'status',
         'supervisor_comment',
         'reviewed_by_user_id',
@@ -32,6 +35,8 @@ class JournalEntry extends Model
     {
         return [
             'week_start' => 'date',
+            'week_number' => 'integer',
+            'daily_snapshot' => 'array',
             'reviewed_at' => 'datetime',
             'coordinator_reviewed_at' => 'datetime',
         ];
@@ -56,6 +61,28 @@ class JournalEntry extends Model
     public function isAcknowledged(): bool
     {
         return $this->status === self::STATUS_ACKNOWLEDGED;
+    }
+
+    /** "Certified true and correct" by the supervisor (stored as acknowledged). */
+    public function isCertified(): bool
+    {
+        return $this->isAcknowledged();
+    }
+
+    /** Monday to Friday of the reported week, e.g. "April 20 - 24, 2026". */
+    public function inclusiveDates(): string
+    {
+        $monday = $this->week_start->copy()->startOfWeek();
+        $friday = $monday->copy()->addDays(4);
+
+        return $monday->isSameMonth($friday)
+            ? $monday->format('F j').' - '.$friday->format('j, Y')
+            : $monday->format('F j').' - '.$friday->format('F j, Y');
+    }
+
+    public static function titleFor(?int $weekNumber): string
+    {
+        return ($weekNumber ? 'Week '.$weekNumber : 'Weekly').' – Activity Narrative Report';
     }
 
     public function weekLabel(): string

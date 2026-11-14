@@ -15,7 +15,7 @@
     ];
 
     // Without a hash, open the tab whose form failed validation.
-    $settingsFields = ['require_fourth_year_standing', 'require_major_subjects_passed', 'student_id_pattern', 'required_ojt_hours', 'academic_year_start_month', 'current_term_override', 'summer_enabled', 'term_ranges'];
+    $settingsFields = ['require_fourth_year_standing', 'require_major_subjects_passed', 'student_id_pattern', 'required_ojt_hours', 'academic_year_start_month', 'current_term_override', 'summer_enabled', 'term_ranges', 'journal_due_days'];
     $defaultTab = match (true) {
         collect($settingsFields)->contains(fn ($field) => $errors->has($field)) || collect($errors->keys())->contains(fn ($key) => preg_match('/^(first_semester|second_semester|summer)_|^evaluation_period_labels/', $key)) => 'calendar',
         $errors->hasAny(['name', 'upload_source', 'sort_order', 'is_active']) => 'requirements',
@@ -272,6 +272,12 @@
                                 @error('evaluation_period_labels.'.$month)<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                         @endforeach
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label" for="journal_due_days">Weekly report due (days after the week ends)</label>
+                        <input type="number" min="0" max="14" id="journal_due_days" name="journal_due_days" value="{{ old('journal_due_days', $settings->journal_due_days ?? 3) }}" class="form-control form-control-sm @error('journal_due_days') is-invalid @enderror" style="max-width: 120px;">
+                        @error('journal_due_days')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <div class="form-text">A week's Activity Narrative Report is due this many days after its Friday. Students are reminded before and when overdue.</div>
                     </div>
                 </div>
             </section>

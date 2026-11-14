@@ -111,19 +111,32 @@ class OjtController extends Controller
                 : null,
         ]);
 
+        // The school's Activity Narrative Report: three required sections; the title and the daily
+        // activity table are generated (the table comes from the week's time records).
         $validated = $request->validate([
             'week_start' => [
                 'required', 'date', 'before_or_equal:today',
-                $this->uniqueDateFor($placement->journalEntries(), 'week_start', 'You already submitted a journal for that week.'),
+                function (string $attribute, mixed $value, \Closure $fail) use ($placement) {
+                    if ($placement->weekNumberFor(Carbon::parse($value)) === null) {
+                        $fail('Choose a week on or after your OJT start date ('.$placement->start_date->format('M d, Y').').');
+                    }
+                },
+                $this->uniqueDateFor($placement->journalEntries(), 'week_start', 'You already submitted a report for that week.'),
             ],
-            'title' => ['required', 'string', 'max:255'],
-            'accomplishments' => ['required', 'string', 'max:5000'],
-            'learnings' => ['nullable', 'string', 'max:5000'],
-            'challenges' => ['nullable', 'string', 'max:5000'],
+            'challenges' => ['required', 'string', 'max:5000'],
+            'actions_taken' => ['required', 'string', 'max:5000'],
+            'learnings' => ['required', 'string', 'max:5000'],
+        ], [
+            'challenges.required' => 'Describe the difficulties you encountered this week.',
+            'actions_taken.required' => 'Describe the actions you took.',
+            'learnings.required' => 'Share your learning insights for the week.',
         ]);
 
+        $weekNumber = $placement->weekNumberFor(Carbon::parse($validated['week_start']));
         $entry = $placement->journalEntries()->create([
             ...$validated,
+            'week_number' => $weekNumber,
+            'title' => JournalEntry::titleFor($weekNumber),
             'status' => JournalEntry::STATUS_SUBMITTED,
         ]);
 
@@ -140,7 +153,7 @@ class OjtController extends Controller
 
         // A report the coordinator returned can be replaced even after the supervisor acknowledged it.
         if ($journalEntry->isAcknowledged() && ! $journalEntry->isReturnedByCoordinator()) {
-            return back()->with('error', 'Acknowledged journals can no longer be deleted.');
+            return back()->with('error', 'Certified reports can no longer be deleted. Ask your supervisor or coordinator to reopen it.');
         }
 
         $journalEntry->delete();
