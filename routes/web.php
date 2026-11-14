@@ -64,6 +64,14 @@ Route::middleware('guest')->group(function () {
     Route::get('/forgot-password', [ForgotPasswordController::class, 'showResetForm'])->name('password.request');
     Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetCode'])->name('password.email')->middleware('throttle:password-reset-request');
     Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update')->middleware('throttle:password-reset-submit');
+
+    // A company completes its account from a coordinator's invitation link.
+    Route::middleware('throttle:company-invitation')->group(function () {
+        Route::get('/company-invitation/{token}', [\App\Http\Controllers\CompanyInvitationController::class, 'show'])
+            ->where('token', '[A-Za-z0-9]+')->name('company-invitations.show');
+        Route::post('/company-invitation/{token}', [\App\Http\Controllers\CompanyInvitationController::class, 'store'])
+            ->where('token', '[A-Za-z0-9]+')->name('company-invitations.accept');
+    });
 });
 
 Route::post('/logout', [LoginController::class, 'logout'])
@@ -300,7 +308,11 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         Route::get('/applications', [\App\Http\Controllers\Coordinator\ApplicationMonitorController::class, 'index'])->name('applications.index');
         // Partner companies: directory, MOA, and postings marked not suitable.
         Route::get('/companies', [\App\Http\Controllers\Coordinator\CompanyController::class, 'index'])->name('companies.index');
-        Route::get('/companies/{employer}', [\App\Http\Controllers\Coordinator\CompanyController::class, 'show'])->name('companies.show');
+        // Invite companies that have no account yet. Registered before /companies/{employer} so "invitations" is not read as an id.
+        Route::get('/companies/invitations', [\App\Http\Controllers\Coordinator\CompanyInvitationController::class, 'index'])->name('companies.invitations.index');
+        Route::post('/companies/invitations', [\App\Http\Controllers\Coordinator\CompanyInvitationController::class, 'store'])->middleware('throttle:company-invitation-send')->name('companies.invitations.store');
+        Route::post('/companies/invitations/{companyInvitation}/resend', [\App\Http\Controllers\Coordinator\CompanyInvitationController::class, 'resend'])->middleware('throttle:company-invitation-send')->name('companies.invitations.resend');
+        Route::get('/companies/{employer}',[\App\Http\Controllers\Coordinator\CompanyController::class, 'show'])->name('companies.show');
         Route::put('/companies/{employer}/moa', [\App\Http\Controllers\Coordinator\CompanyController::class, 'updateMoa'])->name('companies.moa.update');
         Route::post('/internships/{internship}/flag', [\App\Http\Controllers\Coordinator\CompanyController::class, 'flag'])->name('internships.flag');
         Route::delete('/internships/{internship}/flag', [\App\Http\Controllers\Coordinator\CompanyController::class, 'unflag'])->name('internships.unflag');
@@ -364,6 +376,7 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         Route::post('/announcements', [AdminAnnouncementController::class, 'store'])->name('announcements.store');
         Route::put('/announcements/{announcement}', [AdminAnnouncementController::class, 'update'])->name('announcements.update');
         Route::delete('/announcements/{announcement}', [AdminAnnouncementController::class, 'destroy'])->name('announcements.destroy');
+        Route::get('/company-invitations', [\App\Http\Controllers\Admin\CompanyInvitationController::class, 'index'])->name('company-invitations.index');
         Route::get('/placements', [AdminPlacementController::class, 'index'])->name('placements.index');
         Route::get('/placements/{placement}', [AdminPlacementController::class, 'show'])->name('placements.show');
         // Audit and security log (kept 1 year).
