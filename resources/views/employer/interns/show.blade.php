@@ -44,6 +44,7 @@
 
 {{-- Progress: hours, coordinator, emergency contact and the OJT schedule --}}
 <section id="ojt-panel-progress" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-progress" @if($activeTab !== 'progress') hidden @endif>
+@include('ojt.partials.deadlines', ['placement' => $placement, 'actor' => 'supervisor'])
 @include('ojt.partials.progress', ['placement' => $placement])
 
 @include('employer.partials.coordinator-contact', ['student' => $placement->student])

@@ -213,6 +213,19 @@ class AppraisalService
         });
 
         $appraisal->refresh();
+        // The reopened step can be reminded again (ojt:remind-documents).
+        $reminderStep = match ($step) {
+            'self' => 'student_rating',
+            'supervisor' => 'supervisor_rating',
+            'student_comment' => 'student_comment',
+            default => 'adviser_rating',
+        };
+        DB::table('ojt_reminders')
+            ->where('placement_id', $appraisal->placement_id)
+            ->where('kind', OjtDeadlineService::MONTHLY_EVALUATION)
+            ->where('subject_key', (string) $appraisal->id)
+            ->where('stage', 'like', $reminderStep.':%')
+            ->delete();
         $this->activityLog->log($coordinator, 'appraisal_reopened', ['appraisal_id' => $appraisal->id, 'step' => $step]);
         $message = 'Your coordinator reopened the '.Appraisal::stepLabel($step).' on the '.$this->periodName($appraisal).' monthly evaluation. Please submit it again.';
         match ($step) {

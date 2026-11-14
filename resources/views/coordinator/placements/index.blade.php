@@ -58,5 +58,5 @@
     <div class="col-md-3"><button type="submit" class="btn btn-outline-primary w-100">Filter</button></div>
 </form>
 
-@include('ojt.partials.placement-table', ['placements' => $placements, 'showRoute' => 'coordinator.placements.show'])
+@include('ojt.partials.placement-table', ['placements' => $placements, 'showRoute' => 'coordinator.placements.show', 'deadlines' => $deadlines])
 @endsection

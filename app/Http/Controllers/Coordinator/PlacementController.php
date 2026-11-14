@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Placement;
 use App\Services\AppraisalService;
 use App\Services\NotificationService;
+use App\Services\OjtDeadlineService;
 use App\Services\PlacementService;
 use App\Services\PlacementValidation;
 use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PlacementController extends Controller
 {
@@ -50,7 +52,13 @@ class PlacementController extends Controller
             'cleared' => (clone $scoped)->whereNotNull('cleared_at')->count(),
         ];
 
-        return view('coordinator.placements.index', compact('placements', 'summary', 'filter', 'search'));
+        $deadlineService = app(OjtDeadlineService::class);
+        $deadlines = $placements->getCollection()
+            ->filter(fn (Placement $placement) => $placement->isActive())
+            ->mapWithKeys(fn (Placement $placement) => [$placement->id => $deadlineService->pendingFor($placement)])
+            ->all();
+
+        return view('coordinator.placements.index', compact('placements', 'summary', 'filter', 'search', 'deadlines'));
     }
 
     public function show(Placement $placement)
@@ -109,6 +117,8 @@ class PlacementController extends Controller
             // A week by default when no date is chosen.
             'rating_due_on' => $validated['rating_due_on'] ?? now()->addDays(7)->toDateString(),
         ]);
+        // A new request (or due date) can be reminded again.
+        DB::table('ojt_reminders')->where('placement_id', $placement->id)->where('kind', OjtDeadlineService::FINAL_EVALUATION)->delete();
 
         $placement->loadMissing('employer.user', 'student.user');
         if ($employerUser = $placement->employer?->user) {
