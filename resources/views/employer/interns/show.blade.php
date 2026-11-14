@@ -13,9 +13,14 @@
         'progress' => ['Progress', 'bi-speedometer2'],
         'time-record' => ['Time Record', 'bi-clock-history'],
         'weekly-journal' => ['Weekly Journal', 'bi-journal-text'],
-        'evaluation' => ['Evaluation', 'bi-clipboard-check'],
+        'monthly-evaluation' => ['Monthly Evaluation', 'bi-clipboard-data'],
+        // The end-of-OJT evaluation; named apart from the Monthly Evaluation so both are expected.
+        'evaluation' => ['Final Evaluation', 'bi-clipboard-check'],
     ];
     $activeTab = array_key_exists((string) request('tab'), $tabs) ? request('tab') : 'progress';
+    if (! request('tab') && old('appraisal_id')) {
+        $activeTab = 'monthly-evaluation';
+    }
     // A failed evaluation submit reopens the Evaluation tab.
     if (! request('tab') && ($errors->hasAny(['strengths', 'improvements', 'comments', 'would_hire']) || collect($errors->keys())->contains(fn ($key) => str_starts_with($key, 'scores')))) {
         $activeTab = 'evaluation';
@@ -84,6 +89,11 @@
 {{-- Weekly Journal --}}
 <section id="ojt-panel-weekly-journal" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-weekly-journal" @if($activeTab !== 'weekly-journal') hidden @endif>
 @include('ojt.partials.journals', ['placement' => $placement, 'mode' => 'employer'])
+</section>
+
+{{-- Monthly Evaluation --}}
+<section id="ojt-panel-monthly-evaluation" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-monthly-evaluation" @if($activeTab !== 'monthly-evaluation') hidden @endif>
+@include('ojt.partials.appraisals', ['placement' => $placement, 'mode' => 'employer'])
 </section>
 
 {{-- Evaluation --}}

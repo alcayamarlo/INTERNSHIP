@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Coordinator;
 
 use App\Http\Controllers\Controller;
 use App\Models\Placement;
+use App\Services\AppraisalService;
 use App\Services\NotificationService;
 use App\Services\PlacementService;
 use App\Services\PlacementValidation;
@@ -64,12 +65,18 @@ class PlacementController extends Controller
             'attendanceLogs.reviewer:id,name',
             'journalEntries' => fn ($query) => $query->latest('week_start'),
             'evaluation.evaluator:id,name',
+            'appraisals.supervisor:id,name',
             'clearedBy:id,name',
         ]);
 
         $validationChecks = $placement->isPendingValidation() ? app(PlacementValidation::class)->checks($placement) : [];
+        // Months that can still be requested: within the OJT dates, up to now, not yet requested.
+        $requested = $placement->appraisals->map(fn ($appraisal) => $appraisal->period_month->format('Y-m'))->all();
+        $requestMonths = $placement->isActive()
+            ? app(AppraisalService::class)->monthsFor($placement)->reject(fn ($month) => in_array($month->format('Y-m'), $requested, true))->values()
+            : collect();
 
-        return view('coordinator.placements.show', compact('placement', 'validationChecks'));
+        return view('coordinator.placements.show', compact('placement', 'validationChecks', 'requestMonths'));
     }
 
     public function clear(Request $request, Placement $placement)

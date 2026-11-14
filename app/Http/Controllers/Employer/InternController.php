@@ -57,6 +57,7 @@ class InternController extends Controller
             'attendanceLogs' => fn ($query) => $query->latest('work_date'),
             'journalEntries' => fn ($query) => $query->latest('week_start'),
             'evaluation',
+            'appraisals.supervisor:id,name',
             'clearedBy:id,name',
         ]);
         $profile = $placement->student

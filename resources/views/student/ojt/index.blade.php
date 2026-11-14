@@ -62,8 +62,13 @@
             'progress' => ['Progress', 'bi-speedometer2'],
             'time-record' => ['Time Record', 'bi-clock-history'],
             'weekly-journal' => ['Weekly Journal', 'bi-journal-text'],
+            'monthly-evaluation' => ['Monthly Evaluation', 'bi-clipboard-data'],
         ];
         $activeTab = array_key_exists((string) request('tab'), $tabs) ? request('tab') : 'progress';
+        // A failed monthly evaluation submit reopens that tab.
+        if (! request('tab') && old('appraisal_id')) {
+            $activeTab = 'monthly-evaluation';
+        }
         $canLog = $placement->isActive() && ! $placement->start_date->isFuture();
     @endphp
 
@@ -123,6 +128,11 @@
             </div>
         @endif
         @include('ojt.partials.journals', ['placement' => $placement, 'mode' => 'student'])
+    </section>
+
+    {{-- MONTHLY EVALUATION --}}
+    <section id="ojt-panel-monthly-evaluation" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-monthly-evaluation" @if($activeTab !== 'monthly-evaluation') hidden @endif>
+        @include('ojt.partials.appraisals', ['placement' => $placement, 'mode' => 'student'])
     </section>
 
     @push('scripts')

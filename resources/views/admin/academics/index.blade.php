@@ -17,7 +17,7 @@
     // Without a hash, open the tab whose form failed validation.
     $settingsFields = ['require_fourth_year_standing', 'require_major_subjects_passed', 'student_id_pattern', 'required_ojt_hours', 'academic_year_start_month', 'current_term_override', 'summer_enabled', 'term_ranges'];
     $defaultTab = match (true) {
-        collect($settingsFields)->contains(fn ($field) => $errors->has($field)) || collect($errors->keys())->contains(fn ($key) => preg_match('/^(first_semester|second_semester|summer)_/', $key)) => 'calendar',
+        collect($settingsFields)->contains(fn ($field) => $errors->has($field)) || collect($errors->keys())->contains(fn ($key) => preg_match('/^(first_semester|second_semester|summer)_|^evaluation_period_labels/', $key)) => 'calendar',
         $errors->hasAny(['name', 'upload_source', 'sort_order', 'is_active']) => 'requirements',
         default => 'programs',
     };
@@ -256,6 +256,22 @@
                             </select>
                             @error('current_term_override')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card aa-card" aria-labelledby="evaluationPeriodsHeading">
+                <div class="card-header"><h2 id="evaluationPeriodsHeading"><i class="bi bi-clipboard-data" aria-hidden="true"></i> Monthly evaluation periods</h2></div>
+                <div class="card-body">
+                    <p class="academic-section-subtitle mb-3">Name printed as "Period of Evaluation" on each month's Monthly Evaluation. Leave a month blank to print the month name. Changing a name does not change evaluations already requested.</p>
+                    <div class="row g-2">
+                        @foreach($settings->evaluationPeriodLabels() as $month => $label)
+                            <div class="col-6 col-md-4">
+                                <label class="form-label small mb-1" for="evaluationPeriod{{ $month }}">{{ \Illuminate\Support\Carbon::create(2000, $month, 1)->format('F') }}</label>
+                                <input id="evaluationPeriod{{ $month }}" name="evaluation_period_labels[{{ $month }}]" maxlength="30" class="form-control form-control-sm @error('evaluation_period_labels.'.$month) is-invalid @enderror" value="{{ old('evaluation_period_labels.'.$month, $label) }}">
+                                @error('evaluation_period_labels.'.$month)<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             </section>

@@ -143,6 +143,8 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         ->middleware('role:admin,coordinator')
         ->name('analytics.charts');
     Route::get('/ojt/placements/{placement}/certificate', OjtCertificateController::class)->name('ojt.certificate');
+    // Monthly Evaluation PDF: student (own), supervisor (own company), managing coordinator, admin (AppraisalPolicy::view).
+    Route::get('/ojt/appraisals/{appraisal}/print', [\App\Http\Controllers\AppraisalController::class, 'print'])->name('ojt.appraisals.print');
 
     Route::prefix('student')->name('student.')->middleware('role:student')->group(function () {
         Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('dashboard');
@@ -227,6 +229,8 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         Route::delete('/ojt/{placement}/attendance/{attendanceLog}', [StudentOjtController::class, 'destroyAttendance'])->name('ojt.attendance.destroy');
         Route::post('/ojt/{placement}/journals', [StudentOjtController::class, 'storeJournal'])->name('ojt.journals.store');
         Route::delete('/ojt/{placement}/journals/{journalEntry}', [StudentOjtController::class, 'destroyJournal'])->name('ojt.journals.destroy');
+        Route::post('/ojt/appraisals/{appraisal}/rating', [\App\Http\Controllers\AppraisalController::class, 'submitSelf'])->name('ojt.appraisals.self');
+        Route::post('/ojt/appraisals/{appraisal}/comment', [\App\Http\Controllers\AppraisalController::class, 'submitStudentComment'])->name('ojt.appraisals.comment');
     });
 
     Route::prefix('employer')->name('employer.')->middleware('role:employer')->group(function () {
@@ -258,6 +262,7 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         Route::post('/interns/{placement}/attendance/approve-all', [EmployerInternController::class, 'approveAllAttendance'])->name('interns.attendance.approve-all');
         Route::patch('/interns/{placement}/journals/{journalEntry}', [EmployerInternController::class, 'reviewJournal'])->name('interns.journals.review');
         Route::post('/interns/{placement}/evaluation', [EmployerInternController::class, 'storeEvaluation'])->name('interns.evaluation.store');
+        Route::post('/interns/appraisals/{appraisal}', [\App\Http\Controllers\AppraisalController::class, 'submitSupervisor'])->name('interns.appraisals.rate');
     });
 
     Route::prefix('coordinator')->name('coordinator.')->middleware('role:coordinator')->group(function () {
@@ -301,6 +306,11 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         Route::post('/placements/{placement}/request-rating', [CoordinatorPlacementController::class, 'requestRating'])->name('placements.request-rating');
         Route::post('/placements/{placement}/validate', [CoordinatorPlacementController::class, 'validatePlacement'])->name('placements.validate');
         Route::post('/placements/{placement}/hold', [CoordinatorPlacementController::class, 'hold'])->name('placements.hold');
+        // Monthly Evaluations: request (one placement or all active ones), adviser rating, reopen the latest step.
+        Route::post('/placements/{placement}/appraisals', [\App\Http\Controllers\AppraisalController::class, 'store'])->name('placements.appraisals.store');
+        Route::post('/appraisals/bulk', [\App\Http\Controllers\AppraisalController::class, 'bulkStore'])->name('appraisals.bulk');
+        Route::post('/appraisals/{appraisal}/adviser', [\App\Http\Controllers\AppraisalController::class, 'submitAdviser'])->name('appraisals.adviser');
+        Route::post('/appraisals/{appraisal}/reopen', [\App\Http\Controllers\AppraisalController::class, 'reopen'])->name('appraisals.reopen');
 
         // Eligibility decisions (approve / mark not eligible) with history.
         Route::post('/students/{student}/eligibility', [\App\Http\Controllers\Coordinator\EligibilityDecisionController::class, 'store'])->name('students.eligibility.store');
