@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Coordinator;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\DeploymentRequirement;
-use App\Models\EligibilityCriterion;
 use App\Models\Program;
 use App\Services\AcademicCalendar;
 use App\Services\ActivityLogService;
@@ -50,18 +49,12 @@ class EligibilityCriteriaController extends Controller
     {
         $this->authorizeProgram($program);
         [$schoolYear, $term] = $this->selectedTerm($request);
-        $versions = EligibilityCriterion::query()
-            ->forTerm($program->id, $schoolYear, $term)
-            ->with('createdBy:id,name')
-            ->orderByDesc('version')
-            ->get();
 
         return view('coordinator.criteria.show', [
             'program' => $program,
             'schoolYear' => $schoolYear,
             'term' => $term,
-            'current' => $versions->first(),
-            'versions' => $versions,
+            'current' => $this->criteria->latestFor($program->id, $schoolYear, $term),
             'documents' => $this->documentChoices(),
             ...$this->termChoices(),
             'routePrefix' => $this->routePrefix(),
@@ -101,9 +94,11 @@ class EligibilityCriteriaController extends Controller
             'version' => $criterion->version,
         ]);
 
+        // Back to the program list for the same term. Versions are still stored (eligibility reads
+        // the latest one), but they are no longer shown in the UI.
         return redirect()
-            ->route($this->routePrefix().'.criteria.show', [$program, 'school_year' => $criterion->school_year, 'term' => $criterion->term])
-            ->with('success', "Criteria saved as version {$criterion->version}.");
+            ->route($this->routePrefix().'.criteria.index', ['school_year' => $criterion->school_year, 'term' => $criterion->term])
+            ->with('success', "Criteria saved for {$program->display_name}.");
     }
 
     /** @return Collection<int, Program> */

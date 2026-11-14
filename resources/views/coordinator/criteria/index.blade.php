@@ -3,7 +3,7 @@
 @section('title', 'Eligibility Criteria')
 
 @section('content')
-<x-page-header title="Eligibility Criteria" subtitle="Internship requirements per program and term. Each save keeps the earlier versions as history." />
+<x-page-header title="Eligibility Criteria" subtitle="Internship requirements per program and term." />
 
 <form method="GET" action="{{ route($routePrefix.'.criteria.index') }}" class="card mb-4" aria-label="Choose a term">
     <div class="card-body row g-3 align-items-end">
@@ -41,9 +41,7 @@
                         <td>{{ $row['program']->display_name }}</td>
                         <td>
                             @if($row['current'])
-                                @include('coordinator.criteria.partials.summary', ['criterion' => $row['current']])
-                                <small class="text-muted d-block">Version {{ $row['current']->version }}</small>
-                            @else
+                                @include('coordinator.criteria.partials.summary', ['criterion' => $row['current']])                            @else
                                 <span class="text-muted">None set. The school-wide rules apply:
                                     {{ collect([$globalRules['require_fourth_year'] ? '4th Year standing' : null, $globalRules['require_major_subjects_passed'] ? 'major subjects passed' : null])->filter()->implode(', ') ?: 'no requirements' }}.</span>
                             @endif
