@@ -8,6 +8,7 @@ use App\Models\Evaluation;
 use App\Models\JournalEntry;
 use App\Services\ActivityLogService;
 use App\Services\NotificationService;
+use App\Services\WeeklyReportService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -72,6 +73,22 @@ class ReviewController extends Controller
         }
 
         return back()->with('success', $validated['decision'] === self::RETURNED ? 'Report returned to the student.' : 'Report marked reviewed.');
+    }
+
+    /** Undo a supervisor's "certified true and correct" on a weekly report (e.g. certified by mistake). */
+    public function reopenJournal(JournalEntry $journalEntry, WeeklyReportService $weeklyReports): RedirectResponse
+    {
+        $this->authorize('view', $journalEntry->placement);
+        if (! $journalEntry->isCertified()) {
+            return back()->with('error', 'This report is not certified.');
+        }
+        if ($journalEntry->placement->isCleared()) {
+            return back()->with('error', 'This OJT is already cleared, so its reports are locked.');
+        }
+
+        $weeklyReports->reopen($journalEntry, Auth::user());
+
+        return back()->with('success', 'Certification reopened. The supervisor can certify it again.');
     }
 
     public function reviewEvaluation(Request $request, Evaluation $evaluation): RedirectResponse

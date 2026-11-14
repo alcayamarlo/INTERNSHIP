@@ -109,12 +109,12 @@ it('puts the daily entry and weekly journal forms in modals that re-open after v
         ->assertSee('data-bs-target="#weeklyJournalModal"', false);
 
     $this->actingAs($f['studentUser'])->from(route('student.ojt.index'))
-        ->post(route('student.ojt.journals.store', $placement), ['_modal' => 'weekly', 'week_start' => now()->toDateString(), 'title' => ''])
-        ->assertSessionHasErrors('title')
+        ->post(route('student.ojt.journals.store', $placement), ['_modal' => 'weekly', 'week_start' => now()->toDateString(), 'challenges' => ''])
+        ->assertSessionHasErrors('challenges')
         ->assertSessionHasInput('_modal', 'weekly');
 
     $this->actingAs($f['studentUser'])->followingRedirects()->from(route('student.ojt.index'))
-        ->post(route('student.ojt.journals.store', $placement), ['_modal' => 'weekly', 'week_start' => now()->toDateString(), 'title' => ''])
+        ->post(route('student.ojt.journals.store', $placement), ['_modal' => 'weekly', 'week_start' => now()->toDateString(), 'challenges' => ''])
         ->assertOk()
         ->assertSee('data-sb-open-on-load', false);
 });

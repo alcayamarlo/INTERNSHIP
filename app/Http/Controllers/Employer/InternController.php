@@ -11,6 +11,7 @@ use App\Services\CompanyVisibleProfile;
 use App\Services\ActivityLogService;
 use App\Services\NotificationService;
 use App\Services\PlacementService;
+use App\Services\WeeklyReportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +22,8 @@ class InternController extends Controller
     public function __construct(
         private NotificationService $notificationService,
         private ActivityLogService $activityLog,
-        private PlacementService $placementService
+        private PlacementService $placementService,
+        private WeeklyReportService $weeklyReports,
     ) {}
 
     public function index(Request $request)
@@ -56,6 +58,7 @@ class InternController extends Controller
             'internship',
             'attendanceLogs' => fn ($query) => $query->latest('work_date'),
             'journalEntries' => fn ($query) => $query->latest('week_start'),
+            'journalEntries.reviewer:id,name',
             'evaluation',
             'appraisals.supervisor:id,name',
             'clearedBy:id,name',
@@ -75,9 +78,15 @@ class InternController extends Controller
         $validated = $request->validate([
             'start_date' => ['required', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+            // "Designation" on the monthly evaluation and weekly report, e.g. "IT Department".
+            'department' => ['nullable', 'string', 'max:150'],
         ]);
 
+        $startChanged = ! $placement->start_date || $placement->start_date->toDateString() !== \Carbon\Carbon::parse($validated['start_date'])->toDateString();
         $placement->update($validated);
+        if ($startChanged) {
+            $this->weeklyReports->renumberUncertified($placement->fresh());
+        }
 
         return back()->with('success', 'OJT schedule updated.');
     }
@@ -157,20 +166,37 @@ class InternController extends Controller
         $this->authorize('supervise', $placement);
         abort_unless((int) $journalEntry->placement_id === (int) $placement->id, 404);
 
+        if ($journalEntry->isCertified()) {
+            return back()->with('error', 'This report is already certified. Reopen it first if it needs changes.');
+        }
+
         $validated = $request->validate([
             'supervisor_comment' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $journalEntry->update([
-            'supervisor_comment' => $validated['supervisor_comment'] ?? null,
-            'status' => JournalEntry::STATUS_ACKNOWLEDGED,
-            'reviewed_by_user_id' => Auth::id(),
-            'reviewed_at' => now(),
-        ]);
+        // "Certified true and correct": freezes that week's daily rows and locks the report.
+        $this->weeklyReports->certify($journalEntry, Auth::user(), $validated['supervisor_comment'] ?? null);
 
-        $this->notifyStudent($placement, 'Journal acknowledged', 'Your supervisor reviewed your journal for '.$journalEntry->weekLabel().'.');
+        $this->notifyStudent($placement, 'Weekly report certified', 'Your supervisor certified your '.$journalEntry->title.' ('.$journalEntry->inclusiveDates().') as true and correct.');
 
-        return back()->with('success', 'Journal acknowledged.');
+        return back()->with('success', 'Report certified true and correct.');
+    }
+
+    /** Undo a mistaken certification. */
+    public function reopenJournal(Placement $placement, JournalEntry $journalEntry)
+    {
+        $this->authorize('supervise', $placement);
+        abort_unless((int) $journalEntry->placement_id === (int) $placement->id, 404);
+        if (! $journalEntry->isCertified()) {
+            return back()->with('error', 'This report is not certified.');
+        }
+        if ($placement->isCleared()) {
+            return back()->with('error', 'This OJT is already cleared, so its reports are locked.');
+        }
+
+        $this->weeklyReports->reopen($journalEntry, Auth::user());
+
+        return back()->with('success', 'Certification reopened.');
     }
 
     public function storeEvaluation(Request $request, Placement $placement)
@@ -187,33 +213,62 @@ class InternController extends Controller
             return back()->with('error', 'Wait for the coordinator to request a rating before submitting one.');
         }
 
-        $rules = [
-            'strengths' => ['nullable', 'string', 'max:2000'],
-            'improvements' => ['nullable', 'string', 'max:2000'],
-            'comments' => ['nullable', 'string', 'max:2000'],
-            'would_hire' => ['nullable', 'boolean'],
-        ];
-        foreach (array_keys(Evaluation::CRITERIA) as $key) {
-            $rules['scores.'.$key] = ['required', 'integer', 'between:1,5'];
+        // Evaluations submitted on the original 1-5 rubric are kept exactly as they were.
+        $existing = $placement->evaluation()->first();
+        if ($existing && $existing->isLegacy()) {
+            return back()->with('error', 'This evaluation was submitted on the earlier 1-5 form and is kept as is. It can no longer be changed.');
         }
 
-        $validated = $request->validate($rules, [
-            'scores.*.required' => 'Rate every criterion.',
-        ]);
+        // The school's Final Performance Evaluation Report (form 2).
+        $rules = [
+            'department_assigned' => ['required', 'string', 'max:150'],
+            'field_of_training' => ['required', 'string', 'max:150'],
+            'supervisor_designation' => ['required', 'string', 'max:100'],
+            'comments' => ['required', 'string', 'max:5000'],
+            'certified_by_name' => ['nullable', 'string', 'max:150'],
+            'certified_by_position' => ['nullable', 'string', 'max:100', 'required_with:certified_by_name'],
+        ];
+        $messages = [
+            'comments.required' => 'Write the final comments / recommendations (Part IV).',
+            'supervisor_designation.required' => 'Enter your designation / job title.',
+            'certified_by_position.required_with' => 'Enter the position of the person who certifies the evaluation.',
+        ];
+        foreach (['work_scores' => Evaluation::WORK_FACTORS, 'trait_scores' => Evaluation::TRAIT_FACTORS] as $group => $factors) {
+            foreach ($factors as $key => $factor) {
+                $rules["{$group}.{$key}"] = ['required', 'integer', 'between:0,'.$factor['points']];
+                $messages["{$group}.{$key}.required"] = "Rate {$factor['label']}.";
+                $messages["{$group}.{$key}.between"] = "{$factor['label']} must be from 0 to {$factor['points']}.";
+                $messages["{$group}.{$key}.integer"] = "Enter a whole number for {$factor['label']}.";
+            }
+        }
+        $validated = $request->validate($rules, $messages);
 
-        $scores = collect(Evaluation::CRITERIA)->keys()
-            ->mapWithKeys(fn ($key) => [$key => (int) $validated['scores'][$key]])
-            ->all();
+        $work = collect(Evaluation::WORK_FACTORS)->keys()->mapWithKeys(fn ($key) => [$key => (int) $validated['work_scores'][$key]])->all();
+        $traits = collect(Evaluation::TRAIT_FACTORS)->keys()->mapWithKeys(fn ($key) => [$key => (int) $validated['trait_scores'][$key]])->all();
+        $workTotal = array_sum($work);
+        $traitTotal = array_sum($traits);
 
-        DB::transaction(function () use ($placement, $validated, $scores): void {
+        DB::transaction(function () use ($placement, $validated, $work, $traits, $workTotal, $traitTotal): void {
             $placement->evaluation()->updateOrCreate([], [
                 'evaluator_user_id' => Auth::id(),
-                'scores' => $scores,
-                'average_score' => round(array_sum($scores) / count($scores), 2),
-                'strengths' => $validated['strengths'] ?? null,
-                'improvements' => $validated['improvements'] ?? null,
-                'comments' => $validated['comments'] ?? null,
-                'would_hire' => (bool) ($validated['would_hire'] ?? false),
+                'form_version' => Evaluation::FORM_SCHOOL,
+                'work_scores' => $work,
+                'work_total' => $workTotal,
+                'trait_scores' => $traits,
+                'trait_total' => $traitTotal,
+                // The legacy columns stay filled so statistics and lists keep working.
+                'scores' => $work + $traits,
+                'average_score' => Evaluation::averageFromTotals($workTotal, $traitTotal),
+                'department_assigned' => trim($validated['department_assigned']),
+                'field_of_training' => trim($validated['field_of_training']),
+                // Snapshot of the job title, so the printed form keeps the title it was signed with.
+                'supervisor_designation' => trim($validated['supervisor_designation']),
+                'certified_by_name' => filled($validated['certified_by_name'] ?? null) ? trim($validated['certified_by_name']) : null,
+                'certified_by_position' => filled($validated['certified_by_position'] ?? null) ? trim($validated['certified_by_position']) : null,
+                'comments' => trim($validated['comments']),
+                'strengths' => null,
+                'improvements' => null,
+                'would_hire' => false,
                 'submitted_at' => now(),
                 // A new submission goes back to the coordinator's review queue.
                 'coordinator_review_status' => null,
@@ -221,6 +276,15 @@ class InternController extends Controller
                 'coordinator_reviewed_at' => null,
                 'coordinator_reviewed_by_user_id' => null,
             ]);
+
+            // Fill blanks elsewhere: the trainee's department on the placement, the title on the profile.
+            if (blank($placement->department)) {
+                $placement->update(['department' => trim($validated['department_assigned'])]);
+            }
+            $employer = Auth::user()->employer;
+            if ($employer && blank($employer->position)) {
+                $employer->update(['position' => trim($validated['supervisor_designation'])]);
+            }
 
             $this->activityLog->log(Auth::user(), 'evaluation_submitted', ['placement_id' => $placement->id]);
         });

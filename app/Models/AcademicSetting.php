@@ -30,6 +30,7 @@ class AcademicSetting extends Model
         'summer_end_day',
         'required_ojt_hours',
         'evaluation_period_labels',
+        'journal_due_days',
     ];
 
     protected function casts(): array
@@ -41,6 +42,7 @@ class AcademicSetting extends Model
             'require_fourth_year_standing' => 'boolean',
             'require_major_subjects_passed' => 'boolean',
             'evaluation_period_labels' => 'array',
+            'journal_due_days' => 'integer',
         ];
     }
 

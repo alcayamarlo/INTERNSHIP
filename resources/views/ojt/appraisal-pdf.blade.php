@@ -6,15 +6,6 @@
 <style>
     @page { margin: 28px 40px 36px; }
     body { font-family: DejaVu Sans, sans-serif; font-size: 10.5px; color: #111827; }
-    .head { width: 100%; border-collapse: collapse; }
-    .head td { vertical-align: middle; }
-    .seal { width: 74px; text-align: center; }
-    .seal img { width: 66px; height: 66px; }
-    .school { text-align: center; }
-    .school .name { font-size: 18px; font-weight: bold; letter-spacing: 0.5px; }
-    .school .sub { font-size: 8.5px; margin-top: 2px; }
-    .rule-orange { border-top: 3px solid #f59e0b; margin-top: 8px; }
-    .rule-red { border-top: 2px solid #c8102e; margin-top: 2px; }
     .titles { text-align: center; margin: 12px 0 10px; line-height: 1.35; }
     .titles .college { font-size: 12px; font-weight: bold; }
     .titles .form { font-size: 11.5px; font-weight: bold; }
@@ -47,19 +38,7 @@
     $columns = ['self', 'supervisor', 'adviser'];
 @endphp
 
-<table class="head">
-    <tr>
-        @if($header['school_seal'])<td class="seal"><img src="{{ $header['school_seal'] }}" alt=""></td>@endif
-        <td class="school">
-            <div class="name">{{ $header['school_name'] }}</div>
-            <div class="sub">{{ $header['school_supervision'] }}</div>
-            <div class="sub">{{ $header['school_address'] }}</div>
-        </td>
-        @if($header['college_seal'])<td class="seal"><img src="{{ $header['college_seal'] }}" alt=""></td>@endif
-    </tr>
-</table>
-<div class="rule-orange"></div>
-<div class="rule-red"></div>
+@include('ojt.partials.pdf-header', ['header' => $header])
 
 <div class="titles">
     <div class="college">{{ $header['college_name'] }}</div>

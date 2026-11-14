@@ -20,6 +20,7 @@ class Employer extends Model
         'logo',
         'address',
         'contact_person',
+        'position',
         'verified_at',
         'verified_by_user_id',
         'moa_signed_on',

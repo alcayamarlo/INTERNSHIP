@@ -64,6 +64,7 @@ class PlacementController extends Controller
             'attendanceLogs' => fn ($query) => $query->latest('work_date'),
             'attendanceLogs.reviewer:id,name',
             'journalEntries' => fn ($query) => $query->latest('week_start'),
+            'journalEntries.reviewer:id,name',
             'evaluation.evaluator:id,name',
             'appraisals.supervisor:id,name',
             'clearedBy:id,name',
@@ -92,13 +93,21 @@ class PlacementController extends Controller
         return back()->with('success', 'OJT cleared. The student can now download the certificate of completion.');
     }
 
-    public function requestRating(Placement $placement)
+    /** "Request final evaluation": asks the supervisor for the Final Performance Evaluation, with a due date. */
+    public function requestRating(Request $request, Placement $placement)
     {
         $this->authorize('requestRating', $placement);
+        $validated = $request->validate([
+            'rating_due_on' => ['nullable', 'date', 'after_or_equal:today'],
+        ], [
+            'rating_due_on.after_or_equal' => 'The due date cannot be in the past.',
+        ]);
 
         $placement->update([
             'rating_requested_at' => now(),
             'rating_requested_by_user_id' => Auth::id(),
+            // A week by default when no date is chosen.
+            'rating_due_on' => $validated['rating_due_on'] ?? now()->addDays(7)->toDateString(),
         ]);
 
         $placement->loadMissing('employer.user', 'student.user');
@@ -107,12 +116,12 @@ class PlacementController extends Controller
                 $employerUser,
                 'ojt_update',
                 'Rating requested',
-                'Your coordinator requested a performance rating for '.($placement->student?->user?->name ?? 'this intern').'.',
+                'Your coordinator requested the Final Performance Evaluation for '.($placement->student?->user?->name ?? 'this intern').'. Due '.$placement->rating_due_on->format('M d, Y').'.',
                 ['placement_id' => $placement->id]
             );
         }
 
-        return back()->with('success', 'Rating request sent to the employer.');
+        return back()->with('success', 'Final evaluation requested from the company. Due '.$placement->rating_due_on->format('M d, Y').'.');
     }
 
     /** Deploys the student: the placement becomes active and hours can be logged. */

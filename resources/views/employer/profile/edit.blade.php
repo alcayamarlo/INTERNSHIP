@@ -91,6 +91,13 @@
                         </div>
                     </div>
 
+                    <div class="mb-3">
+                        <label class="form-label" for="position">Your job title</label>
+                        <input id="position" type="text" class="form-control @error('position') is-invalid @enderror" name="position" maxlength="100" placeholder="e.g. Solutions Architect" value="{{ old('position', $employer->position) }}" aria-describedby="positionHint">
+                        <div id="positionHint" class="form-text">Printed as "Designation / Job Title" on the interns' Final Performance Evaluation.</div>
+                        @error('position')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                    </div>
+
                     <div class="mb-3 ep-f-site">
                         <label class="form-label" for="website">Website</label>
                         <input id="website" type="url" class="form-control @error('website') is-invalid @enderror" name="website" placeholder="https://www.example.com" value="{{ old('website', $employer->website) }}">

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -38,6 +39,8 @@ class Placement extends Model
         'certificate_number',
         'rating_requested_at',
         'rating_requested_by_user_id',
+        'rating_due_on',
+        'department',
         'validated_at',
         'validated_by_user_id',
         'validation_remarks',
@@ -52,6 +55,7 @@ class Placement extends Model
             'completed_at' => 'datetime',
             'cleared_at' => 'datetime',
             'rating_requested_at' => 'datetime',
+            'rating_due_on' => 'date',
             'validated_at' => 'datetime',
         ];
     }
@@ -155,6 +159,22 @@ class Placement extends Model
     public function isActive(): bool
     {
         return $this->status === self::STATUS_ACTIVE;
+    }
+
+    /**
+     * Weekly report number for a date: week 1 is the Monday-to-Friday week containing the start date.
+     * Returns null before the OJT starts or when there is no start date.
+     */
+    public function weekNumberFor(\DateTimeInterface $date): ?int
+    {
+        if (! $this->start_date) {
+            return null;
+        }
+        $firstMonday = CarbonImmutable::parse($this->start_date)->startOfWeek();
+        $monday = CarbonImmutable::parse($date)->startOfWeek();
+        $number = intdiv((int) $firstMonday->diffInDays($monday, false), 7) + 1;
+
+        return $number >= 1 ? $number : null;
     }
 
     public function isCompleted(): bool
