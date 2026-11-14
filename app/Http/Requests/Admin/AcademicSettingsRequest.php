@@ -54,6 +54,10 @@ class AcademicSettingsRequest extends FormRequest
             'summer_end_month' => ['required', 'integer', 'between:1,12'],
             'summer_end_day' => ['required', 'integer', 'between:1,31'],
             'required_ojt_hours' => ['sometimes', 'required', 'integer', 'between:1,2000'],
+            // Monthly Evaluation "Period of Evaluation" name per month (1-12). Blank uses the month name.
+            // Null (never saved) keeps the defaults: Jan Prelim, Feb Midterm, Mar Prefinals, Apr Finals.
+            'evaluation_period_labels' => ['sometimes', 'nullable', 'array:'.implode(',', range(1, 12))],
+            'evaluation_period_labels.*' => ['nullable', 'string', 'max:30'],
         ];
     }
 

@@ -146,6 +146,12 @@ class Placement extends Model
         return $this->hasOne(Evaluation::class);
     }
 
+    /** Monthly Evaluations (Performance Appraisal Reports), one per month. */
+    public function appraisals(): HasMany
+    {
+        return $this->hasMany(Appraisal::class);
+    }
+
     public function isActive(): bool
     {
         return $this->status === self::STATUS_ACTIVE;

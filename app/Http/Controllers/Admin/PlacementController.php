@@ -43,6 +43,7 @@ class PlacementController extends Controller
             'attendanceLogs.reviewer:id,name',
             'journalEntries' => fn ($query) => $query->latest('week_start'),
             'evaluation.evaluator:id,name',
+            'appraisals.supervisor:id,name',
             'clearedBy:id,name',
         ]);
 

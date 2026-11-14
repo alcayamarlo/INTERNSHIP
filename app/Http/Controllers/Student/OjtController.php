@@ -42,6 +42,7 @@ class OjtController extends Controller
                 'attendanceLogs.reviewer:id,name',
                 'journalEntries' => fn ($query) => $query->latest('week_start'),
                 'journalEntries.reviewer:id,name',
+                'appraisals.supervisor:id,name',
                 'clearedBy:id,name',
             ]);
         }
