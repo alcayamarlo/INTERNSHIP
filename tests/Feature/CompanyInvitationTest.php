@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\CompanyInvitationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
 uses(RefreshDatabase::class);
@@ -292,4 +293,22 @@ it('blocks students, employers, and admins from the coordinator invitation actio
         $this->actingAs(User::factory()->create(['role' => $role]))->get(route('admin.company-invitations.index'))->assertForbidden();
     }
     expect(CompanyInvitation::count())->toBe(1);
+});
+
+it('keeps expiry and submission dates fixed when other columns of the row change', function () {
+    // On MariaDB with explicit_defaults_for_timestamp = 0, a NOT NULL timestamp auto-updates on every
+    // change, which expired invitations the moment the link was opened. These columns must stay nullable.
+    foreach (['company_invitations' => 'expires_at', 'internship_invitations' => 'expires_at', 'evaluations' => 'submitted_at'] as $table => $column) {
+        $definition = collect(Schema::getColumns($table))->firstWhere('name', $column);
+        expect($definition['nullable'])->toBeTrue("{$table}.{$column} must be nullable");
+    }
+
+    $token = inviteCompany(invitingCoordinator());
+    $expiresAt = CompanyInvitation::sole()->expires_at->toDateTimeString();
+    auth()->logout();
+    $this->travel(5)->minutes();
+
+    $this->get(route('company-invitations.show', $token))->assertOk();
+    expect(CompanyInvitation::sole()->expires_at->toDateTimeString())->toBe($expiresAt);
+    $this->post(route('company-invitations.accept', $token), companyForm())->assertRedirect(route('employer.dashboard'));
 });

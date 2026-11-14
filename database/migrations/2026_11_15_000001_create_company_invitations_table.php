@@ -23,7 +23,9 @@ return new class extends Migration
             $table->string('phone', 20)->nullable();
             $table->string('token_hash', 64)->unique();
             $table->string('status', 20)->default('sent');
-            $table->timestamp('expires_at');
+            // Nullable on purpose: on MariaDB with explicit_defaults_for_timestamp = 0 a NOT NULL timestamp
+            // would auto-update on every change (see 2026_11_15_000002). The app always sets it.
+            $table->timestamp('expires_at')->nullable();
             $table->timestamp('opened_at')->nullable();
             $table->timestamp('accepted_at')->nullable();
             $table->foreignId('employer_id')->nullable()->constrained('employers')->nullOnDelete();
