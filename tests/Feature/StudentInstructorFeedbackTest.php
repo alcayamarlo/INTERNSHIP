@@ -2,10 +2,11 @@
 
 use App\Enums\ApplicationStatus;
 use App\Enums\UserRole;
+use App\Models\Coordinator;
 use App\Models\Employer;
+use App\Models\Institution;
 use App\Models\Internship;
 use App\Models\InternshipApplication;
-use App\Models\Institution;
 use App\Models\Placement;
 use App\Models\Student;
 use App\Models\User;
@@ -124,21 +125,29 @@ it('puts the daily entry and weekly journal forms in modals that re-open after v
 it('shows only open internships, with public-safe fields, to guests on the landing page and listing', function () {
     $f = feedbackFixture();
 
+    // The landing page features the newest open posting; the full list and the details open in a popup
+    // that loads them in the background (AJAX). Direct visits to those URLs go back to the landing page.
     $this->get(route('home'))->assertOk()
         ->assertSee('Browse internships')
-        ->assertSee('Open Web Intern')->assertSee('Public Facing Co')->assertSee('Cebu City')
+        ->assertSee('Open Web Intern')->assertSee('Public Facing Co')
         ->assertDontSee('Closed Intern Role')
         ->assertDontSee('private.hr@employer.test')->assertDontSee('Secret Person')
         ->assertSee('Logging in as a student is required to apply.');
+    $this->get(route('internships.index'))->assertRedirect(route('home').'#internships');
 
-    $this->get(route('internships.index'))->assertOk()->assertSee('Open Web Intern')->assertDontSee('Closed Intern Role');
-    $this->get(route('internships.index', ['search' => 'nothing-matches-this']))->assertOk()->assertSee('No open internships right now. Check back soon.');
-    $this->get(route('internships.show', $f['open']))->assertOk()->assertSee('Build web things.')->assertDontSee('private.hr@employer.test');
-    $this->get(route('internships.show', $f['closed']))->assertNotFound();
+    $ajax = ['X-Requested-With' => 'XMLHttpRequest'];
+    $this->withHeaders($ajax)->get(route('internships.index'))->assertOk()
+        ->assertSee('Open Web Intern')->assertSee('Cebu City')->assertDontSee('Closed Intern Role')
+        ->assertDontSee('private.hr@employer.test')->assertDontSee('Secret Person');
+    $this->withHeaders($ajax)->get(route('internships.index', ['search' => 'nothing-matches-this']))->assertOk()->assertSee('No open internships right now. Check back soon.');
+    $this->withHeaders($ajax)->get(route('internships.show', $f['open']))->assertOk()->assertSee('Build web things.')->assertDontSee('private.hr@employer.test');
+    $this->withHeaders($ajax)->get(route('internships.show', $f['closed']))->assertNotFound();
 });
 
 it('shows a friendly empty state when nothing is open', function () {
-    $this->get(route('home'))->assertOk()->assertSee('No open internships right now')->assertSee('Sign in for updates')->assertDontSee('data-jb-card', false);
+    $this->get(route('home'))->assertOk()->assertDontSee('data-jb-card', false);
+    $this->withHeaders(['X-Requested-With' => 'XMLHttpRequest'])->get(route('internships.index'))->assertOk()
+        ->assertSee('No open internships right now. Check back soon.');
 });
 
 it('sends a guest to login with a message and returns them to the apply page afterwards', function () {
@@ -164,12 +173,12 @@ it('does not let coordinators or employers apply, in the UI or on the protected 
     $f = feedbackFixture();
     $coordinator = User::factory()->create(['role' => UserRole::Coordinator]);
 
-    $this->actingAs($coordinator)->get(route('internships.index'))->assertOk()
-        ->assertSee('Only students can apply')
-        ->assertDontSee(route('internships.apply', $f['open']), false);
+    // Signed-in users never see the landing page (they go to their dashboard); the Apply link tells a
+    // non-student on click that only students can apply.
+    $this->actingAs($coordinator)->get(route('home'))->assertRedirect(route($coordinator->dashboardRoute()));
 
     $this->actingAs($coordinator)->get(route('internships.apply', $f['open']))
-        ->assertRedirect(route('internships.show', $f['open']))->assertSessionHas('info', 'Only students can apply.');
+        ->assertRedirect(route('home').'#internships')->assertSessionHas('info', 'Only students can apply.');
 
     $this->actingAs($f['employerUser'])->post(route('student.internships.apply', $f['open']))->assertForbidden();
     auth()->logout();
@@ -181,7 +190,7 @@ it('does not let coordinators or employers apply, in the UI or on the protected 
 it('loads the same dashboard stylesheet for every role', function () {
     $f = feedbackFixture();
     $coordinator = User::factory()->create(['role' => UserRole::Coordinator]);
-    \App\Models\Coordinator::create(['user_id' => $coordinator->id, 'institution_id' => Institution::create(['name' => 'Dash U', 'address' => 'Cebu', 'contact_email' => 'd@example.edu'])->id]);
+    Coordinator::create(['user_id' => $coordinator->id, 'institution_id' => Institution::create(['name' => 'Dash U', 'address' => 'Cebu', 'contact_email' => 'd@example.edu'])->id]);
 
     foreach ([[$f['studentUser'], 'student.dashboard'], [$coordinator, 'coordinator.dashboard'], [$f['employerUser'], 'employer.dashboard']] as [$user, $route]) {
         $this->actingAs($user)->get(route($route))->assertOk()->assertSee('css/skillbridge-dashboard.css', false);
