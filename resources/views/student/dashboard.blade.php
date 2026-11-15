@@ -22,12 +22,9 @@
     $isPlaced = $ojtPlacements->isNotEmpty();
 @endphp
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/ojt-progress-card.css') }}?v={{ @filemtime(public_path('css/ojt-progress-card.css')) }}">
-    <link rel="stylesheet" href="{{ asset('css/student-dashboard.css') }}?v={{ @filemtime(public_path('css/student-dashboard.css')) }}">
-@endpush
-
-<div class="sd">
+{{-- Layout: page header, OJT progress, then Announcements / Profile completion / Competency score in one
+     row, then the main column and the quick-actions rail. Shared components only (public/css/sb-theme.css). --}}
+<div class="sb-dash">
 
 <x-page-header
     title="Student Dashboard"
@@ -42,7 +39,6 @@
     <span class="sb-tag"><i class="bi bi-calendar3" aria-hidden="true"></i> {{ now()->format('M d, Y') }}</span>
 </x-page-header>
 
-<x-dashboard-announcements />
 {{-- =========================================================
     OJT PROGRESS (placed students)
     Once an employer accepts an application, OJT progress per company leads
@@ -52,7 +48,7 @@
 
 @if($isPlaced)
 
-    <section class="card mb-4 ojt-progress-section" aria-labelledby="dashboardOjtTitle" data-live-region="dashboard-ojt-progress" data-live-topics="placements">
+    <section class="card ojt-progress-section" aria-labelledby="dashboardOjtTitle" data-live-region="dashboard-ojt-progress" data-live-topics="placements">
 
         <div class="card-header">
             <h2 id="dashboardOjtTitle">
@@ -82,8 +78,10 @@
     DASHBOARD STATISTICS
 ========================================================= --}}
 
-{{-- Placed: the applications card is hidden, so the two remaining cards share the row. --}}
-<div class="sb-stat-grid {{ $isPlaced ? '' : 'sb-stat-grid--3' }}">
+{{-- Announcements, Profile completion and Competency score share one row (plus Active Applications before placement). --}}
+<div class="sb-grid {{ $isPlaced ? 'sb-grid--3' : 'sb-grid--4' }}">
+
+    <x-dashboard-announcements :show-empty="true" />
 
     <x-dashboard-stat-card
         title="Profile Completion"
@@ -398,6 +396,6 @@
 </div>
 @endunless
 
-</div>{{-- /.sd --}}
+</div>{{-- /.sb-dash --}}
 
 @endsection

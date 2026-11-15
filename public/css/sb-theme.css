@@ -348,3 +348,144 @@ html body.sb-app .sb-brand-title { color: var(--text) !important; display: block
 html body.sb-app .card::before { content: none !important; display: none !important; }
 /* Stat cards sit directly in the grid with 20px gaps, no extra wrapper box. */
 html body.sb-app .sb-stat-grid { border: 0 !important; background: transparent !important; box-shadow: none !important; padding: 0 !important; gap: 20px; border-radius: 0 !important; }
+
+/* =========================================================================================
+   Phase B: dashboard building blocks (shared by every role's dashboard)
+   ========================================================================================= */
+
+/* Page body: header, then sections 20px apart. */
+html body.sb-app .sb-dash { display: grid; gap: 20px; min-width: 0; }
+html body.sb-app .sb-dash > * { margin: 0 !important; min-width: 0; }
+html body.sb-app .sb-dash > .sb-page-header { margin-bottom: 4px !important; }
+
+/* Card rows */
+html body.sb-app .sb-grid { display: grid; gap: 20px; align-items: stretch; min-width: 0; }
+html body.sb-app .sb-grid > * { margin: 0 !important; min-width: 0; height: 100%; }
+html body.sb-app .sb-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+html body.sb-app .sb-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+html body.sb-app .sb-grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 1279.98px) { html body.sb-app .sb-grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 1023.98px) {
+    html body.sb-app .sb-grid--3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    html body.sb-app .sb-grid--3 > :first-child { grid-column: 1 / -1; }
+}
+@media (max-width: 639.98px) {
+    html body.sb-app :is(.sb-grid--2, .sb-grid--3, .sb-grid--4) { grid-template-columns: minmax(0, 1fr); }
+    html body.sb-app .sb-grid--3 > :first-child { grid-column: auto; }
+}
+
+/* Main column + 360px rail */
+html body.sb-app .sb-layout-2 { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; align-items: start; margin: 0; }
+html body.sb-app .sb-layout-2 > * { margin: 0 !important; min-width: 0; }
+@media (max-width: 1199.98px) { html body.sb-app .sb-layout-2 { grid-template-columns: minmax(0, 1fr); } }
+
+/* Stat card inside a row: icon tile above, big number */
+html body.sb-app .sb-grid .sb-stat { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; height: 100%; text-decoration: none; }
+html body.sb-app .sb-stat-body { width: 100%; }
+html body.sb-app .sb-stat .progress { margin-top: 12px; }
+html body.sb-app .sb-stat-hint { margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+html body.sb-app a.sb-stat:hover { border-color: var(--burgundy-border) !important; }
+html body.sb-app a.sb-stat:hover .sb-stat-hint { color: var(--burgundy-text) !important; }
+
+/* "View all" links in card headers */
+html body.sb-app .sb-card-link { margin-left: auto; color: var(--burgundy-text) !important; font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+html body.sb-app .sb-card-link:hover { text-decoration: underline; }
+
+/* Simple lists (announcements, notifications) */
+html body.sb-app .sb-list { list-style: none; margin: 0; padding: 4px 0; }
+html body.sb-app .sb-list-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 16px 24px; border-bottom: 1px solid var(--line); }
+html body.sb-app .sb-list-item:last-child { border-bottom: 0; }
+html body.sb-app .sb-list-item > div { min-width: 0; overflow-wrap: anywhere; }
+html body.sb-app .sb-list-title { margin: 0 0 2px; font-size: 14px; color: var(--text); }
+html body.sb-app .sb-list-meta { flex: 0 0 auto; padding: 3px 10px; border-radius: var(--r-pill); border: 1px solid var(--line); background: var(--surface); color: var(--muted); font-size: 12px; font-weight: 600; white-space: nowrap; }
+
+/* Quick actions */
+html body.sb-app .card > .list-group-flush { padding: 8px; }
+html body.sb-app .list-group-item-action {
+    display: flex; align-items: center; gap: 12px; min-height: 52px; margin: 0; padding: 8px 12px; border: 0 !important; border-radius: 12px;
+    background: transparent; color: var(--text) !important; font-weight: 600; font-size: 14px;
+}
+html body.sb-app .list-group-item-action > .bi:first-child {
+    display: inline-grid; place-items: center; flex: 0 0 36px; width: 36px; height: 36px; border-radius: 12px; background: var(--burgundy-tint); color: var(--burgundy-text); font-size: 18px;
+}
+html body.sb-app .list-group-item-action::after { margin-left: auto; color: var(--muted); }
+html body.sb-app .list-group-item-action:hover { background: var(--surface-alt); }
+html body.sb-app .list-group-item-action:hover::after { color: var(--burgundy-text); }
+
+/* Numbered steps (Getting Started) */
+html body.sb-app .sb-steps { list-style: none; margin: 0; padding: 0; counter-reset: sb-step; display: grid; gap: 0; }
+html body.sb-app .sb-steps li { position: relative; display: flex; align-items: flex-start; gap: 14px; padding: 10px 0; counter-increment: sb-step; }
+html body.sb-app .sb-steps li::before {
+    content: counter(sb-step); flex: 0 0 32px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%;
+    border: 1px solid var(--burgundy-border); background: var(--burgundy-tint); color: var(--burgundy-tint-text); font-size: 13px; font-weight: 700; z-index: 1;
+}
+html body.sb-app .sb-steps li:not(:last-child)::after { content: ""; position: absolute; left: 15.5px; top: 46px; bottom: -6px; width: 1px; background: var(--line); }
+html body.sb-app .sb-steps strong { display: block; font-size: 14px; font-weight: 600; color: var(--text); }
+html body.sb-app .sb-steps span { display: block; margin-top: 2px; font-size: 13px; color: var(--muted); }
+
+/* Mini stats: label + value cells in one bordered panel */
+html body.sb-app .sb-mini-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--surface); overflow: hidden; }
+html body.sb-app .sb-mini-stats > div { padding: 14px 16px; min-width: 0; }
+html body.sb-app .sb-mini-stats > div + div { border-left: 1px solid var(--line); }
+html body.sb-app .sb-mini-stats dt { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+html body.sb-app .sb-mini-stats dd { margin: 4px 0 0; font-size: 17px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px; overflow-wrap: anywhere; }
+html body.sb-app .sb-mini-stats dd .bi { color: var(--burgundy-text); }
+html body.sb-app .sb-mini-stats--big > div { display: flex; flex-direction: column-reverse; justify-content: flex-end; text-align: center; padding: 18px 12px; }
+html body.sb-app .sb-mini-stats--big dt { margin-top: 6px; letter-spacing: .06em; }
+html body.sb-app .sb-mini-stats--big dd { justify-content: center; font-size: 32px; letter-spacing: -.02em; line-height: 1.05; margin: 0; }
+@media (max-width: 639.98px) {
+    html body.sb-app .sb-mini-stats:not(.sb-mini-stats--big) { grid-template-columns: minmax(0, 1fr); }
+    html body.sb-app .sb-mini-stats:not(.sb-mini-stats--big) > div + div { border-left: 0; border-top: 1px solid var(--line); }
+    html body.sb-app .sb-mini-stats--big dd { font-size: 26px; }
+}
+
+/* Ring: one percentage */
+html body.sb-app .sb-ring { position: relative; flex: 0 0 auto; width: 96px; height: 96px; display: grid; place-items: center; }
+html body.sb-app .sb-ring svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+html body.sb-app .sb-ring circle { fill: none; stroke-width: 4; }
+html body.sb-app .sb-ring-track { stroke: var(--burgundy-tint); }
+html body.sb-app .sb-ring-fill { stroke: var(--burgundy); stroke-linecap: round; }
+html[data-theme="dark"] body.sb-app .sb-ring-fill { stroke: var(--burgundy-text); }
+html body.sb-app .sb-ring > span { position: relative; font-size: 20px; font-weight: 700; color: var(--text); }
+
+/* OJT progress card (one per company) */
+html body.sb-app .ojt-pc-list { display: grid; gap: 16px; }
+html body.sb-app .ojt-pc { display: grid; gap: 16px; padding: 22px; border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--surface-alt); min-width: 0; }
+html body.sb-app .ojt-pc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+html body.sb-app .ojt-pc-title { min-width: 0; }
+html body.sb-app .ojt-pc-title h3 { margin: 0; font-size: 16px; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
+html body.sb-app .ojt-pc-title p { margin: 2px 0 0; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+html body.sb-app .ojt-pc-main { display: flex; align-items: center; gap: 24px; }
+html body.sb-app .ojt-pc-meter { flex: 1; min-width: 0; display: grid; gap: 12px; }
+html body.sb-app .ojt-pc-hours { color: var(--muted); font-size: 14px; }
+html body.sb-app .ojt-pc-hours strong { font-size: 52px; font-weight: 700; letter-spacing: -.03em; line-height: 1; color: var(--text); margin-right: 4px; }
+html body.sb-app .ojt-pc-note { display: flex; align-items: center; gap: 8px; margin: 0; padding: 10px 14px; border-radius: 12px; background: var(--burgundy-tint); color: var(--text); font-size: 13px; }
+html body.sb-app .ojt-pc-note .bi { color: var(--burgundy-text); }
+html body.sb-app .ojt-pc-link { margin-left: 0; justify-self: start; }
+@media (max-width: 639.98px) {
+    html body.sb-app .ojt-pc { padding: 16px; }
+    html body.sb-app .ojt-pc-main { gap: 16px; }
+    html body.sb-app .ojt-pc-hours strong { font-size: 40px; }
+    html body.sb-app .ojt-pc .sb-ring { width: 76px; height: 76px; }
+    html body.sb-app .ojt-pc .sb-ring > span { font-size: 16px; }
+}
+
+/* The page canvas behind the body (visible below short pages) */
+html:has(> body.sb-app), html:has(> body.skillbridge-guest) { background: var(--bg) !important; }
+
+/* An empty state placed directly in a card keeps the card padding. */
+html body.sb-app .card > .sb-empty { margin: 20px 24px 24px; }
+@media (max-width: 639.98px) { html body.sb-app .card > .sb-empty { margin: 16px; } }
+
+/* Meter: one labelled bar per status (application breakdown). All bars burgundy; the label names the status. */
+html body.sb-app .sb-meter { display: grid; gap: 16px; }
+html body.sb-app .sb-meter-row { display: grid; gap: 8px; }
+html body.sb-app .sb-meter-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; font-weight: 600; color: var(--text); }
+html body.sb-app .sb-meter-bar { height: 10px; border-radius: var(--r-pill); background: var(--burgundy-tint); overflow: hidden; }
+html body.sb-app .sb-meter-bar > span, html body.sb-app .sb-meter-bar > :is(.is-info, .is-warning, .is-success) { display: block; height: 100%; border-radius: var(--r-pill); background: var(--burgundy) !important; }
+
+/* Bootstrap badge variants follow the three chip styles (solid black, soft burgundy, outline). */
+html body.sb-app .badge:is(.text-bg-success, .bg-success, .text-bg-dark, .bg-dark) { background: var(--solid-bg) !important; color: var(--solid-text) !important; border: 1px solid transparent !important; }
+html body.sb-app .badge:is(.text-bg-danger, .bg-danger, .text-bg-primary, .bg-primary) { background: var(--burgundy) !important; color: var(--on-burgundy) !important; border: 1px solid transparent !important; }
+html body.sb-app .badge:is(.text-bg-warning, .bg-warning) { background: var(--burgundy-tint) !important; color: var(--burgundy-tint-text) !important; border: 1px solid transparent !important; }
+html body.sb-app .badge:is(.text-bg-info, .bg-info, .text-bg-secondary, .bg-secondary, .text-bg-light, .bg-light) { background: var(--surface) !important; color: var(--text) !important; border: 1px solid var(--line) !important; }
