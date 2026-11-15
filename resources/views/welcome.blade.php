@@ -1,5 +1,5 @@
 @php
-    // Photo for the CTA background (public/images/landing/cta-bg.*). Other slots use partials.landing-media.
+    // Photo for the CTA background (public/images/landing/cta-bg.*).
     $ctaImg = null;
     foreach (['images/landing', 'images'] as $dir) {
         foreach (['webp', 'jpg', 'jpeg', 'png'] as $ext) {
@@ -45,7 +45,6 @@
     <link rel="apple-touch-icon" href="{{ asset('images/brand/apple-touch-icon.png') }}?v=2">
     <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}?v={{ @filemtime(public_path('css/skillbridge-ui.css')) }}">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}?v={{ @filemtime(public_path('js/skillbridge-ui.js')) }}"></script>
-    <script defer src="{{ asset('js/sb-job-board.js') }}?v=1"></script>
     <link rel="stylesheet" href="{{ asset('css/skillbridge-public.css') }}?v=15">
     @include('partials.public-theme-head')
     <link rel="stylesheet" href="{{ asset('css/sb-eye-comfort.css') }}?v={{ @filemtime(public_path('css/sb-eye-comfort.css')) }}">
