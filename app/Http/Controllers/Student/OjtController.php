@@ -141,9 +141,9 @@ class OjtController extends Controller
         ]);
 
         $this->activityLog->log(Auth::user(), 'journal_submitted', ['journal_entry_id' => $entry->id]);
-        $this->notifySupervisor($placement, 'New weekly journal', Auth::user()->name.' submitted a journal for the week of '.$entry->weekLabel().'.');
+        $this->notifySupervisor($placement, 'New weekly report', Auth::user()->name.' submitted a weekly report for the week of '.$entry->weekLabel().'.');
 
-        return back()->with('success', 'Weekly journal submitted.');
+        return back()->with('success', 'Weekly report submitted. Your supervisor certifies it next.');
     }
 
     public function destroyJournal(Placement $placement, JournalEntry $journalEntry)

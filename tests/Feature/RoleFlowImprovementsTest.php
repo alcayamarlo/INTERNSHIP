@@ -7,6 +7,8 @@ use App\Models\Employer;
 use App\Models\Institution;
 use App\Models\Internship;
 use App\Models\InternshipApplication;
+use App\Models\JournalEntry;
+use App\Models\Placement;
 use App\Models\Resume;
 use App\Models\Student;
 use App\Models\User;
@@ -105,4 +107,69 @@ it('labels a new application Pending for the company, matching the filter, and A
     $this->actingAs($user)->get(route('student.applications.index'))
         ->assertOk()
         ->assertSee('Applied');
+});
+
+it('lets the coordinator request the final evaluation only once the OJT is validated and ongoing', function () {
+    $institution = Institution::create(['name' => 'Request University']);
+    $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
+    Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
+    $internship = flowInternship();
+    [, $student] = flowStudent(['institution_id' => $institution->id]);
+    $application = InternshipApplication::create([
+        'student_id' => $student->id, 'internship_id' => $internship->id, 'status' => ApplicationStatus::Accepted, 'applied_at' => now(),
+    ]);
+    $placement = Placement::create([
+        'application_id' => $application->id, 'student_id' => $student->id, 'employer_id' => $internship->employer_id,
+        'internship_id' => $internship->id, 'start_date' => now()->toDateString(), 'required_hours' => 486,
+        'status' => Placement::STATUS_PENDING_VALIDATION,
+    ]);
+
+    // Waiting for validation: no form, and a direct request is refused.
+    $this->actingAs($coordinatorUser)->get(route('coordinator.placements.show', $placement))
+        ->assertOk()
+        ->assertSee('It can be requested once the OJT is validated and ongoing.')
+        ->assertDontSee('route="'.route('coordinator.placements.request-rating', $placement).'"', false)
+        ->assertDontSee('action="'.route('coordinator.placements.request-rating', $placement).'"', false);
+    $this->post(route('coordinator.placements.request-rating', $placement), ['rating_due_on' => now()->addWeek()->toDateString()])
+        ->assertSessionHas('error', 'The final evaluation can be requested once the OJT is validated and ongoing.');
+    expect($placement->fresh()->rating_requested_at)->toBeNull();
+
+    // Ongoing: the form shows and the request goes through.
+    $placement->update(['status' => Placement::STATUS_ACTIVE]);
+    $this->get(route('coordinator.placements.show', $placement))
+        ->assertSee('action="'.route('coordinator.placements.request-rating', $placement).'"', false);
+    $this->post(route('coordinator.placements.request-rating', $placement), ['rating_due_on' => now()->addWeek()->toDateString()])
+        ->assertSessionHas('success');
+    expect($placement->fresh()->rating_requested_at)->not->toBeNull();
+});
+
+it('shows the weekly report sections, not the old accomplishments field, on Report Reviews', function () {
+    $institution = Institution::create(['name' => 'Review University']);
+    $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
+    Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
+    $internship = flowInternship();
+    [, $student] = flowStudent(['institution_id' => $institution->id]);
+    $application = InternshipApplication::create([
+        'student_id' => $student->id, 'internship_id' => $internship->id, 'status' => ApplicationStatus::Accepted, 'applied_at' => now(),
+    ]);
+    $placement = Placement::create([
+        'application_id' => $application->id, 'student_id' => $student->id, 'employer_id' => $internship->employer_id,
+        'internship_id' => $internship->id, 'start_date' => now()->subWeeks(2)->toDateString(), 'required_hours' => 486,
+        'status' => Placement::STATUS_ACTIVE,
+    ]);
+    JournalEntry::create([
+        'placement_id' => $placement->id, 'week_start' => now()->subWeek()->startOfWeek()->toDateString(), 'title' => 'Week 1 – Activity Narrative Report',
+        'challenges' => 'Learning the codebase', 'actions_taken' => 'Asked the supervisor', 'learnings' => 'Code review habits',
+        'status' => JournalEntry::STATUS_ACKNOWLEDGED,
+    ]);
+
+    $this->actingAs($coordinatorUser)->get(route('coordinator.reviews.index'))
+        ->assertOk()
+        ->assertSee('Difficulties encountered:')
+        ->assertSee('Learning the codebase')
+        ->assertSee('Actions taken:')
+        ->assertSee('Asked the supervisor')
+        ->assertSee('Learning insights:')
+        ->assertSee('Code review habits')
+        ->assertDontSee('Accomplishments:');
 });

@@ -105,6 +105,10 @@ class PlacementController extends Controller
     public function requestRating(Request $request, Placement $placement)
     {
         $this->authorize('requestRating', $placement);
+        // Like monthly evaluations: only for an OJT that is validated and still ongoing.
+        if (! $placement->isActive()) {
+            return back()->with('error', 'The final evaluation can be requested once the OJT is validated and ongoing.');
+        }
         $validated = $request->validate([
             'rating_due_on' => ['nullable', 'date', 'after_or_equal:today'],
         ], [

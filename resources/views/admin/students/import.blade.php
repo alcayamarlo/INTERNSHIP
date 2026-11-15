@@ -13,6 +13,7 @@
         <p class="text-muted mb-2">The first row must be a header with these column names (case-insensitive). <code>school_id</code>, <code>last_name</code>, <code>first_name</code>, and <code>date_of_birth</code> are required; the rest are optional.</p>
         <code>school_id, last_name, first_name, middle_name, date_of_birth, program, year_level, section, school_year, semester</code>
         <p class="text-muted mt-2 mb-0">Dates can be <code>YYYY-MM-DD</code> or <code>MM/DD/YYYY</code>. Each new student's initial password is their birthdate in <code>MMDDYYYY</code> format, and they are prompted to set a new password the first time they log in with their school ID.</p>
+        <p class="text-muted mt-2 mb-0">Optional: <code>school_year</code> like <code>2026-2027</code>; <code>semester</code> as <code>1st Semester</code>, <code>2nd Semester</code> or <code>Summer</code>.</p>
         <p class="text-muted mt-2 mb-0">Re-uploading a file with a school ID that already exists updates that student's record (name, program, year level, etc.) instead of creating a duplicate. Their login and password are not affected by an update.</p>
     </div>
 </div>

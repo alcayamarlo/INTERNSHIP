@@ -72,7 +72,11 @@
         @else
             <p class="small text-muted mb-2">The Final Performance Evaluation has not been requested from the company yet.</p>
         @endif
+        @if(! $placement->isActive() && ! $placement->rating_requested_at)
+            <p class="small text-muted mb-0" data-rating-request-closed>It can be requested once the OJT is validated and ongoing.</p>
+        @endif
         @can('requestRating', $placement)
+            @if($placement->isActive())
             <form method="POST" action="{{ route('coordinator.placements.request-rating', $placement) }}" class="d-flex flex-wrap align-items-end gap-2" novalidate>
                 @csrf
                 <div>
@@ -85,6 +89,7 @@
                     <i class="bi bi-send" aria-hidden="true"></i> {{ $placement->rating_requested_at ? 'Re-request final evaluation' : 'Request final evaluation' }}
                 </button>
             </form>
+            @endif
         @endcan
     </div>
 </div>

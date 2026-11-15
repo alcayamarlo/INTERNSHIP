@@ -59,7 +59,10 @@
                     @unless($isReport)<span class="badge text-bg-light border">Average {{ number_format((float) $item->average_score, 2) }} / 5</span>@endunless
                 </div>
                 @if($isReport)
-                    <p class="small mb-1"><strong>Accomplishments:</strong> {{ \Illuminate\Support\Str::limit($item->accomplishments, 400) }}</p>
+                    {{-- Weekly narrative report sections; older reports only have accomplishments. --}}
+                    @foreach(['accomplishments' => 'Accomplishments', 'challenges' => 'Difficulties encountered', 'actions_taken' => 'Actions taken', 'learnings' => 'Learning insights'] as $field => $label)
+                        @if(filled($item->{$field}))<p class="small mb-1"><strong>{{ $label }}:</strong> {{ \Illuminate\Support\Str::limit($item->{$field}, 400) }}</p>@endif
+                    @endforeach
                     @if($item->supervisor_comment)<p class="small mb-2"><strong>Supervisor:</strong> {{ $item->supervisor_comment }}</p>@endif
                 @else
                     @if($item->strengths)<p class="small mb-1"><strong>Strengths:</strong> {{ $item->strengths }}</p>@endif

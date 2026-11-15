@@ -259,7 +259,7 @@
                         <select class="form-select" id="application-resume" name="resume_id" required>
                             <option value="">Choose a resume</option>
                             @foreach($resumes as $resume)
-                                <option value="{{ $resume->id }}">{{ $resume->category?->label() ?? 'Resume' }}{{ $resume->generated_at ? ' · '.$resume->generated_at->format('M Y') : '' }}</option>
+                                <option value="{{ $resume->id }}" @selected($resumes->count() === 1)>{{ $resume->category?->label() ?? 'Resume' }}{{ $resume->generated_at ? ' · '.$resume->generated_at->format('M Y') : '' }}</option>
                             @endforeach
                         </select>
                     </div>

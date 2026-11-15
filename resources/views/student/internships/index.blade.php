@@ -254,7 +254,7 @@
                     <select id="ibApplyResume" name="resume_id" class="form-select" required>
                         <option value="">Choose a resume</option>
                         @foreach($resumes as $resume)
-                            <option value="{{ $resume->id }}">{{ $resume->category?->label() ?? 'Resume' }}{{ $resume->generated_at ? ' · '.$resume->generated_at->format('M Y') : '' }}</option>
+                            <option value="{{ $resume->id }}" @selected($resumes->count() === 1)>{{ $resume->category?->label() ?? 'Resume' }}{{ $resume->generated_at ? ' · '.$resume->generated_at->format('M Y') : '' }}</option>
                         @endforeach
                     </select>
                     <p class="ib-hint mt-2 mb-0">Need a different one? <a href="{{ route('student.resume.index') }}">Manage your resumes</a>.</p>

@@ -3,7 +3,7 @@
 @section('title', 'Interns')
 
 @section('content')
-<x-page-header title="Interns" subtitle="Supervise accepted students: approve daily time records, read journals and submit evaluations." />
+<x-page-header title="Interns" subtitle="Supervise accepted students: approve daily time records, certify weekly reports and submit evaluations." />
 
 <div class="mb-3 d-flex gap-2 flex-wrap">
     <a href="{{ route('employer.interns.index') }}" class="btn btn-sm {{ ! $status ? 'btn-primary' : 'btn-outline-primary' }}">All</a>
