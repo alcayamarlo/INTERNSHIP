@@ -99,10 +99,6 @@
     <link rel="stylesheet" href="{{ asset('css/skillbridge-sidebar.css') }}?v={{ @filemtime(public_path('css/skillbridge-sidebar.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-eye-comfort.css') }}?v={{ @filemtime(public_path('css/sb-eye-comfort.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-motion.css') }}?v={{ @filemtime(public_path('css/sb-motion.css')) }}">
-    @if(auth()->user()?->isRole(\App\Enums\UserRole::Admin))
-        {{-- Admin dashboard widgets; the shell itself comes from sb-theme.css like every role. --}}
-        <link rel="stylesheet" href="{{ asset('css/admin-dashboard.css') }}?v={{ @filemtime(public_path('css/admin-dashboard.css')) }}">
-    @endif
     <link rel="stylesheet" href="{{ asset('css/sb-responsive.css') }}?v={{ @filemtime(public_path('css/sb-responsive.css')) }}">
     {{-- Brand theme (white / burgundy / black), loaded last: Lucide icons, color tokens, shared components. --}}
     <link rel="stylesheet" href="{{ asset('css/sb-icons.css') }}?v={{ @filemtime(public_path('css/sb-icons.css')) }}">

@@ -4,36 +4,26 @@
 
 @section('content')
 
-{{-- Layout E: main column (header, OJT, KPIs, charts) + right rail. Styles: public/css/admin-dashboard.css --}}
-<div class="ad-dashboard">
+{{-- Main column (OJT, platform statistics, charts) + right rail. Shared components only (public/css/sb-theme.css). --}}
+<div class="sb-dash">
+
+<x-page-header title="System Dashboard" subtitle="Platform analytics and administration" eyebrow="Command center">
+    <span class="sb-status sb-status--neutral">All systems operational</span>
+    <span class="sb-tag"><i class="bi bi-calendar3" aria-hidden="true"></i> {{ now()->format('M d, Y') }}</span>
+    <a href="{{ route('admin.skill-categories.index') }}" class="btn btn-outline-primary">Manage Skill Categories</a>
+</x-page-header>
+
+<div class="sb-layout-2">
 
     {{-- =========================================================
          MAIN COLUMN
     ========================================================== --}}
-    <div class="ad-main">
+    <div class="sb-dash">
 
-        <header class="ad-header ad-reveal" style="--ad-i: 0">
-            <div class="ad-header-text">
-                <span class="ad-eyebrow">Command center</span>
-                <h1 class="ad-title">System Dashboard</h1>
-                <p class="ad-subtitle">Platform analytics and administration</p>
-            </div>
-            <div class="ad-header-actions">
-                <span class="ad-status">
-                    <span class="ad-status-dot" aria-hidden="true"></span>
-                    All systems operational
-                </span>
-                <span class="ad-date"><i class="bi bi-calendar3" aria-hidden="true"></i> {{ now()->format('M d, Y') }}</span>
-                <a href="{{ route('admin.skill-categories.index') }}" class="ad-btn-outline">Manage Skill Categories</a>
-            </div>
-        </header>
-
-        <div class="ad-reveal ad-ojt" style="--ad-i: 1">
-            <x-dashboard-ojt />
-        </div>
+        <x-dashboard-ojt />
 
         {{-- Platform statistics --}}
-        <section class="ad-kpis" aria-label="Platform statistics">
+        <section class="sb-grid sb-grid--3" aria-label="Platform statistics">
             <x-dashboard-stat-card title="Users" :value="$stats['users']" icon="bi-people" :href="route('admin.users.index')" description="Manage accounts →" />
             <x-dashboard-stat-card title="Students" :value="$stats['students']" icon="bi-mortarboard" tone="info" />
             <x-dashboard-stat-card title="Employers" :value="$stats['employers']" icon="bi-building" tone="warning" />
@@ -42,7 +32,7 @@
             <x-dashboard-stat-card title="Placements" :value="$stats['placements']" icon="bi-pin-map" tone="success" description="Accepted applications" />
         </section>
 
-        {{-- Platform insights (same charts and data, admin layout) --}}
+        {{-- Platform insights (same charts and data) --}}
         @include('analytics.charts', ['analyticsUrl' => route('analytics.charts'), 'variant' => 'admin'])
 
     </div>
@@ -50,96 +40,92 @@
     {{-- =========================================================
          RIGHT RAIL
     ========================================================== --}}
-    <aside class="ad-rail" aria-label="Shortcuts and recent activity">
+    <aside class="sb-dash" aria-label="Shortcuts and recent activity">
 
         {{-- Quick actions --}}
-        <section class="ad-card ad-reveal" style="--ad-i: 2" aria-labelledby="adQuickActions">
-            <div class="ad-card-head">
-                <h2 id="adQuickActions"><i class="bi bi-lightning-charge" aria-hidden="true"></i> Quick actions</h2>
-            </div>
-            <div class="ad-actions">
-                <a href="{{ route('admin.users.index') }}" class="ad-action"><i class="bi bi-person-plus" aria-hidden="true"></i><span>Add user</span></a>
-                <a href="{{ route('admin.announcements.index') }}" class="ad-action"><i class="bi bi-megaphone" aria-hidden="true"></i><span>Announcement</span></a>
-                <a href="{{ route('admin.logs') }}" class="ad-action"><i class="bi bi-journal-text" aria-hidden="true"></i><span>System logs</span></a>
-                <a href="{{ route('admin.reports') }}" class="ad-action"><i class="bi bi-file-earmark-bar-graph" aria-hidden="true"></i><span>Reports</span></a>
-            </div>
-        </section>
+        <x-dashboard-quick-actions title="Quick actions" icon="bi-lightning-charge">
+            <a href="{{ route('admin.users.index') }}" class="list-group-item list-group-item-action"><i class="bi bi-person-plus" aria-hidden="true"></i> Add user</a>
+            <a href="{{ route('admin.announcements.index') }}" class="list-group-item list-group-item-action"><i class="bi bi-megaphone" aria-hidden="true"></i> Announcement</a>
+            <a href="{{ route('admin.logs') }}" class="list-group-item list-group-item-action"><i class="bi bi-journal-text" aria-hidden="true"></i> System logs</a>
+            <a href="{{ route('admin.reports') }}" class="list-group-item list-group-item-action"><i class="bi bi-file-earmark-bar-graph" aria-hidden="true"></i> Reports</a>
+        </x-dashboard-quick-actions>
 
         {{-- Recent users --}}
-        <section class="ad-card ad-reveal" style="--ad-i: 3" aria-labelledby="adRecentUsers">
-            <div class="ad-card-head">
+        <section class="card" aria-labelledby="adRecentUsers">
+            <div class="card-header">
                 <h2 id="adRecentUsers"><i class="bi bi-person-check" aria-hidden="true"></i> Recent users</h2>
-                <a href="{{ route('admin.users.index') }}" class="ad-card-link">View all →</a>
+                <a href="{{ route('admin.users.index') }}" class="sb-card-link">View all →</a>
             </div>
             @if($recentUsers->count())
-                <ul class="ad-list">
+                <ul class="sb-list">
                     @foreach($recentUsers->take(5) as $recentUser)
-                        <li class="ad-list-item">
-                            <span class="ad-avatar" aria-hidden="true">{{ strtoupper(substr($recentUser->name, 0, 1)) }}</span>
-                            <div class="ad-list-body">
-                                <p class="ad-list-title">{{ $recentUser->name }}</p>
-                                <p class="ad-list-text">{{ $recentUser->role?->label() ?? 'User' }}</p>
+                        <li class="sb-list-item sb-list-item--avatar">
+                            <span class="sb-initials" aria-hidden="true">{{ strtoupper(substr($recentUser->name, 0, 1)) }}</span>
+                            <div>
+                                <p class="sb-list-title"><strong>{{ $recentUser->name }}</strong></p>
+                                <div class="small text-muted">{{ $recentUser->role?->label() ?? 'User' }}</div>
                             </div>
-                            <span class="ad-list-meta">{{ $recentUser->created_at?->diffForHumans() }}</span>
+                            <span class="sb-list-meta">{{ $recentUser->created_at?->diffForHumans() }}</span>
                         </li>
                     @endforeach
                 </ul>
             @else
-                <p class="ad-empty">No accounts yet.</p>
+                <x-empty-state icon="bi-person-check" title="No accounts yet." />
             @endif
         </section>
 
         {{-- Recent announcements --}}
-        <section class="ad-card ad-reveal" style="--ad-i: 4" aria-labelledby="adAnnouncements">
-            <div class="ad-card-head">
+        <section class="card" aria-labelledby="adAnnouncements">
+            <div class="card-header">
                 <h2 id="adAnnouncements"><i class="bi bi-megaphone" aria-hidden="true"></i> Recent Announcements</h2>
-                <a href="{{ route('admin.announcements.index') }}" class="ad-card-link">Manage →</a>
+                <a href="{{ route('admin.announcements.index') }}" class="sb-card-link">Manage →</a>
             </div>
             @if($announcements->count())
-                <ul class="ad-list">
+                <ul class="sb-list">
                     @foreach($announcements as $announcement)
-                        <li class="ad-list-item">
-                            <div class="ad-list-body">
-                                <p class="ad-list-title">{{ $announcement->title }}</p>
-                                <p class="ad-list-text">{{ Str::limit($announcement->content, 80) }}</p>
+                        <li class="sb-list-item">
+                            <div>
+                                <p class="sb-list-title"><strong>{{ $announcement->title }}</strong></p>
+                                <div class="small text-muted">{{ Str::limit($announcement->content, 80) }}</div>
                             </div>
-                            <span class="ad-list-meta">{{ $announcement->published_at?->format('M d, Y') }}</span>
+                            <span class="sb-list-meta">{{ $announcement->published_at?->format('M d, Y') }}</span>
                         </li>
                     @endforeach
                 </ul>
             @else
-                <div class="ad-empty">
-                    <p>No announcements. Publish one to reach every user.</p>
-                    <a href="{{ route('admin.announcements.index') }}" class="ad-btn-outline">New announcement</a>
-                </div>
+                <x-empty-state icon="bi-megaphone" title="No announcements." message="Publish one to reach every user.">
+                    <a href="{{ route('admin.announcements.index') }}" class="btn btn-primary">New announcement</a>
+                </x-empty-state>
             @endif
         </section>
 
         {{-- Recent system logs --}}
-        <section class="ad-card ad-reveal" style="--ad-i: 5" aria-labelledby="adLogs">
-            <div class="ad-card-head">
+        <section class="card" aria-labelledby="adLogs">
+            <div class="card-header">
                 <h2 id="adLogs"><i class="bi bi-activity" aria-hidden="true"></i> Recent System Logs</h2>
-                <a href="{{ route('admin.logs') }}" class="ad-card-link">View all →</a>
+                <a href="{{ route('admin.logs') }}" class="sb-card-link">View all →</a>
             </div>
             @if($recentLogs->count())
-                <ul class="ad-list">
+                <ul class="sb-list">
                     @foreach($recentLogs as $log)
-                        <li class="ad-list-item">
-                            <div class="ad-list-body">
-                                <p class="ad-list-title"><code>{{ $log->action }}</code></p>
-                                <p class="ad-list-text">{{ $log->user?->name ?? 'System' }}</p>
+                        <li class="sb-list-item">
+                            <div>
+                                <p class="sb-list-title"><code>{{ $log->action }}</code></p>
+                                <div class="small text-muted">{{ $log->user?->name ?? 'System' }}</div>
                             </div>
-                            <span class="ad-list-meta">{{ $log->created_at->diffForHumans() }}</span>
+                            <span class="sb-list-meta">{{ $log->created_at->diffForHumans() }}</span>
                         </li>
                     @endforeach
                 </ul>
             @else
-                <p class="ad-empty">No logs yet. System activity will be recorded here.</p>
+                <x-empty-state icon="bi-activity" title="No logs yet." message="System activity will be recorded here." />
             @endif
         </section>
 
     </aside>
 
 </div>
+
+</div>{{-- /.sb-dash --}}
 
 @endsection

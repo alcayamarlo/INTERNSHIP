@@ -489,3 +489,21 @@ html body.sb-app .badge:is(.text-bg-success, .bg-success, .text-bg-dark, .bg-dar
 html body.sb-app .badge:is(.text-bg-danger, .bg-danger, .text-bg-primary, .bg-primary) { background: var(--burgundy) !important; color: var(--on-burgundy) !important; border: 1px solid transparent !important; }
 html body.sb-app .badge:is(.text-bg-warning, .bg-warning) { background: var(--burgundy-tint) !important; color: var(--burgundy-tint-text) !important; border: 1px solid transparent !important; }
 html body.sb-app .badge:is(.text-bg-info, .bg-info, .text-bg-secondary, .bg-secondary, .text-bg-light, .bg-light) { background: var(--surface) !important; color: var(--text) !important; border: 1px solid var(--line) !important; }
+
+/* Definition list: label / value pairs */
+html body.sb-app .sb-dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 10px 20px; margin: 0; }
+html body.sb-app .sb-dl dt { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding-top: 2px; }
+html body.sb-app .sb-dl dd { margin: 0; color: var(--text); overflow-wrap: anywhere; }
+@media (max-width: 639.98px) { html body.sb-app .sb-dl { grid-template-columns: minmax(0, 1fr); gap: 2px; } html body.sb-app .sb-dl dd { margin-bottom: 10px; } }
+
+/* Section heading inside a page (e.g. "Platform insights") */
+html body.sb-app .sb-section-head h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.01em; color: var(--text); }
+html body.sb-app .sb-section-head p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+html body.sb-app .sb-span-all { grid-column: 1 / -1; }
+/* Initials avatar (black, white letter) in lists */
+html body.sb-app .sb-initials { flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--solid-bg); color: var(--solid-text); font-size: 13px; font-weight: 700; }
+html body.sb-app .sb-list-item--avatar { align-items: center; }
+html body.sb-app .sb-list-item--avatar > div { flex: 1; }
+/* Charts */
+html body.sb-app .sb-chart { position: relative; height: 260px; }
+html body.sb-app .sb-list-title code { font-size: 12px; color: var(--text); background: var(--surface-alt); padding: 2px 6px; border-radius: 6px; }

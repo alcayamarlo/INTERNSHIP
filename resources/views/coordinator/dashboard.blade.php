@@ -2,13 +2,11 @@
 
 @section('title', 'Coordinator Dashboard')
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/coordinator-dashboard.css') }}?v={{ @filemtime(public_path('css/coordinator-dashboard.css')) }}">
-@endpush
 
 @section('content')
 
-<div class="cd-dashboard">
+{{-- Shared dashboard layout (public/css/sb-theme.css). --}}
+<div class="sb-dash">
 
 <x-page-header
     title="Coordinator Dashboard"
@@ -23,7 +21,7 @@
 </x-page-header>
 
 {{-- Row 1: stat cards --}}
-<div class="sb-stat-grid cd-stats">
+<div class="sb-grid sb-grid--4">
 
     <x-dashboard-stat-card
         title="Active Students"
@@ -59,7 +57,7 @@
 
 
 {{-- Row 2: OJT progress + announcements --}}
-<div class="sb-layout-2 cd-row--top">
+<div class="sb-layout-2">
     <x-dashboard-ojt />
     <x-dashboard-announcements />
 </div>

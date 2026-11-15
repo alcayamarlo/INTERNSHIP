@@ -28,17 +28,17 @@
 @endphp
 
 @if($isAdmin)
-    <section class="ad-charts" aria-labelledby="adInsights">
-        <div class="ad-section-head ad-reveal" style="--ad-i: 8">
+    <section class="sb-dash" aria-labelledby="adInsights">
+        <div class="sb-section-head">
             <h2 id="adInsights">Platform insights</h2>
             <p>Track applications, competencies, and the skills employers need most.</p>
         </div>
-        <div class="ad-chart-grid">
+        <div class="sb-grid sb-grid--2">
             @foreach($order as $index => $chartId)
                 @php [$title, $icon, $label] = $chartCards[$chartId]; @endphp
-                <div class="ad-card ad-chart-card ad-reveal {{ $chartId === 'skillsChart' ? 'ad-chart-card--wide' : '' }}" style="--ad-i: {{ 9 + $index }}">
-                    <div class="ad-card-head"><h2><i class="bi {{ $icon }}" aria-hidden="true"></i> {{ $title }}</h2></div>
-                    <div class="sb-chart ad-chart"><canvas id="{{ $chartId }}" role="img" aria-label="{{ $label }} chart"></canvas></div>
+                <div class="card {{ $chartId === 'skillsChart' ? 'sb-span-all' : '' }}">
+                    <div class="card-header"><h2><i class="bi {{ $icon }}" aria-hidden="true"></i> {{ $title }}</h2></div>
+                    <div class="card-body"><div class="sb-chart"><canvas id="{{ $chartId }}" role="img" aria-label="{{ $label }} chart"></canvas></div></div>
                 </div>
             @endforeach
         </div>
@@ -87,12 +87,9 @@
                 grid: theme.getPropertyValue('--line').trim() || 'rgba(0,0,0,.08)',
             });
             if (isAdmin) {
-                // Admin palette lives on <body> (public/css/admin-dashboard.css).
-                const admin = getComputedStyle(document.body);
                 chartColors.red = theme.getPropertyValue('--burgundy').trim() || '#7A010E';
                 chartColors.redFill = 'rgba(122,1,14,.10)';
                 chartColors.grid = theme.getPropertyValue('--line').trim() || 'rgba(0,0,0,.07)';
-                chartColors.muted = admin.getPropertyValue('--ad-muted').trim() || chartColors.muted;
             }
             Chart.defaults.color = chartColors.muted;
 
