@@ -146,6 +146,8 @@ it('filters by work mode from the filter panel and ignores unknown modes', funct
 
 it('applies through a resume dialog instead of a dropdown on every card', function () {
     $f = programScopeFixture();
+    // Only an eligible student gets the Apply button (others see why first).
+    $f['studentUser']->student->forceFill(['year_level' => '4th Year', 'major_subjects_passed' => true])->save();
     \App\Models\Resume::create(['student_id' => $f['studentUser']->student->id, 'file_path' => 'resumes/test.pdf', 'generated_at' => now()]);
 
     $html = $this->actingAs($f['studentUser'])->get(route('student.internships.index'))->assertOk()->getContent();

@@ -12,7 +12,7 @@
 
 <x-page-header
     title="Coordinator Dashboard"
-    subtitle="Manage students and track placements at St. Cecilia’s College-Cebu, Inc."
+    :subtitle="'Manage students and track placements at '.($coordinator->institution?->name ?? 'your school').'.'"
     eyebrow="Coordinator workspace"
 >
     <span class="sb-status sb-status--success">Verification workspace ready</span>

@@ -27,6 +27,16 @@
         <span>{{ \App\Services\ApplicationService::HAS_OJT_MESSAGE }}</span>
         <a href="{{ route('student.ojt.index') }}" class="alert-link ms-auto">Go to My OJT →</a>
     </div>
+@elseif($eligibilityReasons ?? [])
+    {{-- Shown before Apply: browsing stays open, applying waits for the coordinator. --}}
+    <div class="alert alert-warning" role="status" data-not-eligible>
+        <strong><i class="bi bi-hourglass-split" aria-hidden="true"></i> You are not yet eligible to apply.</strong> You can still browse internships.
+        <ul class="mb-0 mt-1">
+            @foreach($eligibilityReasons as $reason)
+                <li>{{ $reason }}</li>
+            @endforeach
+        </ul>
+    </div>
 @endif
 
 {{-- =========================================================

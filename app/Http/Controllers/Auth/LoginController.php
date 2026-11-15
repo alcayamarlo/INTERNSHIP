@@ -29,19 +29,17 @@ class LoginController extends Controller
             : Student::query()->where('student_id_number', mb_strtoupper($login))->first()?->user;
 
         if (! $user) {
+            // Check a throwaway hash so an unknown account takes as long as a wrong password.
+            Hash::check($credentials['password'], self::timingHash());
             $this->activityLog->log(null, 'login_failed', ['login' => mb_substr($login, 0, 120), 'reason' => 'unknown_account']);
 
-            return back()->withErrors([
-                'login' => 'Account not found.',
-            ])->onlyInput('login');
+            return $this->failed();
         }
 
         if (! Hash::check($credentials['password'], $user->password)) {
             $this->activityLog->log($user, 'login_failed', ['login' => mb_substr($login, 0, 120), 'reason' => 'wrong_password']);
 
-            return back()->withErrors([
-                'login' => 'Wrong password.',
-            ])->onlyInput('login');
+            return $this->failed();
         }
 
         $blocked = match (true) {
@@ -81,6 +79,24 @@ class LoginController extends Controller
         }
 
         return redirect()->route($user->dashboardRoute());
+    }
+
+    /**
+     * One message for an unknown account and a wrong password, so the form does not reveal which
+     * emails or School IDs have accounts. The activity log still records the real reason.
+     */
+    public const FAILED_MESSAGE = 'Incorrect email/School ID or password.';
+
+    private function failed()
+    {
+        return back()->withErrors(['login' => self::FAILED_MESSAGE])->onlyInput('login');
+    }
+
+    private static function timingHash(): string
+    {
+        static $hash;
+
+        return $hash ??= Hash::make('skillbridge-login-timing');
     }
 
     public function logout(Request $request)

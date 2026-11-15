@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers\Student;
 
+use App\Enums\ApplicationStatus;
+use App\Enums\WorkSetup;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Application\ApplyInternshipRequest;
+use App\Models\DeploymentRequirement;
 use App\Models\Internship;
 use App\Models\InternshipApplication;
 use App\Models\RecommendationFeedback;
@@ -67,7 +70,7 @@ class InternshipController extends Controller
         // Work mode checkboxes in the filter panel: any of the ticked modes (unknown values are ignored).
         $workModes = array_values(array_intersect(
             array_map('strval', (array) $request->get('work_setup', [])),
-            array_column(\App\Enums\WorkSetup::cases(), 'value'),
+            array_column(WorkSetup::cases(), 'value'),
         ));
         if ($workModes) {
             $query->whereIn('work_setup', $workModes);
@@ -91,8 +94,10 @@ class InternshipController extends Controller
         $resumes = $student->resumes()->latest()->get();
 
         $hasOjt = $student->hasOjt();
+        // Shown before Apply, so a student who is not eligible yet is not stopped only after submitting.
+        $eligibilityReasons = $hasOjt ? [] : $this->eligibility->reasons($student);
 
-        return view('student.internships.index', compact('internships', 'recommendations', 'appliedInternshipIds', 'resumes', 'scope', 'programName', 'hasOjt'));
+        return view('student.internships.index', compact('internships', 'recommendations', 'appliedInternshipIds', 'resumes', 'scope', 'programName', 'hasOjt', 'eligibilityReasons'));
     }
 
     public function show(Internship $internship)
@@ -113,7 +118,7 @@ class InternshipController extends Controller
             ->first();
         $eligibilityReasons = $this->eligibility->reasons($student);
         $resumes = $student->resumes()->latest()->get();
-        $requestedDocumentNames = \App\Models\DeploymentRequirement::onRequest()
+        $requestedDocumentNames = DeploymentRequirement::onRequest()
             ->whereIn('code', $internship->requested_documents ?? [])
             ->orderBy('sort_order')
             ->pluck('name');
@@ -175,7 +180,7 @@ class InternshipController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Application submitted successfully.',
-                'status' => \App\Enums\ApplicationStatus::Applied->value,
+                'status' => ApplicationStatus::Applied->value,
                 'applications_url' => route('student.applications.index'),
             ]);
         }
@@ -269,28 +274,32 @@ class InternshipController extends Controller
     {
         $this->authorize('view', $application);
         $application->load(['internship.employer.user', 'internship.programs', 'statusHistory.actor', 'resume']);
+
         return view('student.internships.application-show', compact('application'));
     }
 
     public function editApplication(InternshipApplication $application)
     {
         $this->authorize('view', $application);
+
         return view('student.internships.application-edit', compact('application'));
     }
 
     public function updateApplication(ApplyInternshipRequest $request, InternshipApplication $application)
     {
         $this->authorize('view', $application);
-        abort_unless(in_array($application->status, [\App\Enums\ApplicationStatus::Applied, \App\Enums\ApplicationStatus::Submitted], true), 422, 'Only active applications can be edited.');
+        abort_unless(in_array($application->status, [ApplicationStatus::Applied, ApplicationStatus::Submitted], true), 422, 'Only active applications can be edited.');
         $application->update(['cover_letter' => $request->validated('cover_letter')]);
+
         return redirect()->route('student.applications.show', $application)->with('success', 'Application updated successfully.');
     }
 
     public function destroyApplication(InternshipApplication $application)
     {
         $this->authorize('view', $application);
-        abort_unless(in_array($application->status, [\App\Enums\ApplicationStatus::Applied, \App\Enums\ApplicationStatus::Submitted], true), 422, 'Only active applications can be deleted.');
+        abort_unless(in_array($application->status, [ApplicationStatus::Applied, ApplicationStatus::Submitted], true), 422, 'Only active applications can be deleted.');
         $application->delete();
+
         return redirect()->route('student.applications.index')->with('success', 'Application deleted successfully.');
     }
 }

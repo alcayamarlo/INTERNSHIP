@@ -87,7 +87,7 @@
                     <li>
                         <a href="{{ route('employer.applicants.show', $application) }}">{{ $application->student?->user?->name ?? 'Student' }}</a>
                         <span class="pp-muted">{{ ($application->applied_at ?? $application->created_at)?->timezone('Asia/Manila')->format('M d, Y') }}</span>
-                        <x-status-badge :status="$application->status->value" :label="$application->status->label()" />
+                        <x-status-badge :status="$application->status->value" :label="$application->status->companyLabel()" />
                     </li>
                 @endforeach
             </ul>

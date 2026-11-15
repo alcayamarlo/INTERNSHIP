@@ -284,7 +284,7 @@
                                 </td>
                                 <td>{{ $app->internship->title }}</td>
                                 <td><span class="table-badge {{ $matchClass }}">{{ $app->match_percentage }}%</span></td>
-                                <td><span class="table-badge {{ $statusClass }}">{{ $app->status->label() }}</span></td>
+                                <td><span class="table-badge {{ $statusClass }}">{{ $app->status->companyLabel() }}</span></td>
                                 <td class="text-nowrap">{{ $app->applied_at?->format('M d, Y') }}</td>
                             </tr>
                         @empty
@@ -325,7 +325,7 @@
                             <dl class="ap-rows employer-page-shell">
                                 <div><dt>Internship</dt><dd>{{ $app->internship->title }}</dd></div>
                                 <div><dt>Match</dt><dd class="ap-big">{{ $app->match_percentage }}%</dd></div>
-                                <div><dt>Status</dt><dd><span class="table-badge {{ $statusClass }}">{{ $app->status->label() }}</span></dd></div>
+                                <div><dt>Status</dt><dd><span class="table-badge {{ $statusClass }}">{{ $app->status->companyLabel() }}</span></dd></div>
                                 <div><dt>Applied</dt><dd>{{ $app->applied_at?->format('M d, Y') ?? '—' }}</dd></div>
                             </dl>
                         </div>

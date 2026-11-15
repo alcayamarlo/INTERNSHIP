@@ -42,7 +42,7 @@
             <div class="ar-sum-item">
                 <span class="ar-sum-label">Status</span>
                 {{-- Status badge is rewritten by resources/js/app.js after an ajax status update. --}}
-                <span class="badge {{ $application->status->badgeClass() }}" data-application-status>{{ $application->status->label() }}</span>
+                <span class="badge {{ $application->status->badgeClass() }}" data-application-status>{{ $application->status->companyLabel() }}</span>
             </div>
         </div>
 
@@ -258,7 +258,7 @@
                         <label class="form-label" for="statusSelect">Status</label>
                         <select id="statusSelect" class="form-select @error('status') is-invalid @enderror" name="status" required>
                             @foreach($availableStatuses as $status)
-                                <option value="{{ $status->value }}" {{ $application->status === $status ? 'selected' : '' }}>{{ $status->label() }}</option>
+                                <option value="{{ $status->value }}" {{ $application->status === $status ? 'selected' : '' }}>{{ $status->companyLabel() }}</option>
                             @endforeach
                         </select>
                         @error('status')<div class="invalid-feedback">{{ $message }}</div>@enderror

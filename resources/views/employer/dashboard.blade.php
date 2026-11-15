@@ -118,7 +118,7 @@
                                     <div class="text-muted small">{{ $application->company_profile['program'] ?? 'Program not set' }}</div>
                                 </td>
                                 <td>{{ $application->internship->title }}</td>
-                                <td><x-status-badge :status="$application->status->value" :label="$application->status->label()" /></td>
+                                <td><x-status-badge :status="$application->status->value" :label="$application->status->companyLabel()" /></td>
                                 <td><span class="text-muted">{{ $application->applied_at->diffForHumans() }}</span></td>
                                 <td class="text-end">
                                     <a href="{{ route('employer.applicants.show', $application) }}" class="btn btn-sm btn-outline-primary">View</a>

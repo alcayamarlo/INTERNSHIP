@@ -76,13 +76,13 @@ it('returns distinct login errors and blocks archived accounts', function () {
 		'login' => 'missing.login@example.test',
 		'password' => 'Password',
 	])->assertRedirect('/login')
-		->assertSessionHasErrors(['login' => 'Account not found.']);
+		->assertSessionHasErrors(['login' => 'Incorrect email/School ID or password.']);
 
 	$this->from('/login')->post('/login', [
 		'login' => $user->email,
 		'password' => 'WrongPassword',
 	])->assertRedirect('/login')
-		->assertSessionHasErrors(['login' => 'Wrong password.']);
+		->assertSessionHasErrors(['login' => 'Incorrect email/School ID or password.']);
 
 	$this->from('/login')->post('/login', [
 		'login' => $user->email,

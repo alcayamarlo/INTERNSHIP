@@ -9,15 +9,17 @@ use App\Mail\InterviewInvitationMail;
 use App\Models\InternshipApplication;
 use App\Services\ActivityLogService;
 use App\Services\CompanyVisibleProfile;
+use App\Services\MailSender;
 use App\Services\MessagingEligibility;
 use App\Services\NotificationService;
 use App\Services\PlacementService;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use App\Services\ResumeBuilderService;
 use App\Support\StudentListFilters;
 use App\Support\UploadDisks;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class ApplicantController extends Controller
@@ -167,7 +169,7 @@ class ApplicantController extends Controller
 
         if ($status === ApplicationStatus::Interview && $application->interview_at) {
             // The status change is already saved; a mail failure only warns the employer.
-            $invitationSent = app(\App\Services\MailSender::class)->send($studentUser->email, new InterviewInvitationMail(
+            $invitationSent = app(MailSender::class)->send($studentUser->email, new InterviewInvitationMail(
                 internshipTitle: $application->internship->title,
                 interviewAt: $application->interview_at,
                 companyName: $application->internship->employer?->company_name ?? 'The employer',
@@ -185,12 +187,12 @@ class ApplicantController extends Controller
                 'success' => true,
                 'message' => $statusMessage,
                 'status' => $application->status->value,
-                'status_label' => $application->status->label(),
+                'status_label' => $application->status->companyLabel(),
                 'status_badge_class' => $application->status->badgeClass(),
                 'available_statuses' => array_map(
                     fn (ApplicationStatus $availableStatus) => [
                         'value' => $availableStatus->value,
-                        'label' => $availableStatus->label(),
+                        'label' => $availableStatus->companyLabel(),
                     ],
                     $application->status->allowedNextStatuses()
                 ),
@@ -212,7 +214,7 @@ class ApplicantController extends Controller
 
         $this->authorize('download', $resume);
 
-        return app(\App\Services\ResumeBuilderService::class)->pdfResponse($resume, Auth::user(), download: true);
+        return app(ResumeBuilderService::class)->pdfResponse($resume, Auth::user(), download: true);
     }
 
     private function fileSize(?string $path): string

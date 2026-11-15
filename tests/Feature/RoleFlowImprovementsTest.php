@@ -1,0 +1,108 @@
+<?php
+
+use App\Enums\ApplicationStatus;
+use App\Enums\UserRole;
+use App\Models\Coordinator;
+use App\Models\Employer;
+use App\Models\Institution;
+use App\Models\Internship;
+use App\Models\InternshipApplication;
+use App\Models\Resume;
+use App\Models\Student;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
+
+/*
+ * Improvements from the Phase 2 role walkthrough: eligibility shown before Apply, the resume page
+ * warning and way back, the coordinator's own school on the dashboard, and "Pending" on the company side.
+ */
+
+function flowStudent(array $attributes = []): array
+{
+    $user = User::factory()->create(['role' => UserRole::Student]);
+    $student = Student::create(['user_id' => $user->id, ...$attributes]);
+
+    return [$user, $student];
+}
+
+function flowInternship(): Internship
+{
+    $employer = Employer::create([
+        'user_id' => User::factory()->create(['role' => UserRole::Employer])->id,
+        'company_name' => 'Flow Labs',
+        'contact_person' => 'Fiona Flow',
+    ]);
+
+    return Internship::create(['employer_id' => $employer->id, 'title' => 'Flow Intern', 'description' => 'Flow work.', 'work_setup' => 'remote', 'status' => 'open']);
+}
+
+it('tells a student who is not eligible yet before they press Apply', function () {
+    $internship = flowInternship();
+    [$user, $student] = flowStudent(['year_level' => '3rd Year', 'major_subjects_passed' => false]);
+    Resume::create(['student_id' => $student->id, 'content' => []]);
+
+    $this->actingAs($user)->get(route('student.internships.index'))
+        ->assertOk()
+        ->assertSee('You are not yet eligible to apply.')
+        ->assertSee('Your coordinator must confirm that all major subjects are passed.')
+        ->assertSee('Not eligible yet')
+        ->assertDontSee('data-apply-id="'.$internship->id.'"', false);
+});
+
+it('keeps the Apply button for an eligible student', function () {
+    $internship = flowInternship();
+    [$user, $student] = flowStudent(['year_level' => '4th Year', 'major_subjects_passed' => true]);
+    Resume::create(['student_id' => $student->id, 'content' => []]);
+
+    $this->actingAs($user)->get(route('student.internships.index'))
+        ->assertOk()
+        ->assertDontSee('You are not yet eligible to apply.')
+        ->assertSee('data-apply-id="'.$internship->id.'"', false);
+});
+
+it('warns on the resume page when the profile is incomplete and links back to internships', function () {
+    [$user] = flowStudent();
+
+    $this->actingAs($user)->get(route('student.resume.index'))
+        ->assertOk()
+        ->assertSee('Your profile is not complete, so your resume will have gaps.')
+        ->assertSee('Still missing: Personal, Contact, Academic, Skills, Portfolio, Character Reference.')
+        ->assertSee(route('student.profile.edit'), false)
+        ->assertSee('Back to internships')
+        ->assertSee(route('student.internships.index'), false);
+});
+
+it("shows the coordinator's own school on the dashboard", function () {
+    $institution = Institution::create(['name' => 'Northfield Polytechnic']);
+    $user = User::factory()->create(['role' => UserRole::Coordinator]);
+    Coordinator::create(['user_id' => $user->id, 'institution_id' => $institution->id]);
+
+    $this->actingAs($user)->get(route('coordinator.dashboard'))
+        ->assertOk()
+        ->assertSee('Manage students and track placements at Northfield Polytechnic.')
+        ->assertDontSee('Cecilia’s College-Cebu, Inc.', false);
+});
+
+it('labels a new application Pending for the company, matching the filter, and Applied for the student', function () {
+    $internship = flowInternship();
+    [$user, $student] = flowStudent(['year_level' => '4th Year', 'major_subjects_passed' => true]);
+    $application = InternshipApplication::create([
+        'student_id' => $student->id, 'internship_id' => $internship->id, 'status' => ApplicationStatus::Applied, 'applied_at' => now(),
+    ]);
+
+    expect(ApplicationStatus::Applied->companyLabel())->toBe('Pending')
+        ->and(ApplicationStatus::Reviewed->companyLabel())->toBe('Reviewed');
+
+    $this->actingAs($internship->employer->user)->get(route('employer.applicants.index'))
+        ->assertOk()
+        ->assertSee('<span class="table-badge status-submitted">Pending</span>', false);
+    $this->get(route('employer.applicants.show', $application))
+        ->assertOk()
+        ->assertSee('data-application-status>Pending</span>', false);
+
+    $this->actingAs($user)->get(route('student.applications.index'))
+        ->assertOk()
+        ->assertSee('Applied');
+});
