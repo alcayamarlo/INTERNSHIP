@@ -26,16 +26,16 @@
         font-weight: 600;
         line-height: 1.4;
         background: var(--sb-surface, #fff);
-        border: 1px solid var(--sb-border, #dee2e6);
-        color: var(--sb-text, #212529);
+        border: 1px solid var(--sb-border, #e2e2e2);
+        color: var(--sb-text, #252525);
         transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .1s ease;
     }
-    .ojt-tabs .ojt-tab:hover { border-color: var(--sb-brand-content, #8f1a27); color: var(--sb-brand-content, #8f1a27); }
+    .ojt-tabs .ojt-tab:hover { border-color: var(--sb-brand-content, var(--burgundy)); color: var(--sb-brand-content, var(--burgundy-text)); }
     .ojt-tabs .ojt-tab:active { transform: scale(.97); }
-    .ojt-tabs .ojt-tab:focus-visible { outline: 2px solid var(--sb-brand-content, #8f1a27); outline-offset: 2px; }
+    .ojt-tabs .ojt-tab:focus-visible { outline: 2px solid var(--sb-brand-content, var(--burgundy)); outline-offset: 2px; }
     .ojt-tabs .ojt-tab[aria-selected="true"] {
-        background: var(--sb-brand-content, #8f1a27);
-        border-color: var(--sb-brand-content, #8f1a27);
+        background: var(--sb-brand-content, var(--burgundy));
+        border-color: var(--sb-brand-content, var(--burgundy));
         color: #fff;
     }
     .ojt-tabs .ojt-tab[aria-selected="true"]:hover { filter: brightness(1.08); }

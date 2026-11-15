@@ -14,10 +14,9 @@
         content="{{ csrf_token() }}"
     >
 
-    <link rel="icon" type="image/svg+xml" href="{{ asset('images/brand/favicon.svg') }}?v=2">
-    <link rel="icon" href="{{ asset('images/brand/favicon.ico') }}?v=2" sizes="any">
-    <link rel="apple-touch-icon" href="{{ asset('images/brand/apple-touch-icon.png') }}?v=2">
-    <meta name="theme-color" content="#E11D2E">
+    <link rel="icon" type="image/png" href="{{ asset('images/brand/stcc-logo.png') }}?v=1">
+    <link rel="apple-touch-icon" href="{{ asset('images/brand/stcc-logo.png') }}?v=1">
+    <meta name="theme-color" content="#7A010E">
 
     <title>
         @yield('title', 'Authentication') — SkillBridge
@@ -25,7 +24,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     {{-- Bootstrap --}}
     <link
@@ -62,7 +61,7 @@
             margin: 0;
             padding: 0;
 
-            background: #071526;
+            background: #000;
 
             font-family:
                 'Inter',
@@ -96,7 +95,7 @@
             display: flex;
             flex-direction: row;
 
-            background: #071526;
+            background: #000;
 
             overflow-x: hidden;
         }
@@ -134,14 +133,14 @@
             background:
                 linear-gradient(
                     145deg,
-                    #071526 0%,
-                    #081a2e 55%,
-                    #061321 100%
+                    #000 0%,
+                    #000 55%,
+                    #000 100%
                 );
 
             border-right:
                 1px solid
-                rgba(8, 217, 245, .10);
+                color-mix(in srgb, var(--burgundy) 10%, transparent);
 
             z-index: 1;
         }
@@ -168,7 +167,7 @@
             background:
                 radial-gradient(
                     circle,
-                    rgba(8,217,245,.11),
+                    color-mix(in srgb, var(--burgundy) 11%, transparent),
                     transparent 68%
                 );
 
@@ -197,7 +196,7 @@
             background:
                 radial-gradient(
                     circle,
-                    rgba(8,217,245,.08),
+                    color-mix(in srgb, var(--burgundy) 8%, transparent),
                     transparent 70%
                 );
 
@@ -261,7 +260,7 @@
 
         .auth-brand-name span {
 
-            color: #08d9f5;
+            color: var(--burgundy-text);
         }
 
 
@@ -283,14 +282,14 @@
 
             border:
                 1px solid
-                rgba(8,217,245,.18);
+                color-mix(in srgb, var(--burgundy) 18%, transparent);
 
             border-radius: 30px;
 
             background:
-                rgba(8,217,245,.05);
+                color-mix(in srgb, var(--burgundy) 5%, transparent);
 
-            color: #08d9f5;
+            color: var(--burgundy-text);
 
             font-size: 11px;
 
@@ -335,7 +334,7 @@
 
         .auth-left h1 span {
 
-            color: #08d9f5;
+            color: var(--burgundy-text);
         }
 
 
@@ -352,7 +351,7 @@
             margin-bottom:
                 clamp(25px, 4vh, 35px);
 
-            color: #8da4bd;
+            color: var(--burgundy-text);
 
             font-size: 14px;
 
@@ -400,14 +399,14 @@
 
             border:
                 1px solid
-                rgba(8,217,245,.12);
+                color-mix(in srgb, var(--burgundy) 12%, transparent);
 
             border-radius: 10px;
 
             background:
-                rgba(8,217,245,.05);
+                color-mix(in srgb, var(--burgundy) 5%, transparent);
 
-            color: #08d9f5;
+            color: var(--burgundy-text);
 
             font-size: 14px;
         }
@@ -425,7 +424,7 @@
 
             margin-bottom: 2px;
 
-            color: #d8e3ef;
+            color: var(--burgundy-text);
 
             font-size: 14px;
 
@@ -437,7 +436,7 @@
 
             display: block;
 
-            color: #70879f;
+            color: #888888;
 
             font-size: 12px;
 
@@ -458,9 +457,9 @@
 
             border-top:
                 1px solid
-                rgba(148,163,184,.08);
+                rgba(166, 166, 166, 0.08);
 
-            color: #536b82;
+            color: #6b6b6b;
 
             font-size: 11px;
 
@@ -470,7 +469,7 @@
 
         .auth-left-footer strong {
 
-            color: #7e96ad;
+            color: #969696;
 
             font-weight: 700;
         }
@@ -495,7 +494,7 @@
 
             overflow-x: hidden;
 
-            background: #071526;
+            background: #000;
         }
 
 
@@ -609,7 +608,7 @@
 
                 border-bottom:
                     1px solid
-                    rgba(8,217,245,.10);
+                    color-mix(in srgb, var(--burgundy) 10%, transparent);
             }
 
 
@@ -872,6 +871,10 @@
     <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}?v={{ @filemtime(public_path('css/skillbridge-ui.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-eye-comfort.css') }}?v={{ @filemtime(public_path('css/sb-eye-comfort.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/auth-photo.css') }}?v={{ @filemtime(public_path('css/auth-photo.css')) }}">
+    {{-- Brand theme, loaded last: Lucide icons, color tokens, shared components. --}}
+    <link rel="stylesheet" href="{{ asset('css/sb-icons.css') }}?v={{ @filemtime(public_path('css/sb-icons.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/sb-tokens.css') }}?v={{ @filemtime(public_path('css/sb-tokens.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/sb-theme.css') }}?v={{ @filemtime(public_path('css/sb-theme.css')) }}">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}?v={{ @filemtime(public_path('js/skillbridge-ui.js')) }}"></script>
 
 </head>
@@ -895,7 +898,7 @@
 
                 <div class="auth-brand">
 
-                    <img class="auth-brand-logo" src="{{ asset('images/brand/skillbridge-logo-icon.svg') }}?v=2" width="48" height="48" alt="" aria-hidden="true">
+                    <img class="auth-brand-logo sb-seal" src="{{ asset('images/brand/stcc-logo.png') }}?v=1" width="48" height="48" alt="St. Cecilia's College-Cebu logo">
 
                     <div class="auth-brand-name">
 
@@ -1050,6 +1053,8 @@
         ================================================== --}}
 
         <main class="auth-right">
+
+            <img class="sb-seal sb-auth-seal" src="{{ asset('images/brand/stcc-logo.png') }}?v=1" width="96" height="96" alt="St. Cecilia's College-Cebu logo">
 
             @yield('content')
 

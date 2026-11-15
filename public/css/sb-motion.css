@@ -244,8 +244,8 @@ html.sb-fill body.sb-app .progress > .progress-bar {
    ===================================================================== */
 @keyframes sbLiveGlow {
     from {
-        background-color: color-mix(in srgb, #F59E0B 24%, transparent);
-        box-shadow: inset 3px 0 0 #F59E0B;
+        background-color: color-mix(in srgb, var(--burgundy) 24%, transparent);
+        box-shadow: inset 3px 0 0 var(--burgundy);
     }
     to {
         background-color: transparent;
@@ -264,7 +264,7 @@ body.sb-app tr.sb-live-changed > :not(:first-child) {
 }
 
 @keyframes sbLiveGlowFill {
-    from { background-color: color-mix(in srgb, #F59E0B 24%, transparent); }
+    from { background-color: color-mix(in srgb, var(--burgundy) 24%, transparent); }
     to { background-color: transparent; }
 }
 

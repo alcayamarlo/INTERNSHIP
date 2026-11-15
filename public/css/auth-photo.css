@@ -19,29 +19,29 @@ body.auth-page {
     --sb-auth-input-border: rgba(255, 255, 255, .5);
     --sb-auth-input-text: #fff;
     --sb-auth-input-placeholder: rgba(255, 255, 255, .62);
-    --sb-auth-danger: #ffb3bb;
+    --sb-auth-danger: var(--burgundy-border);
     --sb-auth-pill-background: rgba(255, 255, 255, .12);
     --sb-auth-pill-border: rgba(255, 255, 255, .3);
     --sb-auth-pill-text: #fff;
-    --sb-auth-option-background: #2a1d1f;
-    --sb-auth-option-text: #fff5f5;
+    --sb-auth-option-background: #242424;
+    --sb-auth-option-text: #fafafa;
     --sb-auth-terms-background: rgba(255, 255, 255, .08);
-    --sb-brand-content: #ffc2c8;
+    --sb-brand-content: var(--burgundy-text);
     --sb-brand-soft: rgba(255, 255, 255, .12);
-    --sb-danger-bg: rgba(120, 12, 29, .45);
-    --sb-danger-border: rgba(255, 179, 187, .45);
-    --sb-success-bg: rgba(22, 101, 52, .45);
-    --sb-success-border: rgba(134, 239, 172, .45);
-    --sb-success-ink: #bbf7d0;
+    --sb-danger-bg: color-mix(in srgb, var(--burgundy) 45%, transparent);
+    --sb-danger-border: color-mix(in srgb, var(--burgundy-border) 45%, transparent);
+    --sb-success-bg: color-mix(in srgb, var(--solid-bg) 45%, transparent);
+    --sb-success-border: color-mix(in srgb, var(--line) 45%, transparent);
+    --sb-success-ink: var(--text);
 }
 
 /* ---------- One photo across the whole page ---------- */
 
 body.auth-page .auth-shell {
     background:
-        linear-gradient(100deg, rgba(20, 5, 9, .72) 0%, rgba(20, 5, 9, .38) 50%, rgba(20, 5, 9, .30) 100%),
+        linear-gradient(100deg, rgba(13, 13, 13, 0.72) 0%, rgba(13, 13, 13, 0.38) 50%, rgba(13, 13, 13, 0.3) 100%),
         url('../images/login-campus.png') 38% center / cover no-repeat;
-    background-color: #1a0b0d;
+    background-color: #131313;
 }
 
 /* The left panel stops painting its own photo/red wash; text sits on the page photo. */
@@ -57,7 +57,7 @@ body.auth-page .auth-left::after {
 /* ---------- Frosted form side ---------- */
 
 body.auth-page .auth-right {
-    background: rgba(14, 6, 9, .34);
+    background: rgba(10, 10, 10, 0.34);
     -webkit-backdrop-filter: blur(20px) saturate(1.1);
     backdrop-filter: blur(20px) saturate(1.1);
     border-left: 1px solid rgba(255, 255, 255, .14);
@@ -90,7 +90,7 @@ body.auth-page .auth-heading h1 {
 }
 
 body.auth-page .auth-heading h1 span {
-    color: #ffc2c8;
+    color: var(--burgundy-text);
 }
 
 body.auth-page .auth-heading p {
@@ -146,7 +146,7 @@ body.auth-page .auth-input:-webkit-autofill:focus {
     -webkit-text-fill-color: #fff;
     caret-color: #fff;
     transition: background-color 9999s ease-out 0s;
-    box-shadow: 0 0 0 1000px rgba(30, 14, 18, .9) inset;
+    box-shadow: 0 0 0 1000px color-mix(in srgb, #000 90%, transparent) inset;
 }
 
 body.auth-page .auth-toggle {
@@ -171,7 +171,7 @@ body.auth-page .auth-check {
 }
 
 body.auth-page .auth-check input {
-    accent-color: #e11d2e;
+    accent-color: var(--burgundy);
 }
 
 body.auth-page .auth-link,
@@ -193,7 +193,7 @@ body.auth-page .auth-back-link:hover {
 }
 
 body.auth-page .auth-secure i {
-    color: #bbf7d0;
+    color: var(--text);
 }
 
 /* ---------- Button: red pill so the main action stays obvious ---------- */
@@ -201,8 +201,8 @@ body.auth-page .auth-secure i {
 body.auth-page .auth-btn {
     border: 0;
     border-radius: 999px;
-    background: linear-gradient(135deg, #e11d2e 0%, #9b0f1e 100%);
-    box-shadow: 0 12px 26px rgba(225, 29, 46, .38);
+    background: linear-gradient(135deg, var(--burgundy) 0%, var(--burgundy) 100%);
+    box-shadow: 0 12px 26px color-mix(in srgb, var(--burgundy) 38%, transparent);
     transition:
         transform var(--sb-motion-fast) var(--sb-ease),
         box-shadow var(--sb-motion-base) var(--sb-ease),
@@ -211,15 +211,15 @@ body.auth-page .auth-btn {
 
 body.auth-page .auth-btn:hover:not(:disabled) {
     border: 0;
-    background: linear-gradient(135deg, #e11d2e 0%, #9b0f1e 100%);
-    box-shadow: 0 16px 32px rgba(225, 29, 46, .5);
+    background: linear-gradient(135deg, var(--burgundy) 0%, var(--burgundy) 100%);
+    box-shadow: 0 16px 32px color-mix(in srgb, var(--burgundy) 50%, transparent);
     filter: brightness(1.06);
     transform: translateY(-1px);
 }
 
 body.auth-page .auth-btn:active:not(:disabled) {
     transform: translateY(0);
-    box-shadow: 0 6px 14px rgba(225, 29, 46, .4);
+    box-shadow: 0 6px 14px color-mix(in srgb, var(--burgundy) 40%, transparent);
 }
 
 body.auth-page .auth-footer-text {
@@ -243,13 +243,13 @@ body.auth-page .auth-description {
 
     body.auth-page .auth-right {
         border-left: 0;
-        background: rgba(14, 6, 9, .5);
+        background: rgba(10, 10, 10, 0.5);
     }
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     body.auth-page .auth-right {
-        background: rgba(14, 6, 9, .78);
+        background: rgba(10, 10, 10, 0.78);
     }
 }
 
@@ -373,7 +373,7 @@ body.auth-page .auth-chip {
 
 /* Terms links */
 body.auth-page .auth-terms-label a {
-    color: #ffc2c8;
+    color: var(--burgundy-text);
 }
 
 /* =====================================================

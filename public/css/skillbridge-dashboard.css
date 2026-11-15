@@ -11,14 +11,14 @@
 
 :root:not([data-theme="dark"]) body.skillbridge-app {
     /* --- palette (edit here) --- */
-    --sb-red-60: #e11d2e;          /* brand red: primary */
-    --sb-red-60-deep: #8e0d1c;     /* hover / pressed / heading accents */
-    --sb-red-60-tint-1: #fdecee;   /* user card, hover, soft fills */
-    --sb-red-60-tint-2: #fff5f6;   /* page canvas */
-    --sb-red-60-tint-3: #fce4e7;   /* icon chips, active states */
+    --sb-red-60: var(--burgundy);          /* brand red: primary */
+    --sb-red-60-deep: var(--burgundy);     /* hover / pressed / heading accents */
+    --sb-red-60-tint-1: var(--burgundy-tint);   /* user card, hover, soft fills */
+    --sb-red-60-tint-2: #fafafa;   /* page canvas */
+    --sb-red-60-tint-3: var(--burgundy-tint);   /* icon chips, active states */
     --sb-white-30: #ffffff;        /* cards, sidebar, topbar, forms */
     --sb-black-10: #1a1a1a;        /* headings, numbers, body text */
-    --sb-grey-secondary: #6b7280;  /* secondary text (AA on white and on the canvas tint) */
+    --sb-grey-secondary: #767676;  /* secondary text (AA on white and on the canvas tint) */
 
     /* --- map the palette onto the design tokens the components already use --- */
     --sb-red: var(--sb-red-60);
@@ -39,11 +39,11 @@
     --sb-sidebar-2: var(--sb-red-60-tint-1);
     --sb-ink: var(--sb-black-10);
     --sb-text: var(--sb-black-10);
-    --sb-text-soft: #374151;
+    --sb-text-soft: #444444;
     --sb-muted: var(--sb-grey-secondary);
-    --sb-border: #f3d9db;
-    --sb-shadow-sm: 0 6px 22px rgba(225, 29, 46, .06);
-    --sb-shadow: 0 14px 38px rgba(225, 29, 46, .08);
+    --sb-border: var(--burgundy-tint);
+    --sb-shadow-sm: 0 6px 22px color-mix(in srgb, var(--burgundy) 6%, transparent);
+    --sb-shadow: 0 14px 38px color-mix(in srgb, var(--burgundy) 8%, transparent);
     background: var(--sb-canvas);
     color: var(--sb-ink);
 }
@@ -60,7 +60,7 @@ body.skillbridge-app .sb-notification-badge { background: var(--sb-brand); color
 
 /* ---------- Page header ---------- */
 body.skillbridge-app .sb-page-header { margin-bottom: 28px; }
-body.skillbridge-app .sb-page-header .eyebrow { color: var(--sb-brand); font-weight: 700; letter-spacing: .14em; }
+body.skillbridge-app .sb-page-header .eyebrow { color: var(--burgundy-text); font-weight: 700; letter-spacing: .14em; }
 body.skillbridge-app .sb-page-header h1 { color: var(--sb-ink); font-size: clamp(28px, 3vw, 36px); font-weight: 800; letter-spacing: -.02em; }
 body.skillbridge-app .sb-page-header p { color: var(--sb-muted); }
 
@@ -68,7 +68,7 @@ body.skillbridge-app .sb-page-header p { color: var(--sb-muted); }
 body.skillbridge-app .card { border-radius: 20px; box-shadow: var(--sb-shadow-sm); }
 body.skillbridge-app .card-header { padding-block: 16px; }
 body.skillbridge-app .card-header :is(h2, h3, h4, h5, h6) { color: var(--sb-ink); font-weight: 700; }
-body.skillbridge-app .card-header :is(h2, h3, h4, h5, h6) > i { color: var(--sb-brand); }
+body.skillbridge-app .card-header :is(h2, h3, h4, h5, h6) > i { color: var(--burgundy-text); }
 body.skillbridge-app .sb-card-link { color: var(--sb-brand-content); font-weight: 600; }
 
 /* ---------- Stat cards: one chip colour, big extra-bold numbers ---------- */

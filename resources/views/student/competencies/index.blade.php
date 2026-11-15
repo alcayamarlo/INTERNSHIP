@@ -53,8 +53,8 @@
         --co-dur-hero: 800ms;
         --co-ease-out: cubic-bezier(.16, 1, .3, 1);
         --co-ease-in-out: cubic-bezier(.65, 0, .35, 1);
-        --co-selected-bg: #fde8ea;
-        --co-selected-line: #c8102e;
+        --co-selected-bg: var(--burgundy-tint);
+        --co-selected-line: var(--burgundy);
         color: var(--co-text);
         padding: var(--co-space-2) 0 var(--co-space-6);
     }
@@ -210,16 +210,16 @@
 
     #competenciesOverview .co-ring {
         fill: none;
-        stroke: rgba(142, 163, 187, .18);
+        stroke: rgba(165, 165, 165, 0.18);
         stroke-width: 1;
     }
 
     #competenciesOverview .co-ring-outer {
-        stroke: rgba(142, 163, 187, .36);
+        stroke: rgba(165, 165, 165, 0.36);
     }
 
     #competenciesOverview .co-axis-line {
-        stroke: rgba(142, 163, 187, .18);
+        stroke: rgba(165, 165, 165, 0.18);
         stroke-width: 1;
     }
 
@@ -232,14 +232,14 @@
 
     #competenciesOverview .co-secondary-shape {
         fill: none;
-        stroke: rgba(169, 186, 208, .68);
+        stroke: color-mix(in srgb, var(--burgundy-border) 68%, transparent);
         stroke-dasharray: 4 4;
         stroke-linejoin: round;
         stroke-width: 1.5;
     }
 
     #competenciesOverview .co-vertex-halo {
-        fill: rgba(56, 189, 248, .15);
+        fill: color-mix(in srgb, var(--burgundy) 15%, transparent);
         opacity: 0;
         r: 7px;
         transition: opacity var(--co-dur-fast) var(--co-ease-out);
@@ -542,7 +542,7 @@
 
     #competenciesOverview .co-loading-skeleton {
         animation: co-skeleton-opacity var(--co-dur-slow) var(--co-ease-in-out) infinite alternate;
-        background: rgba(142, 163, 187, .12);
+        background: rgba(165, 165, 165, 0.12);
         border-radius: var(--co-radius-control);
         height: 48px;
         opacity: .45;
@@ -777,7 +777,7 @@
     }
 
     #competenciesOverview .co-level-track {
-        background: rgba(142, 163, 187, .17);
+        background: rgba(165, 165, 165, 0.17);
         border-radius: var(--co-radius-control);
         height: 4px;
         overflow: hidden;
@@ -910,12 +910,12 @@
 
     @media (prefers-color-scheme: dark) {
         :root:not([data-theme]) #competenciesOverview {
-            --co-selected-bg: color-mix(in srgb, #c8102e 22%, transparent);
+            --co-selected-bg: color-mix(in srgb, var(--burgundy) 22%, transparent);
         }
     }
 
     :root[data-theme="dark"] #competenciesOverview {
-        --co-selected-bg: color-mix(in srgb, #c8102e 22%, transparent);
+        --co-selected-bg: color-mix(in srgb, var(--burgundy) 22%, transparent);
     }
 
     @media (max-width: 900px) {
@@ -1082,8 +1082,8 @@
                      aria-label="Certificate scores: Technical {{ number_format($initialScores['technical'] ?? 0, 1) }} percent, Soft skills {{ number_format($initialScores['soft'] ?? 0, 1) }} percent, Certificates {{ number_format($initialScores['certification'] ?? 0, 1) }} percent">
                     <defs>
                         <linearGradient id="competencyRadarFill" x1="0" x2="0" y1="0" y2="1">
-                            <stop offset="0%" stop-color="#38bdf8" stop-opacity=".26"></stop>
-                            <stop offset="100%" stop-color="#38bdf8" stop-opacity=".06"></stop>
+                            <stop offset="0%" stop-color="#7A010E" stop-opacity=".26"></stop>
+                            <stop offset="100%" stop-color="#7A010E" stop-opacity=".06"></stop>
                         </linearGradient>
                     </defs>
                     <g class="co-grid-layer" id="radarGrid"></g>

@@ -2,10 +2,9 @@
 <html lang="en" data-theme="light">
 
 <head>
-    <link rel="icon" type="image/svg+xml" href="{{ asset('images/brand/favicon.svg') }}?v=2">
-    <link rel="icon" href="{{ asset('images/brand/favicon.ico') }}?v=2" sizes="any">
-    <link rel="apple-touch-icon" href="{{ asset('images/brand/apple-touch-icon.png') }}?v=2">
-    <meta name="theme-color" content="#E11D2E">
+    <link rel="icon" type="image/png" href="{{ asset('images/brand/stcc-logo.png') }}?v=1">
+    <link rel="apple-touch-icon" href="{{ asset('images/brand/stcc-logo.png') }}?v=1">
+    <meta name="theme-color" content="#7A010E">
 
     <meta charset="UTF-8">
 
@@ -34,7 +33,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 
     {{-- =========================================================
@@ -101,14 +100,14 @@
     <link rel="stylesheet" href="{{ asset('css/sb-eye-comfort.css') }}?v={{ @filemtime(public_path('css/sb-eye-comfort.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-motion.css') }}?v={{ @filemtime(public_path('css/sb-motion.css')) }}">
     @if(auth()->user()?->isRole(\App\Enums\UserRole::Admin))
-        {{-- Admin workspace: Inter + admin sidebar/topbar/dashboard styles (loaded last so it wins). --}}
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+        {{-- Admin dashboard widgets; the shell itself comes from sb-theme.css like every role. --}}
         <link rel="stylesheet" href="{{ asset('css/admin-dashboard.css') }}?v={{ @filemtime(public_path('css/admin-dashboard.css')) }}">
     @endif
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
-    {{-- Landing-page palette (black / blue / red) for every dashboard; loaded last so it wins over the red theme. --}}
-    <link rel="stylesheet" href="{{ asset('css/sb-landing-theme.css') }}?v={{ @filemtime(public_path('css/sb-landing-theme.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-responsive.css') }}?v={{ @filemtime(public_path('css/sb-responsive.css')) }}">
+    {{-- Brand theme (white / burgundy / black), loaded last: Lucide icons, color tokens, shared components. --}}
+    <link rel="stylesheet" href="{{ asset('css/sb-icons.css') }}?v={{ @filemtime(public_path('css/sb-icons.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/sb-tokens.css') }}?v={{ @filemtime(public_path('css/sb-tokens.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/sb-theme.css') }}?v={{ @filemtime(public_path('css/sb-theme.css')) }}">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}?v={{ @filemtime(public_path('js/skillbridge-ui.js')) }}"></script>
     @vite('resources/js/app.js')
 
@@ -235,7 +234,7 @@
 
     <div class="sb-brand">
 
-        <img class="sb-brand-logo" src="{{ asset('images/brand/skillbridge-logo-icon.svg') }}?v=2" width="36" height="36" alt="" aria-hidden="true">
+        <img class="sb-brand-logo sb-seal" src="{{ asset('images/brand/stcc-logo.png') }}?v=1" width="48" height="48" alt="St. Cecilia's College-Cebu logo">
 
         <div class="sb-brand-text">
             <span class="sb-brand-title">SkillBridge</span>
@@ -1079,7 +1078,7 @@
 
                         <i
                             class="bi ${icon}"
-                            style="color:var(--sb-cyan);"
+                            style="color:var(--burgundy-text);"
                         ></i>
 
                         <span>

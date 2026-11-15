@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="SkillBridge">
   <defs>
     <linearGradient id="sb-bg" x1="6" y1="2" x2="58" y2="62" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#E11D2E"/>
-      <stop offset="1" stop-color="#8E0D1C"/>
+      <stop offset="0" stop-color="#7A010E"/>
+      <stop offset="1" stop-color="#4F0009"/>
     </linearGradient>
   </defs>
   <rect width="64" height="64" rx="16" fill="url(#sb-bg)"/>

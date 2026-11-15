@@ -34,7 +34,7 @@
         border: 1px solid var(--sb-border);
         border-radius: 16px;
         background: var(--sb-surface);
-        box-shadow: 0 6px 20px rgba(120, 20, 30, 0.06);
+        box-shadow: 0 6px 20px color-mix(in srgb, var(--burgundy) 6%, transparent);
     }
 
     .employer-page-shell .table-responsive {
@@ -99,16 +99,16 @@
     }
 
     .employer-page-shell .table-badge.match-blue {
-        background: rgba(37, 99, 235, 0.10);
-        color: #1d4ed8;
-        border: 1px solid rgba(37, 99, 235, 0.28);
+        background: color-mix(in srgb, var(--burgundy) 10%, transparent);
+        color: var(--burgundy-text);
+        border: 1px solid color-mix(in srgb, var(--burgundy) 28%, transparent);
     }
 
     .employer-page-shell .table-badge.match-green,
     .employer-page-shell .table-badge.status-reviewed {
-        background: rgba(22, 163, 74, 0.10);
-        color: #15803d;
-        border: 1px solid rgba(22, 163, 74, 0.32);
+        background: color-mix(in srgb, var(--solid-bg) 10%, transparent);
+        color: var(--text);
+        border: 1px solid color-mix(in srgb, var(--solid-bg) 32%, transparent);
     }
 
     .employer-page-shell .table-badge.status-submitted {
@@ -159,7 +159,7 @@
     .ap-student .student-program { margin: 0; text-align: right; }
     .ap-row { cursor: pointer; transition: background-color 140ms ease; }
     .ap-row.is-selected { background: var(--sb-brand-soft); box-shadow: inset 4px 0 0 var(--sb-brand); }
-    .ap-row:focus-visible { outline: 3px solid var(--sb-focus, #1d4ed8); outline-offset: -3px; }
+    .ap-row:focus-visible { outline: 3px solid var(--sb-focus, var(--burgundy)); outline-offset: -3px; }
 
     .ap-panel-wrap { display: flex; flex-direction: column; }
     .ap-panel { display: flex; flex: 1 1 auto; flex-direction: column; }

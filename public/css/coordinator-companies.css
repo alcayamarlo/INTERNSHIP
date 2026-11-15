@@ -157,5 +157,5 @@ body.sb-app .pc-tabs .pc-tab:hover {
 
 body.sb-app .pc-tabs .pc-tab.is-active {
     border-bottom-color: var(--sb-brand);
-    color: var(--sb-brand-content, var(--sb-brand));
+    color: var(--sb-brand-content, var(--burgundy-text));
 }

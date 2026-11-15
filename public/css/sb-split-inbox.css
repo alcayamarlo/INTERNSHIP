@@ -10,20 +10,20 @@
 
 body.sb-app .sbx {
     --sbx-list-width: 420px;
-    --sbx-selected-bg: #fde8ea;
-    --sbx-red: #c8102e;
+    --sbx-selected-bg: var(--burgundy-tint);
+    --sbx-red: var(--burgundy);
     --sbx-ink: var(--ib-ink, var(--sb-ink));
     --sbx-muted: var(--ib-muted, var(--sb-muted));
     --sbx-border: var(--ib-border, var(--sb-border));
     --sbx-surface: var(--ib-surface, var(--sb-surface));
-    --sbx-row-hover: var(--ib-row-hover, var(--sb-row-hover, #FFF5F6));
+    --sbx-row-hover: var(--ib-row-hover, var(--sb-row-hover, #fafafa));
     --sbx-count-bg: var(--ib-pink, var(--sb-red-soft));
     --sbx-count-ink: var(--ib-pink-ink, var(--sb-brand-content));
 }
 
 html[data-theme="dark"] body.sb-app .sbx {
-    --sbx-selected-bg: rgba(200, 16, 46, .18);
-    --sbx-red: #f05a6b;
+    --sbx-selected-bg: color-mix(in srgb, var(--burgundy) 18%, transparent);
+    --sbx-red: var(--burgundy-border);
 }
 
 /* ---------- Layout: fixed-width list, flexible detail ---------- */

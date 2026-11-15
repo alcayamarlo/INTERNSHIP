@@ -1,0 +1,350 @@
+/* =========================================================================================
+   SkillBridge theme: typography, shape and shared components for the signed-in app and the
+   guest pages. Colors come from sb-tokens.css (load it first). Loaded LAST so it wins.
+   Prefix "html body.sb-app" / "html body.skillbridge-guest" keeps rules above page styles.
+   ========================================================================================= */
+
+html:root {
+    --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-wordmark: "DM Serif Display", Georgia, serif;
+    --r-card: 24px;
+    --r-panel: 16px;
+    --r-input: 12px;
+    --r-pill: 999px;
+    --sp-1: 8px; --sp-2: 12px; --sp-3: 16px; --sp-4: 20px; --sp-5: 24px; --sp-6: 28px; --sp-7: 36px;
+    --sb-sidebar-width: 256px;
+    --sb-nav-width: 256px;
+    --sb-topbar-height: 68px;
+    --sb-radius-lg: 24px; --sb-radius-md: 16px; --sb-radius-sm: 12px;
+}
+
+/* ---------- Typography ---------- */
+html body.sb-app, html body.skillbridge-guest { font-family: var(--font-ui); font-size: 14px; color: var(--text); background: var(--bg); }
+html body.sb-app *:not(code):not(pre):not(kbd):not(samp),
+html body.skillbridge-guest *:not(code):not(pre):not(kbd):not(samp) { font-family: var(--font-ui) !important; }
+html body.sb-app :is(h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6),
+html body.skillbridge-guest :is(h1, h2, h3, h4, h5, h6) { color: var(--text); letter-spacing: -0.01em; }
+html body.sb-app .text-muted, html body.sb-app .text-body-secondary, html body.sb-app small.text-muted { color: var(--muted) !important; }
+html body.sb-app a { color: var(--burgundy-text); text-underline-offset: 2px; }
+html body.sb-app ::selection { background: var(--burgundy-tint); color: var(--burgundy-tint-text); }
+html body.sb-app :focus-visible, html body.skillbridge-guest :focus-visible { outline: 2px solid var(--burgundy-text) !important; outline-offset: 2px; box-shadow: none; }
+
+/* The SKILLBRIDGE wordmark */
+html body .sb-brand-title, html body .sb-wordmark {
+    font-family: var(--font-wordmark) !important; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text);
+}
+
+/* The OJT seal: always a circle on white (also in dark mode), never recolored or stretched. */
+.sb-seal { display: inline-block; flex: 0 0 auto; border-radius: 50%; background: #fff; object-fit: contain; aspect-ratio: 1; box-shadow: 0 0 0 2px #fff; }
+html[data-theme="dark"] .sb-seal { box-shadow: 0 0 0 3px #fff; }
+
+/* ---------- App shell: sidebar ---------- */
+html body.sb-app .sb-sidebar {
+    width: var(--sb-sidebar-width); background: var(--surface) !important; border-right: 1px solid var(--line);
+    box-shadow: none; color: var(--text);
+}
+html body.sb-app .sb-brand { gap: 12px; padding: 22px 20px 18px; border-bottom: 0; background: transparent; }
+html body.sb-app .sb-brand .sb-seal { width: 48px; height: 48px; }
+html body.sb-app .sb-brand-text { gap: 2px; min-width: 0; }
+html body.sb-app .sb-brand-title { font-size: 18px; line-height: 1.1; }
+html body.sb-app .sb-brand-subtitle { font-size: 11px; color: var(--muted) !important; letter-spacing: 0; text-transform: none; white-space: normal; line-height: 1.3; }
+html body.sb-app .sb-user-card { display: none; } /* the user chip lives in the top bar */
+html body.sb-app .sb-nav { padding: 6px 16px 16px; gap: 2px; }
+html body.sb-app .sb-nav-label {
+    margin: 18px 12px 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted) !important; opacity: 1;
+}
+html body.sb-app .sb-nav-link {
+    display: flex; align-items: center; gap: 12px; min-height: 42px; padding: 10px 14px; border-radius: 12px;
+    color: var(--text) !important; background: transparent; font-weight: 500; font-size: 14px; box-shadow: none; border: 0;
+}
+html body.sb-app .sb-nav-link > .bi { font-size: 18px; width: 18px; color: var(--muted); }
+html body.sb-app .sb-nav-link::before { display: none !important; }
+html body.sb-app .sb-nav-link:hover { background: var(--surface-alt); color: var(--text) !important; }
+html body.sb-app .sb-nav-link:hover > .bi { color: var(--burgundy-text); }
+html body.sb-app .sb-nav-link.active, html body.sb-app .sb-nav-link.active:hover {
+    background: var(--burgundy) !important; color: var(--on-burgundy) !important; box-shadow: var(--shadow-active); font-weight: 600;
+}
+html body.sb-app .sb-nav-link.active > .bi { color: var(--on-burgundy); }
+html body.sb-app .sb-nav-badge { background: var(--burgundy); color: var(--on-burgundy); border-radius: var(--r-pill); }
+html body.sb-app .sb-nav-link.active .sb-nav-badge { background: var(--on-burgundy); color: var(--burgundy); }
+html body.sb-app .sb-sidebar-footer { border-top: 1px solid var(--line); background: transparent; color: var(--muted); }
+html body.sb-app .sb-sidebar-footer :is(small, strong) { color: var(--muted) !important; }
+html body.sb-app .sb-sidebar-close { color: var(--text); }
+@media (min-width: 992px) {
+    html.sb-collapsed body.sb-app .sb-brand .sb-seal { width: 44px; height: 44px; }
+    html.sb-collapsed body.sb-app .sb-nav-link { padding: 10px; }
+}
+
+/* ---------- App shell: top bar ---------- */
+html body.sb-app .sb-topbar {
+    height: var(--sb-topbar-height); min-height: var(--sb-topbar-height); background: var(--surface) !important;
+    border-bottom: 1px solid var(--line); box-shadow: none; backdrop-filter: none; gap: 14px; padding: 0 28px;
+}
+html body.sb-app .sb-topbar-title span { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: none; letter-spacing: 0; }
+html body.sb-app .sb-search .input-group {
+    border: 1px solid var(--line); border-radius: var(--r-pill); background: var(--surface-alt); overflow: hidden; box-shadow: none;
+}
+html body.sb-app .sb-search :is(.input-group-text, .form-control) { background: transparent !important; border: 0 !important; box-shadow: none !important; color: var(--text); min-height: 40px; }
+html body.sb-app .sb-search .input-group-text { color: var(--muted); padding-left: 16px; }
+html body.sb-app .sb-search .input-group:focus-within { border-color: var(--burgundy); box-shadow: var(--focus-ring); }
+html body.sb-app .sb-top-action, html body.sb-app .sb-collapse-toggle, html body.sb-app .sb-mobile-toggle {
+    width: 40px; height: 40px; border-radius: var(--r-pill); border: 1px solid var(--line); background: var(--surface) !important;
+    color: var(--text) !important; box-shadow: none; display: inline-grid; place-items: center; position: relative;
+}
+html body.sb-app :is(.sb-top-action, .sb-collapse-toggle, .sb-mobile-toggle):hover { background: var(--surface-alt) !important; color: var(--burgundy-text) !important; }
+html body.sb-app :is(.sb-top-action, .sb-collapse-toggle, .sb-mobile-toggle) .bi { font-size: 18px; }
+html body.sb-app .sb-notification-badge {
+    background: var(--burgundy) !important; color: var(--on-burgundy) !important; border: 2px solid var(--surface); border-radius: var(--r-pill);
+    min-width: 18px; height: 18px; font-size: 10px; font-weight: 700; line-height: 14px; padding: 0 4px; top: -4px; right: -4px;
+}
+html body.sb-app .sb-profile-btn {
+    border: 1px solid var(--line); border-radius: var(--r-pill); background: var(--surface) !important; padding: 4px 12px 4px 4px; gap: 10px;
+    color: var(--text) !important; box-shadow: none; min-height: 44px;
+}
+html body.sb-app .sb-profile-avatar, html body.sb-app .sb-user-avatar {
+    width: 36px; height: 36px; border-radius: 50%; background: var(--solid-bg) !important; color: var(--solid-text) !important; overflow: hidden;
+}
+html body.sb-app .sb-profile-avatar * { color: var(--solid-text) !important; }
+html body.sb-app .sb-profile-name { font-size: 13px; font-weight: 600; color: var(--text) !important; }
+html body.sb-app .sb-profile-role { font-size: 11px; color: var(--muted) !important; }
+html body.sb-app .sb-main { background: var(--bg); }
+html body.sb-app .sb-content { padding: 28px 36px; background: var(--bg); }
+@media (max-width: 991.98px) { html body.sb-app .sb-content { padding: 24px 20px; } html body.sb-app .sb-topbar { padding: 0 16px; } }
+@media (max-width: 639.98px) { html body.sb-app .sb-content { padding: 20px 16px; } }
+
+/* ---------- Page header ---------- */
+html body.sb-app .sb-page-header {
+    display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px 24px;
+    margin: 0 0 24px; padding: 0; background: transparent !important; border: 0; box-shadow: none;
+}
+html body.sb-app .sb-page-header .eyebrow {
+    display: block; margin-bottom: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--burgundy-text) !important;
+}
+html body.sb-app .sb-page-header h1 { margin: 0; font-size: 40px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.1; color: var(--text) !important; }
+html body.sb-app .sb-page-header p { margin: 8px 0 0; font-size: 14px; color: var(--muted) !important; max-width: 70ch; }
+html body.sb-app .sb-page-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+@media (max-width: 639.98px) { html body.sb-app .sb-page-header h1 { font-size: 30px; } }
+
+/* ---------- Cards ---------- */
+html body.sb-app .card, html body.sb-app .sb-card, html body.sb-app .sb-stat, html body.skillbridge-guest .card {
+    background: var(--surface) !important; color: var(--text); border: 1px solid var(--line) !important; border-radius: var(--r-card) !important;
+    box-shadow: var(--shadow-card) !important;
+}
+html body.sb-app .card { margin-bottom: 20px; overflow: visible; }
+html body.sb-app .card-header {
+    display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 18px 24px; background: transparent !important;
+    border-bottom: 1px solid var(--line) !important; border-radius: var(--r-card) var(--r-card) 0 0 !important; color: var(--text);
+}
+html body.sb-app .card-header :is(h1, h2, h3, h4, h5, h6) { margin: 0; font-size: 16px !important; font-weight: 600; color: var(--text) !important; display: flex; align-items: center; gap: 12px; }
+/* The icon before a card title becomes a 38px tinted tile. */
+html body.sb-app .card-header :is(h1, h2, h3, h4, h5, h6) > .bi:first-child,
+html body.sb-app .card-header > .bi:first-child {
+    display: inline-grid; place-items: center; flex: 0 0 38px; width: 38px; height: 38px; border-radius: 12px;
+    background: var(--burgundy-tint); color: var(--burgundy-text); font-size: 18px;
+}
+html body.sb-app .card-header :is(h1, h2, h3, h4, h5, h6) > .bi:first-child::before,
+html body.sb-app .card-header > .bi:first-child::before { width: 18px; height: 18px; }
+html body.sb-app .card-body { padding: 24px; }
+html body.sb-app .card-footer { background: transparent; border-top: 1px solid var(--line); padding: 16px 24px; border-radius: 0 0 var(--r-card) var(--r-card); }
+html body.sb-app .card .card { box-shadow: none !important; border-radius: var(--r-panel) !important; background: var(--surface-alt) !important; }
+html body.sb-app .row { --bs-gutter-x: 20px; }
+
+/* ---------- Stat cards ---------- */
+html body.sb-app .sb-stat { padding: 22px 24px; }
+html body.sb-app .sb-stat-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted) !important; }
+html body.sb-app .sb-stat-value { font-size: 44px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.05; color: var(--text) !important; }
+html body.sb-app .sb-stat-hint { font-size: 12px; color: var(--muted) !important; }
+html body.sb-app .sb-stat-icon { width: 38px; height: 38px; border-radius: 12px; background: var(--burgundy-tint) !important; color: var(--burgundy-text) !important; display: inline-grid; place-items: center; font-size: 18px; }
+
+/* ---------- Buttons (pill, min 40px) ---------- */
+html body.sb-app .btn, html body.skillbridge-guest .btn {
+    --bs-btn-border-radius: 999px; border-radius: var(--r-pill) !important; min-height: 40px; padding: 8px 18px; font-weight: 600; font-size: 14px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: none !important; transition: background-color .15s, border-color .15s, color .15s;
+}
+html body.sb-app .btn-sm { min-height: 34px; padding: 5px 14px; font-size: 13px; }
+html body.sb-app .btn-lg { min-height: 48px; padding: 10px 24px; font-size: 15px; }
+html body.sb-app .btn .bi { font-size: 16px; }
+/* primary: burgundy fill */
+html body:is(.sb-app, .skillbridge-guest) :is(.btn-primary, .btn-danger, .btn-success) {
+    background: var(--burgundy) !important; border: 1px solid var(--burgundy) !important; color: var(--on-burgundy) !important;
+}
+html body:is(.sb-app, .skillbridge-guest) :is(.btn-primary, .btn-danger, .btn-success):hover { background: var(--burgundy-hover) !important; border-color: var(--burgundy-hover) !important; }
+/* destructive solid buttons are black, never red */
+html body:is(.sb-app, .skillbridge-guest) .btn-danger { background: var(--solid-bg) !important; border-color: var(--solid-bg) !important; color: var(--solid-text) !important; }
+html body:is(.sb-app, .skillbridge-guest) .btn-danger:hover { opacity: .88; background: var(--solid-bg) !important; }
+/* outlined burgundy: outline-primary, outline-danger, warning */
+html body:is(.sb-app, .skillbridge-guest) :is(.btn-outline-primary, .btn-outline-danger, .btn-warning, .btn-outline-warning) {
+    background: var(--surface) !important; border: 1px solid var(--burgundy-border) !important; color: var(--burgundy-text) !important;
+}
+html body:is(.sb-app, .skillbridge-guest) :is(.btn-outline-primary, .btn-outline-danger, .btn-warning, .btn-outline-warning):hover,
+html body:is(.sb-app, .skillbridge-guest) :is(.btn-outline-primary, .btn-outline-danger).active {
+    background: var(--burgundy-tint) !important; border-color: var(--burgundy) !important; color: var(--burgundy-tint-text) !important;
+}
+/* secondary: white with a line border */
+html body:is(.sb-app, .skillbridge-guest) :is(.btn-secondary, .btn-outline-secondary, .btn-light, .btn-outline-light, .btn-outline-dark, .btn-outline-success, .btn-outline-info, .btn-info, .btn-link.btn-secondary) {
+    background: var(--surface) !important; border: 1px solid var(--line) !important; color: var(--text) !important;
+}
+html body:is(.sb-app, .skillbridge-guest) :is(.btn-secondary, .btn-outline-secondary, .btn-light, .btn-outline-light, .btn-outline-dark, .btn-outline-success, .btn-outline-info, .btn-info):hover {
+    background: var(--surface-alt) !important; border-color: color-mix(in srgb, var(--text) 18%, var(--line)) !important;
+}
+html body:is(.sb-app, .skillbridge-guest) .btn-dark { background: var(--solid-bg) !important; border-color: var(--solid-bg) !important; color: var(--solid-text) !important; }
+html body:is(.sb-app, .skillbridge-guest) .btn-link { color: var(--burgundy-text) !important; min-height: 0; padding: 0; border-radius: 0 !important; }
+html body:is(.sb-app, .skillbridge-guest) .btn:disabled, html body:is(.sb-app, .skillbridge-guest) .btn.disabled { opacity: .5; }
+
+/* ---------- Chips and badges ---------- */
+html body.sb-app :is(.badge, .sb-status, .sb-tag, .table-badge, .status-badge) {
+    display: inline-flex; align-items: center; gap: 6px; border-radius: var(--r-pill) !important; padding: 4px 10px; font-size: 12px; font-weight: 600; line-height: 1.4;
+    letter-spacing: 0; text-transform: none;
+}
+/* soft (default): tint background, burgundy text */
+html body.sb-app :is(.sb-status, .table-badge, .status-badge, .sb-tag--brand), html body.sb-app .badge:not([class*="text-bg-"]):not([class*=" bg-"]) {
+    background: var(--burgundy-tint) !important; color: var(--burgundy-tint-text) !important; border: 1px solid transparent !important;
+}
+/* solid: black, for Ongoing / Active / Accepted */
+html body.sb-app :is(.sb-status--success, .sb-status--active) { background: var(--solid-bg) !important; color: var(--solid-text) !important; }
+/* outline: neutral info and dates */
+html body.sb-app :is(.sb-status--neutral, .sb-tag) { background: var(--surface) !important; color: var(--text) !important; border: 1px solid var(--line) !important; }
+/* outlined burgundy: rejected / closed */
+html body.sb-app .sb-status--danger { background: var(--surface) !important; color: var(--burgundy-text) !important; border: 1px solid var(--burgundy-border) !important; }
+html body.sb-app .sb-tag--brand { border-color: transparent !important; }
+
+/* ---------- Tabs (pills) ---------- */
+html body.sb-app .nav-tabs, html body.sb-app .ojt-tabs [role="tablist"], html body.sb-app .aa-tabs { border: 0 !important; gap: 8px; flex-wrap: wrap; }
+html body.sb-app :is(.nav-tabs .nav-link, .ojt-tab, .aa-tab, .student-profile-page .tab) {
+    min-height: 40px; padding: 8px 16px; border: 1px solid var(--line) !important; border-radius: var(--r-pill) !important; background: var(--surface) !important;
+    color: var(--text) !important; font-weight: 600; font-size: 13px; margin: 0; box-shadow: none;
+}
+html body.sb-app :is(.nav-tabs .nav-link, .ojt-tab, .aa-tab, .student-profile-page .tab):hover { background: var(--surface-alt) !important; }
+html body.sb-app :is(.nav-tabs .nav-link.active, .ojt-tab.active, .ojt-tab[aria-selected="true"], .aa-tab[aria-selected="true"], .student-profile-page .tab[aria-selected="true"]) {
+    background: var(--burgundy) !important; border-color: var(--burgundy) !important; color: var(--on-burgundy) !important;
+}
+html body.sb-app :is(.ojt-tab, .aa-tab, .student-profile-page .tab)::after { display: none !important; }
+
+/* ---------- Tables ---------- */
+html body.sb-app .table { --bs-table-bg: transparent; --bs-table-color: var(--text); --bs-table-hover-bg: var(--surface-alt); --bs-table-striped-bg: var(--surface-alt); border-color: var(--line); margin-bottom: 0; }
+html body.sb-app .table > thead > tr > th, html body.sb-app .table > thead th {
+    background: var(--burgundy-tint) !important; color: var(--burgundy-tint-text) !important; font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 12px 16px; border-bottom: 0 !important; white-space: nowrap;
+}
+html body.sb-app .table > thead th:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+html body.sb-app .table > thead th:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+html body.sb-app .table > tbody > tr > td { padding: 22px 16px; border-bottom: 1px solid var(--line); vertical-align: middle; background: transparent; }
+html body.sb-app .table > tbody > tr:last-child > td { border-bottom: 0; }
+html body.sb-app .table-responsive { border-radius: var(--r-panel); }
+html body.sb-app .card > .table-responsive, html body.sb-app .card > .table { padding: 0 16px 8px; }
+
+/* ---------- Progress ---------- */
+html body.sb-app .progress, html body.sb-app .progress-stacked { height: 10px; background: var(--burgundy-tint) !important; border-radius: var(--r-pill); overflow: hidden; box-shadow: none; }
+html body.sb-app .progress-bar { background: var(--burgundy) !important; border-radius: var(--r-pill); }
+
+/* ---------- Alerts (one look; icon + text tell success, info and warning apart) ---------- */
+html body:is(.sb-app, .skillbridge-guest) .alert {
+    display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px; border-radius: var(--r-panel) !important;
+    background: var(--burgundy-tint) !important; border: 1px solid var(--burgundy-border) !important; color: var(--text) !important; box-shadow: none;
+}
+html body:is(.sb-app, .skillbridge-guest) .alert::before {
+    content: ""; flex: 0 0 18px; width: 18px; height: 18px; margin-top: 1px; background: var(--burgundy-text);
+    -webkit-mask: var(--sb-icon-info) no-repeat center / contain; mask: var(--sb-icon-info) no-repeat center / contain;
+}
+html body:is(.sb-app, .skillbridge-guest) .alert-success::before { -webkit-mask-image: var(--sb-icon-success); mask-image: var(--sb-icon-success); }
+html body:is(.sb-app, .skillbridge-guest) :is(.alert-danger, .alert-warning)::before { -webkit-mask-image: var(--sb-icon-alert); mask-image: var(--sb-icon-alert); }
+html body:is(.sb-app, .skillbridge-guest) .alert:has(> .bi:first-child)::before { display: none; } /* alerts that already show an icon */
+html body:is(.sb-app, .skillbridge-guest) .alert > .bi:first-child { color: var(--burgundy-text); font-size: 18px; }
+html body:is(.sb-app, .skillbridge-guest) .alert :is(.alert-link, a) { color: var(--burgundy-text) !important; font-weight: 600; }
+html body:is(.sb-app, .skillbridge-guest) .alert .btn-close { margin-left: auto; position: static; padding: 6px; }
+html body:is(.sb-app, .skillbridge-guest) .alert-dismissible { padding-right: 18px; }
+html body:is(.sb-app, .skillbridge-guest) .alert.d-flex { align-items: center; }
+
+/* ---------- Forms ---------- */
+html body:is(.sb-app, .skillbridge-guest) :is(.form-control, .form-select) {
+    min-height: 44px; border: 1px solid var(--line); border-radius: var(--r-input) !important; background-color: var(--surface); color: var(--text);
+    font-size: 14px; box-shadow: none;
+}
+html body:is(.sb-app, .skillbridge-guest) :is(.form-control-sm, .form-select-sm) { min-height: 36px; font-size: 13px; }
+html body:is(.sb-app, .skillbridge-guest) textarea.form-control { min-height: 96px; }
+html body:is(.sb-app, .skillbridge-guest) :is(.form-control, .form-select):focus { border-color: var(--burgundy) !important; box-shadow: var(--focus-ring) !important; }
+html body:is(.sb-app, .skillbridge-guest) .form-control::placeholder { color: var(--muted); opacity: 1; }
+html body:is(.sb-app, .skillbridge-guest) :is(.form-control, .form-select):disabled { background-color: var(--surface-alt); color: var(--muted); }
+html body:is(.sb-app, .skillbridge-guest) .form-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
+}
+html body:is(.sb-app, .skillbridge-guest) .form-text { font-size: 12px; color: var(--muted); }
+html body:is(.sb-app, .skillbridge-guest) .form-check-input { border-color: color-mix(in srgb, var(--text) 30%, var(--line)); }
+html body:is(.sb-app, .skillbridge-guest) .form-check-input:checked { background-color: var(--burgundy); border-color: var(--burgundy); }
+html body:is(.sb-app, .skillbridge-guest) .form-check-input:focus { box-shadow: var(--focus-ring); border-color: var(--burgundy); }
+html body:is(.sb-app, .skillbridge-guest) :is(.form-control, .form-select).is-invalid { border-color: var(--burgundy) !important; background-image: none; }
+html body:is(.sb-app, .skillbridge-guest) :is(.form-control, .form-select).is-valid { border-color: var(--line) !important; background-image: none; }
+html body:is(.sb-app, .skillbridge-guest) .invalid-feedback { color: var(--burgundy-text) !important; font-size: 12px; font-weight: 500; }
+html body:is(.sb-app, .skillbridge-guest) .invalid-feedback:not(:empty)::before {
+    content: ""; display: inline-block; width: 14px; height: 14px; margin-right: 6px; vertical-align: -2px; background: currentColor;
+    -webkit-mask: var(--sb-icon-alert) no-repeat center / contain; mask: var(--sb-icon-alert) no-repeat center / contain;
+}
+html body:is(.sb-app, .skillbridge-guest) .input-group-text { background: var(--surface-alt); border-color: var(--line); color: var(--muted); border-radius: var(--r-input); }
+html body:is(.sb-app, .skillbridge-guest) .text-danger[aria-hidden="true"] { color: var(--burgundy-text) !important; }
+
+/* ---------- Modals, dropdowns, toasts, popovers ---------- */
+html body .modal-content { background: var(--surface); color: var(--text); border: 1px solid var(--line); border-radius: var(--r-card); box-shadow: var(--shadow-pop); }
+html body .modal-header, html body .modal-footer { border-color: var(--line); padding: 18px 24px; }
+html body .modal-body { padding: 20px 24px; }
+html body .modal-title { font-size: 18px; font-weight: 700; color: var(--text); }
+html body:is(.sb-app, .skillbridge-guest) .dropdown-menu {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-panel); box-shadow: var(--shadow-pop); padding: 8px; color: var(--text);
+}
+html body:is(.sb-app, .skillbridge-guest) .dropdown-item { border-radius: 10px; color: var(--text); padding: 9px 12px; display: flex; align-items: center; gap: 10px; }
+html body:is(.sb-app, .skillbridge-guest) .dropdown-item:hover, html body:is(.sb-app, .skillbridge-guest) .dropdown-item:focus { background: var(--surface-alt); color: var(--text); }
+html body:is(.sb-app, .skillbridge-guest) .dropdown-item.active, html body:is(.sb-app, .skillbridge-guest) .dropdown-item:active { background: var(--burgundy); color: var(--on-burgundy); }
+html body:is(.sb-app, .skillbridge-guest) .dropdown-header { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+html body:is(.sb-app, .skillbridge-guest) .dropdown-divider { border-color: var(--line); }
+html body .toast { background: var(--surface); color: var(--text); border: 1px solid var(--line); border-radius: var(--r-panel); box-shadow: var(--shadow-pop); }
+html body:is(.sb-app, .skillbridge-guest) .list-group-item { background: var(--surface); color: var(--text); border-color: var(--line); }
+html body:is(.sb-app, .skillbridge-guest) .list-group-item-action:hover { background: var(--surface-alt); }
+
+/* ---------- Pagination ---------- */
+html body.sb-app .pagination { gap: 6px; --bs-pagination-border-radius: 999px; }
+html body.sb-app .page-link {
+    min-width: 40px; height: 40px; display: inline-grid; place-items: center; border-radius: var(--r-pill) !important; border: 1px solid var(--line);
+    background: var(--surface); color: var(--text); font-weight: 600; padding: 0 12px;
+}
+html body.sb-app .page-link:hover { background: var(--surface-alt); color: var(--burgundy-text); }
+html body.sb-app .page-item.active .page-link { background: var(--burgundy); border-color: var(--burgundy); color: var(--on-burgundy); }
+html body.sb-app .page-item.disabled .page-link { background: var(--surface); color: var(--muted); opacity: .6; }
+
+/* ---------- Empty, loading and error states ---------- */
+html body.sb-app .sb-empty {
+    display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 32px 20px;
+    background: var(--surface-alt); border: 1px dashed var(--burgundy-border); border-radius: var(--r-panel); color: var(--muted);
+}
+html body.sb-app .sb-empty-icon {
+    display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; background: var(--burgundy-tint) !important;
+    color: var(--burgundy-text) !important; font-size: 20px;
+}
+html body.sb-app .sb-empty h3 { font-size: 16px; font-weight: 600; color: var(--text); margin: 4px 0 0; }
+html body.sb-app .sb-empty p { font-size: 13px; margin: 0; color: var(--muted); }
+.sb-skeleton { background: var(--burgundy-tint); border-radius: 12px; animation: sb-skeleton 1.4s ease-in-out infinite; }
+@keyframes sb-skeleton { 50% { opacity: .55; } }
+
+/* ---------- Breadcrumbs ---------- */
+html body.sb-app .sb-breadcrumbs { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+html body.sb-app .sb-breadcrumbs-link { color: var(--muted); text-decoration: none; }
+html body.sb-app .sb-breadcrumbs-link:hover { color: var(--burgundy-text); }
+html body.sb-app .sb-breadcrumbs-current { color: var(--text); font-weight: 600; }
+
+/* ---------- Avatars ---------- */
+html body.sb-app :is(.avatar-initials, .sb-avatar-initials, [data-avatar] .avatar-fallback) { background: var(--solid-bg) !important; color: var(--solid-text) !important; }
+
+/* ---------- Touch targets and motion ---------- */
+@media (pointer: coarse) {
+    html body:is(.sb-app, .skillbridge-guest) :is(.btn, .page-link, .sb-nav-link, .nav-tabs .nav-link, .ojt-tab, .dropdown-item) { min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    html body:is(.sb-app, .skillbridge-guest) *, html body:is(.sb-app, .skillbridge-guest) *::before, html body:is(.sb-app, .skillbridge-guest) *::after {
+        animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important;
+    }
+}
+
+/* ---------- Shell and card fixes found in the browser check ---------- */
+html body.sb-app .sb-brand-title { color: var(--text) !important; display: block; }
+/* One card style: no decorative accent stripes. */
+html body.sb-app .card::before { content: none !important; display: none !important; }
+/* Stat cards sit directly in the grid with 20px gaps, no extra wrapper box. */
+html body.sb-app .sb-stat-grid { border: 0 !important; background: transparent !important; box-shadow: none !important; padding: 0 !important; gap: 20px; border-radius: 0 !important; }

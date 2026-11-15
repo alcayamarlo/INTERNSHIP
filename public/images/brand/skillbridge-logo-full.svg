@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 330 64" width="330" height="64" role="img" aria-label="SkillBridge, St. Cecilia's College">
   <defs>
     <linearGradient id="sb-bg" x1="6" y1="2" x2="58" y2="62" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#E11D2E"/>
-      <stop offset="1" stop-color="#8E0D1C"/>
+      <stop offset="0" stop-color="#7A010E"/>
+      <stop offset="1" stop-color="#4F0009"/>
     </linearGradient>
   </defs>
   <rect width="64" height="64" rx="16" fill="url(#sb-bg)"/>
@@ -13,6 +13,6 @@
   <path d="M10 53h44" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none"/>
   <path d="M14 53C20 42.5 44 42.5 50 53" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none"/>
   <path d="M24 47.4V53M32 45.8V53M40 47.4V53" stroke="#fff" stroke-opacity=".8" stroke-width="2" stroke-linecap="round" fill="none"/>
-  <text x="80" y="35" font-family="'Bricolage Grotesque','Segoe UI',Arial,sans-serif" font-size="30" font-weight="700" letter-spacing="-.8" fill="#2A1316">SkillBridge</text>
-  <text x="81" y="54" font-family="'Segoe UI',Arial,sans-serif" font-size="14" fill="#7A5A5E">St. Cecilia's College</text>
+  <text x="80" y="35" font-family="'Bricolage Grotesque','Segoe UI',Arial,sans-serif" font-size="30" font-weight="700" letter-spacing="-.8" fill="#000000">SkillBridge</text>
+  <text x="81" y="54" font-family="'Segoe UI',Arial,sans-serif" font-size="14" fill="#6B6B72">St. Cecilia's College</text>
 </svg>

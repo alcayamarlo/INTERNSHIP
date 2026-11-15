@@ -38,7 +38,7 @@
     <div class="lm-dialog" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle" tabindex="-1">
         <header class="lm-head">
             <div class="lm-brand">
-                <span class="lm-logo" aria-hidden="true"><svg viewBox="8 8 48 48" width="24" height="24" fill="none" stroke="#E11D2E" stroke-linecap="round"><path d="M32 10 54 20.5 32 31 10 20.5Z" fill="#E11D2E" stroke="none"/><path d="M20 26.2v6.3c0 2.6 5.4 4.7 12 4.7s12-2.1 12-4.7v-6.3L32 31Z" fill="#E11D2E" fill-opacity=".8" stroke="none"/><path d="M10 53h44" stroke-width="3"/><path d="M14 53C20 42.5 44 42.5 50 53" stroke-width="3"/><path d="M24 47.4V53M32 45.8V53M40 47.4V53" stroke-width="2" stroke-opacity=".8"/></svg></span>
+                <span class="lm-logo" aria-hidden="true"><svg viewBox="8 8 48 48" width="24" height="24" fill="none" stroke="#7A010E" stroke-linecap="round"><path d="M32 10 54 20.5 32 31 10 20.5Z" fill="#7A010E" stroke="none"/><path d="M20 26.2v6.3c0 2.6 5.4 4.7 12 4.7s12-2.1 12-4.7v-6.3L32 31Z" fill="#7A010E" fill-opacity=".8" stroke="none"/><path d="M10 53h44" stroke-width="3"/><path d="M14 53C20 42.5 44 42.5 50 53" stroke-width="3"/><path d="M24 47.4V53M32 45.8V53M40 47.4V53" stroke-width="2" stroke-opacity=".8"/></svg></span>
                 <span>SkillBridge</span>
             </div>
             <h2 id="loginModalTitle" class="lm-title"><span class="lm-t1">Welcome.</span><span class="lm-t2">Sign in to find your internship.</span></h2>
@@ -777,7 +777,7 @@
         var fbars = ff2.querySelectorAll('[data-pw-meter] i');
         var ftext = ff2.querySelector('[data-pw-meter-text]');
         var fitems = [].slice.call(ff2.querySelectorAll('[data-pw-checklist] [data-rule]'));
-        var fcolors = { weak: '#C4182A', medium: '#E0862B', strong: '#1F9D5B' };
+        var fcolors = { weak: '#7A010E', medium: '#6B6B72', strong: '#000000' };
         var fcheck = function () {
             var v = fp.value, n = Array.from(v).length;
             var met = {
@@ -866,7 +866,7 @@
     var rp = $('lm-rs-password'), rc = $('lm-rs-confirm'), rem = $('lm-rs-email');
     var bars = root.querySelectorAll('[data-lm-strength] i');
     var strengthText = root.querySelector('[data-lm-strength-text]');
-    var colors = ['#C4182A', '#E0862B', '#C9A400', '#1F9D5B'];
+    var colors = ['#7A010E', '#6B6B72', '#3A3A40', '#000000'];
     var words = ['Weak', 'Fair', 'Good', 'Strong'];
     rp.addEventListener('input', function () {
         var v = rp.value, score = 0;

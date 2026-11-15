@@ -7,31 +7,31 @@
 
 /* ---------- Tokens (light theme from the design; dark theme reuses the app's tokens) ---------- */
 body.sb-app :is(.ib-page, .id-page, .ap-page, .ma-page) {
-    --ib-red: #DC1F2E;
-    --ib-red-deep: #B3121F;
-    --ib-ink: #14171F;
-    --ib-muted: #566070;          /* 6.4:1 on white */
-    --ib-border: #EBDFE2;
+    --ib-red: var(--burgundy);
+    --ib-red-deep: var(--burgundy);
+    --ib-ink: #1a1a1a;
+    --ib-muted: #636363;          /* 6.4:1 on white */
+    --ib-border: #e5e5e5;
     --ib-surface: #FFFFFF;
-    --ib-pink: #FDECEF;
-    --ib-pink-ink: #9E1422;       /* 7:1 on --ib-pink */
-    --ib-ok-bg: #E6F6EE;
-    --ib-ok-ink: #0B7A46;
-    --ib-hover-shadow: var(--sb-hover-shadow, 0 10px 26px rgba(158, 20, 34, .08)); /* the app-wide card hover (sb-motion.css) */
+    --ib-pink: var(--on-burgundy);
+    --ib-pink-ink: var(--burgundy-text);       /* 7:1 on --ib-pink */
+    --ib-ok-bg: var(--surface-alt);
+    --ib-ok-ink: var(--text);
+    --ib-hover-shadow: var(--sb-hover-shadow, 0 10px 26px color-mix(in srgb, var(--burgundy) 8%, transparent)); /* the app-wide card hover (sb-motion.css) */
     color: var(--ib-ink);
 }
 
 html[data-theme="dark"] body.sb-app :is(.ib-page, .id-page, .ap-page, .ma-page) {
     --ib-red: var(--sb-brand);
-    --ib-red-deep: var(--sb-brand-deep, #8E0D1C);
+    --ib-red-deep: var(--sb-brand-deep, var(--burgundy));
     --ib-ink: var(--sb-ink);
     --ib-muted: var(--sb-muted);
     --ib-border: var(--sb-border);
     --ib-surface: var(--sb-surface);
-    --ib-pink: rgba(225, 29, 46, .16);
-    --ib-pink-ink: #FF9AA5;
-    --ib-ok-bg: rgba(22, 163, 74, .16);
-    --ib-ok-ink: #7EE2AE;
+    --ib-pink: color-mix(in srgb, var(--burgundy-text) 16%, transparent);
+    --ib-pink-ink: var(--burgundy-text);
+    --ib-ok-bg: color-mix(in srgb, var(--solid-bg) 16%, transparent);
+    --ib-ok-ink: var(--text);
     --ib-hover-shadow: 0 10px 26px rgba(0, 0, 0, .35);
 }
 
@@ -83,15 +83,15 @@ body.sb-app :is(.ib-page, .id-page, .ap-page, .ma-page) .ib-card {
 /* ---------- Split view tokens ---------- */
 body.sb-app .ib-page {
     --ib-thead: #FBF4F5;
-    --ib-row-hover: var(--sb-row-hover, #FFF5F6);
-    --ib-row-selected: #FDF0F2;
+    --ib-row-hover: var(--sb-row-hover, #fafafa);
+    --ib-row-selected: #f7f7f7;
     --ib-gray-pill: #F1F2F4;
 }
 
 html[data-theme="dark"] body.sb-app .ib-page {
     --ib-thead: var(--sb-surface-raised);
     --ib-row-hover: rgba(255, 255, 255, .04);
-    --ib-row-selected: rgba(225, 29, 46, .12);
+    --ib-row-selected: color-mix(in srgb, var(--burgundy) 12%, transparent);
     --ib-gray-pill: rgba(255, 255, 255, .08);
 }
 
@@ -383,8 +383,8 @@ body.sb-app .ib-page .ib-preview.is-changing > .ib-pv {
    Header, facts bar + content on the left, sticky 420px column on the right.
    Shares the tokens, buttons and .ib-card above.
    ===================================================================== */
-body.sb-app .id-page { --ib-thead: #FBF4F5; --ib-warn-bg: #FFF3DC; --ib-warn-ink: #7A4F00; }
-html[data-theme="dark"] body.sb-app .id-page { --ib-thead: var(--sb-surface-raised); --ib-warn-bg: rgba(234, 179, 8, .14); --ib-warn-ink: #F5D27A; }
+body.sb-app .id-page { --ib-thead: #FBF4F5; --ib-warn-bg: var(--burgundy-tint); --ib-warn-ink: var(--burgundy-text); }
+html[data-theme="dark"] body.sb-app .id-page { --ib-thead: var(--sb-surface-raised); --ib-warn-bg: color-mix(in srgb, var(--burgundy) 14%, transparent); --ib-warn-ink: var(--burgundy-text); }
 
 /* ---------- Header ---------- */
 body.sb-app .id-page .id-head {
@@ -723,22 +723,22 @@ body.sb-app .id-page .id-feedback[open] > summary::after { transform: rotate(180
 body.sb-app :is(.ap-page, .ma-page) {
     --ap-soft: #FBF4F5;
     /* Status colours: each is always paired with its text label */
-    --ap-applied-bg: #FDECEF;   --ap-applied-ink: #9E1422;
-    --ap-reviewed-bg: #FFF3DC;  --ap-reviewed-ink: #7A4F00;
-    --ap-interview-bg: #E3EEFB; --ap-interview-ink: #1F4E85;
-    --ap-accepted-bg: #E6F6EE;  --ap-accepted-ink: #0B7A46;
-    --ap-rejected-bg: #F3E6E8;  --ap-rejected-ink: #7A2E38;
-    --ap-withdrawn-bg: #EEF0F3; --ap-withdrawn-ink: #4A5363;
+    --ap-applied-bg: var(--burgundy-tint);   --ap-applied-ink: var(--burgundy-text);
+    --ap-reviewed-bg: var(--burgundy-tint);  --ap-reviewed-ink: var(--burgundy-text);
+    --ap-interview-bg: var(--burgundy-tint); --ap-interview-ink: var(--burgundy-text);
+    --ap-accepted-bg: var(--surface-alt);  --ap-accepted-ink: var(--text);
+    --ap-rejected-bg: #ededed;  --ap-rejected-ink: var(--burgundy-text);
+    --ap-withdrawn-bg: #EEF0F3; --ap-withdrawn-ink: #575757;
 }
 
 html[data-theme="dark"] body.sb-app :is(.ap-page, .ma-page) {
     --ap-soft: var(--sb-surface-raised);
-    --ap-applied-bg: rgba(225, 29, 46, .16);   --ap-applied-ink: #FF9AA5;
-    --ap-reviewed-bg: rgba(234, 179, 8, .14);  --ap-reviewed-ink: #F5D27A;
-    --ap-interview-bg: rgba(59, 130, 246, .16); --ap-interview-ink: #9CC3F5;
-    --ap-accepted-bg: rgba(22, 163, 74, .16);  --ap-accepted-ink: #7EE2AE;
-    --ap-rejected-bg: rgba(190, 80, 95, .16);  --ap-rejected-ink: #E8A3AD;
-    --ap-withdrawn-bg: rgba(255, 255, 255, .08); --ap-withdrawn-ink: #C5CAD3;
+    --ap-applied-bg: color-mix(in srgb, var(--burgundy) 16%, transparent);   --ap-applied-ink: var(--burgundy-text);
+    --ap-reviewed-bg: color-mix(in srgb, var(--burgundy) 14%, transparent);  --ap-reviewed-ink: var(--burgundy-text);
+    --ap-interview-bg: color-mix(in srgb, var(--burgundy) 16%, transparent); --ap-interview-ink: var(--burgundy-text);
+    --ap-accepted-bg: color-mix(in srgb, var(--solid-bg) 16%, transparent);  --ap-accepted-ink: var(--text);
+    --ap-rejected-bg: color-mix(in srgb, var(--burgundy) 16%, transparent);  --ap-rejected-ink: var(--burgundy-text);
+    --ap-withdrawn-bg: rgba(255, 255, 255, .08); --ap-withdrawn-ink: #cccccc;
 }
 
 /* ---------- Status pill ---------- */
@@ -1129,7 +1129,7 @@ body.sb-app .ib-page .ib-results-region.is-changing > * { --rise-y: 8px; animati
    ===================================================================== */
 body.sb-app .ma-page {
     --ma-thead: #FBF4F5;
-    --ma-row-hover: var(--sb-row-hover, #FFF5F6);
+    --ma-row-hover: var(--sb-row-hover, #fafafa);
 }
 
 html[data-theme="dark"] body.sb-app .ma-page {

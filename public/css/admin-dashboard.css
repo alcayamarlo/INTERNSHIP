@@ -21,44 +21,44 @@ body.skillbridge-app.sb-admin {
 
 /* Light theme: the palette from the design */
 :root:not([data-theme="dark"]) body.sb-app.sb-admin {
-    --ad-red: #C8102E;
-    --ad-red-deep: #9E0F26;
-    --ad-red-text: #C8102E;          /* 5.9:1 on white, 5.4:1 on #FBF3F4 */
-    --ad-canvas: #FBF3F4;
+    --ad-red: var(--burgundy);
+    --ad-red-deep: var(--burgundy);
+    --ad-red-text: var(--burgundy-text);          /* 5.9:1 on white, 5.4:1 on #FBF3F4 */
+    --ad-canvas: #f7f7f7;
     --ad-surface: #FFFFFF;
-    --ad-border: #F0DDE0;
-    --ad-tile: #FDECEF;
-    --ad-ink: #1F1316;
-    --ad-muted: #6B5A5E;             /* 6.6:1 on white */
-    --ad-ok-ink: #0B7A46;            /* 4.9:1 on its pill */
-    --ad-ok-bg: #E6F6EE;
-    --ad-ok-dot: #16A34A;
-    --ad-hover-shadow: 0 12px 28px rgba(200, 16, 46, .12);
-    --ad-focus: #C8102E;
-    --ad-chart-red: #C8102E;
-    --ad-chart-fill: rgba(200, 16, 46, .10);
-    --ad-chart-grid: rgba(200, 16, 46, .07);
-    --sb-canvas: #FBF3F4;
+    --ad-border: var(--burgundy-tint);
+    --ad-tile: var(--burgundy-tint);
+    --ad-ink: #191919;
+    --ad-muted: #636363;             /* 6.6:1 on white */
+    --ad-ok-ink: var(--text);            /* 4.9:1 on its pill */
+    --ad-ok-bg: var(--surface-alt);
+    --ad-ok-dot: var(--solid-bg);
+    --ad-hover-shadow: 0 12px 28px color-mix(in srgb, var(--burgundy) 12%, transparent);
+    --ad-focus: var(--burgundy);
+    --ad-chart-red: var(--burgundy);
+    --ad-chart-fill: color-mix(in srgb, var(--burgundy) 10%, transparent);
+    --ad-chart-grid: color-mix(in srgb, var(--burgundy) 7%, transparent);
+    --sb-canvas: #f7f7f7;
 }
 
 /* Dark theme: same layout, reuse the existing dark tokens */
 html[data-theme="dark"] body.sb-app.sb-admin {
-    --ad-red: #E11D2E;
-    --ad-red-deep: #9E0F26;
-    --ad-red-text: #FF8F9B;
+    --ad-red: var(--burgundy);
+    --ad-red-deep: var(--burgundy);
+    --ad-red-text: var(--burgundy-text);
     --ad-canvas: var(--sb-canvas);
     --ad-surface: var(--sb-surface);
     --ad-border: var(--sb-border);
-    --ad-tile: rgba(225, 29, 46, .16);
+    --ad-tile: color-mix(in srgb, var(--burgundy) 16%, transparent);
     --ad-ink: var(--sb-ink);
     --ad-muted: var(--sb-muted);
-    --ad-ok-ink: #7EE2AE;
-    --ad-ok-bg: rgba(22, 163, 74, .16);
-    --ad-ok-dot: #22C55E;
+    --ad-ok-ink: var(--text);
+    --ad-ok-bg: color-mix(in srgb, var(--solid-bg) 16%, transparent);
+    --ad-ok-dot: var(--solid-bg);
     --ad-hover-shadow: 0 12px 28px rgba(0, 0, 0, .35);
-    --ad-focus: #FF8F9B;
-    --ad-chart-red: #F05A68;
-    --ad-chart-fill: rgba(240, 90, 104, .14);
+    --ad-focus: var(--burgundy-border);
+    --ad-chart-red: var(--burgundy-border);
+    --ad-chart-fill: color-mix(in srgb, var(--burgundy-border) 14%, transparent);
     --ad-chart-grid: rgba(255, 255, 255, .07);
 }
 
@@ -72,7 +72,7 @@ body.sb-app.sb-admin :is(button, input, select, textarea) {
    Sidebar (250px, red gradient, white active item)
    --------------------------------------------------------------------- */
 html:not([data-theme="dark"]) body.sb-app.sb-admin .sb-sidebar {
-    background: linear-gradient(180deg, #C8102E 0%, #9E0F26 100%);
+    background: linear-gradient(180deg, var(--burgundy) 0%, var(--burgundy) 100%);
 }
 
 body.sb-app.sb-admin .sb-nav-label {
@@ -85,8 +85,8 @@ body.sb-app.sb-admin .sb-nav-link {
 
 body.sb-app.sb-admin .sb-nav-link.active {
     background: #fff;
-    color: #C8102E;
-    box-shadow: 0 6px 16px rgba(60, 5, 12, .2);
+    color: var(--burgundy-text);
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--burgundy) 20%, transparent);
 }
 
 /* ---------------------------------------------------------------------

@@ -16,13 +16,13 @@
     .nt-bulk label { display: inline-flex; align-items: center; gap: 8px; margin: 0; font-size: .8125rem; color: var(--sb-muted); }
     .nt-bulk .btn { min-height: 30px; padding: 0 12px; font-size: .75rem; font-weight: 600; line-height: 1; }
     .nt-feedback { margin: 0; padding: 8px 20px; font-size: .8125rem; border-bottom: 1px solid var(--sb-border); }
-    .nt-feedback.is-error { color: var(--bs-danger, #b02a37); }
-    .nt-feedback.is-success { color: var(--bs-success, #146c43); }
+    .nt-feedback.is-error { color: var(--bs-danger, var(--burgundy-text)); }
+    .nt-feedback.is-success { color: var(--bs-success, var(--text)); }
     .nt-list { margin: 0; padding: 4px 20px; }
     .nt-item { position: relative; display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; }
     .nt-item + .nt-item { border-top: 1px solid color-mix(in srgb, var(--sb-border) 60%, transparent); }
     .nt-select { flex: 0 0 auto; margin-top: 10px; }
-        .nt-icon { position: relative; z-index: 1; display: grid; flex: 0 0 auto; width: 36px; height: 36px; place-items: center; border: 1px solid var(--sb-border); border-radius: 50%; background: var(--sb-surface); color: var(--sb-brand); font-size: 16px; }
+        .nt-icon { position: relative; z-index: 1; display: grid; flex: 0 0 auto; width: 36px; height: 36px; place-items: center; border: 1px solid var(--sb-border); border-radius: 50%; background: var(--sb-surface); color: var(--burgundy-text); font-size: 16px; }
     .nt-item.is-unread .nt-icon { border-color: var(--sb-brand); background: var(--sb-brand-soft); }
     .nt-item.is-unread .nt-icon::after { position: absolute; top: -1px; right: -1px; width: 10px; height: 10px; border: 2px solid var(--sb-surface); border-radius: 50%; background: var(--sb-brand); content: ""; }
     .nt-open { display: block; min-width: 0; flex: 1 1 auto; color: inherit; text-decoration: none; }
@@ -34,7 +34,7 @@
     .nt-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
     .nt-actions .btn { min-height: 30px; padding: 0 12px; font-size: .75rem; font-weight: 600; line-height: 1; }
     .nt-item .badge { padding: .3em .6em; font-size: .6875rem; }
-    .nt-open:hover .nt-title { color: var(--sb-brand-deep); }
+    .nt-open:hover .nt-title { color: var(--burgundy-text); }
     .nt-foot { padding: 12px 20px; border-top: 1px solid var(--sb-border); }
     /* Same full-screen treatment as Messages: edge to edge, locked to the screen, only the list scrolls. */
     .sb-main:has(.nt-card) { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; }

@@ -30,7 +30,7 @@
                     @foreach($usage['sign_ins'] as $day => $count)
                         <div class="flex-fill d-flex flex-column align-items-center justify-content-end h-100" title="{{ \Illuminate\Support\Carbon::parse($day)->format('M d') }}: {{ $count }}">
                             <small class="text-muted">{{ $count ?: '' }}</small>
-                            <div class="w-100 rounded-top" style="height: {{ max(2, round($count / $max * 120)) }}px; background: var(--sb-brand, #c8102e);"></div>
+                            <div class="w-100 rounded-top" style="height: {{ max(2, round($count / $max * 120)) }}px; background: var(--sb-brand, var(--burgundy));"></div>
                             <small class="text-muted" style="font-size: .7rem;">{{ \Illuminate\Support\Carbon::parse($day)->format('d') }}</small>
                         </div>
                     @endforeach

@@ -12,9 +12,9 @@
     .setup-steps li + li::before { content: ""; width: 22px; height: 1px; background: rgba(255, 255, 255, .3); }
     .setup-steps .dot { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid rgba(255, 255, 255, .4); border-radius: 50%; font-size: 12px; }
     .setup-steps li.is-current { color: #fff; }
-    .setup-steps li.is-current .dot { border-color: #ffc2c8; background: rgba(225, 29, 46, .85); color: #fff; }
-    .setup-steps li.is-done { color: #ffc2c8; }
-    .setup-steps li.is-done .dot { border-color: #ffc2c8; color: #ffc2c8; }
+    .setup-steps li.is-current .dot { border-color: var(--burgundy-tint); background: color-mix(in srgb, var(--burgundy) 85%, transparent); color: #fff; }
+    .setup-steps li.is-done { color: var(--burgundy-text); }
+    .setup-steps li.is-done .dot { border-color: var(--burgundy-tint); color: var(--burgundy-text); }
     @media (max-width: 420px) { .setup-steps .label { display: none; } .setup-steps li.is-current .label { display: inline; } }
 
     [data-setup-step][hidden] { display: none; }
@@ -22,7 +22,7 @@
     .setup-code { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: clamp(6px, 1.6vw, 10px); }
     .setup-code-box { width: 100%; min-width: 0; padding: 10px 0; border: 0; border-bottom: 1px solid rgba(255, 255, 255, .55); background: transparent; color: #fff; font: inherit; font-size: 22px; font-weight: 700; text-align: center; caret-color: #fff; outline: none; border-radius: 0; }
     .setup-code-box:focus { border-bottom-color: #fff; box-shadow: 0 1px 0 0 #fff; }
-    .setup-code.is-invalid .setup-code-box { border-bottom-color: #ffb3bb; box-shadow: 0 1px 0 0 #ffb3bb; }
+    .setup-code.is-invalid .setup-code-box { border-bottom-color: var(--burgundy-border); box-shadow: 0 1px 0 0 var(--burgundy-border); }
     .setup-code.is-shake { animation: setup-shake .36s ease; }
     @keyframes setup-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-7px); } 40% { transform: translateX(7px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
     @media (prefers-reduced-motion: reduce) { .setup-code.is-shake { animation: none; } }
