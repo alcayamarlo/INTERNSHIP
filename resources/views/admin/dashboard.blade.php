@@ -39,7 +39,7 @@
             <x-dashboard-stat-card title="Employers" :value="$stats['employers']" icon="bi-building" tone="warning" />
             <x-dashboard-stat-card title="Internships" :value="$stats['internships']" icon="bi-briefcase" description="Active opportunities" />
             <x-dashboard-stat-card title="Applications" :value="$stats['applications']" icon="bi-file-earmark-text" tone="info" description="Applications tracked" />
-            <x-dashboard-stat-card title="Placements" :value="$stats['placements']" icon="bi-pin-map" tone="success" description="Completed matches" />
+            <x-dashboard-stat-card title="Placements" :value="$stats['placements']" icon="bi-pin-map" tone="success" description="Accepted applications" />
         </section>
 
         {{-- Platform insights (same charts and data, admin layout) --}}

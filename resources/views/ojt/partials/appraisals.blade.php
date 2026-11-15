@@ -195,6 +195,6 @@
     </article>
 @empty
     <x-empty-state icon="bi-clipboard-data" title="No monthly evaluations yet"
-                   :message="$mode === 'coordinator' ? 'Request a month above. The student rates first, then the supervisor, then you.' : 'Your coordinator requests a monthly evaluation for each month of the OJT.'" />
+                   :message="$mode === 'coordinator' ? ($placement->isActive() ? 'Request a month above. The student rates first, then the supervisor, then you.' : 'Monthly evaluations can be requested once the OJT is validated and ongoing.') : 'Your coordinator requests a monthly evaluation for each month of the OJT.'" />
 @endforelse
 </div>

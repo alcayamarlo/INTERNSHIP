@@ -27,7 +27,7 @@
     ];
     $profileAvatar = \App\Support\Avatar::for($user);
 @endphp
-<main class="student-profile-page" id="studentProfilePage"
+<div class="student-profile-page" id="studentProfilePage"
     data-error-tab="{{ $errorTab }}"
     data-error-fields="{{ json_encode($errors->keys()) }}"
     data-tab-error-fields="{{ json_encode($tabErrorFields) }}"
@@ -187,7 +187,7 @@
     </dialog>
 
     <div class="save-toast" id="profileToast" role="status" aria-live="polite"></div>
-</main>
+</div>
 
 @push('scripts')
 <script src="{{ asset('js/student-profile.js') }}?v=1" defer></script>

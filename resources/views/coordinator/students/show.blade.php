@@ -7,7 +7,7 @@
 @endpush
 
 @section('content')
-<main class="student-profile-page">
+<div class="student-profile-page">
     <a class="profile-back-link" href="{{ route('coordinator.students.index') }}">
         <span aria-hidden="true">←</span> Back to Students
     </a>
@@ -388,5 +388,5 @@
             </section>
         </div>
     </div>
-</main>
+</div>
 @endsection

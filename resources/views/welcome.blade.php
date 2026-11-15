@@ -60,7 +60,7 @@
         <nav class="sb-sticky-nav" data-sticky-nav aria-label="Sections">
             <a class="sb-sticky-brand" href="#top" aria-label="SkillBridge, back to the top"><span class="public-brand-mark" aria-hidden="true"><img src="{{ asset('images/brand/skillbridge-logo-icon.svg') }}?v=2" alt="" width="36" height="36"></span><strong>SkillBridge</strong></a>
             <div class="sb-sticky-links"><a href="#top">Home</a><a href="#how-it-works">How it works</a><a href="#about">About</a><a href="{{ route('internships.index') }}">Internships</a><a href="#audiences">Who it's for</a><a href="#questions">FAQs</a></div>
-            <a class="sb-sticky-login" href="{{ route('login') }}">Log in</a>
+            <a class="sb-sticky-login" href="{{ route('login') }}">Sign in</a>
         </nav>
         <main id="main-content">
             <section class="public-hero sb-hero" id="top" aria-labelledby="hero-heading">
@@ -311,7 +311,7 @@
         @include('partials.public-footer', ['base' => ''])
 
         <div class="public-mobile-cta" data-mobile-cta>
-            <a class="public-button public-button-primary" href="{{ route('login') }}">Log in</a>
+            <a class="public-button public-button-primary" href="{{ route('login') }}">Sign in</a>
         </div>
     </div>
     @include('partials.auth-modal')

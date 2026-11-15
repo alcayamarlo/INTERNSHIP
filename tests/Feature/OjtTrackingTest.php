@@ -304,7 +304,7 @@ it('keeps a pre-existing 1-5 evaluation visible and unchanged, even without a fo
         ->get(route('employer.interns.show', $placement))
         ->assertOk()
         ->assertSee('kept as is')
-        ->assertSee('Supervisor Evaluation')
+        ->assertSee('Final Evaluation</h2>', false)
         ->assertDontSee('No final evaluation requested yet')
         ->assertDontSee('Submit final evaluation');
 
@@ -327,7 +327,7 @@ it('never shows the employer rating to the student, even after one is submitted'
         ->assertSessionHas('success');
 
     $response = $this->actingAs($fixture['studentUser'])->get(route('student.ojt.index'))->assertOk();
-    $response->assertDontSee('Supervisor Evaluation')
+    $response->assertDontSee('Final Evaluation</h2>', false)
         ->assertDontSee('Secret rating comment')
         ->assertDontSee('ojt-evaluation', false);
 
@@ -749,7 +749,7 @@ it('still renders an old 1-5 evaluation unchanged and has no school-form PDF for
         'average_score' => 4, 'strengths' => 'Punctual', 'would_hire' => true, 'submitted_at' => now()]);
 
     $this->actingAs($fixture['coordinatorUser'])->get(route('coordinator.placements.show', $placement))->assertOk()
-        ->assertSee('Supervisor Evaluation')->assertSee('4.00')->assertSee('Strengths:')->assertDontSee('Final Performance Evaluation</h2>', false);
+        ->assertSee('Final Evaluation</h2>', false)->assertSee('4.00')->assertSee('Strengths:')->assertDontSee('Final Performance Evaluation</h2>', false);
     $this->get(route('ojt.evaluations.print', $placement))->assertNotFound();
 });
 

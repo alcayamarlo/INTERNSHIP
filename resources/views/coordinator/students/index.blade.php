@@ -10,7 +10,7 @@
 @endpush
 
 @section('content')
-<main class="coordinator-students-page" id="coordinatorStudentsPage">
+<div class="coordinator-students-page" id="coordinatorStudentsPage">
     <x-page-header title="Students" subtitle="Monitor student profiles and progress" eyebrow="Student tracking">
         <dl class="students-summary" aria-label="Student summary">
             <div class="students-summary-cell">
@@ -89,7 +89,7 @@
         <nav id="studentsPagination" class="students-pagination" aria-label="Student pages"></nav>
     </div>
     </section>
-</main>
+</div>
 
 <script id="studentsInitialData" type="application/json">{!! json_encode([
     'students' => $initialStudents,

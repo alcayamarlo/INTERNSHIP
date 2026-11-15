@@ -145,7 +145,7 @@
     <x-dashboard-quick-actions title="Quick Actions" icon="bi-lightning-charge">
 
         <a href="{{ route('employer.internships.create') }}" class="list-group-item list-group-item-action">
-            <i class="bi bi-plus-circle" aria-hidden="true"></i> Create New Listing
+            <i class="bi bi-plus-circle" aria-hidden="true"></i> Post Internship
         </a>
         <a href="{{ route('employer.applicants.index') }}" class="list-group-item list-group-item-action">
             <i class="bi bi-eye" aria-hidden="true"></i> Review Applicants

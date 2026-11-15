@@ -14,13 +14,13 @@
         content="{{ csrf_token() }}"
     >
 
-    <link rel="icon" type="image/svg+xml" href="{ asset('images/brand/favicon.svg') }?v=2">
-    <link rel="icon" href="{ asset('images/brand/favicon.ico') }?v=2" sizes="any">
-    <link rel="apple-touch-icon" href="{ asset('images/brand/apple-touch-icon.png') }?v=2">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/brand/favicon.svg') }}?v=2">
+    <link rel="icon" href="{{ asset('images/brand/favicon.ico') }}?v=2" sizes="any">
+    <link rel="apple-touch-icon" href="{{ asset('images/brand/apple-touch-icon.png') }}?v=2">
     <meta name="theme-color" content="#E11D2E">
 
     <title>
-        @yield('title', 'Authentication') — SKILL BRIDGE
+        @yield('title', 'Authentication') — SkillBridge
     </title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">

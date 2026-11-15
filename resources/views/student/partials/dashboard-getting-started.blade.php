@@ -21,7 +21,7 @@
 
             <li>
                 <div>
-                    <strong>Add Competencies</strong>
+                    <strong>Add Certificates</strong>
                     <span>Highlight your skills and expertise</span>
                 </div>
             </li>

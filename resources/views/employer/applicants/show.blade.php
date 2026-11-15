@@ -251,7 +251,8 @@
                     </div>
                 @endif
                 @if($availableStatuses !== [])
-                <form method="POST" action="{{ route('employer.applicants.status', $application) }}" data-ajax-form data-application-status-form data-ajax-redirect>
+                {{-- Stays on this page: the badge, the next statuses and the confirmation update in place. --}}
+                <form method="POST" action="{{ route('employer.applicants.status', $application) }}" data-ajax-form data-application-status-form>
                     @csrf @method('PUT')
                     <div class="mb-3">
                         <label class="form-label" for="statusSelect">Status</label>

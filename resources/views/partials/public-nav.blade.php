@@ -48,7 +48,7 @@
                                 </form>
                             </div>
                         @endif
-                        <a class="public-button public-button-primary" href="{{ route('login') }}">Log in</a>
+                        <a class="public-button public-button-primary" href="{{ route('login') }}">Sign in</a>
                     </div>
                 </div>
             </div>
