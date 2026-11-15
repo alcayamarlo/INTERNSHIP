@@ -47,7 +47,7 @@
 @endpush
 
 @section('content')
-<x-page-header title="My OJT" subtitle="Log your daily time, submit weekly journals and track your progress toward completion." />
+<x-page-header title="My OJT" subtitle="Log your daily time, submit weekly reports and track your progress toward completion." />
 @if(! $placement)
     <div class="card">
         <div class="card-body">

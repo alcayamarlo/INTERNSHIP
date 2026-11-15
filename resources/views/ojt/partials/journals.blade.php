@@ -81,7 +81,7 @@
                     </form>
                 @elseif($entry->isCertified() && ! $placement->isCleared() && in_array($mode, ['employer', 'coordinator'], true))
                     <form method="POST" action="{{ $mode === 'employer' ? route('employer.interns.journals.reopen', [$placement, $entry]) : route('coordinator.reviews.journals.reopen', $entry) }}" class="mt-2"
-                          data-confirm="Reopen this certification? The supervisor will need to certify the report again." data-confirm-title="Reopen certification">
+                          data-confirm-label="Reopen" data-confirm="Reopen this certification? The supervisor will need to certify the report again." data-confirm-title="Reopen certification">
                         @csrf @if($mode === 'employer') @method('PATCH') @endif
                         <button type="submit" class="btn btn-sm btn-outline-danger">Reopen certification</button>
                     </form>

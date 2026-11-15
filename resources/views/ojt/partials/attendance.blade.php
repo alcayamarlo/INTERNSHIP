@@ -9,7 +9,7 @@
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <h2 class="h6 mb-0"><i class="bi bi-clock" aria-hidden="true"></i> Daily Time Record</h2>
         @if($mode === 'employer' && $hasPending && ! $placement->isCleared())
-            <form method="POST" action="{{ route('employer.interns.attendance.approve-all', $placement) }}" data-confirm="Approve every pending time entry?" data-confirm-title="Approve all">
+            <form method="POST" action="{{ route('employer.interns.attendance.approve-all', $placement) }}" data-confirm-label="Approve all" data-confirm="Approve every pending time entry?" data-confirm-title="Approve all">
                 @csrf
                 <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-check2-all" aria-hidden="true"></i> Approve all pending</button>
             </form>

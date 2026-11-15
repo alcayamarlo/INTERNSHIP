@@ -88,7 +88,7 @@
                 <span class="badge {{ $appraisal->isComplete() ? 'text-bg-success' : ($overdue ? 'text-bg-danger' : 'text-bg-warning') }}">{{ $overdue ? 'Overdue · ' : '' }}{{ $appraisal->stageLabel() }}</span>
                 <a href="{{ route('ojt.appraisals.print', $appraisal) }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener"><i class="bi bi-printer" aria-hidden="true"></i> Print</a>
                 @if($mode === 'coordinator' && ($step = $appraisal->latestSubmittedStep()))
-                    <form method="POST" action="{{ route('coordinator.appraisals.reopen', $appraisal) }}" class="d-inline" data-confirm="Reopen the {{ Appraisal::stepLabel($step) }}? It will need to be submitted again.">
+                    <form method="POST" action="{{ route('coordinator.appraisals.reopen', $appraisal) }}" class="d-inline" data-confirm-label="Reopen" data-confirm="Reopen the {{ Appraisal::stepLabel($step) }}? It will need to be submitted again.">
                         @csrf
                         <button type="submit" class="btn btn-sm btn-outline-danger">Reopen {{ Appraisal::stepLabel($step) }}</button>
                     </form>

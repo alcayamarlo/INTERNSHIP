@@ -51,7 +51,7 @@
         <div class="card-header"><h2 class="h6 mb-0"><i class="bi bi-patch-check" aria-hidden="true"></i> Clear this OJT</h2></div>
         <div class="card-body">
             <p class="small text-muted">The student rendered the required hours and the supervisor submitted an evaluation. Clearing issues the certificate of completion.</p>
-            <form method="POST" action="{{ route('coordinator.placements.clear', $placement) }}" data-confirm="Clear this OJT and issue the certificate?" data-confirm-title="Clear OJT">
+            <form method="POST" action="{{ route('coordinator.placements.clear', $placement) }}" data-confirm-label="Clear and issue certificate" data-confirm="Clear this OJT and issue the certificate?" data-confirm-title="Clear OJT">
                 @csrf
                 <label class="form-label" for="clearance_remarks">Remarks (optional)</label>
                 <textarea id="clearance_remarks" name="clearance_remarks" rows="2" maxlength="1000" class="form-control mb-2"></textarea>
