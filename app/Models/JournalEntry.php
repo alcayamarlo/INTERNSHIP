@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\OjtDocumentData;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -73,15 +74,18 @@ class JournalEntry extends Model
         return $this->isAcknowledged();
     }
 
-    /** Monday to Friday of the reported week, e.g. "April 20 - 24, 2026". */
+    /**
+     * The report's Inclusive Dates, e.g. "April 20 - 24, 2026": as printed when it was submitted, otherwise
+     * the days it covers (weekdays, a weekend day with a time record, OJT dates only).
+     */
     public function inclusiveDates(): string
     {
-        $monday = $this->week_start->copy()->startOfWeek();
-        $friday = $monday->copy()->addDays(4);
+        $frozen = $this->header_snapshot['inclusive_dates'] ?? null;
+        if (filled($frozen)) {
+            return (string) $frozen;
+        }
 
-        return $monday->isSameMonth($friday)
-            ? $monday->format('F j').' - '.$friday->format('j, Y')
-            : $monday->format('F j').' - '.$friday->format('F j, Y');
+        return OjtDocumentData::inclusiveDates(...$this->placement->reportDateRange($this->week_start));
     }
 
     public static function titleFor(?int $weekNumber): string

@@ -153,9 +153,9 @@ class OjtController extends Controller
             'header.period_of_evaluation' => ['sometimes', 'required', 'string', 'min:2', 'max:40', 'regex:/^[\pL\d ().\-]+$/u'],
             'header.inclusive_dates' => [
                 'sometimes', 'required', 'string', 'max:60',
-                function (string $attribute, mixed $value, \Closure $fail) use ($request) {
-                    if ($request->input('week_start') && OjtDocumentData::normalizeInclusiveDates((string) $value, Carbon::parse($request->input('week_start'))) === null) {
-                        $fail('Inclusive dates must be days from Monday to Friday of that week, e.g. "April 20 - 24, 2026".');
+                function (string $attribute, mixed $value, \Closure $fail) use ($request, $placement) {
+                    if ($request->input('week_start') && OjtDocumentData::normalizeInclusiveDates((string) $value, Carbon::parse($request->input('week_start')), $placement->start_date, $placement->end_date) === null) {
+                        $fail('Inclusive dates must be days of that week (Monday to Sunday) within your OJT, e.g. "April 20 - 24, 2026".');
                     }
                 },
             ],
@@ -180,7 +180,7 @@ class OjtController extends Controller
         $weekStart = CarbonImmutable::parse($validated['week_start']);
         $edits = $validated['header'] ?? [];
         if (isset($edits['inclusive_dates'])) {
-            $edits['inclusive_dates'] = OjtDocumentData::normalizeInclusiveDates($edits['inclusive_dates'], $weekStart);
+            $edits['inclusive_dates'] = OjtDocumentData::normalizeInclusiveDates($edits['inclusive_dates'], $weekStart, $placement->start_date, $placement->end_date);
         }
         $resolved = $this->weeklyReports->resolveHeader($placement, $weekStart, $edits, $validated['save_default'] ?? [], Auth::user());
 

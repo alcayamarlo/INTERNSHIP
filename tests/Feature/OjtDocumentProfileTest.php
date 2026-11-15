@@ -198,7 +198,7 @@ it('changes the supervisor name on one report only, unless "Also update" is tick
     $this->post(route('student.ojt.journals.store', $f['placement']), docReport(['week_start' => '2026-03-23', 'header' => ['designation' => 'Typed Department']]))->assertSessionHasErrors('header.designation');
 });
 
-it('accepts an inclusive-dates change only inside that Monday-to-Friday week', function () {
+it('accepts an inclusive-dates change only inside that week (Monday to Sunday)', function () {
     $f = docFixture();
     $this->actingAs($f['studentUser']);
 
@@ -211,7 +211,11 @@ it('accepts an inclusive-dates change only inside that Monday-to-Friday week', f
 
     expect(OjtDocumentData::normalizeInclusiveDates('Apr 30 - May 1, 2026', CarbonImmutable::parse('2026-04-27')))->toBe('April 30 - May 1, 2026')
         ->and(OjtDocumentData::normalizeInclusiveDates('December 29, 2025 - January 2, 2026', CarbonImmutable::parse('2025-12-29')))->toBe('December 29, 2025 - January 2, 2026')
-        ->and(OjtDocumentData::normalizeInclusiveDates('April 25, 2026', CarbonImmutable::parse('2026-04-20')))->toBeNull(); // a Saturday
+        // A weekend day the student worked can be reported; the next week cannot.
+        ->and(OjtDocumentData::normalizeInclusiveDates('April 25, 2026', CarbonImmutable::parse('2026-04-20')))->toBe('April 25, 2026')
+        ->and(OjtDocumentData::normalizeInclusiveDates('April 27, 2026', CarbonImmutable::parse('2026-04-20')))->toBeNull()
+        // Never before the OJT start.
+        ->and(OjtDocumentData::normalizeInclusiveDates('January 26 - 30, 2026', CarbonImmutable::parse('2026-01-28'), CarbonImmutable::parse('2026-01-28')))->toBeNull();
 });
 
 it('freezes the trainee details on monthly and final evaluations when they are submitted (test 5)', function () {

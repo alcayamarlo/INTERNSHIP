@@ -183,7 +183,10 @@ class OjtDocumentData
         return [...$live, ...$frozen];
     }
 
-    /** Week number, "FINALS (Week 13)" and "April 20 - 24, 2026" for the Monday-to-Friday week containing $day. */
+    /**
+     * Week number, "FINALS (Week 13)" and "April 20 - 24, 2026" for the week containing $day. Inclusive Dates
+     * follow the days the report covers (Placement::reportDays): weekdays, a logged weekend day, OJT dates only.
+     */
     public function weekValues(Placement $placement, CarbonInterface $day): array
     {
         $monday = CarbonImmutable::parse($day->toDateString())->startOfWeek();
@@ -193,7 +196,7 @@ class OjtDocumentData
         return [
             'week_no' => $weekNumber,
             'period_of_evaluation' => $weekNumber ? "{$label} (Week {$weekNumber})" : $label,
-            'inclusive_dates' => self::inclusiveDates($monday),
+            'inclusive_dates' => self::inclusiveDates(...$placement->reportDateRange($monday)),
         ];
     }
 
@@ -222,10 +225,10 @@ class OjtDocumentData
 
     /**
      * Reads a typed "Inclusive Dates" value and returns it in the standard form, or null when it is not a
-     * date range inside the Monday-to-Friday of that week. Accepts "April 21 - 24, 2026",
+     * date range inside that week (Monday to Sunday) and inside the OJT dates when given. Accepts "April 21 - 24, 2026",
      * "April 30 - May 1, 2026", "Dec 29, 2025 - Jan 2, 2026" and a single "April 21, 2026".
      */
-    public static function normalizeInclusiveDates(string $text, CarbonInterface $weekDay): ?string
+    public static function normalizeInclusiveDates(string $text, CarbonInterface $weekDay, ?CarbonInterface $ojtStart = null, ?CarbonInterface $ojtEnd = null): ?string
     {
         $text = trim((string) preg_replace('/\s+/u', ' ', str_replace(['–', '—'], '-', $text)));
         $month = '([A-Za-z]+)\.?';
@@ -249,7 +252,9 @@ class OjtDocumentData
                 $start = $start->subYear(); // "December 29 - January 2, 2026"
             }
             $monday = CarbonImmutable::parse($weekDay->toDateString())->startOfWeek();
-            if ($start->gt($end) || $start->lt($monday) || $end->gt($monday->addDays(4))) {
+            if ($start->gt($end) || $start->lt($monday) || $end->gt($monday->addDays(6))
+                || ($ojtStart && $start->lt(CarbonImmutable::parse($ojtStart->toDateString())))
+                || ($ojtEnd && $end->gt(CarbonImmutable::parse($ojtEnd->toDateString())))) {
                 return null;
             }
 

@@ -1,7 +1,7 @@
 /*
  * Weekly report "Report details": pencil to edit a field on this report only, "Reset to profile value"
  * to go back. Inputs stay disabled until edited, so only changed fields are sent. Period of Evaluation
- * and Inclusive Dates follow the chosen week until the student edits them.
+ * and Inclusive Dates follow the chosen week (and its covered days) until the student edits them.
  */
 (function () {
     'use strict';
@@ -22,15 +22,42 @@
         return monday;
     }
 
-    function inclusiveDates(monday) {
-        var friday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 4);
-        if (monday.getFullYear() !== friday.getFullYear()) {
-            return MONTHS[monday.getMonth()] + ' ' + monday.getDate() + ', ' + monday.getFullYear() + ' - ' + MONTHS[friday.getMonth()] + ' ' + friday.getDate() + ', ' + friday.getFullYear();
+    function isoDate(date) {
+        return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+    }
+
+    // Same rule as Placement::reportDays(): Monday to Friday, a weekend day only with a time record,
+    // never before the OJT start or after its end. Returns [first, last].
+    function reportRange(monday, container) {
+        var start = parseDate(container.dataset.startDate);
+        var end = parseDate(container.dataset.endDate);
+        var weekend = [];
+        try { weekend = JSON.parse(container.dataset.loggedWeekend || '[]'); } catch (e) { weekend = []; }
+        var days = [];
+        for (var i = 0; i < 7; i++) {
+            var day = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i);
+            if ((start && day < start) || (end && day > end)) { continue; }
+            if (i >= 5 && weekend.indexOf(isoDate(day)) === -1) { continue; }
+            days.push(day);
         }
-        if (monday.getMonth() === friday.getMonth()) {
-            return MONTHS[monday.getMonth()] + ' ' + monday.getDate() + ' - ' + friday.getDate() + ', ' + friday.getFullYear();
+        if (!days.length) {
+            var first = start && monday < start ? start : monday;
+            return [first, first];
         }
-        return MONTHS[monday.getMonth()] + ' ' + monday.getDate() + ' - ' + MONTHS[friday.getMonth()] + ' ' + friday.getDate() + ', ' + friday.getFullYear();
+        return [days[0], days[days.length - 1]];
+    }
+
+    function inclusiveDates(from, to) {
+        if (from.getTime() === to.getTime()) {
+            return MONTHS[from.getMonth()] + ' ' + from.getDate() + ', ' + from.getFullYear();
+        }
+        if (from.getFullYear() !== to.getFullYear()) {
+            return MONTHS[from.getMonth()] + ' ' + from.getDate() + ', ' + from.getFullYear() + ' - ' + MONTHS[to.getMonth()] + ' ' + to.getDate() + ', ' + to.getFullYear();
+        }
+        if (from.getMonth() === to.getMonth()) {
+            return MONTHS[from.getMonth()] + ' ' + from.getDate() + ' - ' + to.getDate() + ', ' + to.getFullYear();
+        }
+        return MONTHS[from.getMonth()] + ' ' + from.getDate() + ' - ' + MONTHS[to.getMonth()] + ' ' + to.getDate() + ', ' + to.getFullYear();
     }
 
     function setEditing(row, editing) {
@@ -80,7 +107,7 @@
             var weeks = Math.floor(Math.round((monday - startMonday) / 86400000) / 7) + 1;
             if (weeks >= 1) { period += ' (Week ' + weeks + ')'; }
         }
-        var values = { period_of_evaluation: period, inclusive_dates: inclusiveDates(monday) };
+        var values = { period_of_evaluation: period, inclusive_dates: inclusiveDates.apply(null, reportRange(monday, container)) };
         Object.keys(values).forEach(function (field) {
             var row = container.querySelector('[data-hf="' + field + '"]');
             if (!row) { return; }

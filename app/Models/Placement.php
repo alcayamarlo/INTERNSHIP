@@ -180,6 +180,67 @@ class Placement extends Model
         return $number >= 1 ? $number : null;
     }
 
+    /**
+     * The days a weekly report covers, for the week (Monday to Sunday) that contains $day: Monday to
+     * Friday, plus Saturday or Sunday only when time was logged that day (not rejected), and never a day
+     * before the OJT start date or after its end date.
+     *
+     * @return list<CarbonImmutable>
+     */
+    public function reportDays(\DateTimeInterface $day): array
+    {
+        $monday = CarbonImmutable::parse($day->format('Y-m-d'))->startOfWeek();
+        $loggedWeekend = $this->attendanceLogs()
+            ->whereDate('work_date', '>=', $monday->addDays(5)->toDateString())
+            ->whereDate('work_date', '<=', $monday->addDays(6)->toDateString())
+            ->where('status', '!=', AttendanceLog::STATUS_REJECTED)
+            ->pluck('work_date')
+            ->map(fn ($date) => CarbonImmutable::parse($date)->toDateString())
+            ->all();
+
+        return self::coveredDays($monday, $this->start_date, $this->end_date, $loggedWeekend);
+    }
+
+    /**
+     * The rule behind reportDays(), without the database.
+     *
+     * @param  list<string>  $loggedWeekend  Saturday/Sunday dates (Y-m-d) with a time record
+     * @return list<CarbonImmutable>
+     */
+    public static function coveredDays(\DateTimeInterface $day, ?\DateTimeInterface $start, ?\DateTimeInterface $end, array $loggedWeekend): array
+    {
+        $monday = CarbonImmutable::parse($day->format('Y-m-d'))->startOfWeek();
+        $start = $start ? CarbonImmutable::parse($start->format('Y-m-d')) : null;
+        $end = $end ? CarbonImmutable::parse($end->format('Y-m-d')) : null;
+
+        $days = [];
+        for ($date = $monday; $date->lte($monday->addDays(6)); $date = $date->addDay()) {
+            if (($start && $date->lt($start)) || ($end && $date->gt($end))) {
+                continue;
+            }
+            if ($date->isWeekend() && ! in_array($date->toDateString(), $loggedWeekend, true)) {
+                continue;
+            }
+            $days[] = $date;
+        }
+
+        return $days;
+    }
+
+    /** Inclusive Dates of a weekly report: its first to last covered day (or the first OJT day of that week). */
+    public function reportDateRange(\DateTimeInterface $day): array
+    {
+        $days = $this->reportDays($day);
+        if ($days === []) {
+            $monday = CarbonImmutable::parse($day->format('Y-m-d'))->startOfWeek();
+            $first = $this->start_date && $monday->lt($this->start_date) ? CarbonImmutable::parse($this->start_date->format('Y-m-d')) : $monday;
+
+            return [$first, $first];
+        }
+
+        return [$days[0], $days[array_key_last($days)]];
+    }
+
     public function isCompleted(): bool
     {
         return $this->status === self::STATUS_COMPLETED;

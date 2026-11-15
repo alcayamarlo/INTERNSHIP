@@ -29,10 +29,16 @@
         'inclusive_dates' => ['Inclusive Dates', $week['inclusive_dates']],
     ];
     $savedDefaults = (array) old('save_default', []);
+    // Weekend days with a time record: the page uses them, with the OJT dates, to show Inclusive Dates.
+    $loggedWeekend = $placement->attendanceLogs()->where('status', '!=', \App\Models\AttendanceLog::STATUS_REJECTED)->pluck('work_date')
+        ->map(fn ($date) => \Carbon\CarbonImmutable::parse($date))->filter->isWeekend()->map->toDateString()->values();
 @endphp
 <fieldset class="report-header-fields border rounded p-3 mb-3"
           data-report-header
           data-start-monday="{{ $placement->start_date?->copy()->startOfWeek()->toDateString() }}"
+          data-start-date="{{ $placement->start_date?->toDateString() }}"
+          data-end-date="{{ $placement->end_date?->toDateString() }}"
+          data-logged-weekend='@json($loggedWeekend)'
           data-period-names='@json($periodNames)'>
     <legend class="float-none w-auto px-1 h6 mb-0">Report details</legend>
     <p class="small text-muted mb-2">Filled in from your profile and OJT record. Use <i class="bi bi-pencil" aria-hidden="true"></i><span class="visually-hidden">the pencil</span> to change a detail on this report only.</p>

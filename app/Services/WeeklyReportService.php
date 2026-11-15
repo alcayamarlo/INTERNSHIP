@@ -11,8 +11,8 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 
 /**
- * The weekly Activity Narrative Report: the Monday-to-Friday activity table comes from the student's
- * time records, and is frozen into daily_snapshot when the supervisor certifies the report, so later
+ * The weekly Activity Narrative Report: the activity table (Monday to Friday, plus a weekend day the
+ * student logged time) comes from the student's time records, and is frozen into daily_snapshot when the supervisor certifies the report, so later
  * attendance edits can never change a signed document.
  */
 class WeeklyReportService
@@ -105,7 +105,7 @@ class WeeklyReportService
     }
 
     /**
-     * Mon-Fri rows: the frozen snapshot once certified, otherwise built from the time records.
+     * The report's rows: the frozen snapshot once certified, otherwise built from the time records.
      *
      * @return list<array{date: string, date_label: string, day: string, activity: string, minutes: int, hours_label: string}>
      */
@@ -119,19 +119,20 @@ class WeeklyReportService
     /** @return list<array{date: string, date_label: string, day: string, activity: string, minutes: int, hours_label: string}> */
     public function liveRows(JournalEntry $entry): array
     {
+        $entry->loadMissing('placement');
         $monday = CarbonImmutable::parse($entry->week_start)->startOfWeek();
-        $friday = $monday->addDays(4);
         // Rejected entries are not part of the record; pending and approved ones are.
         $logs = AttendanceLog::query()
             ->where('placement_id', $entry->placement_id)
             ->whereDate('work_date', '>=', $monday->toDateString())
-            ->whereDate('work_date', '<=', $friday->toDateString())
+            ->whereDate('work_date', '<=', $monday->addDays(6)->toDateString())
             ->where('status', '!=', AttendanceLog::STATUS_REJECTED)
             ->get()
             ->keyBy(fn (AttendanceLog $log) => $log->work_date->toDateString());
 
+        // Monday to Friday, plus a weekend day with a time record; never before the OJT start or after its end.
         $rows = [];
-        for ($day = $monday; $day->lte($friday); $day = $day->addDay()) {
+        foreach ($entry->placement->reportDays($monday) as $day) {
             $log = $logs->get($day->toDateString());
             $minutes = $log ? (int) round(((float) $log->hours) * 60) : 0;
             $rows[] = [
