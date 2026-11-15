@@ -4,7 +4,6 @@
 html body.sb-glass.skillbridge-public { color-scheme: light; background: #bfb0a7 linear-gradient(180deg, #d6c9c1 0%, #bfb0a7 45%, #a89a92 100%); background-attachment: fixed; color: #201b19; font-family: 'Manrope', system-ui, 'Segoe UI', sans-serif; font-size: 16px; line-height: 1.55; overflow-x: hidden; }
 html body.sb-glass.skillbridge-public .public-page { max-width: 1260px; margin: 0 auto; padding: 28px 20px 40px; display: flex; flex-direction: column; gap: 28px; --public-gutter: 56px; color: #201b19; }
 html body.sb-glass.skillbridge-public #main-content { display: flex; flex-direction: column; gap: 28px; }
-html body.sb-glass.skillbridge-public .public-theme-toggle { display: none; }
 html body.sb-glass.skillbridge-public .public-page a:focus-visible, html body.sb-glass.skillbridge-public .public-page button:focus-visible, html body.sb-glass.skillbridge-public .public-faq-item summary:focus-visible, html body.sb-glass.skillbridge-public .public-page input:focus-visible { outline: 3px solid #c8102e; outline-offset: 3px; }
 
 /* ---------- Buttons ---------- */

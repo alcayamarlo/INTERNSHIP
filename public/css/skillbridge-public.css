@@ -43,9 +43,6 @@
         .public-nav-toggle svg, .public-icon { width: 18px; height: 18px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
         .public-button svg { width: 16px; height: 16px; }
         .public-announcement .public-icon { width: 15px; height: 15px; vertical-align: -3px; }
-        .public-theme-toggle { display: inline-grid; width: 42px; height: 42px; place-items: center; border: 1px solid var(--sb-border); border-radius: 50%; color: var(--sb-ink); background: var(--sb-surface); cursor: pointer; }
-        .public-theme-toggle svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
-        .public-theme-toggle:hover { border-color: var(--sb-red); color: var(--sb-brand-content); background: var(--sb-red-soft); }
 
         /* ---- Hero ---- */
         .public-hero { position: relative; overflow: hidden; padding: clamp(48px, 7vw, 96px) var(--public-gutter) clamp(56px, 8vw, 96px); background: #120A0C; }
