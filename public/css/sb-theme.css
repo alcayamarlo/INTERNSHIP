@@ -535,6 +535,125 @@ html body.sb-app .sb-brand .sb-seal { width: 48px !important; height: 48px !impo
    Shared by Employer > Internships and Student > Invitations (moved here from sb-split-inbox.css).
    ========================================================================================= */
 
+
+
+body.sb-app .sbx {
+    --sbx-list-width: 420px;
+    --sbx-selected-bg: var(--burgundy-tint);
+    --sbx-red: var(--burgundy);
+    --sbx-ink: var(--ib-ink, var(--sb-ink));
+    --sbx-muted: var(--ib-muted, var(--sb-muted));
+    --sbx-border: var(--ib-border, var(--sb-border));
+    --sbx-surface: var(--ib-surface, var(--sb-surface));
+    --sbx-row-hover: var(--ib-row-hover, var(--sb-row-hover, #fafafa));
+    --sbx-count-bg: var(--ib-pink, var(--sb-red-soft));
+    --sbx-count-ink: var(--ib-pink-ink, var(--sb-brand-content));
+}
+
+html[data-theme="dark"] body.sb-app .sbx {
+    --sbx-selected-bg: color-mix(in srgb, var(--burgundy) 18%, transparent);
+    --sbx-red: var(--burgundy-border);
+}
+
+/* ---------- Layout: fixed-width list, flexible detail ---------- */
+body.sb-app .sbx .sbx-split {
+    grid-template-columns: minmax(280px, var(--sbx-list-width)) minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+}
+
+body.sb-app .sbx .sbx-list-card { padding: 16px; }
+
+body.sb-app .sbx .sbx-detail {
+    position: sticky;
+    top: calc(var(--sb-topbar-height, 64px) + 16px);
+    min-height: 320px;
+    padding: 22px 26px;
+}
+
+/* ---------- Status tabs (the app's .sb-section-tab, light red when active) ---------- */
+body.sb-app .sbx .sbx-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+
+body.sb-app .sbx .sbx-tab {
+    min-height: 36px;
+    padding: 0 12px;
+    background: transparent;
+    cursor: pointer;
+}
+
+body.sb-app .sbx .sbx-tab.active {
+    border-color: var(--sbx-red);
+    background: var(--sbx-selected-bg);
+    color: var(--sbx-red);
+}
+
+body.sb-app .sbx .sbx-tab-count {
+    min-width: 22px;
+    padding: 0 7px;
+    border-radius: 999px;
+    background: var(--sbx-count-bg);
+    color: var(--sbx-count-ink);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 20px;
+    text-align: center;
+}
+
+body.sb-app .sbx .sbx-tab.active .sbx-tab-count { background: var(--sbx-surface); color: var(--sbx-red); }
+
+/* ---------- List rows (same fades and selected edge as .ib-row) ---------- */
+body.sb-app .sbx .sbx-list { margin: 0; padding: 0; list-style: none; }
+
+body.sb-app .sbx .sbx-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 14px;
+    border: 0;
+    border-bottom: 1px solid var(--sbx-border);
+    background: transparent;
+    color: var(--sbx-ink);
+    font: inherit;
+    text-align: left;
+    transition: background-color .2s ease-out, box-shadow .2s ease-out;
+}
+
+body.sb-app .sbx .sbx-list > li:last-child > .sbx-row { border-bottom: 0; }
+body.sb-app .sbx .sbx-row:hover { background: var(--sbx-row-hover); }
+body.sb-app .sbx .sbx-row.is-selected { background: var(--sbx-selected-bg); box-shadow: inset 3px 0 0 var(--sbx-red); }
+body.sb-app .sbx .sbx-row:focus-visible { outline: 2px solid color-mix(in srgb, var(--sbx-red) 55%, transparent); outline-offset: -2px; }
+
+body.sb-app .sbx .sbx-row-text { min-width: 0; }
+body.sb-app .sbx .sbx-row-title { display: block; font-weight: 600; overflow-wrap: anywhere; }
+body.sb-app .sbx .sbx-row-meta { display: block; margin-top: 2px; color: var(--sbx-muted); font-size: 12.5px; }
+
+body.sb-app .sbx :is(.sbx-empty, .sbx-placeholder) {
+    margin: 0;
+    padding: 36px 12px;
+    color: var(--sbx-muted);
+    text-align: center;
+}
+
+body.sb-app .sbx .sbx-empty p { margin: 0 0 12px; }
+body.sb-app .sbx .sbx-pages { margin-top: 12px; }
+
+/* ---------- Motion (reused keyframe and speed) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+    body.sb-app .sbx .sbx-list-region.is-changing > *,
+    body.sb-app .sbx .sbx-detail.is-changing > .sbx-detail-body {
+        --rise-y: 8px;
+        animation: rise var(--sb-motion-base, 220ms) var(--sb-motion-ease) both;
+    }
+}
+
+/* ---------- Responsive: list above detail ---------- */
+@media (max-width: 900px) {
+    body.sb-app .sbx .sbx-split { grid-template-columns: minmax(0, 1fr); }
+    body.sb-app .sbx .sbx-detail { position: static; padding: 18px; }
+}
+
 /* Split list: brand pill tabs, tinted selection without a side stripe. */
 html body.sb-app .sbx .sbx-tab {
     display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 8px 16px; border: 1px solid var(--line) !important;
@@ -664,3 +783,137 @@ html body.sb-app .sb-chips > span.more { background: transparent; border: 1px da
 /* Progress inside a table cell */
 html body.sb-app .sb-progress-cell { min-width: 150px; }
 html body.sb-app .progress.progress--thin { height: 6px; margin-top: 6px; }
+
+/* =========================================================================================
+   List + preview (Student > Internships): table on the left, sticky preview on the right.
+   Below 1200px the preview sits under the table; below 768px it opens as a dialog instead.
+   ========================================================================================= */
+html body.sb-app .sb-split-table--wide { grid-template-columns: minmax(0, 1fr) 480px; }
+html body.sb-app .sb-preview { display: flex; flex-direction: column; min-width: 0; overflow: hidden; padding: 0; }
+html body.sb-app .sb-split-table > .sb-preview { position: sticky; top: calc(var(--sb-topbar-height) + 20px); max-height: calc(100vh - var(--sb-topbar-height) - 40px); }
+html body.sb-app .sb-preview > .sb-detail { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; }
+html body.sb-app .sb-preview-scroll { padding: 22px 24px; overflow-y: auto; scrollbar-width: thin; }
+html body.sb-app .sb-preview-actions { display: flex; flex: 0 0 auto; flex-wrap: wrap; gap: 8px; padding: 14px 24px; border-top: 1px solid var(--line); background: var(--surface); }
+html body.sb-app .sb-preview-actions .btn { flex: 1 1 0; white-space: nowrap; }
+html body.sb-app .modal-content.sb-preview .sb-preview-scroll { overflow: visible; }
+@media (max-width: 1199.98px) {
+    html body.sb-app .sb-split-table--wide { grid-template-columns: minmax(0, 1fr); }
+    html body.sb-app .sb-split-table > .sb-preview { position: static; max-height: none; }
+    html body.sb-app .sb-split-table > .sb-preview .sb-preview-scroll { overflow: visible; }
+}
+@media (max-width: 767.98px) { html body.sb-app .sb-split-table > .sb-preview { display: none; } }
+
+/* Filter bar extras */
+html body.sb-app .sb-filter-field > label { display: block; margin-bottom: 6px; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+html body.sb-app .sb-filter-extra { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 14px; }
+
+/* Table cells: title + secondary line */
+html body.sb-app .sb-row-title { display: block; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
+html body.sb-app .sb-row-sub { display: block; margin-top: 2px; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+html body.sb-app .sb-list-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+
+/* Detail extras: inline meta with icons, match score, bullets, chips as list items */
+html body.sb-app .sb-inline-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+html body.sb-app .sb-score { flex: 0 0 auto; display: grid; justify-items: end; text-align: right; }
+html body.sb-app .sb-score-value { font-size: 36px; font-weight: 700; letter-spacing: -.03em; line-height: 1; color: var(--text); }
+html body.sb-app .sb-score-label { margin-top: 2px; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+html body.sb-app .sb-detail > .sb-preview-scroll > .sb-fields { margin-top: 18px; }
+html body.sb-app .sb-fields dt .bi { margin-right: 4px; color: var(--burgundy-text); }
+html body.sb-app .sb-block > h3 { margin: 0 0 8px; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+html body.sb-app .sb-block > p { margin: 0; font-size: 14px; line-height: 1.55; color: var(--text); overflow-wrap: anywhere; }
+html body.sb-app .sb-bullets { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; color: var(--text); }
+html body.sb-app .sb-bullets li::marker { color: var(--burgundy-text); }
+html body.sb-app ul.sb-chips { margin: 0; padding: 0; list-style: none; }
+html body.sb-app .sb-chips > li { padding: 4px 12px; border-radius: var(--r-pill); background: var(--burgundy-tint); color: var(--burgundy-tint-text); font-size: 12px; font-weight: 600; }
+html body.sb-app .sb-chip-level { font-weight: 500; opacity: .85; }
+
+/* KPI tiles: icon, count, label (summary rows on list pages) */
+html body.sb-app .sb-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap: 20px; }
+html body.sb-app .sb-kpi { display: grid; gap: 6px; align-content: start; margin: 0 !important; padding: 18px 20px; }
+html body.sb-app .sb-kpi > .bi { display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; background: var(--burgundy-tint); color: var(--burgundy-text); font-size: 18px; }
+html body.sb-app .sb-kpi-value { font-size: 32px; font-weight: 700; letter-spacing: -.02em; line-height: 1.05; color: var(--text); font-variant-numeric: tabular-nums; }
+html body.sb-app .sb-kpi-label { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+
+/* Section tabs (links with counts) use the pill tab look */
+html body.sb-app .sb-section-tabs { display: flex; flex-wrap: wrap; gap: 8px; border: 0 !important; margin-bottom: 16px; padding: 0; background: transparent; }
+html body.sb-app .sb-section-tab {
+    display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 8px 16px; border: 1px solid var(--line) !important; border-radius: var(--r-pill) !important;
+    background: var(--surface) !important; color: var(--text) !important; font-size: 13px; font-weight: 600; text-decoration: none !important; box-shadow: none;
+}
+html body.sb-app .sb-section-tab:hover { background: var(--surface-alt) !important; }
+html body.sb-app .sb-section-tab.active { background: var(--burgundy) !important; border-color: var(--burgundy) !important; color: var(--on-burgundy) !important; }
+html body.sb-app .sb-section-tab::after { display: none !important; }
+html body.sb-app .sb-tab-count { min-width: 22px; padding: 1px 7px; border-radius: var(--r-pill); background: var(--burgundy-tint); color: var(--burgundy-tint-text); font-size: 12px; font-weight: 700; text-align: center; }
+html body.sb-app .sb-section-tab.active .sb-tab-count { background: var(--on-burgundy); color: var(--burgundy); }
+
+/* Toolbar above a table (sort note + sort select) and footer tools */
+html body.sb-app .sb-toolbar-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+html body.sb-app .sb-toolbar-row .sb-note { display: flex; align-items: center; gap: 6px; }
+html body.sb-app .sb-inline-field { display: inline-flex; align-items: center; gap: 8px; margin: 0; font-size: 13px; font-weight: 600; color: var(--muted); }
+html body.sb-app .sb-inline-field .form-select { width: auto; min-height: 36px; }
+html body.sb-app .sb-footer-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+
+/* Icon buttons in table rows (View / Edit / Withdraw) */
+html body.sb-app .sb-icon-actions { display: inline-flex; align-items: center; gap: 6px; }
+html body.sb-app .sb-icon-btn {
+    display: inline-grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 1px solid var(--line); border-radius: 50%;
+    background: var(--surface); color: var(--text) !important; font-size: 16px; text-decoration: none !important; cursor: pointer;
+}
+html body.sb-app .sb-icon-btn:hover { background: var(--surface-alt); color: var(--burgundy-text) !important; }
+html body.sb-app .sb-icon-btn--danger { border-color: var(--burgundy-border); color: var(--burgundy-text) !important; }
+html body.sb-app .sb-icon-btn--danger:hover { background: var(--burgundy-tint); }
+@media (pointer: coarse) { html body.sb-app .sb-icon-btn { width: 44px; height: 44px; } }
+
+/* A card title inside a card body (rails) */
+html body.sb-app .sb-card-title { display: flex; align-items: center; gap: 12px; margin: 0; padding: 18px 24px; border-bottom: 1px solid var(--line); font-size: 16px; font-weight: 600; color: var(--text); }
+html body.sb-app .sb-card-title > .bi:first-child { display: inline-grid; place-items: center; flex: 0 0 38px; width: 38px; height: 38px; border-radius: 12px; background: var(--burgundy-tint); color: var(--burgundy-text); font-size: 18px; }
+
+/* Agenda items with a date tile (upcoming interviews) */
+html body.sb-app .sb-agenda-item { display: flex; align-items: flex-start; gap: 14px; padding: 14px 24px; border-bottom: 1px solid var(--line); color: var(--text) !important; text-decoration: none !important; }
+html body.sb-app .sb-agenda-item:hover { background: var(--surface-alt); }
+html body.sb-app .sb-agenda-main { display: grid; gap: 2px; min-width: 0; }
+html body.sb-app .sb-date-tile { flex: 0 0 52px; display: grid; justify-items: center; padding: 6px 0; border: 1px solid var(--burgundy-border); border-radius: 12px; background: var(--burgundy-tint); color: var(--burgundy-tint-text); }
+html body.sb-app .sb-date-month { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+html body.sb-app .sb-date-day { font-size: 20px; font-weight: 700; line-height: 1.1; }
+
+/* Empty states that start with a bare icon */
+html body.sb-app .sb-empty > .bi:first-child { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; background: var(--burgundy-tint); color: var(--burgundy-text); font-size: 20px; }
+html body.sb-app .card > .sb-empty:not(:first-child) { margin-top: 16px; }
+
+/* =========================================================================================
+   Stepper: numbered steps on a line; --sb-progress (0 to 1) fills the line. Each step also says
+   its state in text (visually hidden), so the state never depends on color alone.
+   States: is-done (burgundy), is-negative (black), is-pending (outline), is-current (ring).
+   ========================================================================================= */
+html body.sb-app .sb-stepper-wrap { margin: 0 0 22px; overflow-x: auto; padding-bottom: 4px; }
+html body.sb-app .sb-stepper { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); min-width: 440px; margin: 0; padding: 0; list-style: none; }
+html body.sb-app .sb-stepper::before, html body.sb-app .sb-stepper::after { content: ""; position: absolute; top: 16px; height: 2px; border-radius: var(--r-pill); }
+html body.sb-app .sb-stepper::before { left: 12.5%; right: 12.5%; background: var(--line); }
+html body.sb-app .sb-stepper::after { left: 12.5%; width: calc(75% * var(--sb-progress, 0)); background: var(--burgundy); }
+html body.sb-app .sb-step { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 6px; text-align: center; }
+html body.sb-app .sb-step-dot {
+    display: grid; place-items: center; width: 34px; height: 34px; border: 2px solid var(--line); border-radius: 50%;
+    background: var(--surface); color: var(--muted); font-size: 13px; font-weight: 700;
+}
+html body.sb-app .sb-step.is-done .sb-step-dot { border-color: var(--burgundy); background: var(--burgundy); color: var(--on-burgundy); }
+html body.sb-app .sb-step.is-negative .sb-step-dot { border-color: var(--solid-bg); background: var(--solid-bg); color: var(--solid-text); }
+html body.sb-app .sb-step.is-skipped .sb-step-dot { border-style: dashed; }
+html body.sb-app .sb-step.is-current .sb-step-dot { box-shadow: 0 0 0 5px color-mix(in srgb, var(--burgundy) 18%, transparent); border-color: var(--burgundy); }
+html body.sb-app .sb-step-label { font-size: 13px; font-weight: 600; color: var(--text); }
+html body.sb-app .sb-step.is-current .sb-step-label { color: var(--burgundy-text); font-weight: 700; }
+html body.sb-app .sb-step:is(.is-pending, .is-skipped) .sb-step-label { color: var(--muted); }
+html body.sb-app .sb-step-note { font-size: 12px; color: var(--muted); }
+
+/* Detail extras: quoted message, explanation callout, action row, spacing helpers */
+html body.sb-app .sb-quote { margin: 16px 0 0; padding: 12px 16px; border-radius: 12px; background: var(--surface-alt); color: var(--text); font-style: italic; overflow-wrap: anywhere; }
+html body.sb-app .sb-callout { margin-top: 20px; padding: 14px 16px; border: 1px solid var(--burgundy-border); border-radius: var(--r-panel); background: var(--burgundy-tint); }
+html body.sb-app .sb-callout h3 { margin: 0 0 4px; font-size: 14px; font-weight: 700; color: var(--text); }
+html body.sb-app .sb-callout p { margin: 0; font-size: 14px; color: var(--text); }
+html body.sb-app .sb-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+html body.sb-app .sb-actions form { margin: 0; }
+html body.sb-app .sb-mt { margin-top: 12px !important; }
+html body.sb-app .sb-mt-sm { margin-top: 8px !important; }
+html body.sb-app .sb-detail-meta.sb-inline-meta { font-weight: 600; color: var(--text); }
+
+/* A chip that already shows an icon does not also need the status dot. */
+html body.sb-app .sb-status:has(> .bi)::before { display: none !important; }

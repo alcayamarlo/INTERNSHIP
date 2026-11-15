@@ -154,6 +154,8 @@ it('lets a student log time and computes hours after breaks', function () {
 });
 
 it('runs the full OJT lifecycle through completion, clearance and certificate', function () {
+    // A Wednesday, so "yesterday" is a weekday and the week's report has the usual Mon-Fri rows.
+    $this->travelTo(CarbonImmutable::parse('2026-04-22 10:00:00', 'Asia/Manila'));
     $fixture = ojtFixture();
     $placement = ojtPlacement($fixture, 16);
 

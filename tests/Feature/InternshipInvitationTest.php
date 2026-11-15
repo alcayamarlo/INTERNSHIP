@@ -344,7 +344,7 @@ it('shows invitations as a split inbox with status tabs, a stepper, and days lef
         ->toContain('What happens when you accept')
         ->toContain('data-inv-action="accept"')
         ->toContain('data-inv-action="decline"')
-        ->toMatch('/<li class="ap-step is-pending is-current"\s+aria-current="step"\s*>\s*<span class="ap-step-dot" aria-hidden="true">2<\/span>\s*<span class="ap-step-label">Your response/');
+        ->toMatch('/<li class="sb-step is-pending is-current"\s+aria-current="step"\s*>\s*<span class="sb-step-dot" aria-hidden="true">2<\/span>\s*<span class="sb-step-label">Your response/');
 });
 
 it('moves an accepted invitation to Company review, then to the outcome once the company decides', function () {
@@ -355,13 +355,13 @@ it('moves an accepted invitation to Company review, then to the outcome once the
     $this->actingAs($student->user)->post(route('student.invitations.accept', $invitation))->assertRedirect();
 
     $panel = invitationPanel($this->get(route('student.invitations.index', ['tab' => 'accepted']))->assertOk()->getContent());
-    expect($panel)->toMatch('/aria-current="step"\s*>\s*<span class="ap-step-dot" aria-hidden="true">3<\/span>\s*<span class="ap-step-label">Company review/')
+    expect($panel)->toMatch('/aria-current="step"\s*>\s*<span class="sb-step-dot" aria-hidden="true">3<\/span>\s*<span class="sb-step-label">Company review/')
         ->not->toContain('data-inv-action="accept"')
         ->toContain('View application');
 
     InternshipApplication::sole()->update(['status' => ApplicationStatus::Accepted]);
     $panel = invitationPanel($this->get(route('student.invitations.index', ['tab' => 'accepted']))->getContent());
-    expect($panel)->toMatch('/aria-current="step"\s*>\s*<span class="ap-step-dot" aria-hidden="true">4<\/span>\s*<span class="ap-step-label">Outcome<\/span>\s*<span class="ap-step-note">Hired/');
+    expect($panel)->toMatch('/aria-current="step"\s*>\s*<span class="sb-step-dot" aria-hidden="true">4<\/span>\s*<span class="sb-step-label">Outcome<\/span>\s*<span class="sb-step-note">Hired/');
 });
 
 it('shows a lapsed invitation as Expired with Accept disabled, and an empty tab with a browse link', function () {

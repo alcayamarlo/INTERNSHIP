@@ -17,26 +17,26 @@
         ['bi-cash-coin', 'Allowance', $internship->allowance ? '₱'.number_format($internship->allowance, 2).'/mo' : 'Not stated'],
     ];
 @endphp
-<div class="ib-pv" data-preview-content data-preview-id="{{ $internship->id }}">
-    <div class="ib-pv-scroll">
-        <div class="ib-pv-head">
-            <div class="ib-pv-heading">
-                <h2 class="ib-pv-title">{{ $internship->title }}</h2>
-                <p class="ib-pv-company">
+<div class="sb-detail" data-preview-content data-preview-id="{{ $internship->id }}">
+    <div class="sb-preview-scroll">
+        <div class="sb-detail-head">
+            <div class="">
+                <h2 class="sb-detail-title">{{ $internship->title }}</h2>
+                <p class="sb-detail-meta sb-inline-meta">
                     <i class="bi bi-building" aria-hidden="true"></i>
                     <span>{{ $internship->employer->company_name }}</span>
                     @if($internship->employer?->isVerified())
-                        <span class="ib-verified" title="Verified by the school"><i class="bi bi-patch-check-fill" aria-hidden="true"></i> Verified</span>
+                        <span class="sb-status sb-status--success" title="Verified by the school"><i class="bi bi-patch-check-fill" aria-hidden="true"></i> Verified</span>
                     @endif
                 </p>
             </div>
-            <div class="ib-pv-score" aria-label="{{ $internship->match_percentage }}% match">
-                <span class="ib-pv-score-value">{{ $internship->match_percentage }}%</span>
-                <span class="ib-pv-score-label">match</span>
+            <div class="sb-score" aria-label="{{ $internship->match_percentage }}% match">
+                <span class="sb-score-value">{{ $internship->match_percentage }}%</span>
+                <span class="sb-score-label">match</span>
             </div>
         </div>
 
-        <dl class="ib-pv-facts">
+        <dl class="sb-fields">
             @foreach($facts as [$icon, $label, $value])
                 <div>
                     <dt><i class="bi {{ $icon }}" aria-hidden="true"></i> {{ $label }}</dt>
@@ -45,15 +45,15 @@
             @endforeach
         </dl>
 
-        <section class="ib-pv-section">
+        <section class="sb-block">
             <h3>Description</h3>
             <p>{!! nl2br(e($internship->description)) !!}</p>
         </section>
 
         @if($responsibilities->isNotEmpty())
-            <section class="ib-pv-section">
+            <section class="sb-block">
                 <h3>Responsibilities</h3>
-                <ul class="ib-pv-bullets">
+                <ul class="sb-bullets">
                     @foreach($responsibilities as $line)
                         <li>{{ $line }}</li>
                     @endforeach
@@ -62,21 +62,21 @@
         @endif
 
         @if($internship->requirementsList->count())
-            <section class="ib-pv-section">
+            <section class="sb-block">
                 <h3>Competency requirements</h3>
-                <ul class="ib-chips">
+                <ul class="sb-chips">
                     @foreach($internship->requirementsList as $req)
-                        <li class="ib-chip">{{ $req->requirement_name }} <span class="ib-chip-level">· {{ $levelLabel($req->required_level) }}</span></li>
+                        <li class="">{{ $req->requirement_name }} <span class="sb-chip-level">· {{ $levelLabel($req->required_level) }}</span></li>
                     @endforeach
                 </ul>
             </section>
         @endif
     </div>
 
-    <div class="ib-pv-actions" data-apply-slot>
+    <div class="sb-preview-actions" data-apply-slot>
         <a href="{{ route('student.internships.show', $internship) }}" class="btn btn-outline-primary">Full details</a>
         @if($applied)
-            <a href="{{ route('student.applications.index') }}" class="btn btn-outline-secondary ib-applied" aria-label="Already applied; view My Applications"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Applied · View application</a>
+            <a href="{{ route('student.applications.index') }}" class="btn btn-outline-secondary" aria-label="Already applied; view My Applications"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Applied · View application</a>
         @elseif($hasOjt ?? false)
             <span class="btn btn-outline-secondary disabled" aria-disabled="true" title="{{ \App\Services\ApplicationService::HAS_OJT_MESSAGE }}" data-has-ojt><i class="bi bi-lock-fill" aria-hidden="true"></i> You already have an OJT</span>
         @elseif($eligibilityReasons ?? [])

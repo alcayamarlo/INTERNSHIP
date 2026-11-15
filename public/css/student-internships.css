@@ -6,377 +6,41 @@
    ===================================================================== */
 
 /* ---------- Tokens (light theme from the design; dark theme reuses the app's tokens) ---------- */
-body.sb-app :is(.ib-page, .id-page, .ap-page, .ma-page) {
-    --ib-red: var(--burgundy);
-    --ib-red-deep: var(--burgundy);
-    --ib-ink: #1a1a1a;
-    --ib-muted: #636363;          /* 6.4:1 on white */
-    --ib-border: #e5e5e5;
-    --ib-surface: #FFFFFF;
-    --ib-pink: var(--on-burgundy);
-    --ib-pink-ink: var(--burgundy-text);       /* 7:1 on --ib-pink */
-    --ib-ok-bg: var(--surface-alt);
-    --ib-ok-ink: var(--text);
-    --ib-hover-shadow: var(--sb-hover-shadow, 0 10px 26px color-mix(in srgb, var(--burgundy) 8%, transparent)); /* the app-wide card hover (sb-motion.css) */
-    color: var(--ib-ink);
-}
-
-html[data-theme="dark"] body.sb-app :is(.ib-page, .id-page, .ap-page, .ma-page) {
-    --ib-red: var(--sb-brand);
-    --ib-red-deep: var(--sb-brand-deep, var(--burgundy));
-    --ib-ink: var(--sb-ink);
-    --ib-muted: var(--sb-muted);
-    --ib-border: var(--sb-border);
-    --ib-surface: var(--sb-surface);
-    --ib-pink: color-mix(in srgb, var(--burgundy-text) 16%, transparent);
-    --ib-pink-ink: var(--burgundy-text);
-    --ib-ok-bg: color-mix(in srgb, var(--solid-bg) 16%, transparent);
-    --ib-ok-ink: var(--text);
-    --ib-hover-shadow: 0 10px 26px rgba(0, 0, 0, .35);
-}
 
 /* Full width: 32px side padding comes from .sb-content; widen its cap for this page only */
-body.sb-app .sb-content:has(.ib-page, .id-page, .ap-page, .ma-page) {
-    max-width: 1700px;
-}
-
-body.sb-app .ib-page .sb-page-header {
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-body.sb-app .ib-page .sb-page-header h1 { color: var(--ib-ink); }
-body.sb-app .ib-page .sb-page-header p { margin-bottom: 0; color: var(--ib-muted); }
-body.sb-app .ib-page .ib-muted { color: var(--ib-muted); font-size: 13px; }
-body.sb-app .ib-page .ib-hint { margin: 6px 0 0; color: var(--ib-muted); font-size: 13px; }
 
 /* Buttons: the design's red, pill-shaped (the theme already rounds them) */
-body.sb-app :is(.ib-page, .id-page, .ap-page, .ma-page) .btn-primary {
-    --bs-btn-bg: var(--ib-red);
-    --bs-btn-border-color: var(--ib-red);
-    --bs-btn-hover-bg: var(--ib-red-deep);
-    --bs-btn-hover-border-color: var(--ib-red-deep);
-    --bs-btn-active-bg: var(--ib-red-deep);
-    --bs-btn-active-border-color: var(--ib-red-deep);
-}
-
-body.sb-app :is(.ib-page, .id-page, .ap-page, .ma-page) .btn-outline-primary {
-    --bs-btn-color: var(--ib-red-deep);
-    --bs-btn-border-color: var(--ib-red);
-    --bs-btn-hover-bg: var(--ib-red);
-    --bs-btn-hover-border-color: var(--ib-red);
-    --bs-btn-hover-color: #fff;
-    --bs-btn-border-radius: 999px;
-}
-
-body.sb-app :is(.ib-page, .id-page, .ap-page, .ma-page) .btn-outline-secondary {
-    --bs-btn-border-radius: 999px;
-}
 
 /* ---------- Cards ---------- */
-body.sb-app :is(.ib-page, .id-page, .ap-page, .ma-page) .ib-card {
-    border: 1px solid var(--ib-border);
-    border-radius: 16px;
-    background: var(--ib-surface);
-}
 
 /* ---------- Split view tokens ---------- */
-body.sb-app .ib-page {
-    --ib-thead: #FBF4F5;
-    --ib-row-hover: var(--sb-row-hover, #fafafa);
-    --ib-row-selected: #f7f7f7;
-    --ib-gray-pill: #F1F2F4;
-}
-
-html[data-theme="dark"] body.sb-app .ib-page {
-    --ib-thead: var(--sb-surface-raised);
-    --ib-row-hover: rgba(255, 255, 255, .04);
-    --ib-row-selected: color-mix(in srgb, var(--burgundy) 12%, transparent);
-    --ib-gray-pill: rgba(255, 255, 255, .08);
-}
 
 /* ---------- Filter bar: one row ---------- */
-body.sb-app .ib-page .ib-filterbar {
-    margin-bottom: 20px;
-    padding: 14px 18px;
-}
-
-body.sb-app .ib-page .ib-filter-fields {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(120px, .6fr) auto;
-    align-items: end;
-    gap: 12px;
-}
-
-body.sb-app .ib-page .ib-field { min-width: 0; }
-
-body.sb-app .ib-page .ib-field > label {
-    display: block;
-    margin-bottom: 5px;
-    color: var(--ib-muted);
-    font-size: 13px;
-    font-weight: 600;
-}
-
-body.sb-app .ib-page .ib-filterbar :is(.form-control, .form-select) { padding-block: 7px; font-size: 14px; }
-
-body.sb-app .ib-page .ib-filter-actions { display: flex; gap: 8px; }
-body.sb-app .ib-page .ib-filter-actions .btn { white-space: nowrap; }
-
-body.sb-app .ib-page .ib-filter-extra {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px 14px;
-    margin-top: 10px;
-    font-size: 14px;
-}
-
-body.sb-app .ib-page .ib-filter-extra .ib-hint { margin: 0; }
 
 /* ---------- Split view: table + 520px sticky preview ---------- */
-body.sb-app .ib-page .ib-split {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 520px;
-    align-items: start;
-    gap: 24px;
-}
-
-body.sb-app .ib-page .ib-list { min-width: 0; overflow: hidden; }
-body.sb-app .ib-page .ib-table { min-width: 760px; margin: 0; }
 
 /* Header row: small caps, muted, pale background (beats the shared pink table header) */
-body.sb-app .sb-content .ib-page .ib-table thead th {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--ib-border);
-    background: var(--ib-thead);
-    color: var(--ib-muted);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    white-space: nowrap;
-}
-
-body.sb-app .ib-page .ib-table td {
-    padding: 12px 16px;
-    border-color: var(--ib-border);
-    color: var(--ib-ink);
-    font-size: 14px;
-}
 
 /* Rows: hover and selected colours fade with the same .2s ease-out as every table row (sb-motion.css) */
-body.sb-app .ib-page .ib-row { cursor: pointer; }
-body.sb-app .ib-page .ib-row > td { transition: background-color .2s ease-out, box-shadow .2s ease-out; }
-body.sb-app .ib-page .ib-row:hover > td { background: var(--ib-row-hover); }
-body.sb-app .ib-page .ib-row.is-selected > td { background: var(--ib-row-selected); }
-body.sb-app .ib-page .ib-row.is-selected > td:first-child { box-shadow: inset 3px 0 0 var(--ib-red); }
-body.sb-app .ib-page .ib-row:focus-visible { outline: 2px solid color-mix(in srgb, var(--ib-red) 55%, transparent); outline-offset: -2px; }
-body.sb-app .ib-page .ib-table tbody tr:last-child > td { border-bottom: 0; }
-
-body.sb-app .ib-page .ib-row-title { display: block; color: var(--ib-ink); font-weight: 600; }
-body.sb-app .ib-page .ib-row-skills { display: block; margin-top: 2px; color: var(--ib-muted); font-size: 12.5px; }
 
 /* Pills */
-body.sb-app .ib-page .ib-mode {
-    padding: 2px 10px;
-    border-radius: 999px;
-    background: var(--ib-gray-pill);
-    color: var(--ib-muted);
-    font-size: 12.5px;
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-body.sb-app .ib-page .ib-match {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 3px 10px;
-    border-radius: 999px;
-    background: var(--ib-pink);
-    color: var(--ib-pink-ink);
-    font-size: 12.5px;
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-body.sb-app .ib-page .ib-match-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-
-body.sb-app .ib-page .ib-status { color: var(--ib-muted); font-size: 13px; white-space: nowrap; }
-
-body.sb-app .ib-page .ib-status--applied {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 3px 10px;
-    border-radius: 999px;
-    background: var(--ib-ok-bg);
-    color: var(--ib-ok-ink);
-    font-size: 12.5px;
-    font-weight: 700;
-}
-
-body.sb-app .ib-page .ib-verified {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 1px 8px;
-    border-radius: 999px;
-    background: var(--ib-ok-bg);
-    color: var(--ib-ok-ink);
-    font-size: 12px;
-    font-weight: 700;
-}
 
 /* Pagination footer */
-body.sb-app .ib-page .ib-list-footer {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 12px 16px;
-    border-top: 1px solid var(--ib-border);
-}
-
-body.sb-app .ib-page .ib-showing { margin: 0; color: var(--ib-muted); font-size: 13.5px; }
 
 /* ---------- Preview panel ---------- */
-body.sb-app .ib-page .ib-preview {
-    position: sticky;
-    top: 88px;
-    display: flex;
-    flex-direction: column;
-    max-height: calc(100vh - 104px);
-    overflow: hidden;
-}
-
-body.sb-app .ib-page .ib-pv { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; }
-body.sb-app .ib-page .ib-pv-scroll { padding: 20px 22px; overflow-y: auto; scrollbar-width: thin; }
-
-body.sb-app .ib-page .ib-pv-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-body.sb-app .ib-page .ib-pv-heading { min-width: 0; }
-
-body.sb-app .ib-page .ib-pv-title {
-    margin: 0;
-    color: var(--ib-ink);
-    font-size: 22px;
-    font-weight: 600;
-    line-height: 1.25;
-    overflow-wrap: anywhere;
-}
-
-body.sb-app .ib-page .ib-pv-company {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    margin: 6px 0 0;
-    color: var(--ib-muted);
-    font-size: 14px;
-}
-
-body.sb-app .ib-page .ib-pv-score { display: flex; flex: 0 0 auto; flex-direction: column; align-items: flex-end; }
-body.sb-app .ib-page .ib-pv-score-value { color: var(--ib-red); font-size: 34px; font-weight: 800; line-height: 1; letter-spacing: -.02em; }
-body.sb-app .ib-page .ib-pv-score-label { margin-top: 2px; color: var(--ib-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
-
-body.sb-app .ib-page .ib-pv-facts {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px 16px;
-    margin: 16px 0 0;
-    padding: 14px 0;
-    border-block: 1px solid var(--ib-border);
-}
-
-body.sb-app .ib-page .ib-pv-facts dt { color: var(--ib-muted); font-size: 12px; font-weight: 600; }
-body.sb-app .ib-page .ib-pv-facts dt > i { margin-right: 4px; color: var(--ib-red); }
-body.sb-app .ib-page .ib-pv-facts dd { margin: 2px 0 0; color: var(--ib-ink); font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
-
-body.sb-app .ib-page .ib-pv-section { margin-top: 16px; }
-body.sb-app .ib-page .ib-pv-section h3 { margin: 0 0 6px; color: var(--ib-ink); font-size: 14px; font-weight: 700; }
-body.sb-app .ib-page .ib-pv-section p { margin: 0; color: var(--ib-ink); font-size: 14px; line-height: 1.6; }
-body.sb-app .ib-page .ib-pv-bullets { margin: 0; padding-left: 1.2rem; color: var(--ib-ink); font-size: 14px; line-height: 1.6; }
-body.sb-app .ib-page .ib-pv-bullets li::marker { color: var(--ib-red); }
-
-body.sb-app .ib-page .ib-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
-
-body.sb-app .ib-page .ib-chip {
-    padding: 3px 10px;
-    border-radius: 999px;
-    background: var(--ib-pink);
-    color: var(--ib-pink-ink);
-    font-size: 12.5px;
-    font-weight: 600;
-}
-
-body.sb-app .ib-page .ib-chip-level { font-weight: 500; opacity: .85; }
-
-body.sb-app .ib-page .ib-pv-actions {
-    display: flex;
-    flex: 0 0 auto;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 14px 22px;
-    border-top: 1px solid var(--ib-border);
-    background: var(--ib-surface);
-}
-
-body.sb-app .ib-page .ib-pv-actions .btn { flex: 1 1 0; white-space: nowrap; }
-body.sb-app .ib-page .ib-applied > i { color: var(--ib-ok-ink); }
 
 /* Phone dialog version of the preview */
-body.sb-app .ib-page .ib-preview--modal { position: static; max-height: none; border-radius: 16px; }
-body.sb-app .ib-page .ib-preview--modal .ib-pv-scroll { overflow: visible; }
 
 /* ---------- Motion: reuses the app's existing values (sb-motion.css, skillbridge-ui.css) ----------
    Page load only (html.sb-intro): filter bar, table card and preview "rise" like every card
    (.4s, from 120ms, 60ms apart); table rows get the global rowIn automatically. */
-html.sb-intro body.sb-app .ib-page :is(.ib-filterbar, .ib-list, .ib-preview) {
-    animation: rise .4s var(--sb-motion-ease) 120ms backwards;
-}
-
-html.sb-intro body.sb-app .ib-page .ib-list { animation-delay: 180ms; }
-html.sb-intro body.sb-app .ib-page .ib-split > .ib-preview { animation-delay: 240ms; }
 
 /* Selecting another row: the new preview fades/slides in with the same "rise" keyframe,
    at the shared base speed used for in-page changes */
-body.sb-app .ib-page .ib-preview.is-changing > .ib-pv {
-    --rise-y: 8px;
-    animation: rise var(--sb-motion-base, 220ms) var(--sb-motion-ease) both;
-}
-
-/* ---------- Responsive ---------- */
-@media (max-width: 1399.98px) {
-    body.sb-app .ib-page .ib-filter-fields { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    body.sb-app .ib-page .ib-filter-actions .btn { flex: 1 1 0; }
-}
-
-/* Below 1200px the preview sits under the table */
-@media (max-width: 1199.98px) {
-    body.sb-app .ib-page .ib-split { grid-template-columns: minmax(0, 1fr); }
-    body.sb-app .ib-page .ib-split > .ib-preview { position: static; max-height: none; }
-    body.sb-app .ib-page .ib-split > .ib-preview .ib-pv-scroll { overflow: visible; }
-}
 
 /* Phones: the preview opens as a dialog; the table drops Location and Mode to fit */
 @media (max-width: 767.98px) {
-    body.sb-app .ib-page .ib-filter-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    body.sb-app .ib-page .ib-filter-actions { grid-column: 1 / -1; }
-    body.sb-app .ib-page .ib-split > .ib-preview { display: none; }
-    body.sb-app .ib-page .ib-table { min-width: 0; }
-    body.sb-app .ib-page .ib-table :is(th, td):is(:nth-child(3), :nth-child(4)) { display: none; }
-}
-
-@media (max-width: 575.98px) {
-    body.sb-app .ib-page .sb-page-header { align-items: flex-start; }
-    body.sb-app .ib-page .ib-filter-fields { grid-template-columns: minmax(0, 1fr); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    body.sb-app .ib-page * { animation: none !important; transition: none !important; }
-}
+    :nth-child(4)) { display: none; }}
 
 /* =====================================================================
    Student > Internship details (student/internships/show.blade.php)
@@ -489,12 +153,10 @@ body.sb-app .id-page .id-fact dd { margin: 2px 0 0; color: var(--ib-ink); font-s
 
 @container (max-width: 820px) {
     body.sb-app .id-page .id-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    body.sb-app .id-page .id-fact:last-child { grid-column: 1 / -1; }
-}
+    body.sb-app .id-page .id-fact:last-child { grid-column: 1 / -1; }}
 
 @container (max-width: 420px) {
-    body.sb-app .id-page .id-facts { grid-template-columns: minmax(0, 1fr); }
-}
+    body.sb-app .id-page .id-facts { grid-template-columns: minmax(0, 1fr); }}
 
 /* ---------- Content card ---------- */
 body.sb-app .id-page .id-content { padding: 24px; }
@@ -519,8 +181,7 @@ body.sb-app .id-page .id-two-col {
 body.sb-app .id-page .id-two-col.is-single { grid-template-columns: minmax(0, 1fr); }
 
 @container (max-width: 640px) {
-    body.sb-app .id-page .id-two-col { grid-template-columns: minmax(0, 1fr); }
-}
+    body.sb-app .id-page .id-two-col { grid-template-columns: minmax(0, 1fr); }}
 
 body.sb-app .id-page .id-section {
     margin-top: 24px;
@@ -702,17 +363,14 @@ body.sb-app .id-page .id-feedback[open] > summary::after { transform: rotate(180
 /* ---------- Responsive: under 1100px the right column moves below ---------- */
 @media (max-width: 1099.98px) {
     body.sb-app .id-page .id-layout { grid-template-columns: minmax(0, 1fr); }
-    body.sb-app .id-page .id-side { position: static; max-height: none; overflow: visible; }
-}
+    body.sb-app .id-page .id-side { position: static; max-height: none; overflow: visible; }}
 
 @media (max-width: 575.98px) {
     body.sb-app .id-page .id-title-row h1 { font-size: 24px; }
-    body.sb-app .id-page .id-content { padding: 18px; }
-}
+    body.sb-app .id-page .id-content { padding: 18px; }}
 
 @media (prefers-reduced-motion: reduce) {
-    body.sb-app .id-page * { animation: none !important; transition: none !important; }
-}
+    body.sb-app .id-page * { animation: none !important; transition: none !important; }}
 
 /* =====================================================================
    Student > Application details (student/internships/application-show.blade.php)
@@ -720,26 +378,6 @@ body.sb-app .id-page .id-feedback[open] > summary::after { transform: rotate(180
    and a sticky 400px column (next step, documents, employer, actions) on the right.
    Shares the tokens, buttons and .ib-card above.
    ===================================================================== */
-body.sb-app :is(.ap-page, .ma-page) {
-    --ap-soft: #FBF4F5;
-    /* Status colours: each is always paired with its text label */
-    --ap-applied-bg: var(--burgundy-tint);   --ap-applied-ink: var(--burgundy-text);
-    --ap-reviewed-bg: var(--burgundy-tint);  --ap-reviewed-ink: var(--burgundy-text);
-    --ap-interview-bg: var(--burgundy-tint); --ap-interview-ink: var(--burgundy-text);
-    --ap-accepted-bg: var(--surface-alt);  --ap-accepted-ink: var(--text);
-    --ap-rejected-bg: #ededed;  --ap-rejected-ink: var(--burgundy-text);
-    --ap-withdrawn-bg: #EEF0F3; --ap-withdrawn-ink: #575757;
-}
-
-html[data-theme="dark"] body.sb-app :is(.ap-page, .ma-page) {
-    --ap-soft: var(--sb-surface-raised);
-    --ap-applied-bg: color-mix(in srgb, var(--burgundy) 16%, transparent);   --ap-applied-ink: var(--burgundy-text);
-    --ap-reviewed-bg: color-mix(in srgb, var(--burgundy) 14%, transparent);  --ap-reviewed-ink: var(--burgundy-text);
-    --ap-interview-bg: color-mix(in srgb, var(--burgundy) 16%, transparent); --ap-interview-ink: var(--burgundy-text);
-    --ap-accepted-bg: color-mix(in srgb, var(--solid-bg) 16%, transparent);  --ap-accepted-ink: var(--text);
-    --ap-rejected-bg: color-mix(in srgb, var(--burgundy) 16%, transparent);  --ap-rejected-ink: var(--burgundy-text);
-    --ap-withdrawn-bg: rgba(255, 255, 255, .08); --ap-withdrawn-ink: #cccccc;
-}
 
 /* ---------- Status pill ---------- */
 body.sb-app .ap-page .ap-status {
@@ -934,12 +572,10 @@ body.sb-app .ap-page .ap-summary .ap-muted-value { color: var(--ib-muted); font-
 body.sb-app .ap-page .ap-summary-wide { grid-column: 1 / -1; }
 
 @container (max-width: 640px) {
-    body.sb-app .ap-page .ap-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
+    body.sb-app .ap-page .ap-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }}
 
 @container (max-width: 400px) {
-    body.sb-app .ap-page .ap-summary { grid-template-columns: minmax(0, 1fr); }
-}
+    body.sb-app .ap-page .ap-summary { grid-template-columns: minmax(0, 1fr); }}
 
 body.sb-app .ap-page .ap-letter { margin: 0; color: var(--ib-ink); font-size: 14.5px; line-height: 1.7; overflow-wrap: anywhere; }
 body.sb-app .ap-page .ap-empty { margin: 0; color: var(--ib-muted); font-size: 14px; }
@@ -1089,37 +725,26 @@ html.sb-intro body.sb-app .ap-page .ap-tl-item:nth-child(n + 5) { animation-dela
 /* ---------- Responsive: under 1100px the right column moves below ---------- */
 @media (max-width: 1099.98px) {
     body.sb-app .ap-page .ap-layout { grid-template-columns: minmax(0, 1fr); }
-    body.sb-app .ap-page .ap-side { position: static; max-height: none; overflow: visible; }
-}
+    body.sb-app .ap-page .ap-side { position: static; max-height: none; overflow: visible; }}
 
 @media (max-width: 575.98px) {
     body.sb-app .ap-page .ap-title-row h1 { font-size: 24px; }
     body.sb-app .ap-page .ap-stepper { padding: 18px 12px 16px; }
     body.sb-app .ap-page .ap-step-dot { width: 30px; height: 30px; font-size: 13px; }
     body.sb-app .ap-page .ap-steps::before,
-    body.sb-app .ap-page .ap-steps::after { top: 14px; }
+body.sb-app .ap-page .ap-steps::after { top: 14px; }
     body.sb-app .ap-page .ap-step-label { font-size: 12.5px; }
     body.sb-app .ap-page .ap-step-note { font-size: 11.5px; }
-    body.sb-app .ap-page .ap-card { padding: 18px; }
-}
+    body.sb-app .ap-page .ap-card { padding: 18px; }}
 
 @media (prefers-reduced-motion: reduce) {
     body.sb-app .ap-page *,
-    body.sb-app .ap-page *::before,
-    body.sb-app .ap-page *::after { animation: none !important; transition: none !important; }
-}
+body.sb-app .ap-page *::before,
+body.sb-app .ap-page *::after { animation: none !important; transition: none !important; }}
 
 /* ---------- Browse internships: live filtering (results swap in place) ----------
    While loading: the results dim slightly (the app's fast speed and easing).
    New results: the same "rise" used for the preview change. */
-body.sb-app .ib-page .ib-results-region { transition: opacity var(--sb-motion-fast, 140ms) var(--sb-ease, ease); }
-body.sb-app .ib-page .ib-results-region.is-loading { opacity: .55; pointer-events: none; }
-body.sb-app .ib-page .ib-results-region.is-changing > * { --rise-y: 8px; animation: rise var(--sb-motion-base, 220ms) var(--sb-motion-ease) both; }
-
-@media (prefers-reduced-motion: reduce) {
-    body.sb-app .ib-page .ib-results-region,
-    body.sb-app .ib-page .ib-results-region > * { animation: none !important; transition: none !important; }
-}
 
 /* =====================================================================
    Student > My Applications (student/internships/applications.blade.php)
@@ -1127,319 +752,30 @@ body.sb-app .ib-page .ib-results-region.is-changing > * { --rise-y: 8px; animati
    table + 380px upcoming interviews. Shares the tokens, buttons, .ib-card and
    the status palette above.
    ===================================================================== */
-body.sb-app .ma-page {
-    --ma-thead: #FBF4F5;
-    --ma-row-hover: var(--sb-row-hover, #fafafa);
-}
-
-html[data-theme="dark"] body.sb-app .ma-page {
-    --ma-thead: var(--sb-surface-raised);
-    --ma-row-hover: rgba(255, 255, 255, .04);
-}
-
-body.sb-app .ma-page .sb-page-header { align-items: center; margin-bottom: 20px; }
-body.sb-app .ma-page .sb-page-header h1 { color: var(--ib-ink); }
-body.sb-app .ma-page .sb-page-header p { margin-bottom: 0; color: var(--ib-muted); }
 
 /* ---------- Summary tiles ---------- */
-body.sb-app .ma-page .ma-tiles {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 16px;
-    margin-bottom: 20px;
-}
-
-body.sb-app .ma-page .ma-tile {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: 16px 18px;
-}
-
-body.sb-app .ma-page .ma-tile > i { position: absolute; top: 16px; right: 18px; color: var(--ib-red); font-size: 18px; }
-body.sb-app .ma-page .ma-tile-value { color: var(--ib-ink); font-size: 30px; font-weight: 700; line-height: 1.1; letter-spacing: -.02em; }
-body.sb-app .ma-page .ma-tile-label { color: var(--ib-muted); font-size: 13px; font-weight: 600; }
 
 /* ---------- Filter bar: one row ---------- */
-body.sb-app .ma-page .ma-filterbar { margin-bottom: 20px; padding: 14px 18px; }
-
-body.sb-app .ma-page .ma-filter-fields {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr)) auto;
-    align-items: end;
-    gap: 12px;
-}
-
-body.sb-app .ma-page .ma-field { min-width: 0; }
-body.sb-app .ma-page .ma-field > label { display: block; margin-bottom: 5px; color: var(--ib-muted); font-size: 13px; font-weight: 600; }
-body.sb-app .ma-page .ma-filterbar .form-control { padding-block: 7px; font-size: 14px; }
-body.sb-app .ma-page .ma-filter-actions { display: flex; gap: 8px; }
-body.sb-app .ma-page .ma-filter-actions .btn { white-space: nowrap; }
 
 /* ---------- Status tabs: the app's existing pill tabs (.sb-section-tab) ----------
    :not(.btn) beats the shared content-link colour so the active pill keeps white text. */
-body.sb-app .ma-page .ma-tabs { margin-bottom: 16px; }
-body.sb-app .ma-page a.sb-section-tab:not(.btn) { color: var(--sb-text-soft, var(--ib-ink)); text-decoration: none; }
-body.sb-app .ma-page a.sb-section-tab:not(.btn):hover { color: var(--ib-red-deep); text-decoration: none; }
-body.sb-app .ma-page a.sb-section-tab.active:not(.btn) { border-color: var(--ib-red); background: var(--ib-red); color: #fff; }
-
-body.sb-app .ma-page .ma-tab-count {
-    min-width: 22px;
-    padding: 0 7px;
-    border-radius: 999px;
-    background: var(--ib-pink);
-    color: var(--ib-pink-ink);
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 20px;
-    text-align: center;
-}
-
-body.sb-app .ma-page a.sb-section-tab.active .ma-tab-count { background: rgba(255, 255, 255, .25); color: #fff; }
 
 /* ---------- Two columns: table + 380px upcoming interviews ---------- */
-body.sb-app .ma-page .ma-split {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 380px;
-    align-items: start;
-    gap: 24px;
-}
-
-body.sb-app .ma-page .ma-list { min-width: 0; overflow: hidden; }
-
-body.sb-app .ma-page .ma-sortbar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px 16px;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--ib-border);
-}
-
-body.sb-app .ma-page .ma-sort-note { margin: 0; color: var(--ib-muted); font-size: 13px; }
-
-body.sb-app .ma-page .ma-sort-pill,
-body.sb-app .ma-page .ma-per-page {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0;
-    color: var(--ib-muted);
-    font-size: 13px;
-    font-weight: 600;
-}
-
-body.sb-app .ma-page :is(.ma-sort-pill, .ma-per-page) .form-select {
-    width: auto;
-    padding: 4px 32px 4px 12px;
-    border-radius: 999px;
-    color: var(--ib-ink);
-    font-size: 13px;
-    font-weight: 600;
-}
 
 /* Table */
-body.sb-app .ma-page .ma-table { min-width: 860px; margin: 0; }
-
-body.sb-app .sb-content .ma-page .ma-table thead th {
-    padding: 11px 16px;
-    border-bottom: 1px solid var(--ib-border);
-    background: var(--ma-thead);
-    color: var(--ib-muted);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    white-space: nowrap;
-}
-
-body.sb-app .ma-page .ma-table thead th[aria-sort] { color: var(--ib-red-deep); }
-body.sb-app .ma-page .ma-table td { padding: 12px 16px; border-color: var(--ib-border); color: var(--ib-ink); font-size: 14px; }
-body.sb-app .ma-page .ma-table tbody tr:last-child > td { border-bottom: 0; }
 
 /* Row hover: the same .2s ease-out colour fade as every table row */
-body.sb-app .ma-page .ma-row > td { transition: background-color .2s ease-out; }
-body.sb-app .ma-page .ma-row:hover > td { background: var(--ma-row-hover); }
-
-body.sb-app .ma-page a.ma-title { display: block; color: var(--ib-ink); font-weight: 600; text-decoration: none; }
-body.sb-app .ma-page a.ma-title:hover { color: var(--ib-red-deep); text-decoration: underline; }
-body.sb-app .ma-page .ma-company { display: block; margin-top: 2px; color: var(--ib-muted); font-size: 13px; }
-
-body.sb-app .ma-page .ma-match {
-    padding: 3px 10px;
-    border-radius: 999px;
-    background: var(--ib-pink);
-    color: var(--ib-pink-ink);
-    font-size: 12.5px;
-    font-weight: 700;
-}
 
 /* Status pill: coloured dot + text (same palette as Application Details) */
-body.sb-app .ma-page .ma-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 3px 10px;
-    border-radius: 999px;
-    font-size: 12.5px;
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-body.sb-app .ma-page .ma-status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-body.sb-app .ma-page .ma-status--applied { background: var(--ap-applied-bg); color: var(--ap-applied-ink); }
-body.sb-app .ma-page .ma-status--reviewed { background: var(--ap-reviewed-bg); color: var(--ap-reviewed-ink); }
-body.sb-app .ma-page .ma-status--interview { background: var(--ap-interview-bg); color: var(--ap-interview-ink); }
-body.sb-app .ma-page .ma-status--accepted { background: var(--ap-accepted-bg); color: var(--ap-accepted-ink); }
-body.sb-app .ma-page .ma-status--rejected { background: var(--ap-rejected-bg); color: var(--ap-rejected-ink); }
-body.sb-app .ma-page .ma-status--withdrawn { background: var(--ap-withdrawn-bg); color: var(--ap-withdrawn-ink); }
 
 /* Round icon buttons: the app's fast colour fade, plus the 2px hover lift and press used on buttons */
-body.sb-app .ma-page .ma-actions { display: inline-flex; gap: 6px; }
-
-body.sb-app .ma-page .ma-icon {
-    display: inline-grid;
-    place-items: center;
-    width: 34px;
-    height: 34px;
-    padding: 0;
-    border: 1px solid var(--ib-border);
-    border-radius: 50%;
-    background: var(--ib-surface);
-    color: var(--ib-muted);
-    font-size: 15px;
-    text-decoration: none;
-    cursor: pointer;
-    transition: color var(--sb-motion-fast, 140ms) var(--sb-ease, ease), border-color var(--sb-motion-fast, 140ms) var(--sb-ease, ease), background-color var(--sb-motion-fast, 140ms) var(--sb-ease, ease), transform .2s ease-out;
-}
-
-body.sb-app .ma-page .ma-icon:hover { border-color: var(--ib-red); color: var(--ib-red-deep); transform: translateY(-2px); }
-body.sb-app .ma-page .ma-icon:active { transform: scale(.97); }
-body.sb-app .ma-page .ma-icon--danger:hover { background: var(--ib-pink); }
 
 /* Footer */
-body.sb-app .ma-page .ma-footer {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 12px 16px;
-    border-top: 1px solid var(--ib-border);
-}
-
-body.sb-app .ma-page .ma-showing { margin: 0; color: var(--ib-muted); font-size: 13.5px; }
-body.sb-app .ma-page .ma-footer-right { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
 
 /* ---------- Upcoming interviews ---------- */
-body.sb-app .ma-page .ma-interviews { padding: 18px; }
-
-body.sb-app .ma-page .ma-card-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0 0 12px;
-    color: var(--ib-ink);
-    font-size: 16px;
-    font-weight: 700;
-}
-
-body.sb-app .ma-page .ma-card-title > i { color: var(--ap-interview-ink); }
-
-body.sb-app .ma-page a.ma-interview {
-    display: flex;
-    gap: 12px;
-    padding: 12px 0;
-    border-top: 1px solid var(--ib-border);
-    color: var(--ib-ink);
-    text-decoration: none;
-}
-
-body.sb-app .ma-page a.ma-interview:first-of-type { padding-top: 0; border-top: 0; }
-body.sb-app .ma-page a.ma-interview:hover .ma-interview-title { color: var(--ib-red-deep); text-decoration: underline; }
-
-body.sb-app .ma-page .ma-date {
-    display: flex;
-    flex: 0 0 52px;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 56px;
-    border-radius: 12px;
-    background: var(--ap-interview-bg);
-    color: var(--ap-interview-ink);
-}
-
-body.sb-app .ma-page .ma-date-month { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
-body.sb-app .ma-page .ma-date-day { font-size: 22px; font-weight: 800; line-height: 1; }
-body.sb-app .ma-page .ma-interview-main { display: flex; flex-direction: column; min-width: 0; }
-body.sb-app .ma-page .ma-interview-title { color: var(--ib-ink); font-size: 14.5px; font-weight: 600; }
-body.sb-app .ma-page .ma-interview-meta { color: var(--ib-muted); font-size: 13px; }
-
-body.sb-app .ma-page .ma-interviews-empty {
-    padding: 20px 12px;
-    border-radius: 12px;
-    background: var(--ma-thead);
-    color: var(--ib-muted);
-    font-size: 13.5px;
-    text-align: center;
-}
-
-body.sb-app .ma-page .ma-interviews-empty > i { display: block; margin-bottom: 6px; color: var(--ib-muted); font-size: 24px; }
-body.sb-app .ma-page .ma-interviews-empty strong { color: var(--ib-ink); }
 
 /* ---------- Motion: reuses the app's existing values ----------
    Page load only (html.sb-intro): tiles, filter bar, tabs, table card and interviews card
    "rise" like every card (.4s, from 120ms, 60ms apart); table rows get the global rowIn.
    Tab, filter, sort or page change: the results dim while loading (fast speed) and the new
    results "rise" in at the base speed, the same as the Browse Internships preview change. */
-html.sb-intro body.sb-app .ma-page :is(.ma-tile, .ma-filterbar, .ma-tabs, .ma-list, .ma-interviews) {
-    animation: rise .4s var(--sb-motion-ease) 120ms backwards;
-}
-
-html.sb-intro body.sb-app .ma-page .ma-tile:nth-child(2) { animation-delay: 180ms; }
-html.sb-intro body.sb-app .ma-page .ma-tile:nth-child(3) { animation-delay: 240ms; }
-html.sb-intro body.sb-app .ma-page .ma-tile:nth-child(4) { animation-delay: 300ms; }
-html.sb-intro body.sb-app .ma-page .ma-tile:nth-child(5) { animation-delay: 360ms; }
-html.sb-intro body.sb-app .ma-page .ma-filterbar { animation-delay: 300ms; }
-html.sb-intro body.sb-app .ma-page .ma-tabs { animation-delay: 360ms; }
-html.sb-intro body.sb-app .ma-page .ma-list { animation-delay: 420ms; }
-html.sb-intro body.sb-app .ma-page .ma-interviews { animation-delay: 480ms; }
-
-body.sb-app .ma-page .ma-results { transition: opacity var(--sb-motion-fast, 140ms) var(--sb-ease, ease); }
-body.sb-app .ma-page .ma-results.is-loading { opacity: .55; pointer-events: none; }
-body.sb-app .ma-page .ma-results.is-changing :is(.ma-list, .ma-interviews) { --rise-y: 8px; animation: rise var(--sb-motion-base, 220ms) var(--sb-motion-ease) both; }
-
-/* ---------- Responsive ---------- */
-@media (max-width: 1399.98px) {
-    body.sb-app .ma-page .ma-filter-fields { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    body.sb-app .ma-page .ma-filter-actions .btn { flex: 1 1 0; }
-}
-
-/* Below 1200px the interviews card moves under the table */
-@media (max-width: 1199.98px) {
-    body.sb-app .ma-page .ma-split { grid-template-columns: minmax(0, 1fr); }
-    body.sb-app .ma-page .ma-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
-
-@media (max-width: 767.98px) {
-    body.sb-app .ma-page .ma-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    body.sb-app .ma-page .ma-filter-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    body.sb-app .ma-page .ma-filter-actions { grid-column: 1 / -1; }
-}
-
-/* Phones: rows become stacked cards (the app's .sb-table-stack) */
-@media (max-width: 575.98px) {
-    body.sb-app .ma-page .ma-filter-fields { grid-template-columns: minmax(0, 1fr); }
-    body.sb-app .ma-page .ma-table { min-width: 0; }
-    body.sb-app .ma-page .ma-table tbody { padding: 12px; }
-    body.sb-app .ma-page .ma-table td.sb-stack-block::before { display: none; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    body.sb-app .ma-page *,
-    body.sb-app .ma-page *::before,
-    body.sb-app .ma-page *::after { animation: none !important; transition: none !important; }
-}

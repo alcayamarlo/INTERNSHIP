@@ -61,28 +61,28 @@
     $leftText = $daysLeft ? $daysLeft.' '.\Illuminate\Support\Str::plural('day', $daysLeft).' left'
         : ($hoursLeft ? $hoursLeft.' '.\Illuminate\Support\Str::plural('hour', $hoursLeft).' left' : null);
 @endphp
-<div class="inv-detail-inner" data-inv-detail="{{ $invitation->id }}">
-    <div class="inv-stepper">
-        <ol class="ap-steps" style="--ap-progress: {{ round($progress, 3) }}" aria-label="Invitation progress">
+<div class="sb-detail" data-inv-detail="{{ $invitation->id }}">
+    <div class="sb-stepper-wrap">
+        <ol class="sb-stepper" style="--sb-progress: {{ round($progress, 3) }}" aria-label="Invitation progress">
             @foreach($steps as $index => $step)
-                <li class="ap-step is-{{ $step['state'] }} {{ $index === $current ? 'is-current' : '' }}" @if($index === $current) aria-current="step" @endif>
-                    <span class="ap-step-dot" aria-hidden="true">{{ $index + 1 }}</span>
-                    <span class="ap-step-label">{{ $step['label'] }}</span>
-                    <span class="ap-step-note">{{ $step['note'] }}</span>
+                <li class="sb-step is-{{ $step['state'] }} {{ $index === $current ? 'is-current' : '' }}" @if($index === $current) aria-current="step" @endif>
+                    <span class="sb-step-dot" aria-hidden="true">{{ $index + 1 }}</span>
+                    <span class="sb-step-label">{{ $step['label'] }}</span>
+                    <span class="sb-step-note">{{ $step['note'] }}</span>
                     <span class="visually-hidden">, {{ $index === $current ? 'current step' : $stateText[$step['state']] }}</span>
                 </li>
             @endforeach
         </ol>
     </div>
 
-    <div class="inv-head">
-        <h2 class="inv-title">{{ $internship->title }}</h2>
-        <span class="ap-status ap-status--{{ $pillClass[$display->value] }}">{{ $display->label() }}</span>
+    <div class="sb-detail-head">
+        <h2 class="sb-detail-title">{{ $internship->title }}</h2>
+        <x-status-badge :status="$display->value" :label="$display->label()" />
     </div>
-    <p class="inv-company">{{ $employer->company_name }} <x-verified-badge :employer="$employer" /></p>
-    <p class="inv-meta">{{ $internship->location ?: 'Location not set' }}@if($internship->work_setup) · {{ $internship->work_setup->label() }}@endif</p>
+    <p class="sb-detail-meta sb-inline-meta">{{ $employer->company_name }} <x-verified-badge :employer="$employer" /></p>
+    <p class="sb-detail-meta">{{ $internship->location ?: 'Location not set' }}@if($internship->work_setup) · {{ $internship->work_setup->label() }}@endif</p>
 
-    <p class="inv-dates">
+    <p class="sb-note sb-mt">
         Invited {{ $invitedAt->format('M d, Y h:i A') }}
         @if($display === InvitationStatus::Pending)
             · <span data-expires="{{ $invitation->expires_at->toIso8601String() }}">Expires {{ $expiresAt->format('M d, Y h:i A') }}
@@ -95,16 +95,16 @@
     </p>
 
     @if($invitation->message)
-        <blockquote class="inv-message">{{ $invitation->message }}</blockquote>
+        <blockquote class="sb-quote">{{ $invitation->message }}</blockquote>
     @endif
 
-    <section class="inv-explain">
+    <section class="sb-callout">
         <h3>What happens when you accept</h3>
         <p>Accepting applies you to this internship. Your profile and latest resume are sent to {{ $employer->company_name }},
             and you can then message the company. The company reviews your application and tells you the outcome.</p>
     </section>
 
-    <div class="inv-actions">
+    <div class="sb-actions">
         <a href="{{ route('student.internships.show', $internship) }}" class="btn btn-outline-secondary">View internship</a>
         @if($invitation->isPending() && ($hasOjt ?? false))
             {{-- One OJT per student: accepting would apply, so it is not offered once placed. Declining still works. --}}
@@ -130,8 +130,8 @@
         @endif
     </div>
     @if($invitation->isPending() && ($hasOjt ?? false))
-        <p class="inv-hint" data-has-ojt><i class="bi bi-lock-fill" aria-hidden="true"></i> {{ \App\Services\ApplicationService::HAS_OJT_MESSAGE }} <a href="{{ route('student.ojt.index') }}">Go to My OJT</a></p>
+        <p class="sb-note sb-mt-sm" data-has-ojt><i class="bi bi-lock-fill" aria-hidden="true"></i> {{ \App\Services\ApplicationService::HAS_OJT_MESSAGE }} <a href="{{ route('student.ojt.index') }}">Go to My OJT</a></p>
     @elseif($invitation->isPending() && ! $hasResume && $display !== InvitationStatus::Expired)
-        <p class="inv-hint">Generate your <a href="{{ route('student.resume.index') }}">resume</a> first to accept.</p>
+        <p class="sb-note sb-mt-sm">Generate your <a href="{{ route('student.resume.index') }}">resume</a> first to accept.</p>
     @endif
 </div>

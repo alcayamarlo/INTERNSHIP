@@ -2,11 +2,6 @@
 
 @section('title', 'Invitations')
 
-@push('styles')
-<link rel="stylesheet" href="{{ asset('css/student-internships.css') }}?v={{ @filemtime(public_path('css/student-internships.css')) }}">
-<link rel="stylesheet" href="{{ asset('css/student-invitations.css') }}?v={{ @filemtime(public_path('css/student-invitations.css')) }}">
-@endpush
-
 @section('content')
 @use('App\Enums\InvitationStatus')
 @php
@@ -32,7 +27,7 @@
     $detailData = ['displayStatus' => $displayStatus, 'pillClass' => $pillClass, 'hasResume' => $hasResume, 'hasOjt' => $hasOjt ?? false];
 @endphp
 
-<div class="inv-page sbx ib-page ap-page" id="invitationsPage"
+<div class="sb-dash sbx" id="invitationsPage"
     data-active-tab="{{ $activeTab }}"
     data-selected-id="{{ $selected?->id }}"
     data-accepted-message="{{ \App\Services\InvitationService::ACCEPTED_MESSAGE }}"
@@ -47,7 +42,7 @@
     </div>
 
     <div class="sbx-split sb-layout-2">
-        <section class="ib-card card sbx-list-card" aria-label="Your invitations">
+        <section class="card sbx-list-card" aria-label="Your invitations">
             <div class="sbx-tabs" role="group" aria-label="Invitation status" data-inv-swap="tabs">
                 @foreach($tabs as $key => $label)
                     <button type="button" class="sb-section-tab sbx-tab {{ $key === $activeTab ? 'active' : '' }}"
@@ -69,7 +64,7 @@
                                     <span class="sbx-row-title">{{ $invitation->internship->title }}</span>
                                     <span class="sbx-row-meta">{{ $invitation->internship->employer->company_name }} · {{ $invitation->created_at->timezone('Asia/Manila')->format('M j') }}</span>
                                 </span>
-                                <span class="ap-status ap-status--{{ $pillClass[$display->value] }}">{{ $display->label() }}</span>
+                                <x-status-badge :status="$display->value" :label="$display->label()" />
                             </button>
                         </li>
                     @endforeach
@@ -85,7 +80,7 @@
             </div>
         </section>
 
-        <section class="ib-card card sbx-detail" id="invDetailPanel" aria-label="Invitation details">
+        <section class="card sbx-detail" id="invDetailPanel" aria-label="Invitation details">
             <div class="sbx-detail-body" data-inv-detail-body>
                 @if($selected)
                     @include('student.invitations.partials.detail', ['invitation' => $selected, ...$detailData])
@@ -166,13 +161,13 @@
         body.replaceChildren((template || document.getElementById('invDetailPlaceholder')).content.cloneNode(true));
         updateExpiry();
 
-        const steps = body.querySelector('.ap-steps');
+        const steps = body.querySelector('.sb-stepper');
         if (progressFrom !== null && steps && !reduceMotion) {
             // After Accept/Decline: the line moves from the old step to the new one, and the new step rings.
-            const target = steps.style.getPropertyValue('--ap-progress');
-            steps.style.setProperty('--ap-progress', progressFrom);
-            steps.querySelector('.ap-step.is-current')?.classList.add('is-new');
-            requestAnimationFrame(() => requestAnimationFrame(() => steps.style.setProperty('--ap-progress', target)));
+            const target = steps.style.getPropertyValue('--sb-progress');
+            steps.style.setProperty('--sb-progress', progressFrom);
+            steps.querySelector('.sb-step.is-current')?.classList.add('is-new');
+            requestAnimationFrame(() => requestAnimationFrame(() => steps.style.setProperty('--sb-progress', target)));
         } else if (animate) {
             replay(panel);
         }
@@ -274,7 +269,7 @@
         button.setAttribute('aria-busy', 'true');
         button.innerHTML = '<span class="sb-submit-spinner" aria-hidden="true"></span>Working…';
         const id = form.dataset.invId;
-        const progressFrom = body.querySelector('.ap-steps')?.style.getPropertyValue('--ap-progress') ?? null;
+        const progressFrom = body.querySelector('.sb-stepper')?.style.getPropertyValue('--sb-progress') ?? null;
 
         try {
             let { response, doc } = await fetchPage(form.action, { method: 'POST', body: new FormData(form) });
