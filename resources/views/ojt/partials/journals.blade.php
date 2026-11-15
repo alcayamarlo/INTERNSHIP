@@ -44,6 +44,14 @@
                 @if($entry->actions_taken)<div class="small mt-1"><strong>Actions taken:</strong> {!! nl2br(e($entry->actions_taken)) !!}</div>@endif
                 @if($entry->learnings)<div class="small mt-1"><strong>Learning insights:</strong> {!! nl2br(e($entry->learnings)) !!}</div>@endif
                 @if($entry->accomplishments)<div class="small mt-1"><strong>Accomplishments:</strong> {!! nl2br(e($entry->accomplishments)) !!}</div>@endif
+                @if(! empty($entry->header_overrides))
+                    @php $headerLabels = ['company' => 'Company / Agency', 'supervisor_name' => "Supervisor's Name", 'designation' => 'Designation', 'period_of_evaluation' => 'Period of Evaluation', 'inclusive_dates' => 'Inclusive Dates']; @endphp
+                    <div class="small mt-2 text-muted"><i class="bi bi-pencil-square" aria-hidden="true"></i> Changed on this report only:
+                        @foreach($entry->header_overrides as $field => $change)
+                            <span class="d-block ms-3">{{ $headerLabels[$field] ?? $field }}: “{{ $change['value'] ?? '' }}” (default “{{ $change['default'] ?? '' }}”) by {{ $change['by_name'] ?? 'the student' }}@if(! empty($change['at'])), {{ \Carbon\Carbon::parse($change['at'])->timezone('Asia/Manila')->format('M j, Y g:i A') }}@endif</span>
+                        @endforeach
+                    </div>
+                @endif
 
                 @if($entry->isCertified())
                     <div class="small mt-2 text-muted"><i class="bi bi-patch-check" aria-hidden="true"></i> Certified true and correct by {{ $entry->reviewer?->name ?? 'the supervisor' }}@if($entry->reviewed_at) on {{ $entry->reviewed_at->timezone('Asia/Manila')->format('F j, Y') }}@endif.</div>

@@ -258,6 +258,7 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             Route::post('/ojt/{placement}/attendance', [StudentOjtController::class, 'storeAttendance'])->name('ojt.attendance.store');
             Route::delete('/ojt/{placement}/attendance/{attendanceLog}', [StudentOjtController::class, 'destroyAttendance'])->name('ojt.attendance.destroy');
             Route::post('/ojt/{placement}/journals', [StudentOjtController::class, 'storeJournal'])->name('ojt.journals.store');
+            Route::patch('/ojt/{placement}/details', [StudentOjtController::class, 'updateDetails'])->name('ojt.details.update');
             Route::delete('/ojt/{placement}/journals/{journalEntry}', [StudentOjtController::class, 'destroyJournal'])->name('ojt.journals.destroy');
             Route::post('/ojt/appraisals/{appraisal}/rating', [AppraisalController::class, 'submitSelf'])->name('ojt.appraisals.self');
             Route::post('/ojt/appraisals/{appraisal}/comment', [AppraisalController::class, 'submitStudentComment'])->name('ojt.appraisals.comment');

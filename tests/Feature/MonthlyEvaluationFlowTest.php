@@ -34,6 +34,7 @@ function mePlacement(string $start = '2026-02-02', ?string $end = null, string $
     $placement = Placement::create([
         'application_id' => $application->id, 'student_id' => $student->id, 'employer_id' => $employer->id,
         'internship_id' => $internship->id, 'start_date' => $start, 'end_date' => $end, 'required_hours' => 500, 'status' => $status,
+        'department' => 'IT Department', // the printed Designation
     ]);
 
     return compact('placement', 'studentUser', 'employerUser', 'coordinatorUser', 'institution');

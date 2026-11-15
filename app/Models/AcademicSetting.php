@@ -31,6 +31,7 @@ class AcademicSetting extends Model
         'required_ojt_hours',
         'evaluation_period_labels',
         'journal_due_days',
+        'ojt_departments',
     ];
 
     protected function casts(): array
@@ -43,6 +44,7 @@ class AcademicSetting extends Model
             'require_major_subjects_passed' => 'boolean',
             'evaluation_period_labels' => 'array',
             'journal_due_days' => 'integer',
+            'ojt_departments' => 'array',
         ];
     }
 
@@ -63,6 +65,29 @@ class AcademicSetting extends Model
     public function evaluationPeriodLabelFor(int $month): string
     {
         return $this->evaluationPeriodLabels()[$month] ?: Carbon::create(2000, $month, 1)->format('F');
+    }
+
+    /** Starting list for the "Designation" dropdown until the admin saves their own. */
+    public const DEFAULT_OJT_DEPARTMENTS = [
+        'IT Department',
+        'Administrative Department',
+        'Finance Department',
+        'Human Resources Department',
+        'Marketing Department',
+        'Operations Department',
+    ];
+
+    /**
+     * The "Designation" dropdown on every OJT form, so a department is always spelled the same way.
+     *
+     * @return list<string>
+     */
+    public function ojtDepartments(): array
+    {
+        $saved = is_array($this->ojt_departments) ? $this->ojt_departments : [];
+        $list = collect($saved)->map(fn ($name) => trim((string) $name))->filter()->unique()->values()->all();
+
+        return $list !== [] ? $list : self::DEFAULT_OJT_DEPARTMENTS;
     }
 
     public static function current(): self

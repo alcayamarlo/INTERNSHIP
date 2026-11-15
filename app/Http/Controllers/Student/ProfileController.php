@@ -2,36 +2,37 @@
 
 namespace App\Http\Controllers\Student;
 
+use App\Enums\AwardLevel;
+use App\Enums\PortfolioCategory;
+use App\Enums\PortfolioType;
+use App\Enums\SkillLevel;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Profile\StudentProfileRequest;
-use App\Enums\PortfolioType;
-use App\Enums\PortfolioCategory;
-use App\Models\Certificate;
-use App\Models\DeploymentRequirement;
-use App\Enums\AwardLevel;
-use App\Enums\SkillLevel;
 use App\Models\AcademicSetting;
+use App\Models\Certificate;
 use App\Models\CharacterReference;
-use App\Models\StudentAward;
-use App\Models\StudentSkill;
+use App\Models\DeploymentRequirement;
 use App\Models\Portfolio;
 use App\Models\Program;
 use App\Models\Resume;
 use App\Models\Student;
+use App\Models\StudentAward;
+use App\Models\StudentSkill;
+use App\Services\AcademicCalendar;
 use App\Services\ActivityLogService;
 use App\Services\FileUploadService;
 use App\Services\ImageProcessor;
 use App\Services\ResumeBuilderService;
-use App\Services\AcademicCalendar;
 use App\Support\Avatar;
 use App\Support\PrivacyConsent;
 use App\Support\StudentIdFormat;
+use App\Support\UploadDisks;
 use App\View\Presenters\PortfolioItemPresenter;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use App\Support\UploadDisks;
 
 class ProfileController extends Controller
 {
@@ -43,6 +44,7 @@ class ProfileController extends Controller
         private FileUploadService $fileUpload,
         private ResumeBuilderService $resumeBuilder
     ) {}
+
     /**
      * Display the student's profile.
      */
@@ -197,7 +199,7 @@ class ProfileController extends Controller
             'academicDefaults' => $academicDefaults,
             'semesterOptions' => $academicCalendar->termOptions($academicSettings),
             'monthOptions' => collect(range(1, 12))
-                ->mapWithKeys(fn (int $month) => [$month => \Carbon\CarbonImmutable::create(2024, $month, 1)->format('F')]),
+                ->mapWithKeys(fn (int $month) => [$month => CarbonImmutable::create(2024, $month, 1)->format('F')]),
             'careerInfo' => $student->only(['preferred_internship_field', 'preferred_work_setup', 'preferred_location', 'expected_graduation']),
             'portfolioItems' => $portfolioItems,
             'deploymentRequirements' => $deploymentRequirements,
@@ -235,6 +237,12 @@ class ProfileController extends Controller
 
         $previousPicture = $student->profile_picture;
         $newPicture = null;
+        // Name, student ID and college are printed on OJT forms: each change is logged with the old and new value.
+        $identityBefore = [
+            'name' => $user->name,
+            'student_id_number' => $student->student_id_number,
+            'department' => $student->department,
+        ];
 
         if ($request->hasFile('profile_picture')) {
             $newPicture = app(ImageProcessor::class)->storeSquare(
@@ -284,6 +292,13 @@ class ProfileController extends Controller
             }
 
             throw $exception;
+        }
+
+        $identityAfter = ['name' => $user->fresh()->name, 'student_id_number' => $student->fresh()->student_id_number, 'department' => $student->fresh()->department];
+        foreach ($identityBefore as $field => $old) {
+            if ((string) $old !== (string) $identityAfter[$field]) {
+                $this->activityLog->log($user, 'student_identity_changed', ['field' => $field, 'old' => $old, 'new' => $identityAfter[$field]]);
+            }
         }
 
         // Only a photo that was actually replaced is deleted; saving a tab without a photo keeps it.
@@ -454,7 +469,7 @@ class ProfileController extends Controller
         ];
     }
 
-    public function updatePicture(\Illuminate\Http\Request $request, ImageProcessor $images)
+    public function updatePicture(Request $request, ImageProcessor $images)
     {
         $request->validate(['profile_picture' => ImageProcessor::rules()], ImageProcessor::messages('profile_picture'));
         $student = Auth::user()->student()->firstOrFail();
@@ -462,7 +477,7 @@ class ProfileController extends Controller
         $newPicture = $images->storeSquare($request->file('profile_picture'), 'profile_picture', 'profiles/students', UploadDisks::public(), self::PROFILE_PHOTO_SIZE);
 
         try {
-            DB::transaction(function () use ($student, $newPicture, $previousPicture) {
+            DB::transaction(function () use ($student, $newPicture) {
                 $student->update(['profile_picture' => $newPicture]);
             });
         } catch (\Throwable $exception) {
@@ -490,7 +505,7 @@ class ProfileController extends Controller
     /**
      * Delete the profile picture ("Remove photo").
      */
-    public function deleteProfilePicture(\Illuminate\Http\Request $request)
+    public function deleteProfilePicture(Request $request)
     {
         $student = Auth::user()->student()->firstOrFail();
         $previousPicture = $student->profile_picture;

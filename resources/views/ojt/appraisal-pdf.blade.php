@@ -33,8 +33,8 @@
 <body>
 @php
     use App\Models\Appraisal;
-    $student = $placement?->student;
-    $supervisorName = $appraisal->supervisor?->name ?? $placement?->employer?->contact_person;
+    // $info: the trainee details frozen when the student submitted, or the current ones (App\Services\OjtDocumentData).
+    $supervisorName = $info['supervisor_name'];
     $columns = ['self', 'supervisor', 'adviser'];
 @endphp
 
@@ -48,16 +48,16 @@
 
 <table class="info">
     <tr>
-        <td class="label">Name of Trainee</td><td class="value">: {{ $student?->user?->name }}</td>
+        <td class="label">Name of Trainee</td><td class="value">: {{ $info['full_name'] }}</td>
         <td class="label">Period of Evaluation</td><td class="value">: <span class="period">{{ $appraisal->period_label }}</span></td>
     </tr>
     <tr>
-        <td class="label">Company / Agency</td><td class="value">: {{ $placement?->employer?->company_name }}</td>
+        <td class="label">Company / Agency</td><td class="value">: {{ $info['company'] }}</td>
         <td class="label">Inclusive Dates</td><td class="value">: {{ $appraisal->inclusiveDates() }}</td>
     </tr>
     <tr>
         <td class="label">Supervisor's Name</td><td class="value">: {{ $supervisorName }}</td>
-        <td class="label">Designation</td><td class="value">: {{ $placement?->getAttribute('department') }}</td>
+        <td class="label">Designation</td><td class="value">: {{ $info['designation'] }}</td>
     </tr>
 </table>
 
@@ -110,7 +110,7 @@
 <table class="certify">
     <tr>
         <td style="width: 140px;">Certified True and Correct&nbsp;&nbsp;:</td>
-        <td style="width: 230px;"><div class="sign-line"></div><div class="sign-name">{{ $supervisorName }}</div></td>
+        <td style="width: 230px;"><div class="sign-line"></div><div class="sign-name">{{ $appraisal->supervisor_submitted_at ? ($appraisal->supervisor?->name ?: $supervisorName) : '' }}</div></td>
         <td style="width: 40px;"></td>
         <td>Date&nbsp;&nbsp;: {{ $appraisal->supervisor_submitted_at?->timezone('Asia/Manila')->format('F j, Y') }}</td>
     </tr>

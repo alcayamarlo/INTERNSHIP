@@ -31,9 +31,9 @@
 </head>
 <body>
 @php
-    $student = $placement->student;
-    $supervisorName = $evaluation->evaluator?->name ?? $placement->employer?->contact_person;
-    $address = collect([$student?->address, $student?->city, $student?->province])->filter()->implode(', ');
+    // $info: the trainee details frozen when the evaluation was submitted, or the current ones.
+    $supervisorName = $evaluation->evaluator?->name ?: $info['supervisor_name'];
+    $address = $info['address'] ?? '';
     $from = $placement->start_date;
     $to = $placement->end_date ?? $placement->completed_at;
     $dates = $from ? ($to ? ($from->isSameYear($to) ? $from->format('F j').' - '.$to->format('F j, Y') : $from->format('F j, Y').' - '.$to->format('F j, Y')) : $from->format('F j, Y').' - present') : '';
@@ -45,17 +45,17 @@
     <div class="college">{{ $header['college_name'] }}</div>
     <div class="form">PERFORMANCE EVALUATION REPORT</div>
     <div>On-the-Job Training Program (PRACTICUM)</div>
-    <div class="company">{{ $placement->employer?->company_name }}</div>
+    <div class="company">{{ $info['company'] }}</div>
     <div>Name of Company</div>
 </div>
 
 <div class="part">Part I. Trainee's Basic Information</div>
 <table class="info">
-    <tr><td class="label">Name</td><td class="value">: {{ $student?->user?->name }}</td></tr>
-    <tr><td class="label">Student ID</td><td class="value">: {{ $student?->student_id_number }}</td></tr>
-    <tr><td class="label">Course</td><td class="value">: {{ $student?->program }}</td></tr>
+    <tr><td class="label">Name</td><td class="value">: {{ $info['full_name'] }}</td></tr>
+    <tr><td class="label">Student ID</td><td class="value">: {{ $info['student_id'] }}</td></tr>
+    <tr><td class="label">Course</td><td class="value">: {{ $info['course'] }}</td></tr>
     <tr><td class="label">Address</td><td class="value">: {{ $address }}</td></tr>
-    <tr><td class="label">Contact No</td><td class="value">: {{ $student?->user?->phone }}</td></tr>
+    <tr><td class="label">Contact No</td><td class="value">: {{ $info['contact_number'] }}</td></tr>
     <tr><td class="label">Signature</td><td>: <span class="sign"></span></td></tr>
 </table>
 
@@ -104,7 +104,7 @@
             Certified True and Correct:
             <div class="line"></div>
             <div class="who">{{ $evaluation->certified_by_name }}</div>
-            <div>{{ $evaluation->certified_by_position }}@if($evaluation->certified_by_name), {{ $placement->employer?->company_name }}@endif</div>
+            <div>{{ $evaluation->certified_by_position }}@if($evaluation->certified_by_name), {{ $info['company'] }}@endif</div>
         </td>
     </tr>
 </table>

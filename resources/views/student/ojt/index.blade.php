@@ -107,6 +107,7 @@
     <section id="ojt-panel-progress" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-progress" @if($activeTab !== 'progress') hidden @endif>
         @include('ojt.partials.deadlines', ['placement' => $placement, 'actor' => 'student'])
         @include('ojt.partials.progress', ['placement' => $placement])
+        @include('ojt.partials.document-details', ['placement' => $placement])
     </section>
 
     {{-- TIME RECORD --}}
@@ -231,6 +232,7 @@
                     <form id="weeklyJournalForm" method="POST" action="{{ route('student.ojt.journals.store', $placement) }}">
                             @csrf
 <input type="hidden" name="_modal" value="weekly">
+                            @include('ojt.partials.report-header-fields', ['placement' => $placement])
                             <div class="row g-2">
                                 <div class="col-md-5">
                                     <label class="form-label" for="week_start">Any day in the week <span class="text-danger" aria-hidden="true">*</span></label>
@@ -238,21 +240,21 @@
                                     @error('week_start')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                                 <div class="col-md-7 d-flex align-items-end">
-                                    <p class="small text-muted mb-1">The daily activity table (dates, activities, hours) is filled in from your time records for that week.</p>
+                                    <p class="small text-muted mb-1">The daily activity table (dates, activities, hours) is filled in from your time records for that week. Write at least 20 characters in each section below.</p>
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label" for="challenges">Difficulties encountered <span class="text-danger" aria-hidden="true">*</span></label>
-                                    <textarea id="challenges" name="challenges" rows="3" maxlength="5000" class="form-control @error('challenges') is-invalid @enderror" required>{{ old('challenges') }}</textarea>
+                                    <textarea id="challenges" name="challenges" rows="3" minlength="20" maxlength="5000" class="form-control @error('challenges') is-invalid @enderror" required>{{ old('challenges') }}</textarea>
                                     @error('challenges')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label" for="actions_taken">Actions taken <span class="text-danger" aria-hidden="true">*</span></label>
-                                    <textarea id="actions_taken" name="actions_taken" rows="3" maxlength="5000" class="form-control @error('actions_taken') is-invalid @enderror" required>{{ old('actions_taken') }}</textarea>
+                                    <textarea id="actions_taken" name="actions_taken" rows="3" minlength="20" maxlength="5000" class="form-control @error('actions_taken') is-invalid @enderror" required>{{ old('actions_taken') }}</textarea>
                                     @error('actions_taken')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label" for="learnings">Learning insights <span class="text-danger" aria-hidden="true">*</span></label>
-                                    <textarea id="learnings" name="learnings" rows="3" maxlength="5000" class="form-control @error('learnings') is-invalid @enderror" required>{{ old('learnings') }}</textarea>
+                                    <textarea id="learnings" name="learnings" rows="3" minlength="20" maxlength="5000" class="form-control @error('learnings') is-invalid @enderror" required>{{ old('learnings') }}</textarea>
                                     @error('learnings')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
@@ -269,6 +271,7 @@
 
     @push('scripts')
         <script src="{{ asset('js/sb-modals.js') }}?v={{ @filemtime(public_path('js/sb-modals.js')) }}"></script>
+        <script src="{{ asset('js/ojt-report-header.js') }}?v={{ @filemtime(public_path('js/ojt-report-header.js')) }}"></script>
     @endpush
     @endif
 @endif

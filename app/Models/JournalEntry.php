@@ -21,6 +21,8 @@ class JournalEntry extends Model
         'challenges',
         'actions_taken',
         'daily_snapshot',
+        'header_snapshot',
+        'header_overrides',
         'status',
         'supervisor_comment',
         'reviewed_by_user_id',
@@ -37,6 +39,8 @@ class JournalEntry extends Model
             'week_start' => 'date',
             'week_number' => 'integer',
             'daily_snapshot' => 'array',
+            'header_snapshot' => 'array',
+            'header_overrides' => 'array',
             'reviewed_at' => 'datetime',
             'coordinator_reviewed_at' => 'datetime',
         ];

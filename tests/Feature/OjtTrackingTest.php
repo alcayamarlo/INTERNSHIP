@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\ApplicationStatus;
+use App\Enums\InvitationStatus;
 use App\Enums\UserRole;
 use App\Models\AcademicSetting;
 use App\Models\AttendanceLog;
@@ -10,16 +11,22 @@ use App\Models\Evaluation;
 use App\Models\Institution;
 use App\Models\Internship;
 use App\Models\InternshipApplication;
+use App\Models\InternshipInvitation;
 use App\Models\JournalEntry;
 use App\Models\Placement;
 use App\Models\Program;
+use App\Models\Resume;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\ApplicationService;
+use App\Services\ReportExportService;
 use App\Services\WeeklyReportService;
+use App\Support\UploadDisks;
 use Carbon\CarbonImmutable;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
 
@@ -34,8 +41,8 @@ function ojtFixture(ApplicationStatus $status = ApplicationStatus::Interview): a
     $employerUser = User::factory()->create(['role' => UserRole::Employer]);
     $employer = Employer::create(['user_id' => $employerUser->id, 'company_name' => 'OJT Labs', 'contact_person' => 'Sam Supervisor']);
 
-    $studentUser = User::factory()->create(['role' => UserRole::Student, 'name' => 'Olivia Intern']);
-    $student = Student::create(['user_id' => $studentUser->id, 'institution_id' => $institution->id, 'program' => 'BS Information Technology']);
+    $studentUser = User::factory()->create(['role' => UserRole::Student, 'name' => 'Olivia Intern', 'phone' => '09171234567']);
+    $student = Student::create(['user_id' => $studentUser->id, 'institution_id' => $institution->id, 'program' => 'BS Information Technology', 'student_id_number' => sprintf('SCC-21-%08d', random_int(1, 99999999))]);
 
     $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
     Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
@@ -64,6 +71,7 @@ function ojtPlacement(array $fixture, int $requiredHours = 16): Placement
         'required_hours' => $requiredHours,
         'status' => Placement::STATUS_ACTIVE,
         'rating_requested_at' => now(),
+        'department' => 'IT Department', // the printed Designation
     ]);
 }
 
@@ -468,8 +476,8 @@ it('limits coordinator OJT and student reports to their own students', function 
     $theirs['studentUser']->update(['name' => 'Other School Student']);
     ojtPlacement($theirs);
 
-    $service = app(\App\Services\ReportExportService::class);
-    $read = fn ($report) => Storage::disk(\App\Support\UploadDisks::private())->get($report->file_path);
+    $service = app(ReportExportService::class);
+    $read = fn ($report) => Storage::disk(UploadDisks::private())->get($report->file_path);
 
     foreach (['ojt', 'student', 'placement'] as $type) {
         $csv = $read($service->generate($mine['coordinatorUser'], $type, 'csv'));
@@ -538,7 +546,7 @@ it('opens the tab from the URL and keeps each tab limited to its own panel', fun
     // The "add" buttons sit on the right of the tab bar, and only the open tab's button is visible.
     expect($html)->toMatch('/data-ojt-action="time-record"[^>]*data-bs-target="#dailyEntryModal"(?![^>]*\shidden)/')
         ->and($html)->toMatch('/data-ojt-action="weekly-journal"[^>]*\shidden/')
-        ->and(\Illuminate\Support\Str::between($html, 'id="ojt-panel-progress"', 'id="ojt-panel-weekly-journal"'))->not->toContain('Add weekly journal');
+        ->and(Str::between($html, 'id="ojt-panel-progress"', 'id="ojt-panel-weekly-journal"'))->not->toContain('Add weekly journal');
 });
 
 // ---------- Student dashboard: OJT progress replaces recommendations once placed ----------
@@ -635,8 +643,8 @@ it('blocks a placed student from applying to any other internship, directly or t
 
     $otherEmployer = Employer::create(['user_id' => User::factory()->create(['role' => UserRole::Employer])->id, 'company_name' => 'Another Co']);
     $other = Internship::create(['employer_id' => $otherEmployer->id, 'title' => 'Data Intern', 'description' => 'Data work.', 'status' => 'open']);
-    $resume = \App\Models\Resume::create(['student_id' => $student->id, 'file_path' => 'resumes/cv.pdf', 'content' => [], 'generated_at' => now()]);
-    $message = \App\Services\ApplicationService::HAS_OJT_MESSAGE;
+    $resume = Resume::create(['student_id' => $student->id, 'file_path' => 'resumes/cv.pdf', 'content' => [], 'generated_at' => now()]);
+    $message = ApplicationService::HAS_OJT_MESSAGE;
 
     // Direct apply is refused by the server, whatever the page shows.
     $this->actingAs($fixture['studentUser'])
@@ -645,12 +653,12 @@ it('blocks a placed student from applying to any other internship, directly or t
         ->assertJsonPath('message', $message);
 
     // Accepting an invitation would apply too, so it is refused the same way.
-    $invitation = \App\Models\InternshipInvitation::create([
+    $invitation = InternshipInvitation::create([
         'employer_id' => $otherEmployer->id,
         'student_id' => $student->id,
         'internship_id' => $other->id,
         'invited_by_user_id' => $otherEmployer->user_id,
-        'status' => \App\Enums\InvitationStatus::Pending,
+        'status' => InvitationStatus::Pending,
         'expires_at' => now()->addWeek(),
     ]);
     $this->post(route('student.invitations.accept', $invitation))
@@ -668,13 +676,13 @@ it('blocks a placed student from applying to any other internship, directly or t
 it('still lets a student without an OJT apply', function () {
     $fixture = ojtFixture();
     $fixture['student']->forceFill(['year_level' => '4th Year', 'major_subjects_passed' => true])->save();
-    $resume = \App\Models\Resume::create(['student_id' => $fixture['student']->id, 'file_path' => 'resumes/cv.pdf', 'content' => [], 'generated_at' => now()]);
+    $resume = Resume::create(['student_id' => $fixture['student']->id, 'file_path' => 'resumes/cv.pdf', 'content' => [], 'generated_at' => now()]);
     $other = Internship::create(['employer_id' => $fixture['employer']->id, 'title' => 'Second Role', 'description' => 'More work.', 'status' => 'open']);
 
     $this->actingAs($fixture['studentUser'])
         ->get(route('student.internships.index'))
         ->assertOk()
-        ->assertDontSee(\App\Services\ApplicationService::HAS_OJT_MESSAGE);
+        ->assertDontSee(ApplicationService::HAS_OJT_MESSAGE);
     $this->postJson(route('student.internships.apply', $other), ['resume_id' => $resume->id])->assertOk();
 });
 
@@ -816,7 +824,8 @@ it('builds Mon-Fri rows with absences, freezes them at certification, and allows
     $entry = $placement->journalEntries()->sole();
     $rows = app(WeeklyReportService::class)->dailyRows($entry);
     expect(array_column($rows, 'day'))->toBe(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'])
-        ->and(array_column($rows, 'hours_label'))->toBe(['8 hrs and 3 mins', '-', '8 hrs and 21 mins', '8 hrs', '5 hrs and 42 mins'])
+        // A day with no time record prints blank (not "-").
+        ->and(array_column($rows, 'hours_label'))->toBe(['8 hrs and 3 mins', '', '8 hrs and 21 mins', '8 hrs', '5 hrs and 42 mins'])
         ->and($rows[1]['activity'])->toBe('');
 
     // Another company's supervisor cannot certify or print it.

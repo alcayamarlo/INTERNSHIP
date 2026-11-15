@@ -68,6 +68,7 @@ class Evaluation extends Model
         'placement_id',
         'evaluator_user_id',
         'form_version',
+        'header_snapshot',
         'work_scores',
         'work_total',
         'trait_scores',
@@ -95,6 +96,7 @@ class Evaluation extends Model
         return [
             'scores' => 'array',
             'form_version' => 'integer',
+            'header_snapshot' => 'array',
             'work_scores' => 'array',
             'trait_scores' => 'array',
             'work_total' => 'integer',

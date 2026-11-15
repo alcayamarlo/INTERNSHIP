@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Appraisal;
 use App\Models\Placement;
 use App\Services\AppraisalService;
+use App\Services\OjtDocumentData;
 use App\Support\OjtFormHeader;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
@@ -18,7 +19,7 @@ use Illuminate\Validation\ValidationException;
  */
 class AppraisalController extends Controller
 {
-    public function __construct(private AppraisalService $appraisals) {}
+    public function __construct(private AppraisalService $appraisals, private OjtDocumentData $documents) {}
 
     /** Coordinator: request one month for one placement. */
     public function store(Request $request, Placement $placement)
@@ -65,6 +66,10 @@ class AppraisalController extends Controller
     public function submitSelf(Request $request, Appraisal $appraisal)
     {
         $this->authorize('submitAsStudent', $appraisal);
+        // The trainee's details are frozen on the form when the student submits, so they must be complete.
+        if ($blocked = $this->documents->blockedResponse($request, $appraisal->placement, 'monthly_evaluation')) {
+            return $blocked;
+        }
         $validated = $request->validateWithBag('appraisal'.$appraisal->id, AppraisalService::scoreRules(), AppraisalService::scoreMessages());
 
         return $this->attempt(fn () => $this->appraisals->submitSelf($appraisal, Auth::user(), $validated['scores']),
@@ -89,6 +94,9 @@ class AppraisalController extends Controller
     public function submitStudentComment(Request $request, Appraisal $appraisal)
     {
         $this->authorize('submitAsStudent', $appraisal);
+        if ($blocked = $this->documents->blockedResponse($request, $appraisal->placement, 'monthly_evaluation', $this->info($appraisal))) {
+            return $blocked;
+        }
         $validated = $request->validateWithBag('appraisal'.$appraisal->id, [
             'student_comment' => ['required', 'string', 'max:3000'],
         ], [
@@ -119,20 +127,32 @@ class AppraisalController extends Controller
     }
 
     /** Printable PDF in the school's Performance Appraisal Report layout. */
-    public function print(Appraisal $appraisal)
+    public function print(Request $request, Appraisal $appraisal)
     {
         $this->authorize('view', $appraisal);
-        $appraisal->load(['placement.student.user', 'placement.employer', 'placement.internship', 'supervisor:id,name', 'adviser:id,name']);
+        $appraisal->load(['placement.student.user', 'placement.employer.user', 'placement.internship', 'supervisor:id,name', 'adviser:id,name']);
+
+        $info = $this->info($appraisal);
+        if ($blocked = $this->documents->blockedResponse($request, $appraisal->placement, 'monthly_evaluation', $info)) {
+            return $blocked;
+        }
 
         $pdf = Pdf::loadView('ojt.appraisal-pdf', [
             'appraisal' => $appraisal,
             'placement' => $appraisal->placement,
+            'info' => $info,
             'header' => OjtFormHeader::data(),
         ])->setPaper('a4', 'portrait');
 
-        $name = str($appraisal->placement?->student?->user?->name ?? 'student')->slug();
+        $name = str($info['full_name'] ?: 'student')->slug();
 
         return $pdf->stream("monthly-evaluation-{$name}-{$appraisal->period_month->format('Y-m')}.pdf");
+    }
+
+    /** The trainee details printed on the form: frozen when the student submitted, otherwise the current ones. */
+    private function info(Appraisal $appraisal): array
+    {
+        return OjtDocumentData::withSnapshot($this->documents->values($appraisal->placement), $appraisal->header_snapshot);
     }
 
     /** Runs a step; a stage problem comes back as a flash error instead of a form error. */

@@ -7,11 +7,13 @@ use App\Models\AttendanceLog;
 use App\Models\Evaluation;
 use App\Models\JournalEntry;
 use App\Models\Placement;
-use App\Services\CompanyVisibleProfile;
 use App\Services\ActivityLogService;
+use App\Services\CompanyVisibleProfile;
 use App\Services\NotificationService;
+use App\Services\OjtDocumentData;
 use App\Services\PlacementService;
 use App\Services\WeeklyReportService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -75,14 +77,31 @@ class InternController extends Controller
         $this->authorize('supervise', $placement);
         abort_unless($placement->isActive(), 403);
 
+        $documents = app(OjtDocumentData::class);
+        if ($request->filled('supervisor_name')) {
+            $request->merge(['supervisor_name' => OjtDocumentData::normalizeName((string) $request->input('supervisor_name'))]);
+        }
         $validated = $request->validate([
             'start_date' => ['required', 'date'],
-            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
-            // "Designation" on the monthly evaluation and weekly report, e.g. "IT Department".
-            'department' => ['nullable', 'string', 'max:150'],
+            'end_date' => ['nullable', 'date', 'after:start_date'],
+            // "Designation" on every OJT form, from the admin's list so it is always spelled the same.
+            'department' => ['nullable', Rule::in($documents->designations($placement->department))],
+            'supervisor_name' => OjtDocumentData::supervisorNameRules(required: false),
+        ], [
+            'end_date.after' => 'The end date must be after the start date.',
+            'department.in' => 'Choose a department from the list.',
+            'supervisor_name.regex' => "The supervisor's name may only contain letters, spaces, periods and hyphens.",
         ]);
+        if ($request->has('supervisor_name')) {
+            $validated['supervisor_name'] = filled($validated['supervisor_name'] ?? null) ? $validated['supervisor_name'] : null;
+        }
+        foreach (['department', 'supervisor_name'] as $field) {
+            if (array_key_exists($field, $validated)) {
+                $documents->logPlacementChange(Auth::user(), $placement, $field, $placement->{$field}, $validated[$field]);
+            }
+        }
 
-        $startChanged = ! $placement->start_date || $placement->start_date->toDateString() !== \Carbon\Carbon::parse($validated['start_date'])->toDateString();
+        $startChanged = ! $placement->start_date || $placement->start_date->toDateString() !== Carbon::parse($validated['start_date'])->toDateString();
         $placement->update($validated);
         if ($startChanged) {
             $this->weeklyReports->renumberUncertified($placement->fresh());
@@ -221,7 +240,7 @@ class InternController extends Controller
 
         // The school's Final Performance Evaluation Report (form 2).
         $rules = [
-            'department_assigned' => ['required', 'string', 'max:150'],
+            'department_assigned' => ['required', Rule::in(app(OjtDocumentData::class)->designations($existing?->department_assigned ?? $placement->department))],
             'field_of_training' => ['required', 'string', 'max:150'],
             'supervisor_designation' => ['required', 'string', 'max:100'],
             'comments' => ['required', 'string', 'max:5000'],
@@ -231,6 +250,7 @@ class InternController extends Controller
         $messages = [
             'comments.required' => 'Write the final comments / recommendations (Part IV).',
             'supervisor_designation.required' => 'Enter your designation / job title.',
+            'department_assigned.in' => 'Choose a department from the list.',
             'certified_by_position.required_with' => 'Enter the position of the person who certifies the evaluation.',
         ];
         foreach (['work_scores' => Evaluation::WORK_FACTORS, 'trait_scores' => Evaluation::TRAIT_FACTORS] as $group => $factors) {
@@ -252,6 +272,8 @@ class InternController extends Controller
             $placement->evaluation()->updateOrCreate([], [
                 'evaluator_user_id' => Auth::id(),
                 'form_version' => Evaluation::FORM_SCHOOL,
+                // The trainee details printed on the form, frozen at submission.
+                'header_snapshot' => collect(app(OjtDocumentData::class)->values($placement))->only(OjtDocumentData::SNAPSHOT_FIELDS)->all(),
                 'work_scores' => $work,
                 'work_total' => $workTotal,
                 'trait_scores' => $traits,

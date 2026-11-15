@@ -282,6 +282,17 @@
                 </div>
             </section>
 
+            <section class="card aa-card" aria-labelledby="ojtDepartmentsHeading">
+                <div class="card-header"><h2 id="ojtDepartmentsHeading"><i class="bi bi-diagram-3" aria-hidden="true"></i> OJT departments (Designation)</h2></div>
+                <div class="card-body">
+                    <label class="form-label" for="ojt_departments_text">One department per line</label>
+                    <textarea id="ojt_departments_text" name="ojt_departments_text" rows="6" class="form-control form-control-sm @error('ojt_departments') is-invalid @enderror @error('ojt_departments.*') is-invalid @enderror">{{ old('ojt_departments_text', implode("\n", $settings->ojtDepartments())) }}</textarea>
+                    @error('ojt_departments')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    @foreach($errors->get('ojt_departments.*') as $messages)<div class="invalid-feedback d-block">{{ $messages[0] }}</div>@endforeach
+                    <div class="form-text">Students and supervisors pick the trainee's Designation from this list, so it is spelled the same on every form. Removing a name does not change forms already submitted.</div>
+                </div>
+            </section>
+
             <section class="card aa-card aa-card--second">
                 <div class="card-header"><h2><i class="bi bi-person-check" aria-hidden="true"></i> Internship eligibility</h2></div>
                 <div class="card-body d-grid gap-3">

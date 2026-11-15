@@ -74,12 +74,22 @@
                     <input type="date" id="end_date" name="end_date" value="{{ old('end_date', $placement->end_date?->toDateString()) }}" class="form-control @error('end_date') is-invalid @enderror">
                     @error('end_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label" for="department">Department / designation</label>
-                    <input id="department" name="department" maxlength="150" value="{{ old('department', $placement->department) }}" placeholder="e.g. IT Department" class="form-control @error('department') is-invalid @enderror">
+                    <select id="department" name="department" class="form-select @error('department') is-invalid @enderror">
+                        <option value="">Select...</option>
+                        @foreach(app(\App\Services\OjtDocumentData::class)->designations($placement->department) as $designation)
+                            <option value="{{ $designation }}" @selected(old('department', $placement->department) === $designation)>{{ $designation }}</option>
+                        @endforeach
+                    </select>
                     @error('department')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
-                <div class="col-md-2"><button type="submit" class="btn btn-outline-primary w-100">Save schedule</button></div>
+                <div class="col-md-3">
+                    <label class="form-label" for="supervisor_name">Supervisor's name on forms</label>
+                    <input id="supervisor_name" name="supervisor_name" maxlength="80" value="{{ old('supervisor_name', $placement->supervisor_name) }}" placeholder="{{ app(\App\Services\OjtDocumentData::class)->defaultSupervisor($placement) }}" class="form-control @error('supervisor_name') is-invalid @enderror">
+                    @error('supervisor_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-12 col-lg-auto"><button type="submit" class="btn btn-outline-primary w-100">Save schedule</button></div>
             </form>
         </div>
     </div>
@@ -141,8 +151,13 @@
                 <div class="row g-2 mb-3">
                     <div class="col-md-4">
                         <label class="form-label" for="department_assigned">Division / department assigned <span class="text-danger" aria-hidden="true">*</span></label>
-                        <input id="department_assigned" name="department_assigned" maxlength="150" required class="form-control @error('department_assigned') is-invalid @enderror"
-                               value="{{ old('department_assigned', $evaluation?->department_assigned ?? $placement->department) }}" placeholder="e.g. IT Department">
+                        @php $assigned = old('department_assigned', $evaluation?->department_assigned ?? $placement->department); @endphp
+                        <select id="department_assigned" name="department_assigned" required class="form-select @error('department_assigned') is-invalid @enderror">
+                            <option value="">Select...</option>
+                            @foreach(app(\App\Services\OjtDocumentData::class)->designations($evaluation?->department_assigned ?? $placement->department) as $designation)
+                                <option value="{{ $designation }}" @selected($assigned === $designation)>{{ $designation }}</option>
+                            @endforeach
+                        </select>
                         @error('department_assigned')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-4">

@@ -132,7 +132,14 @@ class AppraisalService
     {
         $appraisal = $this->transition($appraisal, Appraisal::STAGE_AWAITING_STUDENT, function (Appraisal $locked) use ($scores) {
             $clean = self::cleanScores($scores);
-            $locked->update(['self_scores' => $clean, 'self_total' => array_sum($clean), 'self_submitted_at' => now()]);
+            // The trainee details are frozen on the form when the student submits it.
+            $info = app(OjtDocumentData::class)->values($locked->placement);
+            $locked->update([
+                'self_scores' => $clean,
+                'self_total' => array_sum($clean),
+                'self_submitted_at' => now(),
+                'header_snapshot' => collect($info)->only(OjtDocumentData::SNAPSHOT_FIELDS)->all(),
+            ]);
         });
 
         $this->activityLog->log($student, 'appraisal_self_submitted', ['appraisal_id' => $appraisal->id]);

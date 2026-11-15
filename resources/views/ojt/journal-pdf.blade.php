@@ -4,89 +4,107 @@
 <meta charset="utf-8">
 <title>Activity Narrative Report</title>
 <style>
-    @page { margin: 28px 40px 36px; }
-    body { font-family: DejaVu Sans, sans-serif; font-size: 10.5px; color: #111827; }
-    .titles { text-align: center; margin: 12px 0 10px; line-height: 1.35; }
-    .titles .college { font-size: 12px; font-weight: bold; }
-    .titles .form { font-size: 11.5px; font-weight: bold; text-transform: uppercase; }
-    .titles .who { font-size: 11px; }
-    .info { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-    .info td { padding: 1px 0; vertical-align: top; }
-    .info .label { width: 105px; }
-    .info .value { padding-right: 10px; }
+    @page { size: letter portrait; margin: 30px 44px 30px; }
+    body { font-family: Helvetica, Arial, sans-serif; font-size: {{ $fontSize }}px; color: #000; }
+    .titles { text-align: center; margin: 10px 0 9px; line-height: 1.35; }
+    .titles .college, .titles .form { font-weight: bold; font-size: {{ $fontSize + 1.5 }}px; text-transform: uppercase; }
+    .titles .who { font-size: {{ $fontSize + 0.5 }}px; }
+    .info { width: 100%; border-collapse: collapse; margin-bottom: 9px; }
+    .info td { padding: 2px 0; vertical-align: bottom; }
+    .info .label { white-space: nowrap; width: 1%; padding-right: 3px; }
+    .info .colon { width: 8px; }
+    .info .value { border-bottom: 1px solid #000; padding-left: 3px; }
+    .info .gap { width: 22px; }
     .info .period { font-weight: bold; }
-    table.grid { width: 100%; border-collapse: collapse; }
-    table.grid th, table.grid td { border: 1px solid #111827; padding: 4px 6px; vertical-align: top; }
-    table.grid th { font-size: 10px; text-transform: uppercase; text-align: center; }
+    table.grid { width: 100%; border-collapse: collapse; border: 2px solid #000; }
+    table.grid th, table.grid td { border: 1px solid #000; padding: 3px 5px; vertical-align: top; }
+    table.grid th { font-weight: bold; text-align: center; vertical-align: middle; font-size: {{ $fontSize - 0.5 }}px; }
+    table.grid td { height: 22px; }
     .nowrap { white-space: nowrap; }
     .center { text-align: center; }
-    .box { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    .box th { border: 1px solid #111827; border-bottom: 0; text-align: left; padding: 4px 6px; font-size: 10px; text-transform: uppercase; }
-    .box td { border: 1px solid #111827; padding: 6px 8px; height: 90px; vertical-align: top; text-align: justify; line-height: 1.45; white-space: pre-line; }
-    .certify { width: 100%; margin-top: 30px; border-collapse: collapse; }
+    .box { width: 100%; border-collapse: collapse; margin-top: 9px; border: 1.5px solid #000; }
+    .box th { background: #e5e7eb; border-bottom: 1px solid #000; text-align: left; padding: 3px 6px; font-weight: bold; }
+    .box td { padding: 5px 7px; height: 72px; vertical-align: top; text-align: justify; line-height: 1.4; white-space: pre-line; }
+    .certify { width: 100%; margin-top: 26px; border-collapse: collapse; }
     .certify td { vertical-align: bottom; padding: 0; }
-    .sign-line { border-bottom: 1px solid #111827; height: 18px; width: 220px; }
-    .sign-name { text-align: center; font-size: 9px; padding-top: 2px; width: 220px; }
+    .sign-line { border-bottom: 1px solid #000; height: 18px; }
+    .sign-name { text-align: center; padding-top: 2px; font-weight: bold; height: 14px; }
+    .date-line { border-bottom: 1px solid #000; padding-left: 3px; height: 14px; }
 </style>
 </head>
 <body>
-@php
-    $student = $placement?->student;
-    $supervisorName = $entry->reviewer?->name ?? $placement?->employer?->contact_person;
-@endphp
-
-@include('ojt.partials.pdf-header', ['header' => $header])
+@include('ojt.partials.pdf-header', ['header' => \App\Support\OjtFormHeader::data()])
 
 <div class="titles">
-    <div class="college">{{ $header['college_name'] }}</div>
-    <div class="form">{{ $entry->week_number ? 'Week '.$entry->week_number.' – ' : '' }}Activity Narrative Report</div>
+    <div class="college">{{ config('ojt_forms.college_name') }}</div>
+    <div class="form">{{ $header['week_no'] ? 'Week '.$header['week_no'].' – ' : '' }}Activity Narrative Report</div>
     <div class="who">OJT / PRACTICUM TRAINEE</div>
 </div>
 
 <table class="info">
     <tr>
-        <td class="label">Name of Trainee</td><td class="value">: {{ $student?->user?->name }}</td>
-        <td class="label">Period of Evaluation</td><td class="value">: <span class="period">{{ $periodLabel }}</span></td>
+        <td class="label">Name of Trainee</td><td class="colon">:</td><td class="value">{{ $header['full_name'] }}</td>
+        <td class="gap"></td>
+        <td class="label">Period of Evaluation</td><td class="colon">:</td><td class="value period">{{ $header['period_of_evaluation'] }}</td>
     </tr>
     <tr>
-        <td class="label">Company / Agency</td><td class="value">: {{ $placement?->employer?->company_name }}</td>
-        <td class="label">Inclusive Dates</td><td class="value">: {{ $entry->inclusiveDates() }}</td>
+        <td class="label">Company / Agency</td><td class="colon">:</td><td class="value">{{ $header['company'] }}</td>
+        <td class="gap"></td>
+        <td class="label">Inclusive Dates</td><td class="colon">:</td><td class="value">{{ $header['inclusive_dates'] }}</td>
     </tr>
     <tr>
-        <td class="label">Supervisor's Name</td><td class="value">: {{ $supervisorName }}</td>
-        <td class="label">Designation</td><td class="value">: {{ $placement?->department }}</td>
+        <td class="label">Supervisor's Name</td><td class="colon">:</td><td class="value">{{ $header['supervisor_name'] }}</td>
+        <td class="gap"></td>
+        <td class="label">Designation</td><td class="colon">:</td><td class="value">{{ $header['designation'] }}</td>
     </tr>
 </table>
 
 <table class="grid">
     <thead>
-        <tr><th style="width: 22%;">Dates</th><th style="width: 8%;">Day</th><th>Activity (+ies)</th><th style="width: 18%;">Total Hours Rendered</th></tr>
+        <tr>
+            <th style="width: 20%;">DATES</th>
+            <th style="width: 8%;">DAY</th>
+            <th>ACTIVITY (+IES)</th>
+            <th style="width: 17%;">TOTAL HOURS RENDERED</th>
+        </tr>
     </thead>
     <tbody>
-        @foreach($rows as $row)
+        @foreach(array_slice($rows, 0, 5) as $row)
+            @php
+                // Blank when the day has no time record; "-" only for a record without hours.
+                $hasRecord = ($row['minutes'] ?? 0) > 0 || trim((string) ($row['activity'] ?? '')) !== '';
+                $hours = ($row['minutes'] ?? 0) > 0 ? $row['hours_label'] : ($hasRecord ? '-' : '');
+            @endphp
             <tr>
                 <td class="nowrap">{{ $row['date_label'] }}</td>
                 <td class="center">{{ $row['day'] }}</td>
                 <td>{{ $row['activity'] }}</td>
-                <td class="center nowrap">{{ $row['hours_label'] }}</td>
+                <td class="center nowrap">{{ $hours }}</td>
             </tr>
         @endforeach
     </tbody>
 </table>
 
-@foreach(['Difficulties Encountered' => $entry->challenges, 'Actions Taken' => $entry->actions_taken, 'Learning Insights' => $entry->learnings] as $heading => $text)
+@foreach(['DIFFICULTIES ENCOUNTERED' => $entry->challenges, 'ACTIONS TAKEN' => $entry->actions_taken, 'LEARNING INSIGHTS' => $entry->learnings] as $heading => $text)
     <table class="box">
         <tr><th>{{ $heading }}</th></tr>
-        <tr><td>{{ $text }}</td></tr>
+        <tr><td>{{ trim((string) $text) }}</td></tr>
     </table>
 @endforeach
 
+{{-- The labels sit level with the lines; the supervisor's printed name goes under the signature line. --}}
 <table class="certify">
     <tr>
-        <td style="width: 140px;">Certified True and Correct&nbsp;&nbsp;:</td>
-        <td style="width: 230px;"><div class="sign-line"></div><div class="sign-name">{{ $entry->isCertified() ? $supervisorName : '' }}</div></td>
-        <td style="width: 40px;"></td>
-        <td>Date&nbsp;&nbsp;: {{ $entry->isCertified() ? $entry->reviewed_at?->timezone('Asia/Manila')->format('F j, Y') : '' }}</td>
+        <td style="width: 165px;">Certified True and Correct&nbsp;&nbsp;:</td>
+        <td style="width: 230px;"><div class="sign-line"></div></td>
+        <td style="width: 34px;"></td>
+        <td style="width: 44px;">Date&nbsp;&nbsp;:</td>
+        <td><div class="date-line">{{ $certifiedOn }}</div></td>
+    </tr>
+    <tr>
+        <td></td>
+        <td><div class="sign-name">{{ $certifiedBy }}</div></td>
+        <td colspan="3"></td>
     </tr>
 </table>
 </body>

@@ -20,7 +20,89 @@ class WeeklyReportService
     public function __construct(
         private ActivityLogService $activityLog,
         private NotificationService $notifications,
+        private OjtDocumentData $documents,
     ) {}
+
+    /**
+     * The header printed on a report: what was frozen when it was submitted, or (for reports submitted
+     * before snapshots existed) the current profile and placement values.
+     */
+    public function header(JournalEntry $entry): array
+    {
+        $entry->loadMissing('placement');
+        $live = $this->documents->weeklyHeader($entry->placement, $entry->week_start);
+        $live['week_no'] = $entry->week_number ?? $live['week_no'];
+        $live['period_of_evaluation'] = $this->periodLabel($entry);
+
+        return OjtDocumentData::withSnapshot($live, $entry->header_snapshot);
+    }
+
+    /**
+     * The header of a new report: the defaults for that week with the student's changes applied.
+     * Returns the frozen header, the changed fields (value, default, who, when) and the OJT defaults to
+     * update when "Also update my profile / placement" was ticked.
+     *
+     * @param  array<string, string>  $edits  validated, normalized changes (only fields the student edited)
+     * @param  list<string>  $saveAsDefault
+     * @return array{header: array, overrides: array, defaults: array<string, string>}
+     */
+    public function resolveHeader(Placement $placement, CarbonImmutable $weekStart, array $edits, array $saveAsDefault, User $by): array
+    {
+        $defaults = $this->documents->weeklyHeader($placement, $weekStart);
+        $header = $defaults;
+        $overrides = [];
+        $newDefaults = [];
+        foreach (OjtDocumentData::EDITABLE_FIELDS as $field) {
+            if (! array_key_exists($field, $edits) || (string) $edits[$field] === (string) $defaults[$field]) {
+                continue;
+            }
+            $header[$field] = $edits[$field];
+            if (in_array($field, $saveAsDefault, true) && array_key_exists($field, OjtDocumentData::SAVE_AS_DEFAULT)) {
+                // Becomes the OJT's default, so it is no longer a change on this report alone.
+                $newDefaults[OjtDocumentData::SAVE_AS_DEFAULT[$field]] = $edits[$field];
+
+                continue;
+            }
+            $overrides[$field] = [
+                'value' => $edits[$field],
+                'default' => $defaults[$field],
+                'by_user_id' => $by->id,
+                'by_name' => $by->name,
+                'at' => now()->toIso8601String(),
+            ];
+        }
+
+        $frozen = collect($header)->only([...OjtDocumentData::SNAPSHOT_FIELDS, 'week_no', 'period_of_evaluation', 'inclusive_dates'])->all();
+
+        return ['header' => $frozen, 'overrides' => $overrides, 'defaults' => $newDefaults];
+    }
+
+    /** Everything the printed Activity Narrative Report needs. */
+    public function printData(JournalEntry $entry): array
+    {
+        $entry->loadMissing(['placement.student.user', 'placement.employer.user', 'reviewer:id,name']);
+        $header = $this->header($entry);
+        $rows = $this->dailyRows($entry);
+        // Long text gets a slightly smaller font so the report stays on one page.
+        $length = collect([$entry->challenges, $entry->actions_taken, $entry->learnings])->sum(fn ($text) => mb_strlen((string) $text))
+            + collect($rows)->sum(fn ($row) => mb_strlen((string) ($row['activity'] ?? '')));
+        $fontSize = match (true) {
+            $length > 3600 => 8,
+            $length > 2600 => 8.5,
+            $length > 1800 => 9.5,
+            default => 10.5,
+        };
+
+        return [
+            'entry' => $entry,
+            'header' => $header,
+            'rows' => $rows,
+            'fontSize' => $fontSize,
+            // The name under the signature line appears only once the supervisor certified in the system.
+            'certifiedBy' => $entry->isCertified() ? ($entry->reviewer?->name ?: $header['supervisor_name']) : '',
+            'certifiedOn' => $entry->isCertified() ? $entry->reviewed_at?->timezone('Asia/Manila')->format('F j, Y') : '',
+        ];
+    }
 
     /**
      * Mon-Fri rows: the frozen snapshot once certified, otherwise built from the time records.
@@ -58,7 +140,8 @@ class WeeklyReportService
                 'day' => $day->format('D'),
                 'activity' => $log ? trim((string) $log->task_summary) : '',
                 'minutes' => $minutes,
-                'hours_label' => self::formatMinutes($minutes),
+                // A day with no time record prints blank; "-" is only for a record without hours.
+                'hours_label' => $log ? self::formatMinutes($minutes) : '',
             ];
         }
 
