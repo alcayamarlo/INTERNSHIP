@@ -82,11 +82,13 @@
         })();
     </script>
 
-    {{-- Collapsed-sidebar preference is applied before first paint to avoid a layout jump. --}}
+    {{-- Sidebar width before first paint (no layout jump): icon rail from 640px to 1023px, the saved
+         choice from 1024px (full by default), and a drawer below 640px. skillbridge-ui.js repeats this on resize. --}}
     <script>
         try {
+            var sbWidth = window.innerWidth;
             var sbSidebar = localStorage.getItem('skillbridge-sidebar');
-            if (sbSidebar === 'collapsed' || (sbSidebar === null && window.innerWidth >= 992 && window.innerWidth < 1200)) {
+            if ((sbWidth >= 640 && sbWidth < 1024) || (sbWidth >= 1024 && sbSidebar === 'collapsed')) {
                 document.documentElement.classList.add('sb-collapsed');
             }
         } catch (error) {}
@@ -841,7 +843,7 @@
                             function () {
 
                                 if (
-                                    window.innerWidth <= 991
+                                    window.innerWidth < 640
                                 ) {
 
                                     closeSidebar();
@@ -897,7 +899,7 @@
                 function () {
 
                     if (
-                        window.innerWidth > 991
+                        window.innerWidth >= 640
                     ) {
 
                         closeSidebar();

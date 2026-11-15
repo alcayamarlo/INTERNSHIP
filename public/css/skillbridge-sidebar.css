@@ -135,7 +135,7 @@ body.sb-app .btn:disabled, body.sb-app .btn.disabled { opacity: 1; }
 /* ---------------------------------------------------------------------
    Mobile / tablet: off-canvas drawer, same red styling
    --------------------------------------------------------------------- */
-@media (max-width: 991.98px) {
+@media (max-width: 639.98px) {
     body.sb-app .sb-sidebar { width: min(300px, calc(100vw - 48px)); box-shadow: 0 0 40px rgba(15, 15, 15, 0.35); }
     body.sb-app .sb-sidebar-close { display: inline-grid; }
     body.sb-app .sb-sidebar-overlay { background: rgba(15, 15, 15, 0.5); }
@@ -159,7 +159,7 @@ body.sb-app .sb-user-card { display: none; }
 body.sb-app .sb-sidebar-footer { display: none; }
 
 /* ---------- Collapsed icon rail (desktop/tablet) ---------- */
-@media (min-width: 992px) {
+@media (min-width: 640px) {
     html.sb-collapsed body.sb-app .sb-brand { justify-content: center; padding: 18px 0 12px; }
     html.sb-collapsed body.sb-app .sb-nav { padding: 4px 12px 12px; }
     html.sb-collapsed body.sb-app .sb-nav-label { height: 1px; margin: 14px 10px; padding: 0; overflow: hidden; background: rgba(255, 255, 255, .3); font-size: 0; line-height: 0; }

@@ -3352,7 +3352,7 @@ div.sb-avatar-xl[hidden] {
 
 /* ---------- Tablet: icon rail ---------- */
 
-@media (min-width: 992px) {
+@media (min-width: 640px) {
     html.sb-collapsed .sb-brand {
         justify-content: center;
         padding: 12px 0;
@@ -3402,7 +3402,7 @@ div.sb-avatar-xl[hidden] {
 
 /* ---------- Mobile: off-canvas drawer ---------- */
 
-@media (max-width: 991.98px) {
+@media (max-width: 639.98px) {
     body.skillbridge-app {
         --sb-nav-width: 0px;
     }

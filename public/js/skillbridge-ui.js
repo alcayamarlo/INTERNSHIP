@@ -68,6 +68,29 @@
             }
         };
         syncSidebar();
+        // Same rule as the first-paint script in layouts/app: rail from 640px to 1023px, the saved choice
+        // from 1024px, and the drawer below 640px (the rail class is not used there).
+        const applySidebarWidth = () => {
+            const width = window.innerWidth;
+            let saved = null;
+            try {
+                saved = window.localStorage.getItem('skillbridge-sidebar');
+            } catch {
+                saved = null;
+            }
+            const rail = (width >= 640 && width < 1024) || (width >= 1024 && saved === 'collapsed');
+            if (rail !== rootElement.classList.contains('sb-collapsed')) {
+                rootElement.classList.toggle('sb-collapsed', rail);
+                syncSidebar();
+            }
+        };
+        let resizeFrame = null;
+        window.addEventListener('resize', () => {
+            if (resizeFrame) {
+                cancelAnimationFrame(resizeFrame);
+            }
+            resizeFrame = requestAnimationFrame(applySidebarWidth);
+        });
         collapseButton?.addEventListener('click', () => {
             const collapsed = rootElement.classList.toggle('sb-collapsed');
             try {

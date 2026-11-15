@@ -70,7 +70,7 @@ html body.sb-app .sb-nav-link.active .sb-nav-badge { background: var(--on-burgun
 html body.sb-app .sb-sidebar-footer { border-top: 1px solid var(--line); background: transparent; color: var(--muted); }
 html body.sb-app .sb-sidebar-footer :is(small, strong) { color: var(--muted) !important; }
 html body.sb-app .sb-sidebar-close { color: var(--text); }
-@media (min-width: 992px) {
+@media (min-width: 640px) {
     html.sb-collapsed body.sb-app .sb-brand .sb-seal { width: 44px; height: 44px; }
     html.sb-collapsed body.sb-app .sb-nav-link { padding: 10px; }
 }
@@ -507,3 +507,25 @@ html body.sb-app .sb-list-item--avatar > div { flex: 1; }
 /* Charts */
 html body.sb-app .sb-chart { position: relative; height: 260px; }
 html body.sb-app .sb-list-title code { font-size: 12px; color: var(--text); background: var(--surface-alt); padding: 2px 6px; border-radius: 6px; }
+
+/* Phase C: below 1024px the sidebar is an icon rail (the toggle is hidden there), below 640px a drawer. */
+@media (min-width: 640px) and (max-width: 1023.98px) {
+    html body.sb-app .sb-collapse-toggle { display: none !important; }
+}
+@media (max-width: 639.98px) {
+    html body.sb-app .sb-collapse-toggle { display: none !important; }
+    html body.sb-app .sb-sidebar { width: min(300px, calc(100vw - 48px)); box-shadow: var(--shadow-pop); }
+    html body.sb-app .sb-sidebar-overlay.show { background: rgba(0, 0, 0, .45); }
+}
+
+/* The drawer button exists only below 640px. */
+@media (min-width: 640px) { html body.sb-app .sb-mobile-toggle { display: none !important; } }
+
+/* Sidebar width: 256px full, 76px rail (the --sb-nav-width the layout already switches). */
+html body.sb-app { --sb-sidebar-width: 256px; }
+html.sb-collapsed body.sb-app { --sb-nav-width: var(--sb-sidebar-rail, 76px); }
+@media (min-width: 640px) { html body.sb-app .sb-sidebar { width: var(--sb-nav-width) !important; } }
+
+/* Seal size: 48px in the full sidebar, 44px in the rail. */
+html body.sb-app .sb-brand .sb-seal { width: 48px !important; height: 48px !important; }
+@media (min-width: 640px) { html.sb-collapsed body.sb-app .sb-brand .sb-seal { width: 44px !important; height: 44px !important; } html.sb-collapsed body.sb-app .sb-brand { justify-content: center; padding: 18px 0 14px; } }
