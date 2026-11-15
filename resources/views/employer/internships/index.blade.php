@@ -3,8 +3,6 @@
 @section('title', 'Manage Internships')
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/sb-split-inbox.css') }}?v={{ @filemtime(public_path('css/sb-split-inbox.css')) }}">
-<link rel="stylesheet" href="{{ asset('css/employer-postings.css') }}?v={{ @filemtime(public_path('css/employer-postings.css')) }}">
 <link rel="stylesheet" href="{{ asset('css/employer-internship-form.css') }}?v={{ @filemtime(public_path('css/employer-internship-form.css')) }}">
 @endpush
 
@@ -33,7 +31,7 @@
     </a>
 </x-page-header>
 
-<div class="pp-page sbx" id="postingsPage" data-active-tab="{{ $activeTab }}" data-selected-id="{{ $selected?->id }}">
+<div class="sbx" id="postingsPage" data-active-tab="{{ $activeTab }}" data-selected-id="{{ $selected?->id }}">
     <div data-postings-flash></div>
 
     <div data-postings-main>

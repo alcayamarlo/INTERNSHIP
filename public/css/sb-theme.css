@@ -529,3 +529,138 @@ html.sb-collapsed body.sb-app { --sb-nav-width: var(--sb-sidebar-rail, 76px); }
 /* Seal size: 48px in the full sidebar, 44px in the rail. */
 html body.sb-app .sb-brand .sb-seal { width: 48px !important; height: 48px !important; }
 @media (min-width: 640px) { html.sb-collapsed body.sb-app .sb-brand .sb-seal { width: 44px !important; height: 44px !important; } html.sb-collapsed body.sb-app .sb-brand { justify-content: center; padding: 18px 0 14px; } }
+
+/* =========================================================================================
+   Split list + detail (".sbx"): status tabs and a list on the left, a detail panel on the right.
+   Shared by Employer > Internships and Student > Invitations (moved here from sb-split-inbox.css).
+   ========================================================================================= */
+
+/* Split list: brand pill tabs, tinted selection without a side stripe. */
+html body.sb-app .sbx .sbx-tab {
+    display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 8px 16px; border: 1px solid var(--line) !important;
+    border-radius: var(--r-pill) !important; background: var(--surface) !important; color: var(--text) !important; font-weight: 600; font-size: 13px; box-shadow: none;
+}
+html body.sb-app .sbx .sbx-tab:hover { background: var(--surface-alt) !important; }
+html body.sb-app .sbx .sbx-tab.active { background: var(--burgundy) !important; border-color: var(--burgundy) !important; color: var(--on-burgundy) !important; }
+html body.sb-app .sbx .sbx-tab-count { min-width: 22px; padding: 1px 7px; border-radius: var(--r-pill); background: var(--burgundy-tint); color: var(--burgundy-tint-text); font-size: 12px; font-weight: 700; text-align: center; }
+html body.sb-app .sbx .sbx-tab.active .sbx-tab-count { background: var(--on-burgundy); color: var(--burgundy); }
+html body.sb-app .sbx .sbx-row { border-radius: 12px; }
+html body.sb-app .sbx .sbx-row.is-selected { background: var(--burgundy-tint); box-shadow: none; }
+html body.sb-app .sbx .sbx-row.is-selected .sbx-row-title { color: var(--burgundy-tint-text); }
+html body.sb-app .sbx :is(.sbx-empty, .sbx-placeholder) { background: var(--surface-alt); border: 1px dashed var(--burgundy-border); border-radius: var(--r-panel); color: var(--muted); }
+
+/* =========================================================================================
+   Detail panel building blocks (list detail panes and detail pages)
+   ========================================================================================= */
+html body.sb-app .sb-detail { display: grid; gap: 0; min-width: 0; }
+html body.sb-app .sb-detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+html body.sb-app .sb-detail-title { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.25; letter-spacing: -.01em; color: var(--text); overflow-wrap: anywhere; }
+html body.sb-app .sb-detail-actions { flex-shrink: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+html body.sb-app .sb-detail-meta { margin: 6px 0 0; font-size: 14px; color: var(--muted); overflow-wrap: anywhere; }
+html body.sb-app .sb-detail-alert { display: flex; align-items: center; gap: 6px; margin: 10px 0 0; font-size: 13px; font-weight: 600; color: var(--burgundy-text); }
+@media (max-width: 639.98px) { html body.sb-app .sb-detail-head { flex-direction: column; } }
+
+/* Stat tiles: label, value, note */
+html body.sb-app .sb-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+html body.sb-app .sb-tile { padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--surface-alt); min-width: 0; }
+html body.sb-app .sb-tile-label, html body.sb-app .sb-block-title {
+    display: block; margin: 0; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+}
+html body.sb-app .sb-tile-value { display: block; margin-top: 4px; font-size: 22px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+html body.sb-app .sb-tile-note { display: block; margin-top: 2px; font-size: 12px; color: var(--muted); }
+
+/* Labelled blocks inside a panel */
+html body.sb-app .sb-block { margin-top: 22px; }
+html body.sb-app .sb-block-title { margin-bottom: 8px; }
+html body.sb-app .sb-block-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+html body.sb-app .sb-block-link { font-size: 13px; font-weight: 600; color: var(--burgundy-text) !important; }
+html body.sb-app .sb-note { margin: 0; font-size: 13px; color: var(--muted); }
+
+/* Tag pills (skills, requirements) */
+html body.sb-app .sb-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+html body.sb-app .sb-tags li { padding: 4px 12px; border: 1px solid var(--line); border-radius: var(--r-pill); background: var(--surface); color: var(--text); font-size: 13px; overflow-wrap: anywhere; }
+
+/* Plain rows (e.g. applicants inside a posting) */
+html body.sb-app .sb-rows { margin: 0; padding: 0; list-style: none; }
+html body.sb-app .sb-rows li { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+html body.sb-app .sb-rows li:last-child { border-bottom: 0; }
+html body.sb-app .sb-rows a { margin-right: auto; font-weight: 600; overflow-wrap: anywhere; }
+
+/* =========================================================================================
+   Lists: table + side panel, selectable rows, person blocks, field lists
+   ========================================================================================= */
+html body.sb-app .sb-split-table { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 20px; align-items: start; }
+html body.sb-app .sb-split-table > .card { margin: 0; }
+@media (max-width: 1199.98px) { html body.sb-app .sb-split-table { grid-template-columns: minmax(0, 1fr); } }
+html body.sb-app .sb-side-panel { position: sticky; top: calc(var(--sb-topbar-height) + 20px); }
+@media (max-width: 1199.98px) { html body.sb-app .sb-side-panel { position: static; } }
+html body.sb-app .sb-side-panel-item[hidden] { display: none !important; }
+
+html body.sb-app .sb-select-row { cursor: pointer; }
+html body.sb-app .table > tbody > tr.sb-select-row.is-selected > td { background: var(--burgundy-tint) !important; }
+html body.sb-app .sb-select-row:focus-visible { outline: 2px solid var(--burgundy-text); outline-offset: -2px; }
+
+html body.sb-app .sb-person { display: flex; align-items: center; gap: 14px; min-width: 0; }
+html body.sb-app .sb-person-text { display: grid; gap: 2px; min-width: 0; }
+html body.sb-app .sb-person-text > strong { font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
+html body.sb-app .sb-person-text > span { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+html body.sb-app .sb-person-text > .sb-detail-title { font-size: 18px; }
+html body.sb-app .sb-initials--lg { flex-basis: 52px; width: 52px; height: 52px; font-size: 16px; overflow: hidden; }
+html body.sb-app .sb-initials img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Field list: label / value rows */
+html body.sb-app .sb-fields { display: grid; gap: 10px; margin: 0; }
+html body.sb-app .sb-fields > div { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 12px; align-items: baseline; }
+html body.sb-app .sb-fields dt { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+html body.sb-app .sb-fields dd { margin: 0; color: var(--text); overflow-wrap: anywhere; }
+html body.sb-app .sb-fields dd.is-big { font-size: 28px; font-weight: 700; letter-spacing: -.02em; line-height: 1.1; }
+
+/* Empty state inside a table */
+html body.sb-app .table > tbody > tr > td.sb-table-empty { padding: 20px 8px !important; border-bottom: 0; }
+
+/* Filter bar (a card holding pill tabs and filter fields) */
+html body.sb-app .sb-filterbar { padding: 16px 20px 18px; margin: 0; }
+html body.sb-app .sb-filter-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+html body.sb-app .sb-filter-field { flex: 1 1 180px; min-width: 140px; }
+html body.sb-app .sb-filter-field--sm { flex: 1 1 130px; min-width: 120px; }
+html body.sb-app .sb-filter-actions { display: flex; flex-wrap: wrap; gap: 8px; flex: 0 0 auto; }
+@media (max-width: 639.98px) {
+    html body.sb-app .sb-filter-field, html body.sb-app .sb-filter-field--sm { flex-basis: 100%; }
+    html body.sb-app .sb-filter-actions { width: 100%; }
+    html body.sb-app .sb-filter-actions > .btn { flex: 1 1 auto; }
+}
+
+/* Pill tab switcher (links) */
+html body.sb-app .sb-pill-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+html body.sb-app .sb-pill-tab {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 8px 16px; border: 1px solid var(--line); border-radius: var(--r-pill);
+    background: var(--surface); color: var(--text) !important; font-size: 13px; font-weight: 600; text-decoration: none !important;
+}
+html body.sb-app .sb-pill-tab:hover { background: var(--surface-alt); }
+html body.sb-app .sb-pill-tab.is-active, html body.sb-app .sb-pill-tab.is-active:hover { background: var(--burgundy); border-color: var(--burgundy); color: var(--on-burgundy) !important; }
+
+/* Card grid of entities (students, companies) */
+html body.sb-app .sb-results { min-width: 0; }
+html body.sb-app .sb-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 20px; }
+html body.sb-app .sb-entity { display: flex; flex-direction: column; gap: 14px; margin: 0 !important; padding: 20px; height: 100%; min-width: 0; }
+html body.sb-app .sb-entity .sb-person-text h2 { margin: 0; font-size: 16px; font-weight: 600; line-height: 1.25; color: var(--text); overflow-wrap: anywhere; }
+html body.sb-app .sb-entity .sb-person-text small { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+html body.sb-app .sb-entity-body { display: grid; gap: 10px; flex: 1 1 auto; }
+html body.sb-app .sb-entity-text { font-size: 13px; line-height: 1.45; color: var(--text); overflow-wrap: anywhere; }
+html body.sb-app .sb-entity-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 14px; border-top: 1px solid var(--line); }
+html body.sb-app .sb-entity-foot form { margin: 0; }
+html body.sb-app img.sb-initials { object-fit: cover; }
+html body.sb-app .sb-pages { margin-top: 4px; }
+
+/* Label / value line */
+html body.sb-app .sb-line { display: grid; grid-template-columns: 98px minmax(0, 1fr); gap: 10px; align-items: start; font-size: 13px; }
+html body.sb-app .sb-line > strong { padding-top: 3px; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+/* Chips (skills) */
+html body.sb-app .sb-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+html body.sb-app .sb-chips > span { padding: 3px 10px; border-radius: var(--r-pill); background: var(--burgundy-tint); color: var(--burgundy-tint-text); font-size: 12px; font-weight: 600; }
+html body.sb-app .sb-chips > span.more { background: transparent; border: 1px dashed var(--line); color: var(--muted); }
+
+/* Progress inside a table cell */
+html body.sb-app .sb-progress-cell { min-width: 150px; }
+html body.sb-app .progress.progress--thin { height: 6px; margin-top: 6px; }

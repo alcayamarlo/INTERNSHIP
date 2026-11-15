@@ -4,7 +4,6 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/student-internships.css') }}?v={{ @filemtime(public_path('css/student-internships.css')) }}">
-<link rel="stylesheet" href="{{ asset('css/sb-split-inbox.css') }}?v={{ @filemtime(public_path('css/sb-split-inbox.css')) }}">
 <link rel="stylesheet" href="{{ asset('css/student-invitations.css') }}?v={{ @filemtime(public_path('css/student-invitations.css')) }}">
 @endpush
 

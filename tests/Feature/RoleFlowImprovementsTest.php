@@ -99,7 +99,7 @@ it('labels a new application Pending for the company, matching the filter, and A
 
     $this->actingAs($internship->employer->user)->get(route('employer.applicants.index'))
         ->assertOk()
-        ->assertSee('<span class="table-badge status-submitted">Pending</span>', false);
+        ->assertSee('sb-status--info">Pending</span>', false);
     $this->get(route('employer.applicants.show', $application))
         ->assertOk()
         ->assertSee('data-application-status>Pending</span>', false);
