@@ -8,7 +8,6 @@
 <div class="sb-dash">
 
 <x-page-header title="System Dashboard" subtitle="Platform analytics and administration" eyebrow="Command center">
-    <span class="sb-status sb-status--neutral">All systems operational</span>
     <span class="sb-tag"><i class="bi bi-calendar3" aria-hidden="true"></i> {{ now()->format('M d, Y') }}</span>
     <a href="{{ route('admin.skill-categories.index') }}" class="btn btn-outline-primary">Manage Skill Categories</a>
 </x-page-header>
