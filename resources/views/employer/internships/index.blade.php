@@ -2,10 +2,6 @@
 
 @section('title', 'Manage Internships')
 
-@push('styles')
-<link rel="stylesheet" href="{{ asset('css/employer-internship-form.css') }}?v={{ @filemtime(public_path('css/employer-internship-form.css')) }}">
-@endpush
-
 @section('content')
 @php
     // Only verified companies can post (company.verified); others keep the plain link,
@@ -105,9 +101,9 @@
     {{-- Same form-modal setup as the OJT log (sb-modals.js): Bootstrap supplies the dialog role, focus trap,
          Escape and backdrop close, scroll lock, focus return and the fade; sb-modals.js adds the
          unsaved-changes prompt and the reset. If a plain (non-script) submit fails validation, it reopens. --}}
-    <div class="modal fade" id="newInternshipModal" tabindex="-1" role="dialog" aria-modal="true"
+    <div class="modal fade sb-modal-wide" id="newInternshipModal" tabindex="-1" role="dialog" aria-modal="true"
          aria-labelledby="newInternshipModalLabel" aria-describedby="newInternshipModalHint" aria-hidden="true"
-         style="--bs-modal-width: 1080px" data-sb-form-modal @if(old('_modal') === 'newInternship') data-sb-open-on-load @endif>
+         data-sb-form-modal @if(old('_modal') === 'newInternship') data-sb-open-on-load @endif>
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
             <div class="modal-content">
                 <div class="modal-header align-items-start">
@@ -119,7 +115,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-danger" role="alert" data-form-errors hidden>Please fix the highlighted fields.</div>
-                    <form method="POST" action="{{ route('employer.internships.store') }}" id="newInternshipForm" class="pf-page" novalidate>
+                    <form method="POST" action="{{ route('employer.internships.store') }}" id="newInternshipForm" novalidate>
                         @csrf
                         <input type="hidden" name="_modal" value="newInternship">
                         @include('employer.internships.partials.fields', ['internship' => new \App\Models\Internship])
