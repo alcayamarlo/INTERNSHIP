@@ -156,3 +156,8 @@ html body .text-danger, html body .text-warning, html body .text-primary { color
 html body .text-success, html body .text-info { color: var(--text) !important; }
 html body .border-danger, html body .border-warning, html body .border-primary { border-color: var(--burgundy) !important; }
 html body .border-success, html body .border-info { border-color: var(--line) !important; }
+
+/* The OJT seal: a circle on white in both modes, never recolored or stretched (landing and app). */
+html body .sb-seal { border-radius: 50%; background: #fff; object-fit: contain; aspect-ratio: 1; }
+html[data-theme="dark"] body .sb-seal { box-shadow: 0 0 0 2px #fff; }
+html body .lm-logo:has(> .sb-seal) { padding: 0; border-radius: 50%; overflow: hidden; }

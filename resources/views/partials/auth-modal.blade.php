@@ -38,7 +38,7 @@
     <div class="lm-dialog" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle" tabindex="-1">
         <header class="lm-head">
             <div class="lm-brand">
-                <span class="lm-logo" aria-hidden="true"><svg viewBox="8 8 48 48" width="24" height="24" fill="none" stroke="#7A010E" stroke-linecap="round"><path d="M32 10 54 20.5 32 31 10 20.5Z" fill="#7A010E" stroke="none"/><path d="M20 26.2v6.3c0 2.6 5.4 4.7 12 4.7s12-2.1 12-4.7v-6.3L32 31Z" fill="#7A010E" fill-opacity=".8" stroke="none"/><path d="M10 53h44" stroke-width="3"/><path d="M14 53C20 42.5 44 42.5 50 53" stroke-width="3"/><path d="M24 47.4V53M32 45.8V53M40 47.4V53" stroke-width="2" stroke-opacity=".8"/></svg></span>
+                <span class="lm-logo" aria-hidden="true"><img class="sb-seal" src="{{ asset('images/brand/stcc-logo.png') }}?v=1" alt="St. Cecilia's College-Cebu logo" width="24" height="24"></span>
                 <span>SkillBridge</span>
             </div>
             <h2 id="loginModalTitle" class="lm-title"><span class="lm-t1">Welcome.</span><span class="lm-t2">Sign in to find your internship.</span></h2>
