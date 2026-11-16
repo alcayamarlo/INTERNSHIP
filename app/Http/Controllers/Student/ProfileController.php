@@ -200,7 +200,6 @@ class ProfileController extends Controller
             'semesterOptions' => $academicCalendar->termOptions($academicSettings),
             'monthOptions' => collect(range(1, 12))
                 ->mapWithKeys(fn (int $month) => [$month => CarbonImmutable::create(2024, $month, 1)->format('F')]),
-            'careerInfo' => $student->only(['preferred_internship_field', 'preferred_work_setup', 'preferred_location', 'expected_graduation']),
             'portfolioItems' => $portfolioItems,
             'deploymentRequirements' => $deploymentRequirements,
             'portfolioTypes' => PortfolioType::cases(),
@@ -430,7 +429,9 @@ class ProfileController extends Controller
             'languages' => $validated['languages'] ?? null,
             'civil_status' => $validated['civil_status'] ?? null,
             'religion' => $validated['religion'] ?? null,
-            'height_cm' => $validated['height_cm'] ?? null,
+            'height_feet' => $validated['height_feet'] ?? null,
+            'height_inches' => isset($validated['height_feet']) ? (int) ($validated['height_inches'] ?? 0) : null,
+            'about_me' => $validated['about_me'] ?? null,
             'weight_kg' => $validated['weight_kg'] ?? null,
             'show_civil_status' => $request->boolean('show_civil_status'),
             'show_religion' => $request->boolean('show_religion'),
@@ -462,10 +463,8 @@ class ProfileController extends Controller
             'elementary_year_graduated' => $validated['elementary_year_graduated'],
             'high_school' => $validated['high_school'],
             'high_school_year_graduated' => $validated['high_school_year_graduated'],
-            'career_objectives' => $validated['career_objectives'] ?? null,
-            'preferred_internship_field' => $validated['preferred_internship_field'] ?? null,
-            'preferred_work_setup' => $validated['preferred_work_setup'] ?? null,
-            'preferred_location' => $validated['preferred_location'] ?? null,
+            'senior_high_school' => $validated['senior_high_school'] ?? null,
+            'senior_high_year_graduated' => $validated['senior_high_year_graduated'] ?? null,
         ];
     }
 

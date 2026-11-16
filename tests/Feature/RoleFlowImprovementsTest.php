@@ -70,7 +70,7 @@ it('warns on the resume page when the profile is incomplete and links back to in
     $this->actingAs($user)->get(route('student.resume.index'))
         ->assertOk()
         ->assertSee('Your profile is not complete, so your resume will have gaps.')
-        ->assertSee('Still missing: Personal, Contact, Academic, Skills, Portfolio, Character Reference.')
+        ->assertSee('Still missing: Personal, Contact, Academic, Skills, Portfolio.')
         ->assertSee(route('student.profile.edit'), false)
         ->assertSee('Back to internships')
         ->assertSee(route('student.internships.index'), false);

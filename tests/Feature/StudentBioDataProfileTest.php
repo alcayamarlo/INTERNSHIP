@@ -277,25 +277,26 @@ it('weights profile completion by tab and ignores experience', function () {
         'emergency_contact_name' => 'Maria Cruz', 'emergency_contact_relationship' => 'Mother',
         'emergency_contact_address' => 'Cebu City', 'emergency_contact_phone' => '09181112222',
         'department' => 'CCS', 'program' => 'BSIT', 'year_level' => '3rd Year', 'expected_graduation' => '2027-05-01',
-        'elementary_school' => 'Cebu Central', 'elementary_year_graduated' => 2015,
-        'high_school' => 'Cebu Science', 'high_school_year_graduated' => 2021,
+        'elementary_school' => 'Cebu Central', 'elementary_year_graduated' => '2014-2015',
+        'high_school' => 'Cebu Science', 'high_school_year_graduated' => '2020-2021',
     ]);
 
     $summary = fn () => $student->fresh()->profileCompletionSummary();
-    expect($summary()['percentage'])->toBe(45)
-        ->and($summary()['remaining_steps'])->toBe(4)
+    // The optional Character Reference tab always counts as complete.
+    expect($summary()['percentage'])->toBe(55)
+        ->and($summary()['remaining_steps'])->toBe(3)
         ->and($summary()['missing_steps'])->toContain('Skills: add at least 3 skills (0 of 3)');
 
     $student->experiences()->create(['organization' => 'Org', 'position' => 'Volunteer', 'start_date' => '2024-01-01', 'is_current' => true]);
-    expect($summary()['percentage'])->toBe(45);
+    expect($summary()['percentage'])->toBe(55);
 
     foreach (['Kotlin', 'Rust', 'Juggling'] as $name) {
         $student->studentSkills()->create(['skill_tag_id' => SkillTag::create(['name' => $name])->id]);
     }
-    expect($summary()['percentage'])->toBe(60);
+    expect($summary()['percentage'])->toBe(70);
 
     Portfolio::create(['student_id' => $student->id, 'title' => 'Capstone', 'type' => 'project', 'category' => 'project', 'project_url' => 'https://example.com']);
-    expect($summary()['percentage'])->toBe(75);
+    expect($summary()['percentage'])->toBe(85);
 
     $student->characterReferences()->create(['name' => 'Prof. A', 'position' => 'Adviser', 'organization' => 'SCC', 'contact_number' => '09170000001']);
     expect($summary()['percentage'])->toBe(85);
@@ -356,41 +357,37 @@ it('only accepts an ID upload when an applied-to internship requested it', funct
     $upload()->assertOk();
 });
 
-// ---------- Character reference requirement ----------
+// ---------- Character references are optional ----------
 
-it('blocks applying to an internship that requires a character reference until one is added', function () {
+it('lets a student apply without any character reference', function () {
     $student = bioDataStudent(['year_level' => '4th Year', 'major_subjects_passed' => true]);
     $resume = Resume::create(['student_id' => $student->id, 'content' => []]);
     [, $employer] = bioDataEmployer();
-    $internship = bioDataInternship($employer, ['requires_character_reference' => true]);
+    $internship = bioDataInternship($employer);
 
+    expect($student->characterReferences()->exists())->toBeFalse();
     $this->actingAs($student->user)
         ->postJson(route('student.internships.apply', $internship), ['resume_id' => $resume->id])
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors('character_reference');
-
-    CharacterReference::create(['student_id' => $student->id, 'name' => 'Prof. A', 'position' => 'Adviser', 'organization' => 'SCC', 'contact_number' => '09170000001']);
-    $this->postJson(route('student.internships.apply', $internship), ['resume_id' => $resume->id])->assertOk();
+        ->assertOk();
 });
 
-it('lets an employer mark an internship as requiring a reference and request IDs', function () {
+it('lets an employer request IDs, and no longer offers a reference requirement', function () {
     [$employerUser] = bioDataEmployer();
 
-    $this->actingAs($employerUser)->post(route('employer.internships.store'), [
+    $this->actingAs($employerUser)->get(route('employer.internships.create'))->assertOk()->assertDontSee('requires_character_reference', false);
+
+    $this->post(route('employer.internships.store'), [
         'title' => 'Data Intern',
         'description' => 'Analyze data.',
-        'work_setup' => 'remote',
         'status' => 'open',
-        'requires_character_reference' => '1',
         'requested_documents' => ['nbi-clearance', 'passport'],
     ])->assertRedirect(route('employer.internships.index'));
 
     $internship = Internship::where('title', 'Data Intern')->firstOrFail();
-    expect($internship->requires_character_reference)->toBeTrue()
-        ->and($internship->requested_documents)->toBe(['nbi-clearance', 'passport']);
+    expect($internship->requested_documents)->toBe(['nbi-clearance', 'passport']);
 
     $this->post(route('employer.internships.store'), [
-        'title' => 'Bad Intern', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open',
+        'title' => 'Bad Intern', 'description' => 'x', 'status' => 'open',
         'requested_documents' => ['certificate-of-registration'],
     ])->assertSessionHasErrors('requested_documents.0');
 });
@@ -398,7 +395,7 @@ it('lets an employer mark an internship as requiring a reference and request IDs
 // ---------- Company-visible profile ----------
 
 it('hides sensitive fields from companies unless the student shows them', function () {
-    $student = bioDataStudent(['civil_status' => 'Single', 'religion' => 'Catholic', 'height_cm' => 160, 'weight_kg' => 52.5, 'show_religion' => true]);
+    $student = bioDataStudent(['civil_status' => 'Single', 'religion' => 'Catholic', 'height_feet' => 5, 'height_inches' => 3, 'weight_kg' => 52.5, 'show_religion' => true]);
     [$employerUser, $employer] = bioDataEmployer();
     bioDataApply($student, bioDataInternship($employer));
 
@@ -409,7 +406,7 @@ it('hides sensitive fields from companies unless the student shows them', functi
 
     $student->update(['show_height' => true, 'show_weight' => true]);
     $profile = app(CompanyVisibleProfile::class)->for($student->fresh(), $employerUser);
-    expect($profile['personal']['Height'])->toBe('160 cm')
+    expect($profile['personal']['Height'])->toBe('5 ft 3 in')
         ->and($profile['personal']['Weight'])->toBe('52.5 kg');
 });
 
@@ -486,7 +483,7 @@ it('shows a requested ID only to the company whose internship asked for it', fun
 });
 
 it('renders the applicant page from the company-visible profile only', function () {
-    $student = bioDataStudent(['religion' => 'Catholic', 'show_religion' => false, 'high_school' => 'Cebu Science', 'high_school_year_graduated' => 2021]);
+    $student = bioDataStudent(['religion' => 'Catholic', 'show_religion' => false, 'high_school' => 'Cebu Science', 'high_school_year_graduated' => '2020-2021']);
     $student->studentSkills()->create(['skill_tag_id' => SkillTag::create(['name' => 'Tailwind'])->id, 'level' => 'advanced']);
     [$employerUser, $employer] = bioDataEmployer();
     $application = bioDataApply($student, bioDataInternship($employer));
@@ -495,7 +492,7 @@ it('renders the applicant page from the company-visible profile only', function 
         ->get(route('employer.applicants.show', $application))
         ->assertOk()
         ->assertSee('Tailwind · Advanced')
-        ->assertSee('Cebu Science (2021)')
+        ->assertSee('Cebu Science (2020-2021)')
         ->assertSee($student->user->email)
         ->assertDontSee('Catholic');
 });

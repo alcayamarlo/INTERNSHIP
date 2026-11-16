@@ -99,7 +99,7 @@ class DatabaseSeeder extends Seeder
             'program_id' => \App\Models\Program::where('code', 'BSIT')->value('id'),
             'program' => 'BS Information Technology (BSIT)',
             'year_level' => '4th Year',
-            'career_objectives' => 'Seeking a software development internship to apply full-stack skills.',
+            'about_me' => 'Seeking a software development internship to apply full-stack skills.',
             'address' => '789 Student St, Quezon City',
             'profile_completion' => 75,
         ]);

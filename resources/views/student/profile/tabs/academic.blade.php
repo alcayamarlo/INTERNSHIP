@@ -154,33 +154,14 @@
         <h2 class="panel-heading">Educational background</h2>
         <div class="profile-field-grid">
             @include('student.profile.partials.field', ['name' => 'elementary_school', 'label' => 'Elementary school', 'required' => true, 'value' => $student->elementary_school])
-            @include('student.profile.partials.field', ['name' => 'elementary_year_graduated', 'label' => 'Year graduated', 'type' => 'number', 'required' => true, 'value' => $student->elementary_year_graduated, 'id' => 'elementary_year_graduated', 'extra' => 'min="1950" max="'.now()->year.'" inputmode="numeric"'])
-            @include('student.profile.partials.field', ['name' => 'high_school', 'label' => 'High school / Senior high school', 'required' => true, 'value' => $student->high_school])
-            @include('student.profile.partials.field', ['name' => 'high_school_year_graduated', 'label' => 'Year graduated', 'type' => 'number', 'required' => true, 'value' => $student->high_school_year_graduated, 'extra' => 'min="1950" max="'.now()->year.'" inputmode="numeric"'])
+            @include('student.profile.partials.field', ['name' => 'elementary_year_graduated', 'label' => 'Year graduated', 'required' => true, 'value' => $student->elementary_year_graduated, 'id' => 'elementary_year_graduated', 'extra' => 'placeholder="e.g. 2022-2023" pattern="\d{4}-\d{4}" inputmode="numeric" maxlength="9"'])
+            @include('student.profile.partials.field', ['name' => 'high_school', 'label' => 'High school (junior high)', 'required' => true, 'value' => $student->high_school])
+            @include('student.profile.partials.field', ['name' => 'high_school_year_graduated', 'label' => 'Year graduated', 'required' => true, 'value' => $student->high_school_year_graduated, 'extra' => 'placeholder="e.g. 2022-2023" pattern="\d{4}-\d{4}" inputmode="numeric" maxlength="9"'])
+            @include('student.profile.partials.field', ['name' => 'senior_high_school', 'label' => 'Senior high school', 'value' => $student->senior_high_school])
+            @include('student.profile.partials.field', ['name' => 'senior_high_year_graduated', 'label' => 'Year graduated', 'value' => $student->senior_high_year_graduated, 'extra' => 'placeholder="e.g. 2022-2023" pattern="\d{4}-\d{4}" inputmode="numeric" maxlength="9"'])
         </div>
         <p class="portfolio-description mt-2"><i class="bi bi-trophy" aria-hidden="true"></i> Add honors and awards one at a time under <a href="#awardsHeading">Honors / awards</a> below.</p>
 
-        <hr class="section-divider">
-        <h2 class="panel-heading">Career information</h2>
-        <div class="profile-field-grid">
-            <div class="field-wide">
-                <label class="form-label" for="career_objectives">Career objectives</label>
-                <textarea id="career_objectives" class="form-control @error('career_objectives') is-invalid @enderror" name="career_objectives" rows="3" placeholder="Describe your career goals and aspirations">{{ old('career_objectives', $student->career_objectives) }}</textarea>
-                @error('career_objectives')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
-            @include('student.profile.partials.field', ['name' => 'preferred_internship_field', 'label' => 'Preferred internship field', 'value' => $student->preferred_internship_field])
-            <div>
-                <label class="form-label" for="preferred_work_setup">Work setup</label>
-                <select id="preferred_work_setup" class="form-select @error('preferred_work_setup') is-invalid @enderror" name="preferred_work_setup">
-                    <option value="">Select...</option>
-                    @foreach(['Remote', 'Hybrid', 'Onsite'] as $workSetup)
-                        <option value="{{ $workSetup }}" {{ old('preferred_work_setup', $student->preferred_work_setup) === $workSetup ? 'selected' : '' }}>{{ $workSetup }}</option>
-                    @endforeach
-                </select>
-                @error('preferred_work_setup')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
-            @include('student.profile.partials.field', ['name' => 'preferred_location', 'label' => 'Preferred location', 'value' => $student->preferred_location])
-        </div>
         @include('student.profile.partials.save-bar')
     </form>
 

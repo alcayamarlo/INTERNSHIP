@@ -135,7 +135,6 @@ class InternshipService
             'location',
             'status',
             'expires_at',
-            'requires_character_reference',
             'requested_documents',
         ])->all();
     }

@@ -23,7 +23,7 @@ function editorStudent(string $email = 'ana@example.com'): Student
     return Student::create([
         'user_id' => $user->id,
         'program' => 'BS Information Technology',
-        'career_objectives' => 'Profile summary.',
+        'about_me' => 'Profile summary.',
         'privacy_consent' => true,
         'privacy_consent_at' => now(),
     ]);
@@ -114,7 +114,7 @@ it('saves edits to that resume only, re-renders its PDF, and leaves the profile 
         ->and(Storage::disk('private')->exists($resume->file_path))->toBeTrue()
         ->and(Storage::disk('private')->exists($oldPath))->toBeFalse()
         // The profile is untouched.
-        ->and($student->fresh()->career_objectives)->toBe('Profile summary.')
+        ->and($student->fresh()->about_me)->toBe('Profile summary.')
         ->and($student->user->fresh()->name)->toBe('Ana Cruz');
 
     $this->get(route('student.resume.index'))->assertSee('data-resume-edited', false);
@@ -129,7 +129,7 @@ it('also updates the profile summary when the student opts in', function () {
         ->assertOk()
         ->assertJsonPath('message', 'Changes saved. Your profile summary was updated too.');
 
-    expect($student->fresh()->career_objectives)->toBe('Shared summary.');
+    expect($student->fresh()->about_me)->toBe('Shared summary.');
 });
 
 it('requires a name and contact email, complete rows, and entry titles', function () {

@@ -64,7 +64,7 @@ class CompanyVisibleProfile
 
         return [
             ...$this->summary($student),
-            'career_objectives' => $student->career_objectives,
+            'about_me' => $student->about_me,
             'academic' => array_filter([
                 'College' => $student->department,
                 'Course' => $student->program,
@@ -134,10 +134,11 @@ class CompanyVisibleProfile
                 'Year level' => $student->year_level,
                 'Expected graduation' => $student->expected_graduation?->format('F Y'),
                 'Elementary' => $this->school($student->elementary_school, $student->elementary_year_graduated),
-                'High school / SHS' => $this->school($student->high_school, $student->high_school_year_graduated),
+                'High school' => $this->school($student->high_school, $student->high_school_year_graduated),
+                'Senior high school' => $this->school($student->senior_high_school, $student->senior_high_year_graduated),
             ], 'filled'),
             'awards' => $this->awards($student),
-            'career_objectives' => $student->career_objectives,
+            'about_me' => $student->about_me,
             'skills' => $student->studentSkills->sortBy('id')->map(fn ($studentSkill) => $studentSkill->toChip($certifiedNames))
                 ->filter(fn (array $skill) => filled($skill['name']))
                 ->map(fn (array $skill) => ['name' => $skill['name'], 'level' => $skill['level_label'], 'has_certificate' => $skill['has_certificate']])
@@ -188,7 +189,7 @@ class CompanyVisibleProfile
             'id_photo_path' => $student->id_photo_path,
             'course' => $student->program,
             'school' => $student->institution?->name,
-            'summary' => $student->career_objectives,
+            'summary' => $student->about_me,
             'generated_at' => now('Asia/Manila')->toIso8601String(),
             'contact' => $rows([
                 'Mobile' => $user?->phone,
@@ -208,7 +209,8 @@ class CompanyVisibleProfile
                 'Year level' => $student->year_level,
                 'Expected graduation' => $student->expected_graduation?->format('F Y'),
                 'Elementary' => $this->school($student->elementary_school, $student->elementary_year_graduated),
-                'High school / SHS' => $this->school($student->high_school, $student->high_school_year_graduated),
+                'High school' => $this->school($student->high_school, $student->high_school_year_graduated),
+                'Senior high school' => $this->school($student->senior_high_school, $student->senior_high_year_graduated),
                 'Internship hours' => $hours['required'] ? $hours['rendered'].' / '.$hours['required'] : ($hours['rendered'] ?: null),
             ]),
             'awards' => $this->awards($student),
@@ -291,7 +293,7 @@ class CompanyVisibleProfile
             ->whereHas('applications', fn ($query) => $query
                 ->where('student_id', $studentId)
                 ->where('status', '<>', ApplicationStatus::Withdrawn->value))
-            ->get(['id', 'title', 'requested_documents', 'requires_character_reference']);
+            ->get(['id', 'title', 'requested_documents']);
     }
 
     /** Personal details a company may see; sensitive ones only when the student turned on "Show to companies". */
@@ -305,7 +307,7 @@ class CompanyVisibleProfile
             'Languages / dialects' => $student->languages,
             'Civil status' => $student->show_civil_status ? $student->civil_status : null,
             'Religion' => $student->show_religion ? $student->religion : null,
-            'Height' => $student->show_height && $student->height_cm ? ((float) $student->height_cm).' cm' : null,
+            'Height' => $student->show_height && $student->height_feet ? $student->height_feet.' ft '.(int) $student->height_inches.' in' : null,
             'Weight' => $student->show_weight && $student->weight_kg ? ((float) $student->weight_kg).' kg' : null,
         ], 'filled');
     }
@@ -335,7 +337,8 @@ class CompanyVisibleProfile
         ], StudentAward::grouped($student->awards()->get()));
     }
 
-    private function school(?string $name, ?int $year): ?string
+    /** School name with its school year, e.g. "Cebu Science (2020-2021)". */
+    private function school(?string $name, string|int|null $year): ?string
     {
         return $name ? $name.($year ? ' ('.$year.')' : '') : null;
     }

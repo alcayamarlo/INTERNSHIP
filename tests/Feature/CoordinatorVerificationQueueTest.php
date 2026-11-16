@@ -34,9 +34,6 @@ function verificationQueueFixture(): array
         'program' => 'BSIT',
         'department' => 'Computing',
         'year_level' => '3rd Year',
-        'preferred_internship_field' => 'Software',
-        'preferred_work_setup' => 'Hybrid',
-        'preferred_location' => 'Cebu',
     ]);
     $competency = StudentCompetency::create([
         'student_id' => $student->id,
@@ -166,7 +163,6 @@ it('verifies all pending evidence in one request and serves the drawer history',
     $this->getJson(route('coordinator.verification.students.show', $fixture['student']))
         ->assertOk()
         ->assertJsonPath('student.email', $fixture['student']->user->email)
-        ->assertJsonPath('student.preferred_work_setup', 'Hybrid')
         ->assertJsonPath('progress.verified', 1)
         ->assertJsonCount(1, 'activity');
 });

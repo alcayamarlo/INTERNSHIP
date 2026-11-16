@@ -60,9 +60,9 @@ class CharacterReferenceController extends Controller
 
         return $request->validateWithBag('references', [
             'name' => ['required', 'string', 'max:150'],
-            'position' => ['required', 'string', 'max:150'],
-            'organization' => ['required', 'string', 'max:150'],
-            'contact_number' => ['required', 'regex:/^(\+?\d{1,3}[-.\s]?)?\d{7,14}$/'],
+            'position' => ['nullable', 'string', 'max:150'],
+            'organization' => ['nullable', 'string', 'max:150'],
+            'contact_number' => ['nullable', 'regex:/^(\+?\d{1,3}[-.\s]?)?\d{7,14}$/'],
         ], [
             'organization.required' => 'Enter the company or school.',
             'contact_number.regex' => 'Please enter a valid phone number.',

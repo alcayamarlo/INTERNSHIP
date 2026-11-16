@@ -307,10 +307,7 @@ it('saves school academic fields against the selected program and major', functi
             'expected_graduation' => '2028-05',
             'enrollment_status' => 'Regular',
             'gwa' => '1.75',
-            'career_objectives' => 'Build professional experience.',
-            'preferred_internship_field' => 'Finance',
-            'preferred_work_setup' => 'Hybrid',
-            'preferred_location' => 'Cebu',
+            'about_me' => 'Build professional experience.',
         ])
         ->assertOk()
         ->assertJson(['message' => 'Profile saved']);
@@ -352,9 +349,11 @@ it('renders the school branding and database-backed academic profile fields', fu
         ->assertSee('name="expected_graduation"', false)
         ->assertSee('name="enrollment_status"', false)
         ->assertSee('name="gwa"', false)
-        ->assertSee('name="preferred_internship_field"', false)
-        ->assertSee('name="preferred_work_setup"', false)
-        ->assertSee('name="preferred_location"', false)
+        ->assertDontSee('name="preferred_internship_field"', false)
+        ->assertDontSee('name="preferred_work_setup"', false)
+        ->assertDontSee('name="preferred_location"', false)
+        ->assertSee('name="senior_high_school"', false)
+        ->assertSee('name="about_me"', false)
         ->assertSee('placeholder="SCC-21-00013240"', false)
         ->assertSee('BS Information Technology (BSIT)')
         ->assertDontSee('name="institution_id"', false);

@@ -75,7 +75,7 @@ it('shows employers only company-visible fields when browsing', function () {
     $student = inviteStudent([
         'civil_status' => 'Married', 'show_civil_status' => true,
         'religion' => 'Iglesia', 'show_religion' => true,
-        'height_cm' => 171, 'show_height' => true,
+        'height_feet' => 5, 'height_inches' => 7, 'show_height' => true,
         'address' => '45 Secret Street', 'emergency_contact_phone' => '09998887777',
     ]);
     $tag = SkillTag::firstOrCreate(['name_normalized' => 'python'], ['name' => 'Python']);
@@ -92,7 +92,7 @@ it('shows employers only company-visible fields when browsing', function () {
             ->assertDontSee('09171234567')
             ->assertDontSee('Married')
             ->assertDontSee('Iglesia')
-            ->assertDontSee('171')
+            ->assertDontSee('5 ft 7 in')
             ->assertDontSee('45 Secret Street')
             ->assertDontSee('09998887777');
     }

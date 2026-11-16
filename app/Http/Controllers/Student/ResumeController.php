@@ -164,7 +164,7 @@ class ResumeController extends Controller
         }
 
         $student = $resume->student;
-        $student->update(['career_objectives' => $content['summary']]);
+        $student->update(['about_me' => $content['summary']]);
         $student->calculateProfileCompletion();
 
         return true;

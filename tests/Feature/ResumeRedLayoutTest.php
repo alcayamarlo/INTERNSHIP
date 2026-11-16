@@ -62,9 +62,9 @@ function pdfFillColours(string $pdf): array
 it('renders every section for a student with full data', function () {
     $student = redResumeStudent([
         'program' => 'BS Information Technology', 'department' => 'College of Computer Studies', 'year_level' => '4th Year',
-        'career_objectives' => 'Build reliable web apps.', 'gender' => 'Male', 'citizenship' => 'Filipino',
+        'about_me' => 'Build reliable web apps.', 'gender' => 'Male', 'citizenship' => 'Filipino',
         'address' => '45 Osmeña Blvd', 'city' => 'Cebu City', 'provincial_address' => 'Barili, Cebu',
-        'elementary_school' => 'Cebu Central School', 'elementary_year_graduated' => 2015,
+        'elementary_school' => 'Cebu Central School', 'elementary_year_graduated' => '2014-2015',
         'emergency_contact_name' => 'Maria Peña', 'emergency_contact_relationship' => 'Mother', 'emergency_contact_phone' => '09170000000',
     ]);
     $tag = SkillTag::firstOrCreate(['name_normalized' => 'python'], ['name' => 'Python']);
@@ -87,7 +87,7 @@ it('renders every section for a student with full data', function () {
         ->toContain('nino@example.test')
         ->toContain('Barili, Cebu')
         ->toContain('<div class="side-heading">Education</div>')
-        ->toContain('Cebu Central School (2015)')
+        ->toContain('Cebu Central School (2014-2015)')
         ->toContain('<div class="side-heading">Skills</div>')
         ->toContain('<div class="bar">Personal data</div>')
         ->toContain('Maria Peña')
@@ -128,13 +128,13 @@ it('shows sensitive details only when "Show to companies" is on, and never ID nu
     $student = redResumeStudent([
         'civil_status' => 'Single', 'show_civil_status' => false,
         'religion' => 'Catholic', 'show_religion' => true,
-        'height_cm' => 160, 'show_height' => false,
+        'height_feet' => 5, 'height_inches' => 3, 'show_height' => false,
         'weight_kg' => 55, 'show_weight' => true,
     ]);
 
     expect(redResumeHtml($student))
         ->not->toContain('Single')
-        ->not->toContain('160 cm')
+        ->not->toContain('5 ft 3 in')
         ->toContain('Catholic')
         ->toContain('55 kg')
         ->not->toMatch('/\b(SSS|TIN|NBI|Passport)\b/');

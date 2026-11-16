@@ -15,8 +15,8 @@
 
     <div class="sb-layout-2">
         <div class="sb-stack">
-            @if($profile['career_objectives'])
-                <section class="card"><div class="card-header"><h2>Career objectives</h2></div><div class="card-body"><p class="mb-0">{{ $profile['career_objectives'] }}</p></div></section>
+            @if($profile['about_me'])
+                <section class="card"><div class="card-header"><h2>About me</h2></div><div class="card-body"><p class="mb-0">{{ $profile['about_me'] }}</p></div></section>
             @endif
 
             @if($profile['certificates'])
@@ -47,8 +47,8 @@
                 </section>
             @endif
 
-            @if(! $profile['career_objectives'] && ! $profile['certificates'] && ! $profile['experiences'])
-                <section class="card"><div class="card-body"><p class="sb-note">This student has not added a career objective, certificates or experience yet.</p></div></section>
+            @if(! $profile['about_me'] && ! $profile['certificates'] && ! $profile['experiences'])
+                <section class="card"><div class="card-body"><p class="sb-note">This student has not added an About me, certificates or experience yet.</p></div></section>
             @endif
         </div>
 

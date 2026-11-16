@@ -229,7 +229,7 @@ it('respects the show-to-companies toggles and never includes ID numbers', funct
     $student = resumeStudent([
         'civil_status' => 'Single', 'show_civil_status' => false,
         'religion' => 'Catholic', 'show_religion' => true,
-        'height_cm' => 160, 'show_height' => false,
+        'height_feet' => 5, 'height_inches' => 3, 'show_height' => false,
         'weight_kg' => 55, 'show_weight' => true,
     ]);
 
@@ -241,7 +241,7 @@ it('respects the show-to-companies toggles and never includes ID numbers', funct
         ->toHaveKey('Religion')
         ->toHaveKey('Weight')
         ->and($html)->not->toContain('Single')
-        ->not->toContain('160 cm')
+        ->not->toContain('5 ft 3 in')
         ->toContain('Catholic')
         ->toContain('55 kg')
         ->not->toMatch('/\b(SSS|TIN|NBI|Passport)\b/');

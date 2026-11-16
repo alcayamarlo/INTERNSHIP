@@ -28,13 +28,13 @@ class Student extends Model
         'major_id',
         'program',
         'year_level',
-        'career_objectives',
+        'about_me',
         'profile_picture',
         'id_photo_path',
         'address',
         'middle_name', 'suffix', 'gender', 'city', 'province', 'zip_code', 'department',
         'first_name', 'last_name',
-        'expected_graduation', 'preferred_internship_field', 'preferred_work_setup', 'preferred_location',
+        'expected_graduation',
         'date_of_birth',
         'section',
         'school_year',
@@ -42,11 +42,11 @@ class Student extends Model
         'enrollment_status',
         'gwa',
         'profile_completion',
-        'place_of_birth', 'citizenship', 'languages', 'civil_status', 'religion', 'height_cm', 'weight_kg',
+        'place_of_birth', 'citizenship', 'languages', 'civil_status', 'religion', 'height_feet', 'height_inches', 'weight_kg',
         'show_civil_status', 'show_religion', 'show_height', 'show_weight',
         'provincial_address', 'linkedin_url', 'facebook_url', 'github_url',
         'emergency_contact_name', 'emergency_contact_relationship', 'emergency_contact_address', 'emergency_contact_phone',
-        'elementary_school', 'elementary_year_graduated', 'high_school', 'high_school_year_graduated', 'honors_awards',
+        'elementary_school', 'elementary_year_graduated', 'high_school', 'high_school_year_graduated', 'senior_high_school', 'senior_high_year_graduated', 'honors_awards',
         'privacy_consent', 'privacy_consent_at', 'discoverable',
     ];
 
@@ -60,14 +60,13 @@ class Student extends Model
             'rendered_internship_hours' => 'integer',
             'major_subjects_passed' => 'boolean',
             'student_id_locked' => 'boolean',
-            'height_cm' => 'decimal:1',
+            'height_feet' => 'integer',
+            'height_inches' => 'integer',
             'weight_kg' => 'decimal:1',
             'show_civil_status' => 'boolean',
             'show_religion' => 'boolean',
             'show_height' => 'boolean',
             'show_weight' => 'boolean',
-            'elementary_year_graduated' => 'integer',
-            'high_school_year_graduated' => 'integer',
             'privacy_consent' => 'boolean',
             'privacy_consent_at' => 'datetime',
             'discoverable' => 'boolean',
@@ -328,7 +327,8 @@ class Student extends Model
             ? []
             : ['at least '.self::MIN_COMPLETION_SKILLS.' skills ('.$skillCount.' of '.self::MIN_COMPLETION_SKILLS.')'];
         $missing['portfolio'] = $this->portfolios()->projects()->exists() ? [] : ['at least 1 project'];
-        $missing['references'] = $this->characterReferences()->exists() ? [] : ['at least 1 character reference'];
+        // Character references are optional and never block profile completion.
+        $missing['references'] = [];
         $missing['documents'] = array_values(array_filter([
             $this->resumes()->whereNotNull('file_path')->exists() ? null : 'your resume',
             $this->hasSubmittedRequiredDocument() ? null : 'at least one required document',
@@ -383,7 +383,7 @@ class Student extends Model
             $this->student_id_number,
             $this->program,
             $this->year_level,
-            $this->career_objectives,
+            $this->about_me,
             $this->address,
             $this->date_of_birth,
             $this->profile_picture,

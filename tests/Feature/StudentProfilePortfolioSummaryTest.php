@@ -156,7 +156,7 @@ it('lists incomplete tabs as steps and counts a submitted required document towa
         'student_id_number' => 'SCC-21-00013240',
         'program' => 'Computer Science',
         'year_level' => '3rd Year',
-        'career_objectives' => 'Build useful software.',
+        'about_me' => 'Build useful software.',
         'address' => '1 Campus Road',
         'city' => 'Cebu City',
         'province' => 'Cebu',
@@ -178,9 +178,9 @@ it('lists incomplete tabs as steps and counts a submitted required document towa
 
     $summary = $student->profileCompletionSummary();
 
-    // Only Personal (15%) is complete; the COR leaves Documents needing just the resume.
-    expect($summary['percentage'])->toBe(15)
-        ->and($summary['remaining_steps'])->toBe(6)
+    // Personal (15%) and the optional Character Reference (10%) are complete; the COR leaves Documents needing just the resume.
+    expect($summary['percentage'])->toBe(25)
+        ->and($summary['remaining_steps'])->toBe(5)
         ->and($summary['remaining_steps'])->toBe(count($summary['missing_steps']))
         ->and($summary['missing_steps'])->toContain('Documents: add your resume')
         ->and($summary['missing_steps'])->toContain('Contact: add emergency contact name, emergency contact relationship, emergency contact address, emergency contact phone')
@@ -189,8 +189,8 @@ it('lists incomplete tabs as steps and counts a submitted required document towa
     $this->actingAs($user)
         ->get(route('student.profile.edit'))
         ->assertOk()
-        ->assertSee('aria-valuenow="15"', false)
-        ->assertSee('6 steps left')
+        ->assertSee('aria-valuenow="25"', false)
+        ->assertSee('5 steps left')
         ->assertSee('Documents: add your resume');
 });
 
@@ -213,7 +213,7 @@ it('saves profile changes asynchronously and returns refreshed completion steps'
             'province' => 'Cebu',
             'zip_code' => '6000',
             'student_number' => 'SCC-21-00013240',
-            'career_objectives' => 'Build useful software.',
+            'about_me' => 'Build useful software.',
         ])
         ->assertOk()
         ->assertJsonStructure([

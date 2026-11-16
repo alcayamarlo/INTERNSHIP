@@ -106,14 +106,9 @@
 @error('requirement_names.*')<div class="text-danger small">{{ $message }}</div>@enderror
 </section>
 
+@if($onRequestDocuments->isNotEmpty())
 <section class="card sb-form-section" aria-labelledby="applicantRequirementsTitle">
 <h2 class="sb-form-title" id="applicantRequirementsTitle">Applicant requirements</h2>
-<div class="form-check mb-3">
-    <input type="hidden" name="requires_character_reference" value="0">
-    <input class="form-check-input" type="checkbox" name="requires_character_reference" value="1" id="requiresCharacterReference" @checked(old('requires_character_reference', $internship->requires_character_reference))>
-    <label class="form-check-label" for="requiresCharacterReference">Require at least one character reference before a student can apply</label>
-</div>
-@if($onRequestDocuments->isNotEmpty())
     <fieldset>
         <legend class="form-label mb-1">Request these IDs from applicants</legend>
         <p class="sb-form-intro mt-0">Students upload a file of each ID after they apply. Only ID files are collected, never ID numbers.</p>
@@ -126,8 +121,8 @@
         @endforeach
         @error('requested_documents.*')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
     </fieldset>
-@endif
 </section>
+@endif
 </div>{{-- /.sb-form-col --}}
 </div>{{-- /.sb-form --}}
 

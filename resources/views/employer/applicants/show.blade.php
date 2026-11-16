@@ -86,10 +86,10 @@
                         </section>
                     @endif
 
-                    @if($profile['career_objectives'])
+                    @if($profile['about_me'])
                         <section class="sb-block">
-                            <h2>Career objectives</h2>
-                            <p>{{ $profile['career_objectives'] }}</p>
+                            <h2>About me</h2>
+                            <p>{{ $profile['about_me'] }}</p>
                         </section>
                     @endif
 

@@ -160,10 +160,5 @@ class ApplicationService
             ]);
         }
 
-        if ($internship->requires_character_reference && ! $student->characterReferences()->exists()) {
-            throw ValidationException::withMessages([
-                'character_reference' => 'This internship requires at least one character reference. Add one on your profile under Character Reference, then apply.',
-            ]);
-        }
     }
 }

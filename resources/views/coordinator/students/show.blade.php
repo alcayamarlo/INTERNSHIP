@@ -64,19 +64,8 @@
             </section>
 
             <section class="card">
-                <div class="card-header"><h2>Career objective</h2></div>
-                <div class="card-body"><p class="mb-0">{{ $student->career_objectives ?: 'Not added yet.' }}</p></div>
-            </section>
-
-            <section class="card">
-                <div class="card-header"><h2>Internship preference</h2></div>
-                <div class="card-body">
-                    <dl class="sb-fields">
-                        <div><dt>Field</dt><dd>{{ $student->preferred_internship_field ?: 'Not specified' }}</dd></div>
-                        <div><dt>Work setup</dt><dd>{{ $student->preferred_work_setup ?: 'Not specified' }}</dd></div>
-                        <div><dt>Location</dt><dd>{{ $student->preferred_location ?: 'Not specified' }}</dd></div>
-                    </dl>
-                </div>
+                <div class="card-header"><h2>About me</h2></div>
+                <div class="card-body"><p class="mb-0">{{ $student->about_me ?: 'Not added yet.' }}</p></div>
             </section>
         </div>
 

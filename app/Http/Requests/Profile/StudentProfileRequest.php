@@ -15,6 +15,9 @@ use Illuminate\Validation\Rule;
 
 class StudentProfileRequest extends FormRequest
 {
+    /** A school year such as 2022-2023. */
+    public const SCHOOL_YEAR_REGEX = '/^(\d{4})-(\d{4})$/';
+
     public function authorize(): bool
     {
         return auth()?->user()?->isRole(UserRole::Student) ?? false;
@@ -101,7 +104,9 @@ class StudentProfileRequest extends FormRequest
             'languages' => ['nullable', 'string', 'max:255'],
             'civil_status' => ['nullable', Rule::in(self::CIVIL_STATUSES)],
             'religion' => ['nullable', 'string', 'max:100'],
-            'height_cm' => ['nullable', 'numeric', 'between:50,250'],
+            'height_feet' => ['nullable', 'required_with:height_inches', 'integer', 'between:3,8'],
+            'height_inches' => ['nullable', 'integer', 'between:0,11'],
+            'about_me' => ['nullable', 'string', 'max:1000'],
             'weight_kg' => ['nullable', 'numeric', 'between:20,300'],
             'show_civil_status' => ['nullable', 'boolean'],
             'show_religion' => ['nullable', 'boolean'],
@@ -138,7 +143,8 @@ class StudentProfileRequest extends FormRequest
         $student = $this->user()?->student;
         $studentNumber = $this->input('student_number');
         $studentNumberChanged = $studentNumber !== $student?->student_id_number;
-        $graduationYear = ['required', 'integer', 'between:1950,'.now()->year];
+        // School-year range, e.g. 2022-2023 (the second year is checked in after()).
+        $graduationYear = ['required', 'string', 'regex:'.self::SCHOOL_YEAR_REGEX];
 
         return [
             'student_number' => [
@@ -166,12 +172,8 @@ class StudentProfileRequest extends FormRequest
             'elementary_year_graduated' => $graduationYear,
             'high_school' => ['required', 'string', 'max:255'],
             'high_school_year_graduated' => $graduationYear,
-
-            // Career Information
-            'career_objectives' => ['nullable', 'string', 'max:1000'],
-            'preferred_internship_field' => ['nullable', 'string', 'max:255'],
-            'preferred_work_setup' => ['nullable', 'string', 'in:Remote,Hybrid,Onsite'],
-            'preferred_location' => ['nullable', 'string', 'max:255'],
+            'senior_high_school' => ['nullable', 'required_with:senior_high_year_graduated', 'string', 'max:255'],
+            'senior_high_year_graduated' => ['nullable', 'required_with:senior_high_school', 'string', 'regex:'.self::SCHOOL_YEAR_REGEX],
         ];
     }
 
@@ -188,10 +190,23 @@ class StudentProfileRequest extends FormRequest
                     return;
                 }
 
-                $elementaryYear = $this->integer('elementary_year_graduated');
-                $highSchoolYear = $this->integer('high_school_year_graduated');
-                if ($elementaryYear && $highSchoolYear && $highSchoolYear < $elementaryYear) {
+                // Each "Year graduated" is a school year: the second year is the first year + 1, within 1950 and next year.
+                $ends = [];
+                foreach (['elementary_year_graduated', 'high_school_year_graduated', 'senior_high_year_graduated'] as $field) {
+                    if (! preg_match(self::SCHOOL_YEAR_REGEX, (string) $this->input($field), $years)) {
+                        continue;
+                    }
+                    if ((int) $years[2] !== (int) $years[1] + 1 || (int) $years[1] < 1950 || (int) $years[2] > now()->year + 1) {
+                        $validator->errors()->add($field, 'Enter a school year such as 2022-2023 (the second year is the first year plus one).');
+                        continue;
+                    }
+                    $ends[$field] = (int) $years[2];
+                }
+                if (isset($ends['elementary_year_graduated'], $ends['high_school_year_graduated']) && $ends['high_school_year_graduated'] < $ends['elementary_year_graduated']) {
                     $validator->errors()->add('high_school_year_graduated', 'High school graduation must be after elementary graduation.');
+                }
+                if (isset($ends['high_school_year_graduated'], $ends['senior_high_year_graduated']) && $ends['senior_high_year_graduated'] < $ends['high_school_year_graduated']) {
+                    $validator->errors()->add('senior_high_year_graduated', 'Senior high school graduation must be after high school graduation.');
                 }
 
                 $programId = $this->integer('program_id');
@@ -275,8 +290,11 @@ class StudentProfileRequest extends FormRequest
             'year_level.required' => 'Year level is required.',
             'expected_graduation.required' => 'Expected graduation is required.',
             'emergency_contact_phone.regex' => 'Please enter a valid phone number.',
-            'elementary_year_graduated.between' => 'Enter a year between 1950 and this year.',
-            'high_school_year_graduated.between' => 'Enter a year between 1950 and this year.',
+            'elementary_year_graduated.regex' => 'Enter a school year such as 2016-2017.',
+            'high_school_year_graduated.regex' => 'Enter a school year such as 2020-2021.',
+            'senior_high_year_graduated.regex' => 'Enter a school year such as 2022-2023.',
+            'height_feet.between' => 'Enter feet between 3 and 8.',
+            'height_inches.between' => 'Enter inches between 0 and 11.',
             'linkedin_url.url' => 'Enter a full link starting with https://.',
             'facebook_url.url' => 'Enter a full link starting with https://.',
             'github_url.url' => 'Enter a full link starting with https://.',

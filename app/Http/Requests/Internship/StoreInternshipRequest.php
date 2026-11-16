@@ -41,7 +41,6 @@ class StoreInternshipRequest extends FormRequest
             'requirement_names.*' => ['nullable', 'string', 'max:255'],
             'requirement_levels' => ['nullable', 'array'],
             'requirement_levels.*' => ['nullable', Rule::enum(ProficiencyLevel::class)],
-            'requires_character_reference' => ['nullable', 'boolean'],
             'requested_documents' => ['nullable', 'array'],
             'requested_documents.*' => ['string', Rule::exists('deployment_requirements', 'code')->where('on_request', true)->where('is_active', true)],
         ];
@@ -65,7 +64,6 @@ class StoreInternshipRequest extends FormRequest
                 ? \Illuminate\Support\Carbon::createFromFormat('Y-m-d', $validated['expires_at'])->endOfDay()
                 : null;
         }
-        $validated['requires_character_reference'] = $this->boolean('requires_character_reference');
         $validated['requested_documents'] = array_values(array_unique($validated['requested_documents'] ?? []));
 
         return data_get($validated, $key, $default);

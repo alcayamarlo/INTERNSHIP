@@ -116,11 +116,10 @@ class InternshipController extends Controller
             ->whereIn('code', $internship->requested_documents ?? [])
             ->orderBy('sort_order')
             ->pluck('name');
-        $needsCharacterReference = $internship->requires_character_reference && ! $student->characterReferences()->exists();
 
         $hasOjt = $student->hasOjt();
 
-        return view('student.internships.show', compact('internship', 'matchPercentage', 'matchDetails', 'hasApplied', 'recommendationFeedback', 'eligibilityReasons', 'resumes', 'requestedDocumentNames', 'needsCharacterReference', 'hasOjt'));
+        return view('student.internships.show', compact('internship', 'matchPercentage', 'matchDetails', 'hasApplied', 'recommendationFeedback', 'eligibilityReasons', 'resumes', 'requestedDocumentNames', 'hasOjt'));
     }
 
     public function storeRecommendationFeedback(Request $request, Internship $internship)

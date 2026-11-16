@@ -27,7 +27,7 @@
     // Feedback form is collapsed; it opens on its own when it came back with errors.
     $feedbackOpen = $errors->hasAny(['feedback', 'comment']);
     $hasOjt = $hasOjt ?? false;
-    $canApply = ! $hasOjt && ! $hasApplied && $internship->isAcceptingApplications() && $eligibilityReasons === [] && ! $needsCharacterReference && $resumes->isNotEmpty();
+    $canApply = ! $hasOjt && ! $hasApplied && $internship->isAcceptingApplications() && $eligibilityReasons === [] && $resumes->isNotEmpty();
 @endphp
 
 @section('content')
@@ -167,8 +167,6 @@
                             @endforeach
                         </ul>
                     </div>
-                @elseif($needsCharacterReference)
-                    <div class="sb-callout"><p>This internship requires at least one character reference. <a href="{{ route('student.profile.edit') }}#references">Add a reference</a>, then come back to apply.</p></div>
                 @elseif($resumes->isEmpty())
                     <p class="sb-note">Create a resume before applying.</p>
                     <a href="{{ route('student.resume.index') }}" class="btn btn-outline-primary w-100">Manage my resumes</a>

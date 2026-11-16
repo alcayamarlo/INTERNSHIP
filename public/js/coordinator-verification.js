@@ -627,9 +627,6 @@
         addDetail(details, 'Department', student.department);
         addDetail(details, 'Year level', student.year_level);
         addDetail(details, 'Email', student.email);
-        addDetail(details, 'Internship field', student.preferred_internship_field);
-        addDetail(details, 'Work setup', student.preferred_work_setup);
-        addDetail(details, 'Location', student.preferred_location);
 
         const { verified, total, percent } = data.progress;
         document.getElementById('drawerProgressTitle').textContent = `Verification progress · ${verified} of ${total}`;

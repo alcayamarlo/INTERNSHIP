@@ -62,8 +62,8 @@ function bioDataDefaults(): array
         'year_level' => '3rd Year',
         'expected_graduation' => '2027-05',
         'elementary_school' => 'Cebu Central School',
-        'elementary_year_graduated' => 2015,
+        'elementary_year_graduated' => '2014-2015',
         'high_school' => 'Cebu City National Science High School',
-        'high_school_year_graduated' => 2021,
+        'high_school_year_graduated' => '2020-2021',
     ];
 }

@@ -27,7 +27,6 @@ class Internship extends Model
         'expires_at',
         'alerts_sent_at',
         'deadline_reminded_at',
-        'requires_character_reference',
         'requested_documents',
         'hidden_at',
         'hidden_reason',
@@ -41,7 +40,6 @@ class Internship extends Model
             'expires_at' => 'datetime',
             'alerts_sent_at' => 'datetime',
             'deadline_reminded_at' => 'datetime',
-            'requires_character_reference' => 'boolean',
             'requested_documents' => 'array',
             'hidden_at' => 'datetime',
         ];

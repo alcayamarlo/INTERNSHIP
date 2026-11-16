@@ -5,9 +5,9 @@
 @section('content')
 @php
     $tabErrorFields = [
-        'personal' => ['first_name', 'middle_name', 'last_name', 'suffix', 'gender', 'date_of_birth', 'place_of_birth', 'citizenship', 'languages', 'civil_status', 'religion', 'height_cm', 'weight_kg', 'profile_picture'],
+        'personal' => ['first_name', 'middle_name', 'last_name', 'suffix', 'gender', 'date_of_birth', 'place_of_birth', 'citizenship', 'languages', 'civil_status', 'religion', 'height_feet', 'height_inches', 'weight_kg', 'about_me', 'profile_picture'],
         'contact' => ['email', 'phone', 'address', 'city', 'province', 'zip_code', 'provincial_address', 'linkedin_url', 'facebook_url', 'github_url', 'emergency_contact_name', 'emergency_contact_relationship', 'emergency_contact_address', 'emergency_contact_phone'],
-        'academic' => ['student_number', 'program_id', 'major_id', 'department', 'year_level', 'section', 'school_year', 'semester', 'expected_graduation', 'enrollment_status', 'gwa', 'elementary_school', 'elementary_year_graduated', 'high_school', 'high_school_year_graduated', 'career_objectives', 'preferred_internship_field', 'preferred_work_setup', 'preferred_location'],
+        'academic' => ['student_number', 'program_id', 'major_id', 'department', 'year_level', 'section', 'school_year', 'semester', 'expected_graduation', 'enrollment_status', 'gwa', 'elementary_school', 'elementary_year_graduated', 'high_school', 'high_school_year_graduated', 'senior_high_school', 'senior_high_year_graduated'],
         'portfolio' => ['title', 'type', 'tools_used', 'project_url', 'achievements'],
         'documents' => ['file', 'issuer', 'issue_date', 'expiration_date'],
     ];
