@@ -845,6 +845,9 @@ html body.sb-app .sb-section-tab.active { background: var(--burgundy) !important
 html body.sb-app .sb-section-tab::after { display: none !important; }
 html body.sb-app .sb-tab-count { min-width: 22px; padding: 1px 7px; border-radius: var(--r-pill); background: var(--burgundy-tint); color: var(--burgundy-tint-text); font-size: 12px; font-weight: 700; text-align: center; }
 html body.sb-app .sb-section-tab.active .sb-tab-count { background: var(--on-burgundy); color: var(--burgundy); }
+html body.sb-app button.sb-section-tab { font-family: inherit; cursor: pointer; }
+html body.sb-app .sb-section-tab[aria-selected="true"] { background: var(--burgundy) !important; border-color: var(--burgundy) !important; color: var(--on-burgundy) !important; }
+html body.sb-app .sb-section-tab[aria-selected="true"] .sb-tab-count { background: var(--on-burgundy); color: var(--burgundy); }
 
 /* Toolbar above a table (sort note + sort select) and footer tools */
 html body.sb-app .sb-toolbar-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
@@ -1033,3 +1036,41 @@ html body.sb-app .card > .sb-note { margin: 12px 0 0; padding: 0 24px; }
 html body.sb-app .card > .sb-rows--card { margin-top: 8px; }
 /* Titles inside narrow detail panels */
 html body.sb-app .sb-detail-body .sb-detail-title { font-size: 18px; }
+
+/* =========================================================================================
+   Review queue (Coordinator > Verification): a list of people on the left (.sbx-list rows as
+   role="option"), their submissions on the right, each with actions and an inline panel for a
+   reason; the person's details open in a Bootstrap offcanvas (.sb-drawer).
+   ========================================================================================= */
+html body.sb-app .sbx .sbx-list > .sbx-row { cursor: pointer; border-radius: 12px; }
+html body.sb-app .sbx .sbx-list > .sbx-row:last-child { border-bottom: 0; }
+html body.sb-app .sbx .sbx-row[aria-selected="true"] { background: var(--burgundy-tint); }
+html body.sb-app .sbx .sbx-row[aria-selected="true"] .sbx-row-title { color: var(--burgundy-tint-text); }
+html body.sb-app .sbx .sbx-row:focus-visible { outline: 2px solid var(--burgundy-text); outline-offset: -2px; }
+html body.sb-app .sbx .sbx-row > .sb-initials { flex-shrink: 0; }
+html body.sb-app .sbx .sbx-row > .sbx-row-text { flex: 1 1 auto; }
+html body.sb-app .sbx .sbx-row-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html body.sb-app .sb-row-end { flex-shrink: 0; display: grid; justify-items: end; font-variant-numeric: tabular-nums; }
+html body.sb-app .sbx-list-card > .sb-block-title { margin: 0 0 8px; padding: 0 4px; }
+html body.sb-app .sbx-detail > .sb-detail { gap: 18px; }
+html body.sb-app .sb-detail-head .sb-person { min-width: 0; }
+html body.sb-app .sb-detail-head .sb-detail-title { font-size: 18px; }
+html body.sb-app .sb-review-list { display: grid; border-top: 1px solid var(--line); }
+html body.sb-app .sb-review-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+html body.sb-app .sb-review-row:last-child { border-bottom: 0; }
+html body.sb-app .sb-review-row-text { flex: 1 1 260px; min-width: 0; overflow-wrap: anywhere; }
+html body.sb-app .sb-review-row > .sb-actions { flex-shrink: 0; align-items: center; }
+html body.sb-app .sb-inline-panel { flex: 1 1 100%; display: grid; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--surface-alt); }
+html body.sb-app .sb-inline-panel .form-control[aria-invalid="true"] { border-color: var(--burgundy); }
+html body.sb-app .sb-drawer { --bs-offcanvas-width: min(480px, 100vw); background: var(--surface); color: var(--text); border-left: 1px solid var(--line); }
+html body.sb-app .sb-drawer .offcanvas-header { border-bottom: 1px solid var(--line); }
+html body.sb-app .sb-drawer .sb-rows li { display: block; }
+html body.sb-app .sb-drawer .sb-fields > div { grid-template-columns: 120px minmax(0, 1fr); }
+html body.sb-app .sb-file-preview iframe { display: block; width: 100%; height: min(70vh, 640px); border: 0; border-radius: var(--r-panel); }
+html body.sb-app .sb-file-preview img { display: block; max-width: 100%; height: auto; border-radius: var(--r-panel); }
+@media (prefers-reduced-motion: no-preference) {
+    html body.sb-app .sb-detail.is-entering { --rise-y: 8px; animation: rise var(--sb-motion-base, 220ms) var(--sb-motion-ease, ease-out) both; }
+}
+html body.sb-app .sb-drawer .sb-block { margin: 0; padding: 18px 0; border-top: 1px solid var(--line); }
+html body.sb-app .sb-drawer .sb-block:first-child { padding-top: 0; border-top: 0; }
+html body.sb-app .sb-drawer .sb-block > h3 { font-size: 15px; font-weight: 600; color: var(--text); }

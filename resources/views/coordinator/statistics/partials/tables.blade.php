@@ -1,4 +1,5 @@
 {{-- Shared by the statistics page and its PDF export. --}}
+<div class="table-responsive">
 <table class="table table-sm stats-table">
     <tbody>
         @foreach($labels as $key => $label)
@@ -8,8 +9,10 @@
         <tr><th scope="row">Completion rate</th><td class="text-end" data-rate="completion">{{ $stats['rates']['completion'] }}%</td></tr>
     </tbody>
 </table>
+</div>
 
 <h3 class="h6 mt-4">By program</h3>
+<div class="table-responsive">
 <table class="table table-sm stats-table">
     <thead><tr><th>Program</th><th class="text-end">Enrolled</th><th class="text-end">Placed</th><th class="text-end">Completed</th></tr></thead>
     <tbody>
@@ -20,8 +23,10 @@
         @endforelse
     </tbody>
 </table>
+</div>
 
 <h3 class="h6 mt-4">Partner companies</h3>
+<div class="table-responsive">
 <table class="table table-sm stats-table">
     <thead><tr><th>Company</th><th class="text-end">Interns</th><th class="text-end">Completed</th><th class="text-end">Avg. evaluation</th><th class="text-end">Would hire</th></tr></thead>
     <tbody>
@@ -38,3 +43,4 @@
         @endforelse
     </tbody>
 </table>
+</div>

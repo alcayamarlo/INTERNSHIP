@@ -3,17 +3,16 @@
 @section('title', 'Report Reviews')
 
 @section('content')
+<div class="sb-dash">
 <x-page-header title="Report reviews" subtitle="Your second review after the company supervisor: weekly reports, evaluations, and recent attendance." />
 
-<ul class="nav nav-tabs mb-3" role="tablist">
+<nav class="sb-section-tabs mb-0" aria-label="Review lists">
     @foreach(['reports' => 'Weekly reports', 'evaluations' => 'Evaluations', 'attendance' => 'Attendance (last 14 days)'] as $key => $label)
-        <li class="nav-item" role="presentation">
-            <a class="nav-link {{ $tab === $key ? 'active' : '' }}" href="{{ route('coordinator.reviews.index', ['tab' => $key]) }}" @if($tab === $key) aria-current="page" @endif>
-                {{ $label }} @if($counts[$key])<span class="badge text-bg-danger ms-1">{{ $counts[$key] }}</span>@endif
-            </a>
-        </li>
+        <a class="sb-section-tab {{ $tab === $key ? 'active' : '' }}" href="{{ route('coordinator.reviews.index', ['tab' => $key]) }}" @if($tab === $key) aria-current="page" @endif>
+            {{ $label }} @if($counts[$key])<span class="sb-tab-count">{{ $counts[$key] }}</span>@endif
+        </a>
     @endforeach
-</ul>
+</nav>
 
 @if($tab === 'attendance')
     <div class="card">
@@ -28,12 +27,12 @@
                             <td>{{ $log->work_date?->format('M d, Y') }}</td>
                             <td>{{ number_format((float) $log->hours, 2) }}</td>
                             <td>
-                                <span class="badge {{ $log->status === 'approved' ? 'text-bg-success' : ($log->status === 'rejected' ? 'text-bg-danger' : 'text-bg-warning') }}">{{ ucfirst($log->status) }}</span>
-                                @if($log->reviewer_remarks)<small class="d-block text-muted">{{ $log->reviewer_remarks }}</small>@endif
+                                <x-status-badge :status="$log->status" :label="ucfirst($log->status)" />
+                                @if($log->reviewer_remarks)<span class="sb-row-sub">{{ $log->reviewer_remarks }}</span>@endif
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="text-center text-muted py-4">No time entries in the last 14 days.</td></tr>
+                        <tr><td colspan="5" class="sb-table-empty text-center text-muted">No time entries in the last 14 days.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -46,17 +45,17 @@
             $isReport = $tab === 'reports';
             $placement = $item->placement;
         @endphp
-        <article class="card mb-3" data-review-item>
+        <article class="card" data-review-item>
             <div class="card-body">
                 <div class="d-flex justify-content-between flex-wrap gap-2 mb-2">
                     <div>
-                        <h2 class="h6 mb-0">{{ $isReport ? $item->title : 'Evaluation of '.($placement?->student?->user?->name ?? 'intern') }}</h2>
+                        <h2 class="sb-card-title mb-1">{{ $isReport ? $item->title : 'Evaluation of '.($placement?->student?->user?->name ?? 'intern') }}</h2>
                         <small class="text-muted">
                             <a href="{{ route('coordinator.placements.show', $placement) }}">{{ $placement?->student?->user?->name }}</a> · {{ $placement?->employer?->company_name }}
                             · {{ $isReport ? 'Week of '.$item->week_start?->format('M d, Y') : 'Submitted '.$item->submitted_at?->format('M d, Y') }}
                         </small>
                     </div>
-                    @unless($isReport)<span class="badge text-bg-light border">Average {{ number_format((float) $item->average_score, 2) }} / 5</span>@endunless
+                    @unless($isReport)<span class="sb-status sb-status--neutral">Average {{ number_format((float) $item->average_score, 2) }} / 5</span>@endunless
                 </div>
                 @if($isReport)
                     {{-- Weekly narrative report sections; older reports only have accomplishments. --}}
@@ -90,8 +89,9 @@
             </div>
         </article>
     @empty
-        <div class="card"><div class="card-body text-center text-muted py-5">Nothing waiting for your review.</div></div>
+        <div class="card"><x-empty-state icon="bi-check2-circle" title="Nothing waiting for your review." /></div>
     @endforelse
-    @if($items->hasPages())<div class="mt-3">{{ $items->links() }}</div>@endif
+    @if($items->hasPages())<div class="sb-pages">{{ $items->links() }}</div>@endif
 @endif
+</div>
 @endsection

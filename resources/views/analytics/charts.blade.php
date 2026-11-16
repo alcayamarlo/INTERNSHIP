@@ -44,14 +44,12 @@
         </div>
     </section>
 @else
-    <div class="row g-4 mb-4">
+    <div class="sb-grid sb-grid--2">
         @foreach($order as $chartId)
             @php [$title, $icon, $label] = $chartCards[$chartId]; @endphp
-            <div class="col-lg-6">
-                <div class="card h-100">
+            <div class="card {{ $chartId === 'skillsChart' ? 'sb-span-all' : '' }}">
                     <div class="card-header"><h2><i class="bi {{ $icon }}" aria-hidden="true"></i> {{ $title }}</h2></div>
                     <div class="card-body"><div class="sb-chart"><canvas id="{{ $chartId }}" role="img" aria-label="{{ $label }}"></canvas></div></div>
-                </div>
             </div>
         @endforeach
     </div>

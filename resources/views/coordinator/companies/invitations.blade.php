@@ -2,16 +2,13 @@
 
 @section('title', 'Company Invitations')
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/coordinator-companies.css') }}?v={{ @filemtime(public_path('css/coordinator-companies.css')) }}">
-@endpush
-
 @section('content')
+<div class="sb-dash">
 <x-page-header title="Partner companies" subtitle="Invite a company that has no account yet. It receives an email link, completes its details, sets a password, and becomes a registered partner." />
 
 @include('coordinator.companies.partials.tabs')
 
-<section class="card mb-4" id="invite" aria-labelledby="inviteHeading">
+<section class="card" id="invite" aria-labelledby="inviteHeading">
     <div class="card-header"><h2 id="inviteHeading">Invite a company</h2></div>
     <form method="POST" action="{{ route('coordinator.companies.invitations.store') }}" class="card-body" novalidate>
         @csrf
@@ -48,7 +45,7 @@
     </form>
 </section>
 
-<section class="card pc-table-card" aria-labelledby="invitationsHeading">
+<section class="card" aria-labelledby="invitationsHeading">
     <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
         <h2 id="invitationsHeading" class="mb-0">Your invitations</h2>
         <form method="GET" action="{{ route('coordinator.companies.invitations.index') }}" class="d-flex align-items-center gap-2">
@@ -63,27 +60,27 @@
         </form>
     </div>
     <div class="table-responsive">
-        <table class="table table-hover mb-0 pc-table">
+        <table class="table table-hover mb-0 sb-table-stack">
             <thead><tr><th>ID</th><th>Company</th><th>Email</th><th>Status</th><th>Sent</th><th>Expires / accepted</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
             <tbody>
                 @forelse($invitations as $invitation)
                     @php($current = $invitation->currentStatus())
                     <tr>
-                        <td class="text-nowrap">{{ $invitation->reference }}</td>
-                        <td>{{ $invitation->company_name }}@if($invitation->phone)<small class="d-block text-muted">{{ $invitation->phone }}</small>@endif</td>
-                        <td>{{ $invitation->email }}</td>
-                        <td><span class="badge {{ $current->badgeClass() }}">{{ $current->label() }}</span>
-                            @if($current === \App\Enums\CompanyInvitationStatus::Sent && $invitation->opened_at)<small class="d-block text-muted">Link opened</small>@endif
+                        <td class="sb-stack-block text-nowrap"><span class="sb-row-title">{{ $invitation->reference }}</span></td>
+                        <td data-label="Company" class="sb-stack-block text-break">{{ $invitation->company_name }}@if($invitation->phone)<span class="sb-row-sub">{{ $invitation->phone }}</span>@endif</td>
+                        <td data-label="Email" class="text-break">{{ $invitation->email }}</td>
+                        <td data-label="Status" class="sb-stack-block"><x-status-badge :status="$current->value" :label="$current->label()" :tone="$current === \App\Enums\CompanyInvitationStatus::Sent ? 'warning' : null" />
+                            @if($current === \App\Enums\CompanyInvitationStatus::Sent && $invitation->opened_at)<span class="sb-row-sub">Link opened</span>@endif
                         </td>
-                        <td class="text-nowrap">{{ $invitation->created_at->timezone('Asia/Manila')->format('M d, Y') }}</td>
-                        <td class="text-nowrap">
+                        <td data-label="Sent" class="text-nowrap">{{ $invitation->created_at->timezone('Asia/Manila')->format('M d, Y') }}</td>
+                        <td data-label="Expires / accepted" class="text-nowrap">
                             @if($invitation->accepted_at)
                                 {{ $invitation->accepted_at->timezone('Asia/Manila')->format('M d, Y') }}
                             @else
                                 {{ $invitation->expires_at->timezone('Asia/Manila')->format('M d, Y') }}
                             @endif
                         </td>
-                        <td class="text-end">
+                        <td class="text-end sb-stack-block">
                             @if($current === \App\Enums\CompanyInvitationStatus::Accepted)
                                 @if($invitation->employer_id)
                                     <a href="{{ route('coordinator.companies.show', $invitation->employer_id) }}" class="btn btn-sm btn-outline-primary text-nowrap">View company</a>
@@ -97,11 +94,12 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="text-center text-muted py-4">{{ $status ? 'No invitations with this status.' : 'No invitations yet. Use the form above to invite a company.' }}</td></tr>
+                    <tr><td colspan="7" class="sb-table-empty sb-stack-block text-center text-muted">{{ $status ? 'No invitations with this status.' : 'No invitations yet. Use the form above to invite a company.' }}</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
     @if($invitations->hasPages())<div class="card-footer">{{ $invitations->links() }}</div>@endif
 </section>
+</div>
 @endsection

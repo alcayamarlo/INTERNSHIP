@@ -3,7 +3,7 @@
 @section('title', 'Reports')
 
 @section('content')
-
+<div class="sb-dash">
 <x-page-header title="Reports" subtitle="Generate and download institutional reports" />
 
 <div class="row g-4">
@@ -52,7 +52,7 @@
 
             @if($reports->count())
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table table-hover mb-0">
                         <thead>
                             <tr>
                                 <th scope="col">Type</th>
@@ -82,5 +82,5 @@
     </div>
 
 </div>
-
+</div>
 @endsection

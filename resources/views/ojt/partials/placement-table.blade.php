@@ -17,17 +17,17 @@
                 @forelse($placements as $placement)
                     @php $percent = $placement->progressPercent(); @endphp
                     <tr>
-                        <td class="sb-stack-block"><strong>{{ $placement->student?->user?->name ?? '—' }}</strong><div class="small text-muted">{{ $placement->student?->student_id_number }}</div></td>
-                        <td data-label="Company">{{ $placement->employer?->company_name ?? '—' }}<div class="small text-muted">{{ $placement->internship?->title }}</div></td>
+                        <td class="sb-stack-block"><span class="sb-row-title">{{ $placement->student?->user?->name ?? '—' }}</span><div class="sb-row-sub">{{ $placement->student?->student_id_number }}</div></td>
+                        <td data-label="Company" class="sb-stack-block">{{ $placement->employer?->company_name ?? '—' }}<div class="sb-row-sub">{{ $placement->internship?->title }}</div></td>
                         <td data-label="Started" class="text-nowrap">{{ $placement->start_date?->format('M d, Y') }}</td>
-                        <td data-label="Hours" class="sb-stack-block" style="min-width: 150px;">
+                        <td data-label="Hours" class="sb-stack-block sb-progress-cell">
                             <div class="small">{{ number_format($placement->approvedHours(), 1) }} / {{ $placement->required_hours }} h</div>
-                            <div class="progress" style="height: 6px;" role="progressbar" aria-label="Hours progress" aria-valuenow="{{ $percent }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar {{ $percent >= 100 ? 'bg-success' : '' }}" style="width: {{ $percent }}%"></div></div>
+                            <div class="progress progress--thin" role="progressbar" aria-label="Hours progress" aria-valuenow="{{ $percent }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: {{ $percent }}%"></div></div>
                         </td>
                         <td data-label="Evaluation">{{ $placement->evaluation ? number_format((float) $placement->evaluation->average_score, 2).' / 5' : '—' }}</td>
-                        <td data-label="Status"><x-status-badge :status="$placement->isCleared() ? 'verified' : (($placement->isCompleted() || $placement->isPendingValidation()) ? 'pending' : 'active')" :label="$placement->isCompleted() && ! $placement->isCleared() ? 'For clearance' : $placement->statusLabel()" />@if($risk = $placement->riskReason())<span class="badge text-bg-danger d-inline-block mt-1" title="{{ $risk }}"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> At risk</span><small class="d-block text-danger">{{ $risk }}</small>@endif
+                        <td data-label="Status" class="sb-stack-block"><x-status-badge :status="$placement->isCleared() ? 'verified' : (($placement->isCompleted() || $placement->isPendingValidation()) ? 'pending' : 'active')" :label="$placement->isCompleted() && ! $placement->isCleared() ? 'For clearance' : $placement->statusLabel()" />@if($risk = $placement->riskReason())<span class="sb-status sb-status--danger mt-1" title="{{ $risk }}"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> At risk</span><span class="sb-row-sub">{{ $risk }}</span>@endif
                             @php $due = collect($deadlines[$placement->id] ?? []); $overdueCount = $due->where('overdue', true)->count(); $next = $due->where('overdue', false)->sortBy(fn ($item) => $item['due_on']->timestamp)->first(); @endphp
-                            @if($overdueCount)<span class="badge text-bg-danger d-inline-block mt-1" title="{{ $due->where('overdue', true)->pluck('label')->implode(', ') }}">{{ $overdueCount }} overdue</span>@elseif($next)<span class="badge text-bg-warning d-inline-block mt-1" title="{{ $next['label'] }}">Due {{ $next['due_on']->format('M j') }}</span>@endif</td>
+                            @if($overdueCount)<span class="sb-status sb-status--danger mt-1" title="{{ $due->where('overdue', true)->pluck('label')->implode(', ') }}">{{ $overdueCount }} overdue</span>@elseif($next)<span class="sb-status sb-status--warning mt-1" title="{{ $next['label'] }}">Due {{ $next['due_on']->format('M j') }}</span>@endif</td>
                         <td class="sb-stack-block"><a href="{{ route($showRoute, $placement) }}" class="btn btn-sm btn-outline-primary">View</a></td>
                     </tr>
                 @empty

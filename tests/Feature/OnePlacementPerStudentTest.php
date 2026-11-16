@@ -122,5 +122,5 @@ it('lists each placed student once in the coordinator and admin placement lists'
 
     // One table row for the student (the refused attempt's flashed error is not a row).
     expect(Placement::count())->toBe(1)
-        ->and(substr_count($html, '<strong>Dana Duplicate</strong>'))->toBe(1);
+        ->and(substr_count($html, '<span class="sb-row-title">Dana Duplicate</span>'))->toBe(1);
 });
