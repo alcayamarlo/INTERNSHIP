@@ -2,1021 +2,6 @@
 
 @section('title', 'My Certificates')
 
-@push('styles')
-<style>
-    #competenciesOverview {
-        --co-page: var(--sb-canvas);
-        --co-panel: var(--sb-surface);
-        --co-card: var(--sb-surface);
-        --co-raised: var(--sb-surface-raised);
-        --co-border: var(--sb-border);
-        --co-border-strong: var(--sb-control-border);
-        --co-accent: var(--sb-brand);
-        --co-accent-text: var(--sb-brand-content);
-        --co-accent-hover: var(--sb-brand-deep);
-        --co-text-on-accent: #fff;
-        --co-accent-soft: var(--sb-red-soft);
-        --co-accent-ring: var(--sb-brand-ring);
-        --co-text: var(--sb-ink);
-        --co-secondary: var(--sb-text-soft);
-        --co-muted: var(--sb-muted);
-        --co-verified: var(--sb-success-ink);
-        --co-verified-bg: var(--sb-success-bg);
-        --co-pending: var(--sb-warning-ink);
-        --co-pending-bg: var(--sb-warning-bg);
-        --co-rejected: var(--sb-danger-ink);
-        --co-rejected-bg: var(--sb-danger-bg);
-        --co-neutral: var(--sb-text-soft);
-        --co-neutral-bg: var(--sb-surface-raised);
-        --co-radius-control: 8px;
-        --co-radius-card: 14px;
-        --co-radius-panel: 18px;
-        --co-space-1: 4px;
-        --co-space-2: 8px;
-        --co-space-3: 12px;
-        --co-space-4: 16px;
-        --co-space-5: 24px;
-        --co-space-6: 32px;
-        --co-dur-fast: 120ms;
-        --co-dur-base: 200ms;
-        --co-dur-press: 100ms;
-        --co-dur-selection: 150ms;
-        --co-dur-crossfade: 150ms;
-        --co-dur-list-out: 100ms;
-        --co-dur-detail: 180ms;
-        --co-dur-toggle: 250ms;
-        --co-dur-grid: 250ms;
-        --co-dur-pulse: 400ms;
-        --co-delay-row: 30ms;
-        --co-delay-level: 40ms;
-        --co-dur-slow: 450ms;
-        --co-dur-hero: 800ms;
-        --co-ease-out: cubic-bezier(.16, 1, .3, 1);
-        --co-ease-in-out: cubic-bezier(.65, 0, .35, 1);
-        --co-selected-bg: var(--burgundy-tint);
-        --co-selected-line: var(--burgundy);
-        color: var(--co-text);
-        padding: var(--co-space-2) 0 var(--co-space-6);
-    }
-
-    #competenciesOverview *,
-    #competenciesOverview *::before,
-    #competenciesOverview *::after {
-        box-sizing: border-box;
-    }
-
-    #competenciesOverview h1,
-    #competenciesOverview h2,
-    #competenciesOverview h3,
-    #competenciesOverview p {
-        margin: 0;
-    }
-
-    #competenciesOverview .co-number {
-        font-variant-numeric: lining-nums tabular-nums;
-    }
-
-    #competenciesOverview .co-header {
-        align-items: center;
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--co-space-4);
-        justify-content: space-between;
-        margin-bottom: var(--co-space-5);
-    }
-
-    #competenciesOverview .co-title {
-        color: var(--co-text);
-        font-size: clamp(24px, 2.4vw, 30px);
-        font-weight: 700;
-        line-height: 1.15;
-        letter-spacing: -.035em;
-    }
-
-    #competenciesOverview .co-hint {
-        color: var(--co-muted);
-        font-size: 15px;
-        margin-top: 6px;
-    }
-
-    #competenciesOverview .co-chip,
-    #competenciesOverview .co-axis-button,
-    #competenciesOverview .co-row,
-    #competenciesOverview .co-primary,
-    #competenciesOverview .co-empty-action {
-        appearance: none;
-        border: 1px solid transparent;
-        color: var(--co-secondary);
-        cursor: pointer;
-        font: inherit;
-        font-weight: 400;
-        transition:
-            background-color var(--co-dur-fast) var(--co-ease-out),
-            border-color var(--co-dur-fast) var(--co-ease-out),
-            color var(--co-dur-fast) var(--co-ease-out),
-            opacity var(--co-dur-fast) var(--co-ease-out),
-            transform var(--co-dur-base) var(--co-ease-out),
-            font-weight var(--co-dur-selection) var(--co-ease-out);
-    }
-
-    #competenciesOverview .co-chip:hover,
-    #competenciesOverview .co-axis-button:hover,
-    #competenciesOverview .co-row:hover {
-        background-color: var(--co-raised);
-        color: var(--co-text);
-    }
-
-    #competenciesOverview .co-chip:active,
-    #competenciesOverview .co-axis-button:active,
-    #competenciesOverview .co-row:active,
-    #competenciesOverview .co-primary:active,
-    #competenciesOverview .co-empty-action:active {
-        transform: scale(.98);
-        transition-duration: var(--co-dur-press);
-    }
-
-    #competenciesOverview button:focus-visible,
-    #competenciesOverview a:focus-visible {
-        outline: 2px solid var(--co-accent);
-        outline-offset: 2px;
-    }
-
-    #competenciesOverview button:disabled,
-    #competenciesOverview a[aria-disabled="true"] {
-        background-color: var(--co-panel);
-        border-color: var(--co-border);
-        color: var(--co-muted);
-        cursor: not-allowed;
-        opacity: .55;
-        transform: none;
-    }
-
-    /* Table + drawer: same 2fr / 1fr split as .sb-layout-2 (about 65 / 35). */
-    #competenciesOverview .co-layout {
-        align-items: start;
-        display: grid;
-        gap: var(--co-space-5);
-        grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
-    }
-
-    #competenciesOverview .co-card {
-        background: var(--co-card);
-        border: 1px solid var(--co-border);
-        border-radius: var(--co-radius-card);
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04), 0 8px 24px rgba(0, 0, 0, .25);
-        min-width: 0;
-        padding: var(--co-space-5);
-    }
-
-    #competenciesOverview .co-outer-panel {
-        background: var(--co-panel);
-        border: 1px solid var(--co-border);
-        border-radius: var(--co-radius-panel);
-        padding: var(--co-space-5);
-    }
-
-    #competenciesOverview .co-card-title {
-        color: var(--co-text);
-        font-size: 16px;
-        font-weight: 500;
-        letter-spacing: -.01em;
-        margin-bottom: var(--co-space-4);
-    }
-
-    #competenciesOverview .co-radar-wrap {
-        margin: 0 auto;
-        max-width: 440px;
-        position: relative;
-        width: 100%;
-    }
-
-    #competenciesOverview .co-radar {
-        display: block;
-        height: auto;
-        overflow: visible;
-        width: 100%;
-    }
-
-    #competenciesOverview .co-grid-layer,
-    #competenciesOverview .co-axis-layer {
-        opacity: 0;
-        transition: opacity var(--co-dur-grid) var(--co-ease-out);
-    }
-
-    #competenciesOverview .co-radar.is-ready .co-grid-layer,
-    #competenciesOverview .co-radar.is-ready .co-axis-layer {
-        opacity: 1;
-    }
-
-    #competenciesOverview .co-ring {
-        fill: none;
-        stroke: rgba(165, 165, 165, 0.18);
-        stroke-width: 1;
-    }
-
-    #competenciesOverview .co-ring-outer {
-        stroke: rgba(165, 165, 165, 0.36);
-    }
-
-    #competenciesOverview .co-axis-line {
-        stroke: rgba(165, 165, 165, 0.18);
-        stroke-width: 1;
-    }
-
-    #competenciesOverview .co-primary-shape {
-        fill: url(#competencyRadarFill);
-        stroke: var(--co-accent);
-        stroke-linejoin: round;
-        stroke-width: 1.5;
-    }
-
-    #competenciesOverview .co-secondary-shape {
-        fill: none;
-        stroke: color-mix(in srgb, var(--burgundy-border) 68%, transparent);
-        stroke-dasharray: 4 4;
-        stroke-linejoin: round;
-        stroke-width: 1.5;
-    }
-
-    #competenciesOverview .co-vertex-halo {
-        fill: color-mix(in srgb, var(--burgundy) 15%, transparent);
-        opacity: 0;
-        r: 7px;
-        transition: opacity var(--co-dur-fast) var(--co-ease-out);
-    }
-
-    #competenciesOverview .co-vertex-halo.is-selected {
-        opacity: 1;
-    }
-
-    #competenciesOverview .co-vertex {
-        fill: var(--co-accent);
-        r: 4px;
-        stroke: var(--co-card);
-        stroke-width: 2;
-        transform-box: fill-box;
-        transform-origin: center;
-    }
-
-    #competenciesOverview .co-vertex-hit {
-        fill: transparent;
-        pointer-events: all;
-        r: 4px;
-        stroke: transparent;
-        stroke-width: 1px;
-    }
-
-    #competenciesOverview .co-vertex-hit.is-inactive {
-        pointer-events: none;
-    }
-
-    #competenciesOverview .co-vertex-hit:focus-visible {
-        fill: var(--co-accent-ring);
-        outline: 2px solid var(--co-accent);
-        outline-offset: 2px;
-    }
-
-    #competenciesOverview .co-vertex-tooltip {
-        background: var(--co-panel);
-        border: 1px solid var(--co-border-strong);
-        border-radius: var(--co-radius-control);
-        color: var(--co-text);
-        font-size: 12px;
-        left: 0;
-        opacity: 0;
-        padding: var(--co-space-2) var(--co-space-3);
-        pointer-events: none;
-        position: absolute;
-        top: 0;
-        transform: translate(-50%, -100%);
-        transition: opacity var(--co-dur-fast) var(--co-ease-out);
-        white-space: nowrap;
-        z-index: 6;
-    }
-
-    #competenciesOverview .co-vertex-tooltip.is-visible {
-        opacity: 1;
-    }
-
-    #competenciesOverview .co-axis-button {
-        align-items: center;
-        background: transparent;
-        border-radius: var(--co-radius-control);
-        display: flex;
-        flex-direction: column;
-        height: 52px;
-        justify-content: center;
-        min-height: 44px;
-        padding: var(--co-space-1);
-        position: absolute;
-        text-align: center;
-        width: 112px;
-        z-index: 2;
-    }
-
-    #competenciesOverview .co-axis-button[data-axis="technical"] {
-        left: 50%;
-        top: 0;
-        transform: translateX(-50%);
-    }
-
-    #competenciesOverview .co-axis-button[data-axis="soft"] {
-        left: 1%;
-        top: 62%;
-    }
-
-    #competenciesOverview .co-axis-button[data-axis="certification"] {
-        right: 1%;
-        top: 62%;
-    }
-
-    #competenciesOverview .co-axis-button:hover,
-    #competenciesOverview .co-axis-button:active {
-        transform: none;
-    }
-
-    #competenciesOverview .co-axis-button[data-axis="technical"]:active {
-        transform: translateX(-50%) scale(.98);
-    }
-
-    #competenciesOverview .co-axis-name {
-        color: var(--co-secondary);
-        font-size: 12px;
-        font-weight: 400;
-        line-height: 16px;
-        transition: color var(--co-dur-selection) var(--co-ease-out), font-weight var(--co-dur-selection) var(--co-ease-out);
-    }
-
-    #competenciesOverview .co-axis-value {
-        color: var(--co-text);
-        font-size: 14px;
-        font-variant-numeric: lining-nums tabular-nums;
-        font-weight: 500;
-        line-height: 18px;
-    }
-
-    #competenciesOverview .co-axis-button[aria-pressed="true"] .co-axis-name {
-        color: var(--co-accent);
-        font-weight: 500;
-    }
-
-    #competenciesOverview .co-tooltip {
-        background: var(--co-panel);
-        border: 1px solid var(--co-border-strong);
-        border-radius: var(--co-radius-control);
-        color: var(--co-text);
-        font-size: 12px;
-        left: 50%;
-        opacity: 0;
-        padding: var(--co-space-2) var(--co-space-3);
-        pointer-events: none;
-        position: absolute;
-        top: calc(100% + var(--co-space-1));
-        transform: translate(-50%, -2px);
-        transition: opacity var(--co-dur-fast) var(--co-ease-out), transform var(--co-dur-fast) var(--co-ease-out);
-        white-space: nowrap;
-        z-index: 5;
-    }
-
-    #competenciesOverview .co-axis-button:hover .co-tooltip,
-    #competenciesOverview .co-axis-button:focus-visible .co-tooltip {
-        opacity: 1;
-        transform: translate(-50%, 0);
-    }
-
-    #competenciesOverview .co-axis-button[data-axis="soft"] .co-tooltip {
-        left: 0;
-        transform: translate(0, calc(0px - var(--co-space-1)));
-    }
-
-    #competenciesOverview .co-axis-button[data-axis="certification"] .co-tooltip {
-        left: auto;
-        right: 0;
-        transform: translate(0, calc(0px - var(--co-space-1)));
-    }
-
-    #competenciesOverview .co-axis-button[data-axis="soft"]:hover .co-tooltip,
-    #competenciesOverview .co-axis-button[data-axis="soft"]:focus-visible .co-tooltip,
-    #competenciesOverview .co-axis-button[data-axis="certification"]:hover .co-tooltip,
-    #competenciesOverview .co-axis-button[data-axis="certification"]:focus-visible .co-tooltip {
-        transform: translate(0, 0);
-    }
-
-    #competenciesOverview .co-axis-button:focus-visible {
-        background-color: var(--co-panel);
-        border-color: var(--co-accent);
-        color: var(--co-text);
-    }
-
-    #competenciesOverview .co-strength {
-        border-top: 1px solid var(--co-border);
-        margin-top: var(--co-space-4);
-        padding-top: var(--co-space-5);
-    }
-
-    #competenciesOverview .co-overline {
-        color: var(--co-muted);
-        font-size: 12px;
-        font-weight: 500;
-        letter-spacing: .06em;
-        text-transform: uppercase;
-    }
-
-    #competenciesOverview .co-strength-main {
-        align-items: end;
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--co-space-2) var(--co-space-4);
-        justify-content: space-between;
-        margin-top: var(--co-space-2);
-    }
-
-    #competenciesOverview .co-strength-level {
-        color: var(--co-text);
-        font-size: 40px;
-        font-weight: 500;
-        letter-spacing: -.01em;
-        line-height: 1.08;
-        opacity: 0;
-        transition: opacity var(--co-dur-crossfade) var(--co-ease-out);
-    }
-
-    #competenciesOverview .co-strength-average {
-        color: var(--co-secondary);
-        font-size: 12px;
-        font-variant-numeric: lining-nums tabular-nums;
-        padding-bottom: var(--co-space-1);
-    }
-
-    #competenciesOverview .co-stat-grid {
-        display: grid;
-        gap: var(--co-space-3);
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        margin-top: var(--co-space-5);
-    }
-
-    #competenciesOverview .co-stat {
-        border-left: 1px solid var(--co-border);
-        min-width: 0;
-        padding-left: var(--co-space-3);
-    }
-
-    #competenciesOverview .co-stat:first-child {
-        border-left: 0;
-        padding-left: 0;
-    }
-
-    #competenciesOverview .co-stat-label {
-        color: var(--co-muted);
-        display: block;
-        font-size: 12px;
-        line-height: 16px;
-    }
-
-    #competenciesOverview .co-stat-value {
-        color: var(--co-text);
-        display: block;
-        font-size: 16px;
-        font-variant-numeric: lining-nums tabular-nums;
-        font-weight: 500;
-        margin-top: var(--co-space-1);
-    }
-
-    #competenciesOverview .co-main-col {
-        display: grid;
-        gap: var(--co-space-5);
-        min-width: 0;
-    }
-
-    /* Filter tabs: the chip transitions above (colour and border at --co-dur-fast). */
-    #competenciesOverview .co-chip-list {
-        border-bottom: 1px solid var(--co-border);
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--co-space-1);
-        margin-bottom: var(--co-space-2);
-    }
-
-    #competenciesOverview .co-chip {
-        background: transparent;
-        border: 0;
-        border-bottom: 2px solid transparent;
-        border-radius: var(--co-radius-control) var(--co-radius-control) 0 0;
-        color: var(--co-secondary);
-        margin-bottom: -1px;
-        min-height: 44px;
-        padding: var(--co-space-2) var(--co-space-4);
-    }
-
-    #competenciesOverview .co-chip[aria-pressed="true"] {
-        border-bottom-color: var(--co-selected-line);
-        color: var(--co-accent-text);
-        font-weight: 500;
-    }
-
-    #competenciesOverview .co-chip:focus-visible {
-        background-color: var(--co-raised);
-        color: var(--co-text);
-    }
-
-    #competenciesOverview .co-skill-list {
-        border-top: 1px solid var(--co-border);
-        min-height: 48px;
-        opacity: 0;
-        position: relative;
-        transition: opacity var(--co-dur-crossfade) var(--co-ease-out);
-    }
-
-    #competenciesOverview .co-loading-skeletons {
-        display: none;
-        inset: var(--co-space-2) 0 auto;
-        pointer-events: none;
-        position: absolute;
-        z-index: 1;
-    }
-
-    #competenciesOverview[data-loading="true"] .co-loading-skeletons {
-        display: grid;
-        gap: var(--co-space-2);
-    }
-
-    #competenciesOverview .co-loading-skeleton {
-        animation: co-skeleton-opacity var(--co-dur-slow) var(--co-ease-in-out) infinite alternate;
-        background: rgba(165, 165, 165, 0.12);
-        border-radius: var(--co-radius-control);
-        height: 48px;
-        opacity: .45;
-    }
-
-    @keyframes co-skeleton-opacity {
-        to { opacity: .85; }
-    }
-
-    #competenciesOverview .co-skill-list.is-ready {
-        opacity: 1;
-    }
-
-    #competenciesOverview .co-skill-list.is-transitioning {
-        opacity: 0;
-        pointer-events: none;
-        transition-duration: var(--co-dur-list-out);
-    }
-
-    /* Certificate table. Hover and the cell fade come from the app's table styles
-       (table-hover, sb-motion.css: background-color .2s ease-out); the selected row
-       uses the same fade. */
-    #competenciesOverview .co-table-card {
-        padding: var(--co-space-3) var(--co-space-5) var(--co-space-4);
-    }
-
-    #competenciesOverview .co-table {
-        margin: 0;
-    }
-
-    #competenciesOverview .co-table th {
-        white-space: nowrap;
-    }
-
-    #competenciesOverview .co-trow {
-        cursor: pointer;
-    }
-
-    #competenciesOverview .co-trow > td {
-        transition: background-color .2s ease-out, box-shadow .2s ease-out;
-    }
-
-    #competenciesOverview .co-trow:focus-within > * {
-        --bs-table-bg-state: var(--bs-table-hover-bg);
-    }
-
-    #competenciesOverview .co-trow.is-selected > * {
-        --bs-table-bg-state: transparent;
-        background-color: var(--co-selected-bg);
-    }
-
-    #competenciesOverview .co-trow.is-selected > :first-child {
-        box-shadow: inset 3px 0 0 var(--co-selected-line);
-    }
-
-    #competenciesOverview .co-row-button {
-        appearance: none;
-        background: none;
-        border: 0;
-        border-radius: 4px;
-        color: var(--co-text);
-        font: inherit;
-        font-weight: 500;
-        overflow-wrap: anywhere;
-        padding: 0;
-        text-align: left;
-    }
-
-    #competenciesOverview .co-row-issuer {
-        color: var(--co-muted);
-        display: block;
-        font-size: 12px;
-        margin-top: 2px;
-    }
-
-    #competenciesOverview .co-row-main {
-        align-items: center;
-        display: flex;
-        gap: var(--co-space-2);
-        min-width: 0;
-    }
-
-    #competenciesOverview .co-row-name {
-        font-size: 14px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    #competenciesOverview .co-row-category {
-        color: var(--co-muted);
-        font-size: 12px;
-        white-space: nowrap;
-    }
-
-    #competenciesOverview .co-empty {
-        align-items: center;
-        color: var(--co-secondary);
-        display: flex;
-        flex-direction: column;
-        gap: var(--co-space-3);
-        justify-content: center;
-        min-height: 180px;
-        padding: var(--co-space-5);
-        text-align: center;
-    }
-
-    #competenciesOverview .co-empty-title {
-        color: var(--co-text);
-        font-size: 16px;
-        font-weight: 500;
-    }
-
-    #competenciesOverview .co-empty-action,
-    #competenciesOverview .co-primary {
-        align-items: center;
-        background: var(--co-accent);
-        border: 1px solid var(--co-accent);
-        border-radius: var(--co-radius-control);
-        color: var(--co-text-on-accent);
-        display: inline-flex;
-        font-size: 14px;
-        font-weight: 500;
-        justify-content: center;
-        min-height: 44px;
-        padding: var(--co-space-2) var(--co-space-4);
-        text-decoration: none;
-    }
-
-    #competenciesOverview .co-primary:hover,
-    #competenciesOverview .co-empty-action:hover {
-        background: var(--co-accent-hover);
-        border-color: var(--co-accent-hover);
-        color: var(--co-text-on-accent);
-    }
-
-    #competenciesOverview .co-primary:focus-visible,
-    #competenciesOverview .co-empty-action:focus-visible {
-        background-color: var(--co-accent);
-        border-color: var(--co-accent);
-        color: var(--co-text-on-accent);
-    }
-
-    #competenciesOverview .co-primary:active,
-    #competenciesOverview .co-empty-action:active {
-        background-color: var(--co-accent-hover);
-        border-color: var(--co-accent-hover);
-        color: var(--co-text-on-accent);
-    }
-
-    /* Drawer: stays in view beside the table on wide screens. */
-    #competenciesOverview .co-detail {
-        border-left: 3px solid var(--co-selected-line);
-        min-height: 280px;
-        position: sticky;
-        top: calc(var(--sb-topbar-height, 64px) + var(--co-space-4));
-    }
-
-    #competenciesOverview .co-detail-content {
-        opacity: 1;
-        transform: translateY(0);
-        transition: opacity var(--co-dur-detail) var(--co-ease-out), transform var(--co-dur-detail) var(--co-ease-out);
-    }
-
-    #competenciesOverview .co-detail-content.is-changing {
-        opacity: 0;
-        transform: translateY(var(--co-space-1));
-    }
-
-    #competenciesOverview .co-detail-head {
-        align-items: flex-start;
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--co-space-3);
-        justify-content: space-between;
-    }
-
-    #competenciesOverview .co-detail-name {
-        color: var(--co-text);
-        font-size: 16px;
-        font-weight: 500;
-        letter-spacing: -.01em;
-        overflow-wrap: anywhere;
-    }
-
-    #competenciesOverview .co-detail-tags {
-        align-items: center;
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--co-space-2);
-        margin-top: var(--co-space-2);
-    }
-
-    #competenciesOverview .co-category-tag {
-        background: var(--co-accent-soft);
-        border: 1px solid var(--co-border-strong);
-        border-radius: var(--co-radius-control);
-        color: var(--co-accent-text);
-        font-size: 12px;
-        padding: var(--co-space-1) var(--co-space-2);
-    }
-
-    #competenciesOverview .co-detail-description {
-        color: var(--co-secondary);
-        font-size: 13px;
-        line-height: 1.5;
-        margin-top: var(--co-space-4);
-    }
-
-    #competenciesOverview .co-levels {
-        display: grid;
-        gap: var(--co-space-3);
-        margin-top: var(--co-space-5);
-    }
-
-    #competenciesOverview .co-level-row {
-        align-items: center;
-        display: grid;
-        gap: var(--co-space-3);
-        grid-template-columns: 96px 1fr 40px;
-    }
-
-    #competenciesOverview .co-level-name,
-    #competenciesOverview .co-level-score {
-        color: var(--co-secondary);
-        font-size: 12px;
-    }
-
-    #competenciesOverview .co-level-score {
-        font-variant-numeric: lining-nums tabular-nums;
-        text-align: right;
-    }
-
-    #competenciesOverview .co-level-track {
-        background: rgba(165, 165, 165, 0.17);
-        border-radius: var(--co-radius-control);
-        height: 4px;
-        overflow: hidden;
-    }
-
-    #competenciesOverview .co-level-fill {
-        background: var(--co-accent);
-        border-radius: inherit;
-        height: 100%;
-        transform: scaleX(0);
-        transform-origin: left;
-        transition: transform var(--co-dur-base) var(--co-ease-out);
-    }
-
-    #competenciesOverview .co-level-row.is-current .co-level-name,
-    #competenciesOverview .co-level-row.is-current .co-level-score {
-        color: var(--co-text);
-        font-weight: 500;
-    }
-
-    #competenciesOverview .co-evidence {
-        align-items: center;
-        border-top: 1px solid var(--co-border);
-        color: var(--co-secondary);
-        display: flex;
-        gap: var(--co-space-2);
-        margin-top: var(--co-space-5);
-        overflow-wrap: anywhere;
-        padding-top: var(--co-space-3);
-    }
-
-    #competenciesOverview .co-evidence svg {
-        color: var(--co-muted);
-        flex: 0 0 auto;
-        height: 16px;
-        width: 16px;
-    }
-
-    #competenciesOverview .co-detail-action {
-        margin-top: var(--co-space-5);
-    }
-
-    #competenciesOverview .co-detail-empty {
-        align-items: center;
-        color: var(--co-muted);
-        display: flex;
-        justify-content: center;
-        min-height: 232px;
-        text-align: center;
-    }
-
-    #competenciesOverview .co-hidden {
-        display: none !important;
-    }
-
-    #competenciesOverview .co-error {
-        background: var(--co-rejected-bg);
-        border: 1px solid var(--co-rejected);
-        border-radius: var(--co-radius-control);
-        color: var(--co-rejected);
-        font-size: 13px;
-        padding: var(--co-space-3);
-    }
-
-    #competenciesOverview .co-sr-only {
-        clip: rect(0, 0, 0, 0);
-        clip-path: inset(50%);
-        height: 1px;
-        overflow: hidden;
-        position: absolute;
-        white-space: nowrap;
-        width: 1px;
-    }
-
-    /* Profile summary strip; the radar chart opens below it. */
-    #competenciesOverview .co-summary {
-        margin-bottom: var(--co-space-5);
-        padding: var(--co-space-4) var(--co-space-5);
-    }
-
-    #competenciesOverview .co-summary-row {
-        align-items: center;
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--co-space-4) var(--co-space-6);
-    }
-
-    #competenciesOverview .co-summary .co-strength {
-        border-top: 0;
-        margin-top: 0;
-        min-width: 170px;
-        padding-top: 0;
-    }
-
-    #competenciesOverview .co-summary .co-strength-main {
-        align-items: baseline;
-        justify-content: flex-start;
-        gap: var(--co-space-3);
-        margin-top: 2px;
-    }
-
-    #competenciesOverview .co-summary .co-strength-level {
-        font-size: 22px;
-    }
-
-    #competenciesOverview .co-summary .co-stat-grid {
-        flex: 1 1 300px;
-        margin-top: 0;
-    }
-
-    #competenciesOverview .co-chart-toggle {
-        cursor: pointer;
-        gap: var(--co-space-2);
-        margin-left: auto;
-    }
-
-    #competenciesOverview .co-chart-toggle .bi {
-        transition: transform var(--co-dur-base) var(--co-ease-out);
-    }
-
-    #competenciesOverview .co-chart-toggle[aria-expanded="true"] .bi {
-        transform: rotate(180deg);
-    }
-
-    #competenciesOverview .co-chart-panel {
-        border-top: 1px solid var(--co-border);
-        margin-top: var(--co-space-4);
-        padding-top: var(--co-space-4);
-    }
-
-    @media (prefers-color-scheme: dark) {
-        :root:not([data-theme]) #competenciesOverview {
-            --co-selected-bg: color-mix(in srgb, var(--burgundy) 22%, transparent);
-        }
-    }
-
-    :root[data-theme="dark"] #competenciesOverview {
-        --co-selected-bg: color-mix(in srgb, var(--burgundy) 22%, transparent);
-    }
-
-    @media (max-width: 900px) {
-        #competenciesOverview .co-layout {
-            grid-template-columns: minmax(0, 1fr);
-        }
-
-        #competenciesOverview .co-detail {
-            position: static;
-        }
-    }
-
-    @media (max-width: 991.98px) {
-        .sb-main:has(#competenciesOverview) {
-            width: 100%;
-        }
-    }
-
-    @media (max-width: 480px) {
-        #competenciesOverview {
-            padding-top: var(--co-space-1);
-        }
-
-        #competenciesOverview .co-header {
-            align-items: stretch;
-            flex-direction: column;
-        }
-
-        #competenciesOverview .co-outer-panel,
-        #competenciesOverview .co-card {
-            padding: var(--co-space-4);
-        }
-
-        #competenciesOverview .co-strength-level {
-            font-size: 32px;
-        }
-
-        #competenciesOverview .co-stat-grid {
-            gap: var(--co-space-2);
-        }
-
-        #competenciesOverview .co-stat {
-            padding-left: var(--co-space-2);
-        }
-
-        #competenciesOverview .co-stat-label {
-            font-size: 12px;
-        }
-
-        #competenciesOverview .co-chip-list {
-            margin-left: calc(-1 * var(--co-space-1));
-            margin-right: calc(-1 * var(--co-space-1));
-        }
-
-        #competenciesOverview .co-chip {
-            padding-left: var(--co-space-3);
-            padding-right: var(--co-space-3);
-        }
-
-        #competenciesOverview .co-axis-button[data-axis="soft"] {
-            left: 0;
-        }
-
-        #competenciesOverview .co-axis-button[data-axis="certification"] {
-            right: 0;
-        }
-
-        #competenciesOverview .co-row {
-            gap: var(--co-space-2);
-            padding-bottom: var(--co-space-1);
-            padding-top: var(--co-space-1);
-        }
-
-        #competenciesOverview .co-row-main {
-            align-items: flex-start;
-            flex-direction: column;
-            gap: var(--co-space-1);
-            min-width: 0;
-        }
-
-        #competenciesOverview .co-row-name {
-            max-width: 190px;
-        }
-
-        #competenciesOverview .co-level-row {
-            grid-template-columns: 88px 1fr 36px;
-        }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-        #competenciesOverview *,
-        #competenciesOverview *::before,
-        #competenciesOverview *::after {
-            animation-duration: 1ms !important;
-            animation-iteration-count: 1 !important;
-            scroll-behavior: auto !important;
-            transition-duration: 1ms !important;
-        }
-    }
-</style>
-@endpush
 
 @section('content')
 @php
@@ -1028,7 +13,7 @@
     $selectedSkill = $initialFiltered->first();
     $axisLabels = ['technical' => 'Technical', 'soft' => 'Soft skills', 'certification' => 'Certificates'];
 @endphp
-<div class="co-outer-panel" id="competenciesOverview"
+<div class="sb-dash" id="competenciesOverview"
     data-loading="true"
     aria-busy="true"
     data-category="{{ $initialCategory ?? '' }}"
@@ -1036,22 +21,22 @@
     data-groups="{{ json_encode($overview['groups']) }}"
     data-selected-id="{{ $selectedSkill['id'] ?? '' }}"
     data-flash-success="{{ session('success') }}">
-    <header class="co-header sb-page-header">
+    <header class="sb-page-header">
         <div>
-            <h1 class="co-title">My Certificates</h1>
-            <p class="co-hint">Certificates you earned and the skills you learned in them.</p>
+            <h1 class="">My Certificates</h1>
+            <p class="sb-note">Certificates you earned and the skills you learned in them.</p>
         </div>
-        <button type="button" class="co-primary" data-wizard-open>+ Add a certificate</button>
+        <button type="button" class="btn btn-primary" data-wizard-open>+ Add a certificate</button>
     </header>
 
     {{-- Profile summary: strength and category scores. The radar chart opens below it. --}}
-    <section class="co-card card co-summary" aria-labelledby="profileStrengthLabel">
-        <div class="co-summary-row">
-            <div class="co-strength">
-                <div class="co-overline" id="profileStrengthLabel">Profile strength</div>
-                <div class="co-strength-main">
-                    <div class="co-strength-level" id="profileStrengthLevel">{{ $overview['profile_strength']['level_label'] }}</div>
-                    <div class="co-strength-average co-number" id="profileStrengthAverage">
+    <section class="card sb-summary" aria-labelledby="profileStrengthLabel">
+        <div class="sb-summary-row">
+            <div class="sb-summary-lead">
+                <div class="sb-tile-label" id="profileStrengthLabel">Profile strength</div>
+                <div class="sb-summary-main">
+                    <div class="sb-summary-value" id="profileStrengthLevel">{{ $overview['profile_strength']['level_label'] }}</div>
+                    <div class="sb-summary-note sb-num" id="profileStrengthAverage">
                         @if($overview['profile_strength']['average_points'] !== null)
                             {{ number_format($overview['profile_strength']['average_points'] / 25, 1) }} avg
                         @else
@@ -1060,77 +45,71 @@
                     </div>
                 </div>
             </div>
-            <div class="co-stat-grid" aria-label="Category scores">
+            <div class="sb-tiles sb-tiles--inline" aria-label="Category scores">
                 @foreach($overview['groups'] as $key => $group)
-                    <div class="co-stat">
-                        <span class="co-stat-label">{{ $group['label'] }}</span>
-                        <span class="co-stat-value co-number" data-stat-value="{{ $key }}">{{ number_format($initialScores[$key] ?? 0, 1) }}%</span>
+                    <div class="sb-tile">
+                        <span class="sb-tile-label">{{ $group['label'] }}</span>
+                        <span class="sb-tile-value sb-num" data-stat-value="{{ $key }}">{{ number_format($initialScores[$key] ?? 0, 1) }}%</span>
                     </div>
                 @endforeach
             </div>
-            <button type="button" class="co-secondary co-chart-toggle" id="competencyChartToggle"
+            <button type="button" class="btn btn-outline-secondary" id="competencyChartToggle"
                     aria-expanded="false" aria-controls="competencyChartPanel">
                 <span data-chart-toggle-label>Show chart</span>
                 <i class="bi bi-chevron-down" aria-hidden="true"></i>
             </button>
         </div>
 
-        <div class="co-chart-panel" id="competencyChartPanel" hidden>
-            <h2 class="co-sr-only" id="competencyRadarTitle">Certificate profile</h2>
-            <div class="co-radar-wrap">
-                <svg class="co-radar" id="competencyRadar" viewBox="0 0 400 320" role="img"
+        <div class="sb-chart-panel" id="competencyChartPanel" hidden>
+            <h2 class="visually-hidden" id="competencyRadarTitle">Certificate profile</h2>
+            <div class="sb-radar-wrap">
+                <svg class="sb-radar" id="competencyRadar" viewBox="0 0 400 320" role="img"
                      aria-label="Certificate scores: Technical {{ number_format($initialScores['technical'] ?? 0, 1) }} percent, Soft skills {{ number_format($initialScores['soft'] ?? 0, 1) }} percent, Certificates {{ number_format($initialScores['certification'] ?? 0, 1) }} percent">
-                    <defs>
-                        <linearGradient id="competencyRadarFill" x1="0" x2="0" y1="0" y2="1">
-                            <stop offset="0%" stop-color="#7A010E" stop-opacity=".26"></stop>
-                            <stop offset="100%" stop-color="#7A010E" stop-opacity=".06"></stop>
-                        </linearGradient>
-                    </defs>
-                    <g class="co-grid-layer" id="radarGrid"></g>
-                    <g class="co-axis-layer" id="radarAxes"></g>
-                    <polygon id="radarPrimaryShape" class="co-primary-shape" points="200,150 200,150 200,150"></polygon>
+                    <g class="sb-radar-grid" id="radarGrid"></g>
+                    <g class="sb-radar-axes" id="radarAxes"></g>
+                    <polygon id="radarPrimaryShape" class="sb-radar-shape" points="200,150 200,150 200,150"></polygon>
                     <g id="radarVertices"></g>
                 </svg>
-                <div class="co-vertex-tooltip" id="radarVertexTooltip" role="tooltip" aria-hidden="true"></div>
-                <span class="co-sr-only" id="competencyChartAnnouncement" aria-live="polite" aria-atomic="true"></span>
+                <div class="sb-radar-tooltip" id="radarVertexTooltip" role="tooltip" aria-hidden="true"></div>
+                <span class="visually-hidden" id="competencyChartAnnouncement" aria-live="polite" aria-atomic="true"></span>
                 @foreach($axisLabels as $axis => $label)
                     @php($group = $overview['groups'][$axis])
-                    <button type="button" class="co-axis-button" data-axis="{{ $axis }}" data-score="{{ $initialScores[$axis] ?? 0 }}"
+                    <button type="button" class="sb-radar-axis" data-axis="{{ $axis }}" data-score="{{ $initialScores[$axis] ?? 0 }}"
                             aria-pressed="{{ $initialCategory === $axis ? 'true' : 'false' }}"
                             aria-label="{{ $label }}: {{ number_format($initialScores[$axis] ?? 0, 1) }} percent">
-                        <span class="co-axis-name">{{ $label }}</span>
-                        <span class="co-axis-value co-number">{{ number_format($initialScores[$axis] ?? 0, 1) }}%</span>
-                        <span class="co-tooltip" role="tooltip" data-axis-tooltip="{{ $axis }}">{{ $group['points'] }} of {{ $group['target'] * 100 }} points</span>
+                        <span class="sb-radar-axis-name">{{ $label }}</span>
+                        <span class="sb-radar-axis-value sb-num">{{ number_format($initialScores[$axis] ?? 0, 1) }}%</span>
+                        <span class="sb-radar-axis-tip" role="tooltip" data-axis-tooltip="{{ $axis }}">{{ $group['points'] }} of {{ $group['target'] * 100 }} points</span>
                     </button>
                 @endforeach
             </div>
         </div>
     </section>
 
-    <div class="co-layout sb-layout-2">
-        <div class="co-main-col">
-            <section class="co-card card co-table-card" aria-labelledby="skillListTitle">
-                <h2 class="co-sr-only" id="skillListTitle">Your certificates</h2>
-                <div class="co-chip-list" role="group" aria-label="Filter certificates">
-                    <button type="button" class="co-chip" data-category="" aria-pressed="{{ $initialCategory ? 'false' : 'true' }}">All</button>
+    <div class="sb-layout-2">
+        <div class="sb-dash">
+            <section class="card sb-table-card" aria-labelledby="skillListTitle">
+                <h2 class="visually-hidden" id="skillListTitle">Your certificates</h2>
+                <div class="sb-pill-tabs" role="group" aria-label="Filter certificates">
+                    <button type="button" class="sb-pill-tab" data-category="" aria-pressed="{{ $initialCategory ? 'false' : 'true' }}">All</button>
                     @foreach($overview['groups'] as $key => $group)
-                        <button type="button" class="co-chip" data-category="{{ $key }}" aria-pressed="{{ $initialCategory === $key ? 'true' : 'false' }}">{{ $group['label'] }}</button>
+                        <button type="button" class="sb-pill-tab" data-category="{{ $key }}" aria-pressed="{{ $initialCategory === $key ? 'true' : 'false' }}">{{ $group['label'] }}</button>
                     @endforeach
                 </div>
 
-                <div class="co-empty {{ $overview['skills'] ? 'co-hidden' : '' }}" id="competencyEmptyState">
-                    <h3 class="co-empty-title">No certificates yet</h3>
+                <div class="sb-empty {{ $overview['skills'] ? 'd-none' : '' }}" id="competencyEmptyState">
+                    <h3 class="sb-empty-title">No certificates yet</h3>
                     <p>You have no certificates yet. Add a certificate you earned, then list the skills you learned in it.</p>
-                    <button type="button" class="co-empty-action" data-wizard-open>+ Add a certificate</button>
+                    <button type="button" class="btn btn-primary" data-wizard-open>+ Add a certificate</button>
                 </div>
 
-                <div class="co-skill-list {{ $initialFiltered->isEmpty() ? 'co-hidden' : '' }}" id="competencySkillList">
-                    <div class="co-loading-skeletons" aria-hidden="true">
-                        <span class="co-loading-skeleton"></span>
-                        <span class="co-loading-skeleton"></span>
-                        <span class="co-loading-skeleton"></span>
+                <div class="sb-fade-list {{ $initialFiltered->isEmpty() ? 'd-none' : '' }}" id="competencySkillList">
+                    <div class="sb-skeletons" aria-hidden="true">
+                        <span class="sb-skeleton"></span>
+                        <span class="sb-skeleton"></span>
+                        <span class="sb-skeleton"></span>
                     </div>
-                    <table class="table table-hover align-middle sb-table-stack co-table">
+                    <table class="table table-hover align-middle sb-table-stack">
                         <thead>
                             <tr>
                                 <th scope="col">Certificate</th>
@@ -1142,11 +121,11 @@
                         <tbody id="competencyTableBody">
                             @foreach($initialFiltered as $skill)
                                 @php($isSelected = (string) ($selectedSkill['id'] ?? '') === (string) $skill['id'])
-                                <tr class="co-trow {{ $isSelected ? 'is-selected' : '' }}" data-skill-id="{{ $skill['id'] }}">
+                                <tr class="sb-select-row {{ $isSelected ? 'is-selected' : '' }}" data-skill-id="{{ $skill['id'] }}">
                                     <td data-label="Certificate">
-                                        <button type="button" class="co-row-button" aria-pressed="{{ $isSelected ? 'true' : 'false' }}">{{ $skill['name'] }}</button>
+                                        <button type="button" class="sb-row-button" aria-pressed="{{ $isSelected ? 'true' : 'false' }}">{{ $skill['name'] }}</button>
                                         @if($skill['issuing_organization'] ?? null)
-                                            <span class="co-row-issuer">{{ $skill['issuing_organization'] }}</span>
+                                            <span class="sb-row-sub">{{ $skill['issuing_organization'] }}</span>
                                         @endif
                                     </td>
                                     <td data-label="Type">{{ $skill['type_label'] }}</td>
@@ -1158,32 +137,32 @@
                     </table>
                 </div>
 
-                <div class="co-empty {{ ($overview['skills'] && $initialFiltered->isEmpty()) ? '' : 'co-hidden' }}" id="competencyNoResults">
-                    <p class="co-empty-title">No certificates match this filter.</p>
-                    <button type="button" class="co-empty-action" data-wizard-open>+ Add a certificate</button>
+                <div class="sb-empty {{ ($overview['skills'] && $initialFiltered->isEmpty()) ? '' : 'd-none' }}" id="competencyNoResults">
+                    <p class="sb-empty-title">No certificates match this filter.</p>
+                    <button type="button" class="btn btn-primary" data-wizard-open>+ Add a certificate</button>
                 </div>
             </section>
 
             @if($legacyCertificates->isNotEmpty())
-                <section class="co-card card" aria-labelledby="legacyCertificatesTitle" id="legacyCertificates">
-                    <h2 class="co-card-title" id="legacyCertificatesTitle">Older certificates</h2>
-                    <p class="co-hint">These came from your Documents tab. Add the type, skill type, level, and skills so they count in your chart and match score.</p>
-                    <ul class="co-legacy-list">
+                <section class="card" aria-labelledby="legacyCertificatesTitle" id="legacyCertificates">
+                    <h2 class="sb-card-title" id="legacyCertificatesTitle">Older certificates</h2>
+                    <p class="sb-note">These came from your Documents tab. Add the type, skill type, level, and skills so they count in your chart and match score.</p>
+                    <ul class="sb-rows sb-rows--card">
                         @foreach($legacyCertificates as $legacy)
-                            <li class="co-legacy-row" data-legacy-id="{{ $legacy['id'] }}">
+                            <li class="" data-legacy-id="{{ $legacy['id'] }}">
                                 <div>
-                                    <span class="co-row-name">{{ $legacy['title'] }}</span>
-                                    <span class="co-row-category">{{ $legacy['issuer'] ?: 'Issuer not added' }} · Needs details</span>
+                                    <span class="sb-row-title">{{ $legacy['title'] }}</span>
+                                    <span class="sb-row-sub">{{ $legacy['issuer'] ?: 'Issuer not added' }} · Needs details</span>
                                 </div>
-                                <div class="co-legacy-actions">
+                                <div class="sb-actions sb-actions--tight">
                                     @if($legacy['file_url'])
-                                        <a class="co-secondary" href="{{ $legacy['file_url'] }}" target="_blank" rel="noopener">View</a>
+                                        <a class="btn btn-outline-secondary" href="{{ $legacy['file_url'] }}" target="_blank" rel="noopener">View</a>
                                     @endif
-                                    <button type="button" class="co-primary" data-wizard-legacy="{{ json_encode($legacy) }}">Add details</button>
+                                    <button type="button" class="btn btn-primary" data-wizard-legacy="{{ json_encode($legacy) }}">Add details</button>
                                     <form method="POST" action="{{ $legacy['delete_url'] }}" data-certificate-delete data-confirm="Delete this certificate?" data-confirm-title="Delete certificate">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="co-secondary">Delete</button>
+                                        <button type="submit" class="btn btn-outline-secondary">Delete</button>
                                     </form>
                                 </div>
                             </li>
@@ -1193,18 +172,18 @@
             @endif
         </div>
 
-        <aside class="co-card card co-detail" aria-labelledby="competencyDetailTitle">
-            <h2 class="co-card-title" id="competencyDetailTitle">Selected certificate</h2>
-            <div class="co-detail-content" id="competencyDetailContent">
+        <aside class="card" aria-labelledby="competencyDetailTitle">
+            <h2 class="sb-card-title" id="competencyDetailTitle">Selected certificate</h2>
+            <div class="sb-detail-body" id="competencyDetailContent">
                 @if($selectedSkill)
-                    <h3 class="co-detail-name">{{ $selectedSkill['name'] }}</h3>
+                    <h3 class="sb-detail-title">{{ $selectedSkill['name'] }}</h3>
                 @else
-                    <div class="co-detail-empty" id="competencyDetailEmpty">Select a certificate to view its details.</div>
+                    <div class="sb-note" id="competencyDetailEmpty">Select a certificate to view its details.</div>
                 @endif
             </div>
         </aside>
     </div>
-    <div class="save-toast co-toast" id="certificateToast" role="status" aria-live="polite"></div>
+    <div class="save-toast" id="certificateToast" role="status" aria-live="polite"></div>
 </div>
 
 @include('student.competencies.partials.wizard')
@@ -1231,11 +210,11 @@
     const radius = 82;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const duration = (token) => Number.parseFloat(getComputedStyle(root).getPropertyValue(token)) || 0;
-    const rowStaggerMs = reduceMotion ? 0 : duration('--co-delay-row');
-    const levelStaggerMs = reduceMotion ? 0 : duration('--co-delay-level');
-    const initialRevealMs = reduceMotion ? 0 : duration('--co-dur-hero') / 2;
+    const rowStaggerMs = reduceMotion ? 0 : duration('--sb-delay-row');
+    const levelStaggerMs = reduceMotion ? 0 : duration('--sb-delay-level');
+    const initialRevealMs = reduceMotion ? 0 : duration('--sb-dur-hero') / 2;
     const radar = document.getElementById('competencyRadar');
-    const radarWrap = radar.closest('.co-radar-wrap');
+    const radarWrap = radar.closest('.sb-radar-wrap');
     const grid = document.getElementById('radarGrid');
     const axes = document.getElementById('radarAxes');
     const primaryShape = document.getElementById('radarPrimaryShape');
@@ -1314,14 +293,14 @@
     const buildRadarGrid = () => {
         [33, 67, 100].forEach((value) => {
             const ring = document.createElementNS(svgNs, 'polygon');
-            ring.setAttribute('class', `co-ring${value === 100 ? ' co-ring-outer' : ''}`);
+            ring.setAttribute('class', `sb-radar-ring${value === 100 ? ' sb-radar-ring--outer' : ''}`);
             ring.setAttribute('points', pointsFor(value));
             grid.append(ring);
         });
         Object.keys(angleByGroup).forEach((key) => {
             const endpoint = point(angleByGroup[key], 100);
             const axis = document.createElementNS(svgNs, 'line');
-            axis.setAttribute('class', 'co-axis-line');
+            axis.setAttribute('class', 'sb-radar-axis-line');
             axis.setAttribute('x1', center.x);
             axis.setAttribute('y1', center.y);
             axis.setAttribute('x2', endpoint.x.toFixed(2));
@@ -1359,31 +338,31 @@
 
     const renderDetail = (skill) => {
         if (!skill) {
-            detail.innerHTML = '<div class="co-detail-empty">Select a certificate to view its details.</div>';
+            detail.innerHTML = '<div class="sb-note">Select a certificate to view its details.</div>';
             return;
         }
 
         detail.innerHTML = '';
         const content = document.createElement('div');
-        content.className = 'co-detail-content is-changing';
+        content.className = 'sb-detail-body is-changing';
         const head = document.createElement('div');
-        head.className = 'co-detail-head';
+        head.className = 'sb-detail-head';
         const headingWrap = document.createElement('div');
         const name = document.createElement('h3');
-        name.className = 'co-detail-name';
+        name.className = 'sb-detail-title';
         name.textContent = skill.name;
         headingWrap.append(name);
         if (skill.issuing_organization) {
             const issuer = document.createElement("p");
-            issuer.className = "co-detail-issuer";
+            issuer.className = "sb-detail-meta";
             issuer.textContent = skill.issuing_organization;
             headingWrap.append(issuer);
         }
         const tags = document.createElement("div");
-        tags.className = "co-detail-tags";
+        tags.className = "sb-chips";
         [skill.type_label, skill.skill_type_label].filter(Boolean).forEach((text) => {
             const tag = document.createElement("span");
-            tag.className = "co-category-tag";
+            tag.className = "";
             tag.textContent = text;
             tags.append(tag);
         });
@@ -1393,29 +372,29 @@
 
         if (skill.description) {
             const description = document.createElement('p');
-            description.className = 'co-detail-description';
+            description.className = 'sb-detail-text';
             description.textContent = skill.description;
             content.append(description);
         }
 
         const levelList = document.createElement('div');
-        levelList.className = 'co-levels';
+        levelList.className = 'sb-levels';
         levelList.setAttribute('aria-label', 'Proficiency levels');
         levels.forEach((level, index) => {
             const row = document.createElement('div');
-            row.className = `co-level-row${skill.proficiency_key === level.key ? ' is-current' : ''}`;
+            row.className = `sb-level${skill.proficiency_key === level.key ? ' is-current' : ''}`;
             const label = document.createElement('span');
-            label.className = 'co-level-name';
+            label.className = 'sb-level-name';
             label.textContent = level.label;
             const track = document.createElement('span');
-            track.className = 'co-level-track';
+            track.className = 'sb-level-track';
             const fill = document.createElement('span');
-            fill.className = 'co-level-fill';
+            fill.className = 'sb-level-fill';
             fill.style.transitionDelay = `${index * levelStaggerMs}ms`;
             fill.style.transform = 'scaleX(0)';
             track.append(fill);
             const score = document.createElement('span');
-            score.className = 'co-level-score co-number';
+            score.className = 'sb-level-score sb-num';
             score.textContent = String(level.points);
             row.append(label, track, score);
             levelList.append(row);
@@ -1424,10 +403,10 @@
 
         if ((skill.learned_skills || []).length) {
             const learnedTitle = document.createElement("h4");
-            learnedTitle.className = "co-learned-title";
+            learnedTitle.className = "sb-block-title";
             learnedTitle.textContent = "Skills you learned";
             const learned = document.createElement("ul");
-            learned.className = "co-learned-list";
+            learned.className = "sb-bullets";
             skill.learned_skills.forEach((text) => {
                 const item = document.createElement("li");
                 item.textContent = text;
@@ -1437,7 +416,7 @@
         }
 
         const evidence = document.createElement("div");
-        evidence.className = "co-evidence";
+        evidence.className = "sb-file-note";
         evidence.innerHTML = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 1.75h5l3 3v9.5H4a1 1 0 0 1-1-1v-10a1.5 1.5 0 0 1 1-1.5Z" stroke="currentColor" stroke-width="1.3"/><path d="M9 2v3h3M5.5 8h5M5.5 10.5h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
         const evidenceName = document.createElement("span");
         evidenceName.textContent = skill.evidence_filename || "No file attached";
@@ -1445,10 +424,10 @@
         content.append(evidence);
 
         const actionWrap = document.createElement("div");
-        actionWrap.className = "co-detail-action co-detail-actions";
+        actionWrap.className = "sb-actions";
         if (skill.file_url) {
             const view = document.createElement("a");
-            view.className = "co-secondary";
+            view.className = "btn btn-outline-secondary";
             view.href = skill.file_url;
             view.target = "_blank";
             view.rel = "noopener";
@@ -1457,12 +436,12 @@
         }
         const edit = document.createElement("button");
         edit.type = "button";
-        edit.className = "co-primary";
+        edit.className = "btn btn-primary";
         edit.dataset.wizardEdit = String(skill.id);
         edit.textContent = "Edit";
         const remove = document.createElement("button");
         remove.type = "button";
-        remove.className = "co-secondary co-danger";
+        remove.className = "btn btn-outline-danger";
         remove.dataset.certificateDeleteUrl = skill.delete_url;
         remove.dataset.certificateName = skill.name;
         remove.textContent = "Delete";
@@ -1471,7 +450,7 @@
         detail.append(content);
         const revealContent = () => {
             content.classList.remove('is-changing');
-            content.querySelectorAll('.co-level-fill').forEach((fill, index) => {
+            content.querySelectorAll('.sb-level-fill').forEach((fill, index) => {
                 const level = levels[index];
                 fill.style.transform = `scaleX(${skill.proficiency_points >= level.points ? 1 : 0})`;
             });
@@ -1494,18 +473,18 @@
 
     const buildRow = (skill) => {
         const row = document.createElement('tr');
-        row.className = 'co-trow';
+        row.className = 'sb-select-row';
         row.dataset.skillId = String(skill.id);
         const nameCell = document.createElement('td');
         nameCell.dataset.label = 'Certificate';
         const button = document.createElement('button');
         button.type = 'button';
-        button.className = 'co-row-button';
+        button.className = 'sb-row-button';
         button.textContent = skill.name;
         nameCell.append(button);
         if (skill.issuing_organization) {
             const issuer = document.createElement('span');
-            issuer.className = 'co-row-issuer';
+            issuer.className = 'sb-row-sub';
             issuer.textContent = skill.issuing_organization;
             nameCell.append(issuer);
         }
@@ -1523,7 +502,7 @@
         tableBody?.querySelectorAll('tr[data-skill-id]').forEach((row) => {
             const selected = row.dataset.skillId === String(selectedId);
             row.classList.toggle('is-selected', selected);
-            row.querySelector('.co-row-button')?.setAttribute('aria-pressed', String(selected));
+            row.querySelector('.sb-row-button')?.setAttribute('aria-pressed', String(selected));
         });
     };
 
@@ -1539,15 +518,15 @@
                 const row = buildRow(skill);
                 if (fadeRows) {
                     row.style.opacity = '0';
-                    row.style.transition = 'opacity var(--co-dur-crossfade) var(--co-ease-out)';
+                    row.style.transition = 'opacity var(--sb-dur-crossfade) var(--sb-ease-out)';
                     row.style.transitionDelay = `${(initial ? initialRevealMs : 0) + Math.min(index, 7) * rowStaggerMs}ms`;
                 }
                 return row;
             });
             tableBody.replaceChildren(...rows);
             const isEmpty = visible.length === 0;
-            list.classList.toggle('co-hidden', isEmpty);
-            if (noResults) noResults.classList.toggle('co-hidden', !isEmpty || skills.length === 0);
+            list.classList.toggle('d-none', isEmpty);
+            if (noResults) noResults.classList.toggle('d-none', !isEmpty || skills.length === 0);
             list.classList.remove('is-transitioning');
             list.classList.toggle('is-ready', reduceMotion || !animate);
             // A new filter selects its first row; otherwise keep the selection while it is still shown.
@@ -1570,7 +549,7 @@
 
         if (animate && !reduceMotion && list.querySelector('[data-skill-id]')) {
             list.classList.add('is-transitioning');
-            listRenderTimer = window.setTimeout(commit, duration('--co-dur-list-out'));
+            listRenderTimer = window.setTimeout(commit, duration('--sb-dur-list-out'));
             return;
         }
         list.classList.remove('is-transitioning');
@@ -1597,7 +576,7 @@
             strengthLabelTimer = window.setTimeout(() => {
                 level.textContent = levelLabel;
                 level.style.opacity = '1';
-            }, reduceMotion ? 0 : (initial ? initialRevealMs : duration('--co-dur-selection')));
+            }, reduceMotion ? 0 : (initial ? initialRevealMs : duration('--sb-dur-selection')));
         }
         if (averageText) {
             if (average === null) {
@@ -1605,7 +584,7 @@
                 currentAveragePoints = 0;
                 averageText.textContent = 'No counted skills';
             } else {
-                tween(averageText, currentAveragePoints, average, reduceMotion ? 0 : (initial ? duration('--co-dur-hero') : duration('--co-dur-slow')), initial ? easeOut : easeInOut, (value) => {
+                tween(averageText, currentAveragePoints, average, reduceMotion ? 0 : (initial ? duration('--sb-dur-hero') : duration('--sb-dur-slow')), initial ? easeOut : easeInOut, (value) => {
                     currentAveragePoints = value;
                     averageText.textContent = `${(value / 25).toFixed(1)} avg`;
                 });
@@ -1627,8 +606,8 @@
         if (row) selectSkill(row.dataset.skillId);
     });
     tableBody?.addEventListener('keydown', (event) => {
-        if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key) || !event.target.closest('.co-row-button')) return;
-        const buttons = [...tableBody.querySelectorAll('.co-row-button')];
+        if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key) || !event.target.closest('.sb-row-button')) return;
+        const buttons = [...tableBody.querySelectorAll('.sb-row-button')];
         const index = buttons.indexOf(event.target);
         const next = event.key === 'Home' ? 0
             : event.key === 'End' ? buttons.length - 1
@@ -1693,13 +672,13 @@
     updatePolygon(primaryShape, initialCurrent);
     Object.keys(angleByGroup).forEach((key) => {
         const vertex = document.createElementNS(svgNs, 'circle');
-        vertex.setAttribute('class', 'co-vertex');
+        vertex.setAttribute('class', 'sb-radar-vertex');
         vertex.dataset.vertex = key;
         const halo = document.createElementNS(svgNs, 'circle');
-        halo.setAttribute('class', 'co-vertex-halo');
+        halo.setAttribute('class', 'sb-radar-halo');
         halo.dataset.halo = key;
         const hitArea = document.createElementNS(svgNs, 'circle');
-        hitArea.setAttribute('class', 'co-vertex-hit');
+        hitArea.setAttribute('class', 'sb-radar-hit');
         hitArea.setAttribute('aria-hidden', 'true');
         hitArea.dataset.vertexHit = key;
         hitArea.addEventListener('pointerenter', () => showVertexTooltip(key));
@@ -1726,8 +705,8 @@
         vertex.animate(
             [{ transform: 'scale(1)' }, { transform: 'scale(1.35)' }, { transform: 'scale(1)' }],
             {
-                duration: duration('--co-dur-pulse'),
-                easing: getComputedStyle(root).getPropertyValue('--co-ease-out').trim()
+                duration: duration('--sb-dur-pulse'),
+                easing: getComputedStyle(root).getPropertyValue('--sb-ease-out').trim()
             }
         );
     };
@@ -1740,10 +719,10 @@
         currentScores[key] = 0;
         const axisButton = document.querySelector(`#competenciesOverview [data-axis="${key}"]`);
         const currentValue = () => Number(currentScores[key] || 0);
-        tween(axisButton || radar, currentValue(), initialTargets[key], duration('--co-dur-hero'), easeOut, (value) => {
+        tween(axisButton || radar, currentValue(), initialTargets[key], duration('--sb-dur-hero'), easeOut, (value) => {
             currentScores[key] = value;
             refreshShapeAndVertices();
-            axisButton?.querySelector('.co-axis-value') && (axisButton.querySelector('.co-axis-value').textContent = fmt(value));
+            axisButton?.querySelector('.sb-radar-axis-value') && (axisButton.querySelector('.sb-radar-axis-value').textContent = fmt(value));
             const stat = document.querySelector(`#competenciesOverview [data-stat-value="${key}"]`);
             if (stat) stat.textContent = fmt(value);
         });
@@ -1751,9 +730,9 @@
     radar.classList.add('is-ready');
     updateStrength(true);
     renderList(false, true);
-    announceTimer = window.setTimeout(() => announceChart(initialTargets), reduceMotion ? 0 : duration('--co-dur-hero'));
+    announceTimer = window.setTimeout(() => announceChart(initialTargets), reduceMotion ? 0 : duration('--sb-dur-hero'));
     if (initialRevealMs > 0) {
-        hydrationTimer = window.setTimeout(finishHydration, initialRevealMs + duration('--co-dur-crossfade'));
+        hydrationTimer = window.setTimeout(finishHydration, initialRevealMs + duration('--sb-dur-crossfade'));
     } else {
         finishHydration();
     }
@@ -1769,17 +748,17 @@
         Object.keys(groups).forEach((key) => delete groups[key]);
         Object.assign(groups, overview.groups);
         if (event.detail.selectId) selectedId = String(event.detail.selectId);
-        emptyState?.classList.toggle('co-hidden', skills.length > 0);
+        emptyState?.classList.toggle('d-none', skills.length > 0);
         const targets = {};
         Object.keys(angleByGroup).forEach((key) => {
             targets[key] = groupScore(key);
             const axisButton = document.querySelector(`#competenciesOverview [data-axis="${key}"]`);
             const tooltip = document.querySelector(`#competenciesOverview [data-axis-tooltip="${key}"]`);
             if (tooltip) tooltip.textContent = vertexTooltipText(key);
-            tween(axisButton || radar, Number(currentScores[key] || 0), targets[key], duration('--co-dur-slow'), easeInOut, (value) => {
+            tween(axisButton || radar, Number(currentScores[key] || 0), targets[key], duration('--sb-dur-slow'), easeInOut, (value) => {
                 currentScores[key] = value;
                 refreshShapeAndVertices();
-                axisButton?.querySelector('.co-axis-value') && (axisButton.querySelector('.co-axis-value').textContent = fmt(value));
+                axisButton?.querySelector('.sb-radar-axis-value') && (axisButton.querySelector('.sb-radar-axis-value').textContent = fmt(value));
                 const stat = document.querySelector(`#competenciesOverview [data-stat-value="${key}"]`);
                 if (stat) stat.textContent = fmt(value);
             });

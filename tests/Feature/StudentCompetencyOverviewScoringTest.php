@@ -210,6 +210,6 @@ it('lays out My Certificates as a table with a selected-certificate drawer and a
         ->assertSee('No certificates match this filter.')
         ->getContent();
 
-    expect(substr_count($html, 'co-trow is-selected'))->toBe(1)
+    expect(substr_count($html, 'sb-select-row is-selected'))->toBe(1)
         ->and(substr_count($html, 'data-wizard-open'))->toBe(3);
 });

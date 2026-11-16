@@ -917,3 +917,119 @@ html body.sb-app .sb-detail-meta.sb-inline-meta { font-weight: 600; color: var(-
 
 /* A chip that already shows an icon does not also need the status dot. */
 html body.sb-app .sb-status:has(> .bi)::before { display: none !important; }
+
+/* =========================================================================================
+   Skills overview widgets (My Certificates): motion tokens, summary band, radar chart,
+   level bars, fading list, skeletons. Generic names so other pages can reuse them.
+   ========================================================================================= */
+html body.sb-app {
+    --sb-dur-fast: 120ms; --sb-dur-base: 200ms; --sb-dur-press: 100ms; --sb-dur-selection: 150ms; --sb-dur-crossfade: 150ms;
+    --sb-dur-list-out: 100ms; --sb-dur-detail: 180ms; --sb-dur-toggle: 250ms; --sb-dur-grid: 250ms; --sb-dur-pulse: 400ms;
+    --sb-delay-row: 30ms; --sb-delay-level: 40ms; --sb-dur-slow: 450ms; --sb-dur-hero: 800ms;
+    --sb-ease-out: cubic-bezier(.16, 1, .3, 1); --sb-ease-in-out: cubic-bezier(.65, 0, .35, 1);
+}
+html body.sb-app .sb-num { font-variant-numeric: lining-nums tabular-nums; }
+
+/* Summary band: lead figure, inline tiles, action */
+html body.sb-app .sb-summary { padding: 22px 24px; }
+html body.sb-app .sb-summary-row { display: flex; flex-wrap: wrap; align-items: center; gap: 20px 28px; }
+html body.sb-app .sb-summary-lead { min-width: 180px; }
+html body.sb-app .sb-summary-main { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 12px; margin-top: 6px; }
+html body.sb-app .sb-summary-value { font-size: 32px; font-weight: 700; letter-spacing: -.02em; line-height: 1.05; color: var(--text); }
+html body.sb-app .sb-summary-note { font-size: 13px; color: var(--muted); }
+html body.sb-app .sb-tiles--inline { flex: 1 1 320px; margin-top: 0; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+html body.sb-app .sb-chart-panel { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--line); }
+
+/* Radar chart: three axes, rings, a filled shape, vertices, axis buttons with tooltips */
+html body.sb-app .sb-radar-wrap { position: relative; width: 100%; max-width: 440px; margin: 0 auto; }
+html body.sb-app .sb-radar { display: block; width: 100%; height: auto; overflow: visible; }
+html body.sb-app .sb-radar :is(.sb-radar-grid, .sb-radar-axes) { opacity: 0; transition: opacity var(--sb-dur-grid) var(--sb-ease-out); }
+html body.sb-app .sb-radar.is-ready :is(.sb-radar-grid, .sb-radar-axes) { opacity: 1; }
+html body.sb-app .sb-radar-ring { fill: none; stroke: var(--line); stroke-width: 1; }
+html body.sb-app .sb-radar-ring--outer { stroke: color-mix(in srgb, var(--text) 22%, transparent); }
+html body.sb-app .sb-radar-axis-line { stroke: var(--line); stroke-width: 1; }
+html body.sb-app .sb-radar-shape { fill: color-mix(in srgb, var(--burgundy) 16%, transparent); stroke: var(--burgundy); stroke-linejoin: round; stroke-width: 1.5; }
+html[data-theme="dark"] body.sb-app .sb-radar-shape { fill: color-mix(in srgb, var(--burgundy-text) 22%, transparent); stroke: var(--burgundy-text); }
+html body.sb-app .sb-radar-halo { fill: color-mix(in srgb, var(--burgundy) 15%, transparent); opacity: 0; r: 7px; }
+html body.sb-app .sb-radar-halo.is-selected { opacity: 1; }
+html body.sb-app .sb-radar-vertex { fill: var(--burgundy); stroke: var(--surface); stroke-width: 2; r: 4px; transform-box: fill-box; transform-origin: center; }
+html[data-theme="dark"] body.sb-app .sb-radar-vertex { fill: var(--burgundy-text); }
+html body.sb-app .sb-radar-hit { fill: transparent; stroke: transparent; pointer-events: all; r: 4px; }
+html body.sb-app .sb-radar-hit.is-inactive { pointer-events: none; }
+html body.sb-app .sb-radar-hit:focus-visible { outline: 2px solid var(--burgundy-text); outline-offset: 2px; }
+html body.sb-app .sb-radar-tooltip {
+    position: absolute; top: 0; left: 0; z-index: 6; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
+    color: var(--text); font-size: 12px; white-space: nowrap; pointer-events: none; opacity: 0; transform: translate(-50%, -100%); box-shadow: var(--shadow-pop);
+    transition: opacity var(--sb-dur-fast) var(--sb-ease-out);
+}
+html body.sb-app .sb-radar-tooltip.is-visible { opacity: 1; }
+html body.sb-app .sb-radar-axis {
+    position: absolute; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 112px; min-height: 44px;
+    padding: 4px; border: 1px solid transparent; border-radius: 12px; background: transparent; color: var(--muted); font: inherit; text-align: center; cursor: pointer;
+}
+html body.sb-app .sb-radar-axis:hover { background: var(--surface-alt); color: var(--text); }
+html body.sb-app .sb-radar-axis[data-axis="technical"] { left: 50%; top: 0; transform: translateX(-50%); }
+html body.sb-app .sb-radar-axis[data-axis="soft"] { left: 1%; top: 62%; }
+html body.sb-app .sb-radar-axis[data-axis="certification"] { right: 1%; top: 62%; }
+html body.sb-app .sb-radar-axis-name { font-size: 12px; font-weight: 600; }
+html body.sb-app .sb-radar-axis-value { font-size: 16px; font-weight: 700; color: var(--text); }
+html body.sb-app .sb-radar-axis[aria-pressed="true"] .sb-radar-axis-name { color: var(--burgundy-text); }
+html body.sb-app .sb-radar-axis[aria-pressed="true"] { border-color: var(--burgundy-border); background: var(--burgundy-tint); }
+html body.sb-app .sb-radar-axis-tip {
+    position: absolute; bottom: calc(100% + 6px); left: 50%; z-index: 7; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
+    color: var(--text); font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transform: translateX(-50%); box-shadow: var(--shadow-pop);
+}
+html body.sb-app .sb-radar-axis:is(:hover, :focus-visible) .sb-radar-axis-tip { opacity: 1; }
+
+/* Filter chips (buttons with aria-pressed) use the pill tab look */
+html body.sb-app button.sb-pill-tab { font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+html body.sb-app .sb-pill-tab[aria-pressed="true"] { background: var(--burgundy); border-color: var(--burgundy); color: var(--on-burgundy) !important; }
+html body.sb-app .sb-table-card { padding: 16px 20px 18px; }
+html body.sb-app .sb-empty-title { margin: 4px 0 0; font-size: 16px; font-weight: 600; color: var(--text); }
+
+/* A list that fades between filter states, with loading skeletons on top */
+html body.sb-app .sb-fade-list { position: relative; opacity: 0; transition: opacity var(--sb-dur-crossfade) var(--sb-ease-out); }
+html body.sb-app .sb-fade-list.is-ready { opacity: 1; }
+html body.sb-app .sb-fade-list.is-transitioning { opacity: 0; pointer-events: none; transition-duration: var(--sb-dur-list-out); }
+html body.sb-app .sb-skeletons { display: none; position: absolute; inset: 8px 0 auto; z-index: 1; pointer-events: none; }
+html body.sb-app [data-loading="true"] .sb-skeletons { display: grid; gap: 8px; }
+html body.sb-app .sb-skeletons .sb-skeleton { height: 48px; }
+
+/* A table cell that is a button (select a row) */
+html body.sb-app .sb-row-button { padding: 0; border: 0; background: none; color: var(--text); font: inherit; font-weight: 600; text-align: left; cursor: pointer; overflow-wrap: anywhere; }
+html body.sb-app .sb-row-button:hover { color: var(--burgundy-text); }
+html body.sb-app .sb-row-button + .sb-row-sub { margin-top: 2px; }
+
+/* Rows inside a card body; tight action groups */
+html body.sb-app .sb-rows--card { padding: 0 24px 8px; }
+html body.sb-app .sb-actions--tight { margin-top: 0; gap: 6px; }
+html body.sb-app .sb-actions--tight .btn { min-height: 34px; padding: 5px 14px; font-size: 13px; }
+
+/* Detail body (changes with the selected row) */
+html body.sb-app .sb-detail-body { padding: 20px 24px 24px; transition: opacity var(--sb-dur-detail) var(--sb-ease-out); }
+html body.sb-app .sb-detail-body.is-changing { opacity: 0; }
+html body.sb-app .sb-detail-text { margin: 14px 0 0; font-size: 14px; line-height: 1.55; color: var(--text); overflow-wrap: anywhere; }
+html body.sb-app .sb-detail-body .sb-chips { margin-top: 10px; }
+html body.sb-app .sb-detail-body .sb-block-title { margin-top: 20px; }
+
+/* Level bars: one row per level, the current one bold */
+html body.sb-app .sb-levels { display: grid; gap: 12px; margin-top: 22px; }
+html body.sb-app .sb-level { display: grid; grid-template-columns: 96px 1fr 40px; align-items: center; gap: 12px; }
+html body.sb-app .sb-level-name, html body.sb-app .sb-level-score { font-size: 12px; color: var(--muted); }
+html body.sb-app .sb-level-score { text-align: right; font-variant-numeric: lining-nums tabular-nums; }
+html body.sb-app .sb-level-track { height: 6px; border-radius: var(--r-pill); background: var(--burgundy-tint); overflow: hidden; }
+html body.sb-app .sb-level-fill { height: 100%; border-radius: inherit; background: var(--burgundy); transform: scaleX(0); transform-origin: left; transition: transform var(--sb-dur-base) var(--sb-ease-out); }
+html[data-theme="dark"] body.sb-app .sb-level-fill { background: var(--burgundy-text); }
+html body.sb-app .sb-level.is-current :is(.sb-level-name, .sb-level-score) { color: var(--text); font-weight: 600; }
+@media (prefers-reduced-motion: reduce) {
+    html body.sb-app :is(.sb-fade-list, .sb-detail-body, .sb-level-fill, .sb-radar-tooltip) { transition: none; }
+}
+
+/* File line in a detail panel (icon + file name) */
+html body.sb-app .sb-file-note { display: flex; align-items: center; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+html body.sb-app .sb-file-note svg { flex: 0 0 16px; width: 16px; height: 16px; }
+/* Notes placed directly in a card keep the card padding */
+html body.sb-app .card > .sb-note { margin: 12px 0 0; padding: 0 24px; }
+html body.sb-app .card > .sb-rows--card { margin-top: 8px; }
+/* Titles inside narrow detail panels */
+html body.sb-app .sb-detail-body .sb-detail-title { font-size: 18px; }
