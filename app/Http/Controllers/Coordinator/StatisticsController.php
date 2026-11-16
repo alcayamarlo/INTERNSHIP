@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Coordinator;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Report\GenerateReportRequest;
+use App\Models\Report;
+use App\Services\ActivityLogService;
 use App\Services\InstitutionStatistics;
+use App\Services\ReportExportService;
 use App\Support\CsvCell;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
@@ -24,18 +28,44 @@ class StatisticsController extends Controller
         'cleared' => 'Cleared (certificate issued)',
     ];
 
-    public function __construct(private InstitutionStatistics $statistics) {}
+    public function __construct(
+        private InstitutionStatistics $statistics,
+        private ReportExportService $reportService,
+        private ActivityLogService $activityLog,
+    ) {}
 
+    /** Statistics & Reports: summary figures, exports, the report generator and the coordinator's report history. */
     public function index()
     {
-        return view('coordinator.statistics.index', ['stats' => $this->stats(), 'labels' => self::LABELS]);
+        return view('coordinator.statistics.index', [
+            'stats' => $this->stats(),
+            'labels' => self::LABELS,
+            'reports' => Report::where('generated_by', Auth::id())->latest()->paginate(10),
+        ]);
+    }
+
+    public function generateReport(GenerateReportRequest $request)
+    {
+        $validated = $request->validated();
+
+        $report = $this->reportService->generate(
+            Auth::user(),
+            $validated['type'],
+            $validated['format'],
+            fn (Report $report) => $this->activityLog->log(Auth::user(), 'report_generate', [
+                'report_id' => $report->id,
+                'type' => $validated['type'],
+            ])
+        );
+
+        return $this->reportService->download($report);
     }
 
     public function export(string $format)
     {
         $stats = $this->stats();
         $filename = 'ojt-statistics-'.$stats['generated_at']->format('Y-m-d');
-        app(\App\Services\ActivityLogService::class)->log(Auth::user(), 'statistics_exported', ['format' => $format]);
+        $this->activityLog->log(Auth::user(), 'statistics_exported', ['format' => $format]);
 
         if ($format === 'pdf') {
             return Pdf::loadView('coordinator.statistics.pdf', ['stats' => $stats, 'labels' => self::LABELS])

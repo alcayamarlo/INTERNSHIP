@@ -378,7 +378,7 @@ class AppraisalService
                 'ojt_update',
                 $title,
                 $message,
-                ['placement_id' => $appraisal->placement_id, 'appraisal_id' => $appraisal->id]
+                ['placement_id' => $appraisal->placement_id, 'appraisal_id' => $appraisal->id, 'student_id' => $student->id]
             ));
     }
 }

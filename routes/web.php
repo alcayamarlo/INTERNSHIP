@@ -30,7 +30,6 @@ use App\Http\Controllers\Coordinator\DashboardController as CoordinatorDashboard
 use App\Http\Controllers\Coordinator\EligibilityCriteriaController;
 use App\Http\Controllers\Coordinator\EligibilityDecisionController;
 use App\Http\Controllers\Coordinator\PlacementController as CoordinatorPlacementController;
-use App\Http\Controllers\Coordinator\ReportController as CoordinatorReportController;
 use App\Http\Controllers\Coordinator\ReviewController;
 use App\Http\Controllers\Coordinator\StatisticsController;
 use App\Http\Controllers\Coordinator\StudentProfileReviewController;
@@ -331,8 +330,8 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             Route::get('/criteria', [EligibilityCriteriaController::class, 'index'])->name('criteria.index');
             Route::get('/criteria/{program}', [EligibilityCriteriaController::class, 'show'])->name('criteria.show');
             Route::post('/criteria/{program}', [EligibilityCriteriaController::class, 'store'])->name('criteria.store');
-            Route::get('/reports', [CoordinatorReportController::class, 'index'])->name('reports.index');
-            Route::post('/reports/generate', [CoordinatorReportController::class, 'generate'])->name('reports.generate');
+            // Reports now live on the Statistics & Reports page; old bookmarks land there.
+            Route::permanentRedirect('/reports', '/coordinator/statistics');
             Route::get('/analytics', fn () => view('coordinator.analytics'))->name('analytics');
             Route::get('/placements', [CoordinatorPlacementController::class, 'index'])->name('placements.index');
             Route::get('/placements/{placement}', [CoordinatorPlacementController::class, 'show'])->name('placements.show');
@@ -368,6 +367,7 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             // Institutional statistics and exports.
             Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics.index');
             Route::get('/statistics/export/{format}', [StatisticsController::class, 'export'])->whereIn('format', ['pdf', 'xlsx'])->name('statistics.export');
+            Route::post('/statistics/reports', [StatisticsController::class, 'generateReport'])->name('statistics.reports.generate');
         });
 
         Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {

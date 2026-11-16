@@ -70,7 +70,7 @@ it('groups the coordinator queue and exposes program filters from scoped student
         ->assertSee('Queue Example Student')
         ->assertSee('JavaScript')
         ->assertSee('Capstone Project')
-        ->assertSee('Everything')
+        ->assertDontSee('Everything')
         // Certificates are no longer part of the coordinator review queue.
         ->assertDontSee('Web Development');
 });

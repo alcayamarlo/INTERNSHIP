@@ -57,7 +57,6 @@
                 <button type="button" class="sb-pill-tab is-active" data-filter-group="status" data-filter-value="pending" aria-pressed="true">Pending <span class="sb-tab-count" data-status-count="pending"></span></button>
                 <button type="button" class="sb-pill-tab" data-filter-group="status" data-filter-value="verified" aria-pressed="false">Verified <span class="sb-tab-count" data-status-count="verified"></span></button>
                 <button type="button" class="sb-pill-tab" data-filter-group="status" data-filter-value="rejected" aria-pressed="false">Rejected <span class="sb-tab-count" data-status-count="rejected"></span></button>
-                <button type="button" class="sb-pill-tab" data-filter-group="status" data-filter-value="all" aria-pressed="false">Everything <span class="sb-tab-count" data-status-count="all"></span></button>
             </div>
             <div class="sb-pill-tabs" role="group" aria-label="Submission type">
                 <button type="button" class="sb-pill-tab is-active" data-filter-group="type" data-filter-value="all" aria-pressed="true">All</button>

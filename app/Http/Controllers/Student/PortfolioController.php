@@ -15,6 +15,7 @@ use App\Models\Portfolio;
 use App\Models\Student;
 use App\Services\ActivityLogService;
 use App\Services\FileUploadService;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +24,8 @@ class PortfolioController extends Controller
 {
     public function __construct(
         private FileUploadService $fileUpload,
-        private ActivityLogService $activityLog
+        private ActivityLogService $activityLog,
+        private NotificationService $notifications
     ) {}
 
     protected function getStudentProfile(): Student
@@ -95,6 +97,9 @@ class PortfolioController extends Controller
             throw $exception;
         }
         $student->calculateProfileCompletion();
+        if ($portfolio->category !== PortfolioCategory::Resume) {
+            $this->notifyCoordinators($student, $this->itemLabel($portfolio->category, $portfolio->title));
+        }
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -119,6 +124,25 @@ class PortfolioController extends Controller
             ])->render(),
             ...ProfileController::completionPayload($student->profileCompletionSummary()),
         ];
+    }
+
+    /** Tells the student's coordinator that a submission is waiting in the Verification queue. */
+    private function notifyCoordinators(Student $student, string $what): void
+    {
+        $this->notifications->notifyStudentCoordinators(
+            $student,
+            'Submission to validate',
+            NotificationService::studentLabel($student).' submitted '.$what.'. It is waiting for your validation.',
+        );
+    }
+
+    private function itemLabel(PortfolioCategory $category, string $title): string
+    {
+        return match ($category) {
+            PortfolioCategory::Certificate => 'a certificate',
+            PortfolioCategory::DeploymentDocument => 'a deployment document',
+            default => 'a portfolio project',
+        }.' ("'.$title.'")';
     }
 
     private function tabFor(Portfolio $portfolio): string
@@ -183,6 +207,8 @@ class PortfolioController extends Controller
 
         $this->fileUpload->deleteIfUnreferenced($oldPath);
         $student->calculateProfileCompletion();
+
+        $this->notifyCoordinators($student, $this->itemLabel(PortfolioCategory::DeploymentDocument, $deploymentRequirement->name));
 
         if ($request->expectsJson()) {
             return response()->json(['success' => true, 'message' => $deploymentRequirement->name.' submitted successfully.']);
@@ -250,6 +276,10 @@ class PortfolioController extends Controller
             throw $exception;
         }
 
+        if ($created > 0) {
+            $this->notifyCoordinators($student, $created === 1 ? 'a portfolio item' : $created.' portfolio items');
+        }
+
         if ($request->expectsJson()) {
             return response()->json(['success' => true, 'message' => $created.' portfolio items uploaded successfully.']);
         }
@@ -299,6 +329,8 @@ class PortfolioController extends Controller
             $this->fileUpload->delete($path);
             throw $exception;
         }
+
+        $this->notifyCoordinators($student, $this->itemLabel(PortfolioCategory::Certificate, $validated['title']));
 
         if ($request->expectsJson()) {
             return response()->json(['success' => true, 'message' => 'Certificate uploaded successfully.']);
@@ -373,6 +405,8 @@ class PortfolioController extends Controller
         if ($newPath && $previousPath !== $newPath) {
             $this->fileUpload->deleteIfUnreferenced($previousPath);
         }
+
+        $this->notifyCoordinators($certificate->student, 'an updated '.substr($this->itemLabel(PortfolioCategory::Certificate, $certificate->title), 2));
 
         if ($request->expectsJson()) {
             return response()->json(['success' => true, 'message' => 'Certificate updated.']);
@@ -450,6 +484,9 @@ class PortfolioController extends Controller
         }
 
         $portfolio->student->calculateProfileCompletion();
+        if ($newPath && $portfolio->category !== PortfolioCategory::Resume) {
+            $this->notifyCoordinators($portfolio->student, 'a new file for '.$this->itemLabel($portfolio->category, $portfolio->title));
+        }
         $tab = $this->tabFor($portfolio->fresh());
 
         if ($request->expectsJson()) {

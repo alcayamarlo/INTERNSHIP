@@ -50,6 +50,15 @@ class NotificationController extends Controller
         $notification->markAsRead();
 
         $data = $notification->data ?? [];
+
+        // A "needs validation" alert opens the student's record straight away.
+        $student = is_numeric($data['student_id'] ?? null) ? \App\Models\Student::find($data['student_id']) : null;
+        $studentUrl = $student && Auth::user()->coordinator?->canAccessStudent($student)
+            ? route('coordinator.students.show', $student)
+            : null;
+        if ($studentUrl && $notification->type === NotificationService::TYPE_VALIDATION_NEEDED) {
+            return redirect()->to($studentUrl);
+        }
         $announcement = isset($data['announcement_id']) && is_numeric($data['announcement_id'])
             ? Announcement::find($data['announcement_id'])
             : null;
@@ -88,6 +97,9 @@ class NotificationController extends Controller
                 $relatedUrl = route('employer.internships.edit', $internship);
             }
         }
+
+        // Other coordinator notifications about a student (change requests, OJT updates) link to the record too.
+        $relatedUrl ??= $studentUrl;
 
         if (! $relatedUrl) {
             $contactId = $data['contact_id'] ?? $data['sender_id'] ?? null;

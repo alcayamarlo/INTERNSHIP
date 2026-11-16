@@ -238,7 +238,13 @@ it('shows institutional statistics and exports them as PDF and Excel', function 
         ->assertSee('data-total="enrolled">1<', false)
         ->assertSee('data-total="placed">1<', false)
         ->assertSee('data-rate="placement">100%<', false)
-        ->assertSee('Acme Corp');
+        ->assertSee('Acme Corp')
+        ->assertSee('Statistics &amp; Reports', false)
+        ->assertSee('id="generate-report"', false)
+        ->assertSee(route('coordinator.statistics.reports.generate'), false);
+
+    // The old Reports page now redirects here.
+    $this->get('/coordinator/reports')->assertRedirect('/coordinator/statistics');
 
     $pdf = $this->get(route('coordinator.statistics.export', 'pdf'));
     $pdf->assertOk()->assertHeader('Content-Type', 'application/pdf');

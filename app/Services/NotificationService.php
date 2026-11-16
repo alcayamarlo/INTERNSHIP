@@ -6,6 +6,8 @@ use App\Events\NotificationCreated;
 use App\Jobs\SendNotification;
 use App\Mail\SystemNotificationMail;
 use App\Models\AppNotification;
+use App\Models\Coordinator;
+use App\Models\Student;
 use App\Models\User;
 
 class NotificationService
@@ -50,6 +52,47 @@ class NotificationService
         $this->sendEmail($user, $title, $message, $data);
 
         return $notification;
+    }
+
+    /** Notification type for "a student submission is waiting for validation"; opening one goes to the student's record. */
+    public const TYPE_VALIDATION_NEEDED = 'validation_needed';
+
+    /**
+     * Notifies every coordinator who handles this student (same institution and program).
+     * The data always carries student_id, so the notification links to that student's record.
+     *
+     * @return int how many coordinators were notified
+     */
+    public function notifyStudentCoordinators(Student $student, string $title, string $message, array $data = []): int
+    {
+        if (! $student->institution_id) {
+            return 0;
+        }
+
+        $student->loadMissing('academicProgram');
+
+        return Coordinator::query()
+            ->where('institution_id', $student->institution_id)
+            ->with('user')
+            ->get()
+            ->filter(fn (Coordinator $coordinator) => $coordinator->user && $coordinator->canAccessStudent($student))
+            ->each(fn (Coordinator $coordinator) => $this->send(
+                $coordinator->user,
+                self::TYPE_VALIDATION_NEEDED,
+                $title,
+                $message,
+                ['student_id' => $student->id] + $data
+            ))
+            ->count();
+    }
+
+    /** "Juan Dela Cruz (2021-00123)": names the student in coordinator notifications. */
+    public static function studentLabel(Student $student): string
+    {
+        $student->loadMissing('user');
+        $name = $student->user?->name ?? 'A student';
+
+        return $student->student_id_number ? $name.' ('.$student->student_id_number.')' : $name;
     }
 
     public function sendEmail(User $user, string $title, string $message, array $data = []): void

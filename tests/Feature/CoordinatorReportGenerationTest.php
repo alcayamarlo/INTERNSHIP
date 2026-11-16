@@ -29,7 +29,7 @@ it('generates a PDF report for coordinators without crashing', function () {
     ]);
 
     $this->actingAs($user)
-        ->post(route('coordinator.reports.generate'), [
+        ->post(route('coordinator.statistics.reports.generate'), [
             'type' => 'placement',
             'format' => 'pdf',
         ])

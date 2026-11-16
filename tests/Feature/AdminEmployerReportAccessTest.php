@@ -154,13 +154,13 @@ it('limits coordinator report history to its owner and allows authorized CSV dow
     Storage::disk('private')->put($otherReport->file_path, 'secret,report');
 
     $historyResponse = $this->actingAs($coordinator)
-        ->get(route('coordinator.reports.index'))
+        ->get(route('coordinator.statistics.index'))
         ->assertOk();
 
     expect($historyResponse->viewData('reports')->pluck('id')->all())->toBe([$ownReport->id]);
 
     $this->actingAs($coordinator)
-        ->post(route('coordinator.reports.generate'), ['type' => 'student', 'format' => 'csv'])
+        ->post(route('coordinator.statistics.reports.generate'), ['type' => 'student', 'format' => 'csv'])
         ->assertOk();
 
     $generated = Report::where('generated_by', $coordinator->id)
@@ -170,8 +170,8 @@ it('limits coordinator report history to its owner and allows authorized CSV dow
     expect(Storage::disk('private')->exists($generated->file_path))->toBeTrue();
 
     $student = User::factory()->create(['role' => UserRole::Student]);
-    $this->actingAs($student)->get(route('coordinator.reports.index'))->assertForbidden();
-    $this->post(route('coordinator.reports.generate'), ['type' => 'student', 'format' => 'csv'])->assertForbidden();
+    $this->actingAs($student)->get(route('coordinator.statistics.index'))->assertForbidden();
+    $this->post(route('coordinator.statistics.reports.generate'), ['type' => 'student', 'format' => 'csv'])->assertForbidden();
 
     $admin = User::factory()->create(['role' => UserRole::Admin]);
     $this->actingAs($admin)->get(route('admin.reports'))->assertOk();

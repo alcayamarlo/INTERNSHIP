@@ -81,13 +81,12 @@
         document.getElementById('countRejected').textContent = counts.rejected;
 
         // Status switch counts: the documents each status would list under the current search, program and type.
-        const statusCounts = { pending: 0, verified: 0, rejected: 0, all: 0 };
+        const statusCounts = { pending: 0, verified: 0, rejected: 0 };
         state.students.filter(matchesStudentFilters).forEach((student) => {
             student.items
                 .filter((item) => state.type === 'all' || item.type === state.type)
                 .forEach((item) => {
                     statusCounts[item.status] += 1;
-                    statusCounts.all += 1;
                 });
         });
         document.querySelectorAll('[data-status-count]').forEach((count) => {
@@ -755,9 +754,12 @@
 
     document.querySelectorAll('[data-filter-group]').forEach((button) => {
         button.addEventListener('click', () => {
-            state[button.dataset.filterGroup] = button.dataset.filterValue;
-            document.querySelectorAll(`[data-filter-group="${button.dataset.filterGroup}"]`).forEach((chip) => {
-                const active = chip === button;
+            const group = button.dataset.filterGroup;
+            // Clicking the status pill that is already on turns it off again, listing every status.
+            const deselect = group === 'status' && state.status === button.dataset.filterValue;
+            state[group] = deselect ? 'all' : button.dataset.filterValue;
+            document.querySelectorAll(`[data-filter-group="${group}"]`).forEach((chip) => {
+                const active = !deselect && chip === button;
                 chip.classList.toggle('is-active', active);
                 chip.setAttribute('aria-pressed', String(active));
             });
@@ -773,8 +775,8 @@
         state.type = 'all';
         state.status = 'all';
         document.querySelectorAll('[data-filter-group]').forEach((chip) => {
-            const active = chip.dataset.filterValue === 'all'
-                && (chip.dataset.filterGroup === 'type' || chip.dataset.filterGroup === 'status');
+            // No status pill is on (every status listed); the type group goes back to All.
+            const active = chip.dataset.filterGroup === 'type' && chip.dataset.filterValue === 'all';
             chip.classList.toggle('is-active', active);
             chip.setAttribute('aria-pressed', String(active));
         });
@@ -797,9 +799,8 @@
         if (linked && !linked.items.some(matchesItem)) {
             state.status = 'all';
             document.querySelectorAll('[data-filter-group="status"]').forEach((chip) => {
-                const active = chip.dataset.filterValue === 'all';
-                chip.classList.toggle('is-active', active);
-                chip.setAttribute('aria-pressed', String(active));
+                chip.classList.remove('is-active');
+                chip.setAttribute('aria-pressed', 'false');
             });
         }
     }

@@ -41,11 +41,22 @@ class PlacementService
         }
 
         try {
-            return $this->firstOrCreatePlacement($application);
+            $placement = $this->firstOrCreatePlacement($application);
         } catch (UniqueConstraintViolationException $exception) {
             // Database backstop (placements_one_open_per_student) for anything the check above missed.
             throw $this->alreadyPlaced($application);
         }
+
+        if ($placement->wasRecentlyCreated && $application->student) {
+            $this->notificationService->notifyStudentCoordinators(
+                $application->student,
+                'Placement to validate',
+                NotificationService::studentLabel($application->student).' was accepted by '.($application->internship->employer?->company_name ?? 'a company').' for '.$application->internship->title.'. The OJT placement is waiting for your validation.',
+                ['placement_id' => $placement->id]
+            );
+        }
+
+        return $placement;
     }
 
     /** The student's open (pending validation or active) placement, if any. */
@@ -177,7 +188,7 @@ class PlacementService
                 'ojt_update',
                 'OJT ready for clearance',
                 ($student->user?->name ?? 'A student').' completed the OJT for '.$placement->internship->title.' and is ready for clearance.',
-                ['placement_id' => $placement->id]
+                ['placement_id' => $placement->id, 'student_id' => $student->id]
             ));
     }
 

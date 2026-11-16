@@ -121,7 +121,7 @@ it('denies every role access to dashboards belonging to other roles', function (
         ],
         UserRole::Coordinator->value => [
             route('coordinator.dashboard'),
-            route('coordinator.reports.index'),
+            route('coordinator.statistics.index'),
         ],
         UserRole::Admin->value => [
             route('admin.dashboard'),

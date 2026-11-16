@@ -117,7 +117,7 @@
         <a href="{{ route('coordinator.students.index') }}" class="list-group-item list-group-item-action">
             <i class="bi bi-people" aria-hidden="true"></i> Manage Students
         </a>
-        <a href="{{ route('coordinator.reports.index') }}" class="list-group-item list-group-item-action">
+        <a href="{{ route('coordinator.statistics.index') }}#generate-report" class="list-group-item list-group-item-action">
             <i class="bi bi-file-earmark-bar-graph" aria-hidden="true"></i> Generate Reports
         </a>
         <a href="{{ route('messages.index') }}" class="list-group-item list-group-item-action">
