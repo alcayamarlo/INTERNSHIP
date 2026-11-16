@@ -162,10 +162,13 @@ body.sb-app dialog[open] {
 
 /* =====================================================================
    PAGE TO PAGE
-   Browsers with cross-document view transitions crossfade only the content
-   area between signed-in pages; the sidebar, top bar and page background stay
-   still. Others load pages as before. When a view transition plays, the layout
-   adds html.sb-vt and the content entrance is skipped (the crossfade is enough).
+   Browsers with cross-document view transitions crossfade the page between
+   signed-in pages while the sidebar and top bar stay still. Others load pages
+   as before. When a view transition plays, the layout adds html.sb-vt and the
+   content entrance is skipped (the crossfade is enough).
+   The content area must NOT get a view-transition-name: that makes it its own
+   stacking context, and every modal inside it would sit under Bootstrap's
+   backdrop (appended to <body>) and could not be clicked.
    ===================================================================== */
 @media (prefers-reduced-motion: no-preference) {
     @view-transition {
@@ -175,20 +178,17 @@ body.sb-app dialog[open] {
 
 body.sb-app .sb-sidebar { view-transition-name: sb-sidebar; }
 body.sb-app .sb-topbar { view-transition-name: sb-topbar; }
-body.sb-app .sb-content { view-transition-name: sb-content; }
 
 html.sb-vt body.sb-app .sb-content {
     animation: none;
 }
 
-::view-transition-old(sb-content),
-::view-transition-new(sb-content) {
+::view-transition-old(root),
+::view-transition-new(root) {
     animation-duration: var(--dur-base);
     animation-timing-function: var(--ease-in-out);
 }
 
-html:not(.sb-theme-vt)::view-transition-old(root),
-html:not(.sb-theme-vt)::view-transition-new(root),
 ::view-transition-old(sb-sidebar),
 ::view-transition-new(sb-sidebar),
 ::view-transition-old(sb-topbar),
@@ -198,16 +198,11 @@ html:not(.sb-theme-vt)::view-transition-new(root),
 
 /* =====================================================================
    THEME SWITCH: a 200ms crossfade of the whole page (skillbridge-ui.js adds
-   html.sb-theme-vt for it). Never on first load; instant without support.
+   html.sb-theme-vt for it), sidebar and top bar included. Never on first load;
+   instant without support.
    ===================================================================== */
-html.sb-theme-vt body.sb-app :is(.sb-sidebar, .sb-topbar, .sb-content) {
+html.sb-theme-vt body.sb-app :is(.sb-sidebar, .sb-topbar) {
     view-transition-name: none;
-}
-
-html.sb-theme-vt::view-transition-old(root),
-html.sb-theme-vt::view-transition-new(root) {
-    animation-duration: var(--dur-base);
-    animation-timing-function: var(--ease-in-out);
 }
 
 /* =====================================================================
