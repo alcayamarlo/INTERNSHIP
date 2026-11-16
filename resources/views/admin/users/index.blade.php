@@ -3,7 +3,7 @@
 @section('title', 'User Management')
 
 @section('content')
-
+<div class="sb-dash">
 <x-page-header title="User Management" subtitle="Manage accounts and preserve archived user records">
     <a href="{{ route('admin.students.import.create') }}" class="btn btn-outline-primary">
         <i class="bi bi-upload" aria-hidden="true"></i> Import Students
@@ -13,33 +13,41 @@
     </a>
 </x-page-header>
 
-<div class="btn-group mb-3" role="group" aria-label="User status">
+<nav class="sb-section-tabs mb-0" aria-label="User status">
     <a href="{{ route('admin.users.index', request()->except('page', 'view')) }}"
-       class="btn btn-sm {{ $view === 'active' ? 'btn-primary' : 'btn-outline-primary' }}"
+       class="sb-section-tab {{ $view === 'active' ? 'active' : '' }}"
        @if($view === 'active') aria-current="true" @endif>Active</a>
     <a href="{{ route('admin.users.index', [...request()->except('page'), 'view' => 'archived']) }}"
-       class="btn btn-sm {{ $view === 'archived' ? 'btn-primary' : 'btn-outline-primary' }}"
+       class="sb-section-tab {{ $view === 'archived' ? 'active' : '' }}"
        @if($view === 'archived') aria-current="true" @endif>Archived</a>
     <a href="{{ route('admin.users.index', [...request()->except('page'), 'view' => 'suspended']) }}"
-       class="btn btn-sm {{ $view === 'suspended' ? 'btn-primary' : 'btn-outline-primary' }}"
+       class="sb-section-tab {{ $view === 'suspended' ? 'active' : '' }}"
        @if($view === 'suspended') aria-current="true" @endif>Suspended</a>
-</div>
+</nav>
 
-<form method="GET" class="sb-toolbar" role="search" aria-label="Filter users">
+<form method="GET" class="card sb-filterbar" role="search" aria-label="Filter users">
     <input type="hidden" name="view" value="{{ $view }}">
-    <input type="text" class="form-control" name="search" placeholder="Search name or email..." aria-label="Search name or email" value="{{ request('search') }}">
+    <div class="sb-filter-row">
+        <div class="sb-filter-field">
+            <label class="form-label" for="userSearch">Search name or email</label>
+            <input id="userSearch" type="search" class="form-control" name="search" placeholder="Search name or email..." value="{{ request('search') }}">
+        </div>
     {{-- Picking a role applies the filter right away (the Filter button still runs a typed search). --}}
-    <select class="form-select" name="role" aria-label="Filter by role" onchange="this.form.requestSubmit()">
+        <div class="sb-filter-field sb-filter-field--sm">
+            <label class="form-label" for="userRole">Role</label>
+            <select id="userRole" class="form-select" name="role" onchange="this.form.requestSubmit()">
         <option value="">All Roles</option>
         @foreach($roles as $role)
             <option value="{{ $role->value }}" {{ request('role') === $role->value ? 'selected' : '' }}>{{ $role->label() }}</option>
         @endforeach
-    </select>
-    <div class="sb-toolbar-actions">
+            </select>
+        </div>
+        <div class="sb-filter-actions">
         <button type="submit" class="btn btn-primary"><i class="bi bi-funnel" aria-hidden="true"></i> Filter</button>
         @if(request('search') || request('role'))
             <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary">Clear</a>
         @endif
+        </div>
     </div>
 </form>
 
@@ -47,7 +55,7 @@
 
     @if($users->count())
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table table-hover mb-0 sb-table-stack">
                 <thead>
                     <tr>
                         <th scope="col">Name</th>
@@ -60,10 +68,10 @@
                 <tbody>
                     @foreach($users as $user)
                         <tr>
-                            <td>
-                                <strong>{{ $user->name }}</strong>
+                            <td class="sb-stack-block">
+                                <span class="sb-row-title">{{ $user->name }}</span>
                                 @if($user->student)
-                                    <div class="text-muted small">
+                                    <div class="sb-row-sub">
                                         {{ $user->student->student_id_number ?: 'Student ID not provided' }}
                                         @if($user->student->studentIdNeedsCorrection($studentIdPattern))
                                             <x-status-badge status="warning" label="ID needs correction" />
@@ -71,9 +79,9 @@
                                     </div>
                                 @endif
                             </td>
-                            <td>{{ $user->email }}</td>
-                            <td><span class="sb-tag sb-tag--brand">{{ $user->role->label() }}</span></td>
-                            <td>
+                            <td data-label="Email">{{ $user->email }}</td>
+                            <td data-label="Role"><span class="sb-tag sb-tag--brand">{{ $user->role->label() }}</span></td>
+                            <td data-label="Status" class="sb-stack-block">
                                 @if($user->archived_at)
                                     <x-status-badge status="inactive" label="Archived" />
                                 @elseif($user->is_active ?? true)
@@ -88,10 +96,10 @@
                                 @endif
                                 @if($user->isSuspended())
                                     <x-status-badge status="inactive" label="Suspended" />
-                                    <small class="d-block text-muted" data-suspension>{{ $user->suspended_until ? 'Until '.$user->suspended_until->timezone('Asia/Manila')->format('M d, Y h:i A') : 'Until lifted' }} · {{ $user->suspension_reason }}</small>
+                                    <small class="sb-row-sub" data-suspension>{{ $user->suspended_until ? 'Until '.$user->suspended_until->timezone('Asia/Manila')->format('M d, Y h:i A') : 'Until lifted' }} · {{ $user->suspension_reason }}</small>
                                 @endif
                             </td>
-                            <td class="text-nowrap">
+                            <td class="text-nowrap sb-stack-block">
                                 <span class="sb-row-actions">
                                     @if($user->role === \App\Enums\UserRole::Student && $user->student)
                                         <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.students.files', $user->student) }}" title="View student files" aria-label="View files for {{ $user->name }}">
@@ -179,6 +187,7 @@
 </div>
 
 
+</div>
 {{-- Edit dialogs live outside the table so the markup stays valid. --}}
 
 @if($view === 'active')

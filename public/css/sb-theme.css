@@ -1074,3 +1074,10 @@ html body.sb-app .sb-file-preview img { display: block; max-width: 100%; height:
 html body.sb-app .sb-drawer .sb-block { margin: 0; padding: 18px 0; border-top: 1px solid var(--line); }
 html body.sb-app .sb-drawer .sb-block:first-child { padding-top: 0; border-top: 0; }
 html body.sb-app .sb-drawer .sb-block > h3 { font-size: 15px; font-weight: 600; color: var(--text); }
+
+/* Mini bar chart: one column per value; --sb-bar (0 to 1) sets each bar's height. */
+html body.sb-app .sb-minibars { display: flex; align-items: flex-end; gap: 4px; height: 160px; }
+html body.sb-app .sb-minibar { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 100%; }
+html body.sb-app .sb-minibar small { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+html body.sb-app .sb-minibar-fill { display: block; width: 100%; height: max(2px, calc(var(--sb-bar, 0) * 116px)); border-radius: 6px 6px 0 0; background: var(--burgundy); }
+html[data-theme="dark"] body.sb-app .sb-minibar-fill { background: var(--burgundy-text); }

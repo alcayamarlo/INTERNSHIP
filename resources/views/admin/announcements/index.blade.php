@@ -3,7 +3,7 @@
 @section('title', 'Announcements')
 
 @section('content')
-
+<div class="sb-dash">
 <x-page-header title="Announcements" subtitle="Publish system-wide announcements">
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAnnouncement">
         <i class="bi bi-plus-lg" aria-hidden="true"></i> New Announcement
@@ -14,7 +14,7 @@
 
     @if($announcements->count())
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table table-hover mb-0 sb-table-stack">
                 <thead>
                     <tr>
                         <th scope="col">Title</th>
@@ -27,14 +27,14 @@
                 <tbody>
                     @foreach($announcements as $announcement)
                         <tr>
-                            <td>
-                                <strong>{{ $announcement->title }}</strong>
-                                <div class="text-muted small">{{ Str::limit($announcement->content, 80) }}</div>
+                            <td class="sb-stack-block text-break">
+                                <span class="sb-row-title">{{ $announcement->title }}</span>
+                                <div class="sb-row-sub">{{ Str::limit($announcement->content, 80) }}</div>
                             </td>
-                            <td><span class="sb-tag sb-tag--brand">{{ $announcement->target_role ? ucfirst($announcement->target_role) : 'All Users' }}</span></td>
-                            <td>{{ $announcement->author?->name ?? '—' }}</td>
-                            <td class="text-nowrap">{{ $announcement->published_at?->format('M d, Y') ?? $announcement->created_at->format('M d, Y') }}</td>
-                            <td class="text-end">
+                            <td data-label="Target"><span class="sb-tag sb-tag--brand">{{ $announcement->target_role ? ucfirst($announcement->target_role) : 'All Users' }}</span></td>
+                            <td data-label="Author">{{ $announcement->author?->name ?? '—' }}</td>
+                            <td data-label="Published" class="text-nowrap">{{ $announcement->published_at?->format('M d, Y') ?? $announcement->created_at->format('M d, Y') }}</td>
+                            <td class="text-end sb-stack-block text-nowrap">
                                 <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editAnnouncement{{ $announcement->id }}" title="Edit announcement" aria-label="Edit announcement {{ $announcement->title }}">
                                     <i class="bi bi-pencil" aria-hidden="true"></i>
                                 </button>
@@ -60,6 +60,7 @@
         <div class="card-footer">{{ $announcements->links() }}</div>
     @endif
 
+</div>
 </div>
 
 @foreach($announcements as $announcement)
