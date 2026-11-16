@@ -1571,14 +1571,21 @@ html body.sb-glass.skillbridge-public .sb-about-grid { grid-template-columns: mi
 html body.sb-glass.skillbridge-public .sb-about-copy { display: grid; gap: 28px; align-content: center; justify-items: start; text-align: left; }
 html body.sb-glass.skillbridge-public .sb-about-head { margin: 0; padding: 0; max-width: none; text-align: left; display: grid; gap: 16px; }
 html body.sb-glass.skillbridge-public .sb-about-head .eyebrow { margin: 0; }
-html body.sb-glass.skillbridge-public .sb-about .sb-about-head h2 { margin: 0; max-width: 16ch; font-size: clamp(32px, 3.8vw, 52px); line-height: 1.08; letter-spacing: -.01em; text-wrap: balance; }
-html body.sb-glass.skillbridge-public .sb-about-copy .sb-about-lead { max-width: 46ch; margin: 0; padding-left: 18px; border-left: 3px solid var(--burgundy); font-size: clamp(17px, 1.5vw, 20px); line-height: 1.6; color: #333333; font-weight: 500; text-wrap: pretty; }
+html body.sb-glass.skillbridge-public .sb-about .sb-about-head h2 { margin: 0; max-width: 26ch; font-size: clamp(32px, 3.2vw, 46px); line-height: 1.12; letter-spacing: -.01em; text-wrap: balance; }
+html body.sb-glass.skillbridge-public .sb-about-copy .sb-about-lead { max-width: 52ch; margin: 0; padding-left: 18px; border-left: 3px solid var(--burgundy); font-size: clamp(17px, 1.5vw, 20px); line-height: 1.6; color: #333333; font-weight: 500; text-wrap: pretty; }
 html body.sb-glass.skillbridge-public .sb-about-roles { width: 100%; max-width: 560px; margin: 0; }
 html body.sb-glass.skillbridge-public .sb-about-roles li { grid-template-columns: 132px minmax(0, 1fr); align-items: baseline; padding: 15px 0 15px 22px; }
-html body.sb-glass.skillbridge-public .sb-about-roles span { font-size: 15px; }
+html body.sb-glass.skillbridge-public .sb-about-roles span { font-size: 16px; line-height: 1.5; color: #333333; }
+html body.sb-glass.skillbridge-public .sb-about-copy .sb-about-lead { font-size: clamp(17px, 1.4vw, 19px); }
 html body.sb-glass.skillbridge-public .sb-about-photo { justify-self: stretch; max-width: none; width: 100%; }
 html body.sb-glass.skillbridge-public .sb-about-photo::before { inset: 16px -16px -16px 16px; }
 html body.sb-glass.skillbridge-public .sb-about-photo img { aspect-ratio: 5 / 4; object-fit: cover; object-position: 55% 45%; filter: saturate(1.05) contrast(1.03); }
+/* Desktop: the photo is exactly as tall as the text column, so the top and bottom edges of both sides line up. */
+@media (min-width: 1081px) {
+    html body.sb-glass.skillbridge-public .sb-about-grid { align-items: stretch; }
+    html body.sb-glass.skillbridge-public .sb-about-photo { display: flex; min-height: 440px; margin-right: 16px; }
+    html body.sb-glass.skillbridge-public .sb-about-photo img { flex: 1 1 auto; width: 100%; height: 100%; aspect-ratio: auto; }
+}
 html body.sb-glass.skillbridge-public .sb-about-photo figcaption { display: inline-flex; align-items: center; gap: 8px; left: 20px; bottom: 20px; padding: 10px 16px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 html body.sb-glass.skillbridge-public .sb-about-photo figcaption i { width: 8px; height: 8px; border-radius: 50%; background: var(--burgundy); }
 @media (max-width: 1080px) {
@@ -1679,7 +1686,7 @@ html body.sb-glass.skillbridge-public .sb-features .public-section-heading h2 { 
 html body.sb-glass.skillbridge-public .sb-features .public-section-heading p { justify-self: start; max-width: 52ch; margin: 0; text-align: left; font-size: clamp(16px, 1.4vw, 18px); line-height: 1.6; color: #535353; }
 @media (min-width: 992px) {
     html body.sb-glass.skillbridge-public .sb-features .public-section-heading { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); grid-template-areas: "eyebrow sub" "title sub"; column-gap: clamp(40px, 6vw, 96px); align-items: end; }
-    html body.sb-glass.skillbridge-public .sb-features .public-section-heading h2 { max-width: 16ch; }
+    html body.sb-glass.skillbridge-public .sb-features .public-section-heading h2 { max-width: 22ch; }
     html body.sb-glass.skillbridge-public .sb-features .public-section-heading p { grid-area: sub; align-self: end; max-width: 40ch; margin-bottom: 8px; padding-left: 22px; border-left: 3px solid var(--burgundy); font-size: 18px; line-height: 1.6; }}
 
 /* ===== Live 3D hero: floating glass chips, breathing card stack, scroll depth ===== */
@@ -1728,7 +1735,7 @@ html body.sb-glass.skillbridge-public:not(.sb-glass-page) #main-content > sectio
 html body.sb-glass.skillbridge-public:not(.sb-glass-page) #main-content > section.sb-about { background: radial-gradient(50% 40% at 0% 60%, color-mix(in srgb, var(--burgundy) 10%, transparent), transparent 70%), radial-gradient(45% 35% at 100% 75%, color-mix(in srgb, var(--burgundy) 8%, transparent), transparent 70%), #f4f6fb; }
 html body.sb-glass.skillbridge-public .sb-features .sb-card { border-color: color-mix(in srgb, var(--burgundy) 16%, transparent); box-shadow: 0 16px 32px -20px color-mix(in srgb, var(--burgundy) 50%, transparent); }
 html body.sb-glass.skillbridge-public .sb-features .sb-ic-wrap { background: var(--burgundy); color: #fff; box-shadow: 0 10px 20px -8px color-mix(in srgb, var(--burgundy) 70%, transparent); }
-html body.sb-glass.skillbridge-public .sb-features .sb-feat-grid .sb-card::after { color: color-mix(in srgb, var(--burgundy-text) 35%, transparent); }
+html body.sb-glass.skillbridge-public .sb-features .sb-feat-grid .sb-card::after { color: color-mix(in srgb, var(--burgundy-text) 70%, transparent); font-size: 15px; }
 
 /* ===== Internships popup: cleaner layout, system colours ===== */
 html body.sb-glass.skillbridge-public .sb-pop-panel { background: #f4f6fb; border-radius: 28px; box-shadow: 0 40px 100px rgba(10, 10, 10, 0.55), 0 0 0 1px rgba(255,255,255,.08); }
@@ -1841,3 +1848,53 @@ html body.sb-glass.skillbridge-public .public-hero-lead { max-width: 42ch; margi
 html body.sb-glass.skillbridge-public .sb-hero-stats strong { font-size: clamp(28px, min(3vw, 5.2vh), 50px); }
 html body.sb-glass.skillbridge-public .sb-hero-stats span { font-size: clamp(11.5px, min(.95vw, 1.8vh), 14px); }
 @media (max-width: 640px) { html body.sb-glass.skillbridge-public .public-hero h1 { font-size: clamp(34px, 10.5vw, 48px); }}
+
+/* ================= About SkillBridge (red band + overlapping role panel) ================= */
+html body.sb-glass.skillbridge-public .sb-about.about { padding-top: 0; padding-bottom: 0; }
+html body.sb-glass.skillbridge-public .about__band { box-sizing: border-box; width: 100vw; margin-left: calc(50% - 50vw); padding: 88px 24px 136px; border-radius: 0 0 44px 44px; background: var(--red-900); color: #fff; }
+html body.sb-glass.skillbridge-public .about__inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: center; max-width: 1200px; margin: 0 auto; perspective: 1400px; }
+html body.sb-glass.skillbridge-public .about__text { display: grid; gap: 28px; justify-items: start; }
+html body.sb-glass.skillbridge-public .about__text > * { margin: 0; }
+html body.sb-glass.skillbridge-public .about__eyebrow { display: flex; align-items: center; gap: 16px; color: #fff; font: 800 12px/1.4 'Manrope', system-ui, sans-serif; letter-spacing: .22em; text-transform: uppercase; }
+html body.sb-glass.skillbridge-public .about__eyebrow::before { content: ""; width: 48px; height: 2px; background: #fff; }
+html body.sb-glass.skillbridge-public .about__title { max-width: none; color: #fff; font: 500 clamp(40px, 5.2vw, 68px)/1.02 'Cormorant Garamond', Georgia, serif; letter-spacing: 0; text-wrap: balance; }
+html body.sb-glass.skillbridge-public .about__title em { display: block; font-style: italic; font-weight: 600; }
+html body.sb-glass.skillbridge-public .about__lead { max-width: 40ch; color: #FBEFF1; font-size: 20px; line-height: 1.55; }
+html body.sb-glass.skillbridge-public .about__support { max-width: 46ch; color: #F4DDE1; font-size: 16px; line-height: 1.6; }
+
+html body.sb-glass.skillbridge-public .about__photo { position: relative; height: 420px; margin: 0; overflow: hidden; border: 6px solid #fff; border-radius: 28px; background: var(--red-900); }
+html body.sb-glass.skillbridge-public .about__photo::before { content: none; }
+html body.sb-glass.skillbridge-public .about__photo img { display: block; width: 100%; height: 100%; aspect-ratio: auto; border: 0; border-radius: 0; object-fit: cover; object-position: 50% 40%; box-shadow: none; animation: none; transform: none; filter: none; }
+html body.sb-glass.skillbridge-public .about__loc { position: absolute; left: 16px; bottom: 16px; display: inline-flex; align-items: center; gap: 10px; padding: 11px 18px; border-radius: 999px; background: var(--about-black); color: #fff; font: 800 12px/1 'Manrope', system-ui, sans-serif; letter-spacing: .14em; text-transform: uppercase; }
+html body.sb-glass.skillbridge-public .about__loc i { width: 9px; height: 9px; border-radius: 50%; background: #fff; }
+
+html body.sb-glass.skillbridge-public .about__panel { position: relative; z-index: 2; margin-top: -72px; padding: 0 24px 96px; }
+html body.sb-glass.skillbridge-public .about__roles { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1px; max-width: 1100px; margin: 0 auto; padding: 0; overflow: hidden; list-style: none; border-radius: 24px; background: var(--about-rule); box-shadow: 0 20px 48px rgba(22,22,26,.16); }
+html body.sb-glass.skillbridge-public .about__roles li { display: grid; align-content: start; gap: 10px; padding: 28px; background: #fff; }
+html body.sb-glass.skillbridge-public .about__num { color: var(--red-900); font: 600 44px/1 'Cormorant Garamond', Georgia, serif; }
+html body.sb-glass.skillbridge-public .about__role { color: var(--about-ink); font: 800 12px/1.4 'Manrope', system-ui, sans-serif; letter-spacing: .2em; text-transform: uppercase; }
+html body.sb-glass.skillbridge-public .about__desc { color: #3A3A42; font-size: 16px; line-height: 1.5; }
+
+@media (max-width: 899.98px) {
+    html body.sb-glass.skillbridge-public .about__inner { grid-template-columns: 1fr; gap: 40px; }
+    html body.sb-glass.skillbridge-public .about__photo { height: 320px; }
+}
+@media (max-width: 640px) {
+    html body.sb-glass.skillbridge-public .about__band { padding: 64px 20px 112px; border-radius: 0 0 32px 32px; }
+    html body.sb-glass.skillbridge-public .about__photo { height: 260px; }
+    html body.sb-glass.skillbridge-public .about__panel { margin-top: -56px; padding-inline: 16px; }
+}
+html body.sb-glass.skillbridge-public .about__title { font-size: clamp(34px, 3.9vw, 52px); line-height: 1.08; text-wrap: wrap; }
+html body.sb-glass.skillbridge-public .about__title span { display: block; }
+html body.sb-glass.skillbridge-public .about__title em { white-space: nowrap; }
+@media (max-width: 420px) { html body.sb-glass.skillbridge-public .about__title em { white-space: normal; } }
+
+/* About role panel: icon tile, role, description and a sign-in link per cell */
+html body.sb-glass.skillbridge-public .about__roles li { gap: 12px; padding: 30px 28px 26px; }
+html body.sb-glass.skillbridge-public .about__icon { display: grid; place-items: center; width: 46px; height: 46px; margin-bottom: 6px; border-radius: 14px; background: var(--burgundy-tint); color: var(--red-900); }
+html body.sb-glass.skillbridge-public .about__icon svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+html body.sb-glass.skillbridge-public .about__roles li { align-content: start; }
+@media (hover: hover) {
+
+/* About feature panel: descriptions line up across cells even when a label wraps to two */
+html body.sb-glass.skillbridge-public .about__roles li { grid-row: span 3; grid-template-rows: subgrid; row-gap: 10px; }
