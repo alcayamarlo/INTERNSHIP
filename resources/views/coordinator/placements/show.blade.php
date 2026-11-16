@@ -13,14 +13,14 @@
 @include('ojt.partials.progress', ['placement' => $placement, 'showStudent' => true])
 
 @if($placement->isPendingValidation())
-    <div class="card mb-4 border-warning" data-validation-panel>
+    <div class="card mb-4" data-validation-panel>
         <div class="card-header"><h2 class="h6 mb-0"><i class="bi bi-shield-check" aria-hidden="true"></i> Validate before deployment</h2></div>
         <div class="card-body">
-            <ul class="list-unstyled mb-3">
+            <ul class="sb-checks mb-3">
                 @foreach($validationChecks as $check)
-                    <li class="mb-1" data-check="{{ $check['key'] }}">
-                        <i class="bi {{ $check['passed'] ? 'bi-check-circle-fill text-success' : ($check['blocking'] ? 'bi-x-circle-fill text-danger' : 'bi-exclamation-circle-fill text-warning') }}" aria-hidden="true"></i>
-                        <strong>{{ $check['label'] }}</strong>: {{ $check['detail'] }}
+                    <li class="{{ $check['passed'] ? 'is-pass' : ($check['blocking'] ? 'is-fail' : 'is-warn') }}" data-check="{{ $check['key'] }}">
+                        <i class="bi {{ $check['passed'] ? 'bi-check-circle-fill' : ($check['blocking'] ? 'bi-x-circle-fill' : 'bi-exclamation-circle-fill') }}" aria-hidden="true"></i>
+                        <span><strong>{{ $check['label'] }}</strong>: {{ $check['detail'] }}</span>
                         <span class="visually-hidden">{{ $check['passed'] ? '(passed)' : '(not passed)' }}</span>
                     </li>
                 @endforeach
@@ -33,21 +33,21 @@
                         <label class="form-check-label" for="acknowledgeWarnings">I reviewed the warnings and still want to validate</label>
                     </div>
                 @endif
-                <button type="submit" class="btn btn-success">Validate placement</button>
+                <button type="submit" class="btn btn-primary">Validate placement</button>
             </form>
             <form method="POST" action="{{ route('coordinator.placements.hold', $placement) }}">
                 @csrf
                 <label class="form-label" for="validationRemarks">Or keep it pending and tell the company and student what is needed</label>
                 <textarea id="validationRemarks" name="validation_remarks" rows="2" maxlength="1000" class="form-control mb-2 @error('validation_remarks') is-invalid @enderror">{{ old('validation_remarks', $placement->validation_remarks) }}</textarea>
                 @error('validation_remarks')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                <button type="submit" class="btn btn-outline-warning">Keep pending with remarks</button>
+                <button type="submit" class="btn btn-outline-secondary">Keep pending with remarks</button>
             </form>
         </div>
     </div>
 @endif
 
 @can('clear', $placement)
-    <div class="card mb-4 border-success">
+    <div class="card mb-4">
         <div class="card-header"><h2 class="h6 mb-0"><i class="bi bi-patch-check" aria-hidden="true"></i> Clear this OJT</h2></div>
         <div class="card-body">
             <p class="small text-muted">The student rendered the required hours and the supervisor submitted an evaluation. Clearing issues the certificate of completion.</p>
@@ -55,7 +55,7 @@
                 @csrf
                 <label class="form-label" for="clearance_remarks">Remarks (optional)</label>
                 <textarea id="clearance_remarks" name="clearance_remarks" rows="2" maxlength="1000" class="form-control mb-2"></textarea>
-                <button type="submit" class="btn btn-success">Clear and issue certificate</button>
+                <button type="submit" class="btn btn-primary">Clear and issue certificate</button>
             </form>
         </div>
     </div>

@@ -57,10 +57,10 @@
                     <div class="small mt-2 text-muted"><i class="bi bi-patch-check" aria-hidden="true"></i> Certified true and correct by {{ $entry->reviewer?->name ?? 'the supervisor' }}@if($entry->reviewed_at) on {{ $entry->reviewed_at->timezone('Asia/Manila')->format('F j, Y') }}@endif.</div>
                 @endif
                 @if($entry->supervisor_comment)
-                    <div class="small mt-2 p-2 rounded" style="background: color-mix(in srgb, var(--burgundy) 8%, transparent);"><i class="bi bi-chat-quote" aria-hidden="true"></i> <strong>Supervisor:</strong> {{ $entry->supervisor_comment }}</div>
+                    <div class="sb-callout small mt-2 p-2"><i class="bi bi-chat-quote" aria-hidden="true"></i> <strong>Supervisor:</strong> {{ $entry->supervisor_comment }}</div>
                 @endif
                 @if($entry->coordinator_review_status)
-                    <div class="small mt-2 p-2 rounded {{ $entry->isReturnedByCoordinator() ? 'border border-danger' : 'border' }}" data-coordinator-review>
+                    <div class="small mt-2 p-2 {{ $entry->isReturnedByCoordinator() ? 'sb-callout' : 'rounded border' }}" data-coordinator-review>
                         <i class="bi bi-mortarboard" aria-hidden="true"></i> <strong>Coordinator:</strong>
                         {{ $entry->isReturnedByCoordinator() ? 'Returned' : 'Reviewed' }}@if($entry->coordinator_comment) · {{ $entry->coordinator_comment }}@endif
                         @if($entry->isReturnedByCoordinator() && $mode === 'student')<span class="d-block text-muted">Delete this report and submit a corrected one for the same week.</span>@endif

@@ -16,26 +16,28 @@
     <div class="card-header"><h2 class="h6 mb-0" id="ojtDetailsHeading"><i class="bi bi-file-earmark-person" aria-hidden="true"></i> Details on your forms</h2></div>
     <div class="card-body">
         @if($missing->isNotEmpty())
-            <div class="alert alert-warning" role="alert">
-                <strong>Complete your profile first:</strong> {{ $missing->values()->implode(', ') }}.
-                Your weekly reports, evaluations and certificate can't be printed or submitted until these are filled in.
-                @if($missing->has('designation'))<span class="d-block mt-1">Choose your Designation below and click Save.</span>@endif
-                @if($profileMissing)<a href="{{ route('student.profile.edit') }}" class="alert-link d-inline-block ms-1">Go to my profile</a>@endif
+            <div class="sb-callout mt-0 mb-3" role="alert">
+                <p>
+                    <strong>Complete your profile first:</strong> {{ $missing->values()->implode(', ') }}.
+                    Your weekly reports, evaluations and certificate can't be printed or submitted until these are filled in.
+                    @if($missing->has('designation'))<span class="d-block mt-1">Choose your Designation below and click Save.</span>@endif
+                    @if($profileMissing)<a href="{{ route('student.profile.edit') }}" class="fw-semibold d-inline-block ms-1">Go to my profile</a>@endif
+                </p>
             </div>
         @endif
 
-        <dl class="row small mb-3">
-            <dt class="col-sm-4 fw-normal text-muted">Name of Trainee</dt><dd class="col-sm-8">{{ $values['full_name'] ?: '—' }}</dd>
-            <dt class="col-sm-4 fw-normal text-muted">Student ID</dt><dd class="col-sm-8">{{ $values['student_id'] ?: '—' }}</dd>
-            <dt class="col-sm-4 fw-normal text-muted">Course · Year level</dt><dd class="col-sm-8">{{ $values['course'] ?: '—' }} · {{ $values['year_level'] ?: '—' }}</dd>
-            <dt class="col-sm-4 fw-normal text-muted">Company / Agency</dt><dd class="col-sm-8">{{ $values['company'] ?: '—' }}</dd>
+        <dl class="sb-fields mb-3">
+            <div><dt>Name of Trainee</dt><dd>{{ $values['full_name'] ?: '—' }}</dd></div>
+            <div><dt>Student ID</dt><dd>{{ $values['student_id'] ?: '—' }}</dd></div>
+            <div><dt>Course · Year level</dt><dd>{{ $values['course'] ?: '—' }} · {{ $values['year_level'] ?: '—' }}</dd></div>
+            <div><dt>Company / Agency</dt><dd>{{ $values['company'] ?: '—' }}</dd></div>
         </dl>
 
         @if($placement->isActive())
             <form method="POST" action="{{ route('student.ojt.details.update', $placement) }}" class="row g-2 align-items-end" novalidate>
                 @csrf @method('PATCH')
                 <div class="col-md-5">
-                    <label class="form-label" for="ojtDesignation">Designation (department) <span class="text-danger" aria-hidden="true">*</span></label>
+                    <label class="form-label" for="ojtDesignation">Designation (department) <span class="sb-req" aria-hidden="true">*</span></label>
                     <select id="ojtDesignation" name="department" class="form-select @error('department') is-invalid @enderror" required>
                         <option value="">Select...</option>
                         @foreach($docs->designations($placement->department) as $designation)

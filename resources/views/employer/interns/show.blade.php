@@ -2,10 +2,6 @@
 
 @section('title', 'Intern · '.($profile['name'] ?? 'OJT'))
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/ojt-tabs.css') }}?v={{ @filemtime(public_path('css/ojt-tabs.css')) }}">
-@endpush
-
 @section('content')
 @php
     // Same tab buttons as the student's My OJT page, plus the employer-only Evaluation tab.
@@ -30,10 +26,10 @@
     <a href="{{ route('employer.interns.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back</a>
 </x-page-header>
 
-<div class="ojt-tabs d-flex align-items-center justify-content-between gap-2">
-    <div class="d-flex gap-2" role="tablist" aria-label="OJT sections" data-ojt-tabs>
+<div class="sb-tabbar">
+    <div class="sb-section-tabs" role="tablist" aria-label="OJT sections" data-ojt-tabs>
         @foreach($tabs as $key => [$label, $icon])
-            <button type="button" role="tab" id="ojt-tab-{{ $key }}" class="ojt-tab" data-tab="{{ $key }}"
+            <button type="button" role="tab" id="ojt-tab-{{ $key }}" class="sb-section-tab" data-tab="{{ $key }}"
                     aria-controls="ojt-panel-{{ $key }}" aria-selected="{{ $key === $activeTab ? 'true' : 'false' }}"
                     tabindex="{{ $key === $activeTab ? '0' : '-1' }}">
                 <i class="bi {{ $icon }}" aria-hidden="true"></i> {{ $label }}
@@ -43,7 +39,7 @@
 </div>
 
 {{-- Progress: hours, coordinator, emergency contact and the OJT schedule --}}
-<section id="ojt-panel-progress" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-progress" @if($activeTab !== 'progress') hidden @endif>
+<section id="ojt-panel-progress" class="sb-tab-panel" role="tabpanel" aria-labelledby="ojt-tab-progress" @if($activeTab !== 'progress') hidden @endif>
 @include('ojt.partials.deadlines', ['placement' => $placement, 'actor' => 'supervisor'])
 @include('ojt.partials.progress', ['placement' => $placement])
 
@@ -98,24 +94,24 @@
 </section>
 
 {{-- Time Record --}}
-<section id="ojt-panel-time-record" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-time-record" @if($activeTab !== 'time-record') hidden @endif>
+<section id="ojt-panel-time-record" class="sb-tab-panel" role="tabpanel" aria-labelledby="ojt-tab-time-record" @if($activeTab !== 'time-record') hidden @endif>
 @include('ojt.partials.attendance', ['placement' => $placement, 'mode' => 'employer'])
 </section>
 
 {{-- Weekly Journal --}}
-<section id="ojt-panel-weekly-journal" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-weekly-journal" @if($activeTab !== 'weekly-journal') hidden @endif>
+<section id="ojt-panel-weekly-journal" class="sb-tab-panel" role="tabpanel" aria-labelledby="ojt-tab-weekly-journal" @if($activeTab !== 'weekly-journal') hidden @endif>
 @include('ojt.partials.journals', ['placement' => $placement, 'mode' => 'employer'])
 </section>
 
 {{-- Monthly Evaluation --}}
-<section id="ojt-panel-monthly-evaluation" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-monthly-evaluation" @if($activeTab !== 'monthly-evaluation') hidden @endif>
+<section id="ojt-panel-monthly-evaluation" class="sb-tab-panel" role="tabpanel" aria-labelledby="ojt-tab-monthly-evaluation" @if($activeTab !== 'monthly-evaluation') hidden @endif>
 @include('ojt.partials.appraisals', ['placement' => $placement, 'mode' => 'employer'])
 </section>
 
 {{-- Evaluation --}}
-<section id="ojt-panel-evaluation" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-evaluation" @if($activeTab !== 'evaluation') hidden @endif>
+<section id="ojt-panel-evaluation" class="sb-tab-panel" role="tabpanel" aria-labelledby="ojt-tab-evaluation" @if($activeTab !== 'evaluation') hidden @endif>
 @if($placement->evaluation?->coordinator_review_status === 'returned')
-    <div class="alert alert-warning" role="status" data-evaluation-returned>
+    <div class="sb-callout mt-0 mb-4" role="status" data-evaluation-returned>
         <i class="bi bi-arrow-return-left" aria-hidden="true"></i> The coordinator returned your evaluation: {{ $placement->evaluation->coordinator_comment }} Update it below and save.
     </div>
 @endif
@@ -150,7 +146,7 @@
                 <h3 class="h6 mt-2">Part II. Training details</h3>
                 <div class="row g-2 mb-3">
                     <div class="col-md-4">
-                        <label class="form-label" for="department_assigned">Division / department assigned <span class="text-danger" aria-hidden="true">*</span></label>
+                        <label class="form-label" for="department_assigned">Division / department assigned <span class="sb-req" aria-hidden="true">*</span></label>
                         @php $assigned = old('department_assigned', $evaluation?->department_assigned ?? $placement->department); @endphp
                         <select id="department_assigned" name="department_assigned" required class="form-select @error('department_assigned') is-invalid @enderror">
                             <option value="">Select...</option>
@@ -161,13 +157,13 @@
                         @error('department_assigned')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label" for="field_of_training">Field of training assigned <span class="text-danger" aria-hidden="true">*</span></label>
+                        <label class="form-label" for="field_of_training">Field of training assigned <span class="sb-req" aria-hidden="true">*</span></label>
                         <input id="field_of_training" name="field_of_training" maxlength="150" required class="form-control @error('field_of_training') is-invalid @enderror"
                                value="{{ old('field_of_training', $evaluation?->field_of_training ?? $placement->internship?->title) }}">
                         @error('field_of_training')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label" for="supervisor_designation">Your designation / job title <span class="text-danger" aria-hidden="true">*</span></label>
+                        <label class="form-label" for="supervisor_designation">Your designation / job title <span class="sb-req" aria-hidden="true">*</span></label>
                         <input id="supervisor_designation" name="supervisor_designation" maxlength="100" required class="form-control @error('supervisor_designation') is-invalid @enderror"
                                value="{{ old('supervisor_designation', $evaluation?->supervisor_designation ?? $employerProfile?->position) }}" placeholder="e.g. Solutions Architect">
                         @error('supervisor_designation')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -179,7 +175,7 @@
                 @foreach(['work_scores' => ['Work performance', \App\Models\Evaluation::WORK_FACTORS], 'trait_scores' => ['Personality traits', \App\Models\Evaluation::TRAIT_FACTORS]] as $group => [$groupLabel, $factors])
                     <div class="table-responsive mb-3">
                         <table class="table table-sm align-middle mb-0">
-                            <thead><tr><th scope="col">{{ $groupLabel }}</th><th scope="col" class="text-center">Max rating</th><th scope="col" class="text-center" style="width: 120px;">Actual rating</th></tr></thead>
+                            <thead><tr><th scope="col">{{ $groupLabel }}</th><th scope="col" class="text-center">Max rating</th><th scope="col" class="text-center sb-cell-score">Actual rating</th></tr></thead>
                             <tbody>
                                 @foreach($factors as $key => $factor)
                                     @php $stored = $evaluation?->{$group}[$key] ?? null; @endphp
@@ -187,7 +183,7 @@
                                         <td>
                                             <strong>{{ $loop->iteration }}. {{ $factor['label'] }}</strong>
                                             <div class="small text-muted">{{ $factor['description'] }}</div>
-                                            @error($group.'.'.$key)<div class="text-danger small">{{ $message }}</div>@enderror
+                                            @error($group.'.'.$key)<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                                         </td>
                                         <td class="text-center">{{ $factor['points'] }}%</td>
                                         <td>

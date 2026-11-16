@@ -536,7 +536,7 @@ it('opens the tab from the URL and keeps each tab limited to its own panel', fun
 
     // Default and invalid values open Progress; the other panels are rendered hidden.
     foreach (['', '?tab=nonsense'] as $query) {
-        $page($query)->assertSee('id="ojt-tab-progress" class="ojt-tab"', false)
+        $page($query)->assertSee('id="ojt-tab-progress" class="sb-section-tab"', false)
             ->assertSeeInOrder(['id="ojt-panel-progress"', 'aria-labelledby="ojt-tab-progress"'], false)
             ->assertSee('aria-selected="true"', false);
     }

@@ -50,7 +50,7 @@
                 @if($values[$field] !== '')
                     {{ $values[$field] }}
                 @else
-                    <span class="text-danger">Missing</span>
+                    <span class="sb-req fw-semibold">Missing</span>
                 @endif
                 <i class="bi bi-lock text-muted ms-1" aria-hidden="true" title="Change this on your profile page"></i><span class="visually-hidden">(locked; change it on your profile page)</span>
             </dd>

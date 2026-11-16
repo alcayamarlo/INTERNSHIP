@@ -9,13 +9,15 @@
 <div class="card mb-4" data-ojt-progress data-live-region="ojt-progress-{{ $placement->id }}" data-live-topics="placements">
     <div class="card-body">
         @if($placement->isPendingValidation())
-            <div class="alert alert-warning small" role="status" data-pending-validation>
-                <i class="bi bi-shield-exclamation" aria-hidden="true"></i>
-                This placement is waiting for the OJT coordinator to validate it. Time logging opens once it is validated.
-                @if($placement->validation_remarks)<br><strong>Coordinator's note:</strong> {{ $placement->validation_remarks }}@endif
+            <div class="sb-callout mt-0 mb-3" role="status" data-pending-validation>
+                <p>
+                    <i class="bi bi-shield-exclamation" aria-hidden="true"></i>
+                    This placement is waiting for the OJT coordinator to validate it. Time logging opens once it is validated.
+                    @if($placement->validation_remarks)<br><strong>Coordinator's note:</strong> {{ $placement->validation_remarks }}@endif
+                </p>
             </div>
         @elseif($risk = $placement->riskReason())
-            <div class="alert alert-danger small" role="status" data-at-risk><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> At risk: {{ $risk }}.</div>
+            <div class="sb-callout mt-0 mb-3" role="status" data-at-risk><p><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> At risk: {{ $risk }}.</p></div>
         @endif
         <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
             <div>
@@ -35,7 +37,7 @@
                 <x-status-badge :status="$statusKey" :label="$placement->statusLabel()" />
                 @if($placement->isCleared())
                     <div class="mt-2">
-                        <a href="{{ route('ojt.certificate', $placement) }}" class="btn btn-sm btn-success">
+                        <a href="{{ route('ojt.certificate', $placement) }}" class="btn btn-sm btn-primary">
                             <i class="bi bi-award" aria-hidden="true"></i> Certificate of completion
                         </a>
                     </div>
@@ -47,44 +49,35 @@
             <span><strong>{{ number_format($approved, 2) }}</strong> of {{ $placement->required_hours }} required hours approved</span>
             <span>{{ $percent }}%</span>
         </div>
-        <div class="progress mb-3" role="progressbar" aria-label="OJT hours progress" aria-valuenow="{{ $percent }}" aria-valuemin="0" aria-valuemax="100" style="height: 10px;">
-            <div class="progress-bar {{ $percent >= 100 ? 'bg-success' : '' }}" style="width: {{ $percent }}%"></div>
+        <div class="progress mb-3" role="progressbar" aria-label="OJT hours progress" aria-valuenow="{{ $percent }}" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar" style="width: {{ $percent }}%"></div>
         </div>
 
-        <div class="row g-3 text-center">
-            <div class="col-6 col-md-3">
-                <div class="small text-muted">Approved</div>
-                <div class="fw-bold">{{ number_format($approved, 2) }} h</div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="small text-muted">Pending review</div>
-                <div class="fw-bold">{{ number_format($pending, 2) }} h</div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="small text-muted">Remaining</div>
-                <div class="fw-bold">{{ number_format($placement->remainingHours(), 2) }} h</div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="small text-muted">Evaluation</div>
-                <div class="fw-bold">
+        <div class="sb-kpis sb-kpis--compact">
+            <div class="sb-tile"><span class="sb-tile-label">Approved</span><span class="sb-tile-value">{{ number_format($approved, 2) }} h</span></div>
+            <div class="sb-tile"><span class="sb-tile-label">Pending review</span><span class="sb-tile-value">{{ number_format($pending, 2) }} h</span></div>
+            <div class="sb-tile"><span class="sb-tile-label">Remaining</span><span class="sb-tile-value">{{ number_format($placement->remainingHours(), 2) }} h</span></div>
+            <div class="sb-tile">
+                <span class="sb-tile-label">Evaluation</span>
+                <span class="sb-tile-value">
                     @if($placement->evaluation)
                         {{ number_format((float) $placement->evaluation->average_score, 2) }} / 5
                     @else
                         Not yet
                     @endif
-                </div>
+                </span>
             </div>
         </div>
 
         @if($placement->isActive())
-            <p class="small text-muted mb-0 mt-3">
+            <p class="sb-note mt-3">
                 <i class="bi bi-info-circle" aria-hidden="true"></i>
                 The OJT completes automatically when the approved hours reach {{ $placement->required_hours }} and the supervisor submits the evaluation. The coordinator then clears it and the certificate becomes available.
             </p>
         @elseif($placement->isCompleted() && ! $placement->isCleared())
-            <p class="small text-muted mb-0 mt-3"><i class="bi bi-hourglass-split" aria-hidden="true"></i> Completed {{ $placement->completed_at?->format('M d, Y') }} — awaiting coordinator clearance.</p>
+            <p class="sb-note mt-3"><i class="bi bi-hourglass-split" aria-hidden="true"></i> Completed {{ $placement->completed_at?->format('M d, Y') }} — awaiting coordinator clearance.</p>
         @elseif($placement->isCleared())
-            <p class="small text-muted mb-0 mt-3">
+            <p class="sb-note mt-3">
                 <i class="bi bi-patch-check" aria-hidden="true"></i>
                 Cleared {{ $placement->cleared_at->format('M d, Y') }} by {{ $placement->clearedBy?->name ?? 'the coordinator' }}. Certificate no. {{ $placement->certificate_number }}.
                 @if($placement->clearance_remarks) <br>Remarks: {{ $placement->clearance_remarks }} @endif
