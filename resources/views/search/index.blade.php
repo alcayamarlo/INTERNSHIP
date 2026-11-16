@@ -81,7 +81,7 @@
                 <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-tags"></i> Skills</h5></div>
                 <ul class="list-group list-group-flush">
                     @foreach($results['skills'] as $skill)
-                        <li class="list-group-item">{{ $skill->name }}</li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center gap-2">{{ $skill->name }} <span class="sb-tag">{{ $skill->type?->label() }}</span></li>
                     @endforeach
                 </ul>
             </div>

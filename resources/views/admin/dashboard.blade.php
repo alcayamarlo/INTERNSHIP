@@ -9,7 +9,7 @@
 
 <x-page-header title="System Dashboard" subtitle="Platform analytics and administration" eyebrow="Command center">
     <span class="sb-tag"><i class="bi bi-calendar3" aria-hidden="true"></i> {{ now()->format('M d, Y') }}</span>
-    <a href="{{ route('admin.skill-categories.index') }}" class="btn btn-outline-primary">Manage Skill Categories</a>
+    <a href="{{ route('admin.skill-tags.index') }}" class="btn btn-outline-primary">Manage Student Skill Tags</a>
 </x-page-header>
 
 <div class="sb-layout-2">

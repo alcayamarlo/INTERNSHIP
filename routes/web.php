@@ -8,7 +8,6 @@ use App\Http\Controllers\Admin\ModerationController;
 use App\Http\Controllers\Admin\PlacementController as AdminPlacementController;
 use App\Http\Controllers\Admin\PortfolioFileController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
-use App\Http\Controllers\Admin\SkillCategoryController as AdminSkillCategoryController;
 use App\Http\Controllers\Admin\SkillTagController;
 use App\Http\Controllers\Admin\StudentImportController;
 use App\Http\Controllers\Admin\SystemController as AdminSystemController;
@@ -402,9 +401,6 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             Route::post('/users/{user}/unverify-company', [AdminUserController::class, 'unverifyCompany'])->name('users.unverify-company');
             Route::delete('/users/{user}/permanent', [AdminUserController::class, 'forceDelete'])->name('users.force-delete');
             Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
-            Route::resource('skill-categories', AdminSkillCategoryController::class)
-                ->except(['show'])
-                ->parameters(['skill-categories' => 'skill_category']);
             Route::get('/announcements', [AdminAnnouncementController::class, 'index'])->name('announcements.index');
             Route::post('/announcements', [AdminAnnouncementController::class, 'store'])->name('announcements.store');
             Route::put('/announcements/{announcement}', [AdminAnnouncementController::class, 'update'])->name('announcements.update');

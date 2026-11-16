@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\ApplicationStatus;
 use App\Enums\CompetencyCategory;
+use App\Enums\SkillType;
 use App\Enums\ProficiencyLevel;
 use App\Enums\PortfolioType;
 use App\Enums\UserRole;
@@ -17,7 +18,6 @@ use App\Models\InternshipApplication;
 use App\Models\InternshipRequirement;
 use App\Models\Portfolio;
 use App\Models\Skill;
-use App\Models\SkillCategory;
 use App\Models\Student;
 use App\Models\StudentCompetency;
 use App\Models\User;
@@ -116,16 +116,13 @@ class DatabaseSeeder extends Seeder
             Storage::disk(UploadDisks::private())->put($path, $this->placeholderPdf());
         }
 
-        $technicalCategory = SkillCategory::create(['name' => 'technical']);
-        $softCategory = SkillCategory::create(['name' => 'soft']);
-
         $skills = [
-            ['name' => 'PHP', 'category_id' => $technicalCategory->id],
-            ['name' => 'Laravel', 'category_id' => $technicalCategory->id],
-            ['name' => 'JavaScript', 'category_id' => $technicalCategory->id],
-            ['name' => 'MySQL', 'category_id' => $technicalCategory->id],
-            ['name' => 'Communication', 'category_id' => $softCategory->id],
-            ['name' => 'Teamwork', 'category_id' => $softCategory->id],
+            ['name' => 'PHP', 'type' => SkillType::Technical],
+            ['name' => 'Laravel', 'type' => SkillType::Technical],
+            ['name' => 'JavaScript', 'type' => SkillType::Technical],
+            ['name' => 'MySQL', 'type' => SkillType::Technical],
+            ['name' => 'Communication', 'type' => SkillType::Soft],
+            ['name' => 'Teamwork', 'type' => SkillType::Soft],
         ];
 
         foreach ($skills as $skill) {

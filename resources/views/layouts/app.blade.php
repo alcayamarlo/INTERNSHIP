@@ -180,7 +180,6 @@
                 ['admin.company-invitations.index', 'admin.company-invitations.*', 'bi-envelope-paper', 'Company Invitations'],
                 ['admin.placements.index', 'admin.placements.*', 'bi-clock-history', 'OJT Placements'],
                 ['admin.announcements.index', 'admin.announcements.*', 'bi-megaphone', 'Announcements'],
-                ['admin.skill-categories.index', 'admin.skill-categories.*', 'bi-tags', 'Skill Categories'],
                 ['admin.skill-tags.index', 'admin.skill-tags.*', 'bi-hash', 'Student Skill Tags'],
             ],
             'System' => [
