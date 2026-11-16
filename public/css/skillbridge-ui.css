@@ -55,39 +55,6 @@
     --sb-sidebar-muted: #6d6d6d;
 }
 
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme]) {
-        color-scheme: dark;
-        --sb-border: #3e3e3e;
-        --sb-ink: #fafafa;
-        --sb-muted: #c4c4c4;
-        --sb-canvas: #171112;
-        --sb-surface: #1d1d1d;
-        --sb-surface-raised: #242424;
-        --sb-red-soft: var(--burgundy);
-        --sb-brand-content: var(--burgundy-text);
-        --sb-danger-ink: var(--burgundy-text);
-        --sb-success-ink: var(--text);
-        --sb-success-bg: color-mix(in srgb, var(--solid-bg) 20%, transparent);
-        --sb-success-border: color-mix(in srgb, var(--line) 34%, transparent);
-        --sb-danger-bg: color-mix(in srgb, var(--burgundy) 20%, transparent);
-        --sb-danger-border: color-mix(in srgb, var(--burgundy-border) 34%, transparent);
-        --sb-warning-ink: var(--burgundy-text);
-        --sb-warning-bg: color-mix(in srgb, var(--burgundy) 20%, transparent);
-        --sb-warning-border: color-mix(in srgb, var(--burgundy-border) 34%, transparent);
-        --sb-info-ink: var(--burgundy-text);
-        --sb-info-bg: color-mix(in srgb, var(--burgundy) 20%, transparent);
-        --sb-info-border: color-mix(in srgb, var(--burgundy-border) 34%, transparent);
-        --sb-purple: var(--burgundy-border);
-        --sb-text-soft: var(--on-burgundy);
-        --sb-shadow: 0 16px 40px rgba(0, 0, 0, .24);
-        --sb-sidebar: #1d1d1d;
-        --sb-sidebar-2: #242424;
-        --sb-sidebar-ink: #fafafa;
-        --sb-sidebar-muted: #c4c4c4;
-    }
-}
-
 :root[data-theme="dark"] {
     color-scheme: dark;
     --sb-border: #3e3e3e;
@@ -261,23 +228,21 @@ body.skillbridge-app {
     --bs-secondary-rgb: 208, 184, 187;
 }
 
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) body.skillbridge-app {
-        --sb-shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
-        --sb-danger-solid: var(--burgundy);
-        --sb-danger-solid-deep: var(--burgundy);
-        --sb-success-solid: var(--solid-bg);
-        --sb-success-solid-deep: var(--solid-bg);
-        --sb-success-solid-ink: var(--text);
-        --bs-link-color-rgb: 255, 135, 148;
-        --bs-link-hover-color-rgb: 255, 135, 148;
-        --bs-body-bg-rgb: 23, 17, 18;
-        --bs-body-color-rgb: 255, 245, 245;
-        --bs-white-rgb: 33, 25, 26;
-        --bs-light-rgb: 42, 29, 31;
-        --bs-dark-rgb: 255, 245, 245;
-        --bs-secondary-rgb: 208, 184, 187;
-    }
+:root[data-theme="dark"] body.skillbridge-app {
+    --sb-shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+    --sb-danger-solid: var(--burgundy);
+    --sb-danger-solid-deep: var(--burgundy);
+    --sb-success-solid: var(--solid-bg);
+    --sb-success-solid-deep: var(--solid-bg);
+    --sb-success-solid-ink: var(--text);
+    --bs-link-color-rgb: 255, 135, 148;
+    --bs-link-hover-color-rgb: 255, 135, 148;
+    --bs-body-bg-rgb: 23, 17, 18;
+    --bs-body-color-rgb: 255, 245, 245;
+    --bs-white-rgb: 33, 25, 26;
+    --bs-light-rgb: 42, 29, 31;
+    --bs-dark-rgb: 255, 245, 245;
+    --bs-secondary-rgb: 208, 184, 187;
 }
 
 html.sb-collapsed body.skillbridge-app {
@@ -879,10 +844,8 @@ body.skillbridge-app .alert-info {
     filter: invert(1);
 }
 
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) body.skillbridge-app .btn-close {
-        filter: invert(1);
-    }
+:root[data-theme="dark"] body.skillbridge-app .btn-close {
+    filter: invert(1);
 }
 
 .toast-container {
@@ -3987,32 +3950,6 @@ body.skillbridge-app {
     --sb-auth-terms-background: #212121;
 }
 
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme]) {
-        --sb-auth-panel-background:
-            radial-gradient(ellipse at 88% 12%, color-mix(in srgb, var(--burgundy) 16%, transparent), transparent 38%),
-            linear-gradient(145deg, #000 0%, #171112 58%, #1b1b1b 100%);
-        --sb-auth-card-background: rgba(29, 29, 29, 0.97);
-        --sb-auth-card-border: rgba(166, 166, 166, 0.2);
-        --sb-auth-text: #f8fafc;
-        --sb-auth-muted: var(--burgundy-text);
-        --sb-auth-label: #e9e9e9;
-        --sb-auth-input-background: #242424;
-        --sb-auth-input-border: #4e4e4e;
-        --sb-auth-input-text: #fafafa;
-        --sb-auth-input-placeholder: #b5b5b5;
-        --sb-auth-danger: var(--burgundy-border);
-        --sb-auth-option-background: #1d1d1d;
-        --sb-auth-option-text: #fafafa;
-        --sb-auth-option-selected-background: var(--burgundy);
-        --sb-auth-option-selected-text: #fff;
-        --sb-auth-pill-background: #242424;
-        --sb-auth-pill-border: #3e3e3e;
-        --sb-auth-pill-text: var(--burgundy-text);
-        --sb-auth-terms-background: #212121;
-    }
-}
-
 :root body.skillbridge-guest .skillbridge-guest-theme-toggle[aria-pressed="true"] {
     border-color: var(--sb-red);
     background: var(--sb-red-soft);
@@ -4413,10 +4350,8 @@ select.auth-input option {
     color-scheme: dark;
 }
 
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) select.auth-input {
-        color-scheme: dark;
-    }
+:root[data-theme="dark"] select.auth-input {
+    color-scheme: dark;
 }
 
 .auth-select-caret {

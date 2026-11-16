@@ -3,11 +3,10 @@
 
     const root = document.documentElement;
     const storageKey = 'skillbridge-theme';
-    const themeQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const syncThemeButtons = () => {
-        const isDark = root.dataset.theme === 'dark' || (!root.dataset.theme && themeQuery.matches);
+        const isDark = root.dataset.theme === 'dark';
         document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
             button.setAttribute('aria-pressed', String(isDark));
             button.setAttribute('aria-label', `Switch to ${isDark ? 'light' : 'dark'} mode`);
@@ -31,15 +30,12 @@
 
     const initialize = () => {
         syncThemeButtons();
-        themeQuery.addEventListener('change', () => {
-            if (!root.dataset.theme) syncThemeButtons();
-        });
 
         document.addEventListener('click', (event) => {
             const button = event.target instanceof Element ? event.target.closest('[data-theme-toggle]') : null;
             if (!button) return;
 
-            const current = root.dataset.theme || (themeQuery.matches ? 'dark' : 'light');
+            const current = root.dataset.theme === 'dark' ? 'dark' : 'light';
             root.dataset.theme = current === 'dark' ? 'light' : 'dark';
             try {
                 window.localStorage.setItem(storageKey, root.dataset.theme);

@@ -9,8 +9,9 @@
         // Tells skillbridge-ui.js not to replace this page's theme with the app theme.
         root.setAttribute('data-public-theme', '');
 
-        // 1) The public pages are always light (white), whatever the saved or device theme is.
+        // 1) Light by default (the device's dark setting is ignored); a theme the user picked is kept.
         var theme = 'light';
+        try { if ((localStorage.getItem(APP_KEY) || localStorage.getItem(KEY)) === 'dark') theme = 'dark'; } catch (err) {}
         root.setAttribute('data-theme', theme);
 
         function isDark() { return root.getAttribute('data-theme') === 'dark'; }
@@ -44,6 +45,7 @@
         });
 
         window.sbLandingTheme = { sync: sync };
+        document.addEventListener('DOMContentLoaded', sync);
     })();
 </script>
 <style>
