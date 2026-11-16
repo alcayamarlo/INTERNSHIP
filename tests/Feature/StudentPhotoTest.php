@@ -292,7 +292,7 @@ it('never puts the profile picture on the resume: a profile picture alone gives 
         ->and(view('student.resume.pdf', ['content' => $content, 'photo' => null])->render())->toContain('<span class="photo-initials">AC</span>');
 
     $resume = app(ResumeBuilderService::class)->build($student->fresh());
-    expect(Storage::disk('private')->get($resume->file_path))->not->toContain('/Subtype /Image');
+    expect(resumeHasPhoto(Storage::disk('private')->get($resume->file_path)))->toBeFalse();
 });
 
 it('puts the 2x2 on the resume', function () {
@@ -321,7 +321,7 @@ it('falls back to initials without an error when the 2x2 file is missing', funct
     expect(resumePhotoOf($student))->toBeNull();
     $resume = app(ResumeBuilderService::class)->build($student->fresh());
     expect(Storage::disk('private')->get($resume->file_path))->toStartWith('%PDF')
-        ->not->toContain('/Subtype /Image');
+        ->and(resumeHasPhoto(Storage::disk('private')->get($resume->file_path)))->toBeFalse();
 });
 
 it('applies the same photo rule to the company version of the resume', function (bool $withIdPhoto) {
@@ -334,7 +334,7 @@ it('applies the same photo rule to the company version of the resume', function 
 
     // Before applying, the company gets a copy rendered on the fly (contact details hidden).
     $hidden = $service->pdfResponse($resume, $employerUser, download: false)->getContent();
-    expect(str_contains($hidden, '/Subtype /Image'))->toBe($withIdPhoto);
+    expect(resumeHasPhoto($hidden))->toBe($withIdPhoto);
 
     // After applying, the company gets the stored file: the same rule.
     $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Intern', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open']);
@@ -342,7 +342,7 @@ it('applies the same photo rule to the company version of the resume', function 
     $this->actingAs($employerUser)
         ->get(route('employer.applicants.resume.preview', InternshipApplication::sole()))
         ->assertOk();
-    expect(str_contains(Storage::disk('private')->get($resume->file_path), '/Subtype /Image'))->toBe($withIdPhoto);
+    expect(resumeHasPhoto(Storage::disk('private')->get($resume->file_path)))->toBe($withIdPhoto);
 })->with(['with a 2x2' => [true], 'profile picture only' => [false]]);
 
 it('embeds the photo in the exported PDF', function () {
@@ -354,7 +354,7 @@ it('embeds the photo in the exported PDF', function () {
     $resume = app(ResumeBuilderService::class)->build($student->fresh());
 
     expect($resume->content['id_photo_path'])->toBe($student->fresh()->id_photo_path)
-        ->and(Storage::disk('private')->get($resume->file_path))->toContain('/Subtype /Image');
+        ->and(resumeHasPhoto(Storage::disk('private')->get($resume->file_path)))->toBeTrue();
 });
 
 it('leaves profile completion unchanged by the 2x2 picture', function () {
@@ -379,3 +379,9 @@ it('shows initials instead of a broken image when the photo file is missing', fu
         ->assertDontSee('profiles/students/missing.jpg')
         ->assertSee('<span data-avatar-initials >AC</span>', false);
 });
+
+/** The resume always prints the OJT seal (one image), so a photo means a second image in the PDF. */
+function resumeHasPhoto(string $pdf): bool
+{
+    return substr_count($pdf, '/Subtype /Image') > 1;
+}

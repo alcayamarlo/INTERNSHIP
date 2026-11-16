@@ -18,7 +18,7 @@
 
         .meta {
             margin-bottom: 20px;
-            color: #475569;
+            color: #4B4B4B;
             font-size: 12px;
         }
 

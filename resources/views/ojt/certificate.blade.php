@@ -6,9 +6,9 @@
 <style>
     @page { margin: 0; }
     body { margin: 0; font-family: DejaVu Serif, serif; color: #1f2937; }
-    .frame { position: absolute; top: 28px; left: 28px; right: 28px; bottom: 28px; border: 6px double #1e3a5f; padding: 40px 60px; text-align: center; }
-    .school { font-size: 15px; letter-spacing: 3px; text-transform: uppercase; color: #1e3a5f; }
-    .title { font-size: 40px; margin: 22px 0 6px; color: #1e3a5f; letter-spacing: 2px; }
+    .frame { position: absolute; top: 28px; left: 28px; right: 28px; bottom: 28px; border: 6px double #5E010B; padding: 40px 60px; text-align: center; }
+    .school { font-size: 15px; letter-spacing: 3px; text-transform: uppercase; color: #5E010B; }
+    .title { font-size: 40px; margin: 22px 0 6px; color: #5E010B; letter-spacing: 2px; }
     .subtitle { font-size: 14px; letter-spacing: 4px; text-transform: uppercase; color: #6b7280; }
     .presented { margin-top: 30px; font-size: 15px; }
     .name { font-size: 34px; font-weight: bold; margin: 10px auto 4px; border-bottom: 1px solid #9ca3af; display: inline-block; padding: 0 30px 4px; }

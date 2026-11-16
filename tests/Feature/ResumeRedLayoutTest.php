@@ -185,15 +185,14 @@ it('still renders older certificates and the old honors paragraph', function () 
         ->not->toContain('<b>2025</b>');
 });
 
-it('keeps the red sidebar and header colours in the exported PDF', function () {
+it('uses the burgundy sidebar and header colour in the exported PDF', function () {
     $student = redResumeStudent(['gender' => 'Male']);
     $resume = app(ResumeBuilderService::class)->build($student);
 
     $colours = pdfFillColours(Storage::disk('private')->get($resume->file_path));
 
-    // #B3001B sidebar and #E31B2D photo box / header bars.
-    expect($colours)->toContain('0.702 0.000 0.106')
-        ->toContain('0.890 0.106 0.176');
+    // #5E010B sidebar, photo box and header bars.
+    expect($colours)->toContain('0.369 0.004 0.043');
 });
 
 it('keeps older resumes on the layout they were generated with', function () {

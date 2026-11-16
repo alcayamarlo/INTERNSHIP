@@ -12,7 +12,7 @@
         <p style="font-size: 16px;">{{ $coordinatorName }} of St. Cecilia's College – Cebu invited your company to join SkillBridge, the school's OJT and internship placement system, as a partner company.</p>
         <p style="font-size: 16px;">Open the link below to check your company details, add the missing information, and set a password. Your account is ready as soon as you finish.</p>
         <p style="margin: 24px 0;">
-            <a href="{{ $url }}" style="display: inline-block; background: #c8102e; color: #ffffff; text-decoration: none; font-weight: 700; padding: 12px 20px; border-radius: 8px;">Complete your company account</a>
+            <a href="{{ $url }}" style="display: inline-block; background: #5E010B; color: #ffffff; text-decoration: none; font-weight: 700; padding: 12px 20px; border-radius: 8px;">Complete your company account</a>
         </p>
         <p style="font-size: 14px; color: #4b5563;">This link works until {{ $expiresAt }} (Philippine time) and can be used once. Reference: {{ $reference }}.</p>
         <p style="font-size: 14px; color: #4b5563;">If the button does not work, copy this address into your browser:<br><span style="word-break: break-all;">{{ $url }}</span></p>
