@@ -1,8 +1,8 @@
 @if($rows)
-    @if($heading)<h3 class="h6">{{ $heading }}</h3>@endif
-    <dl class="row small mb-3">
+    @if($heading)<h3 class="sb-block-title">{{ $heading }}</h3>@endif
+    <dl class="sb-fields">
         @foreach($rows as $label => $value)
-            <dt class="col-sm-4">{{ $label }}</dt><dd class="col-sm-8">{{ $value }}</dd>
+            <div><dt>{{ $label }}</dt><dd>{{ $value }}</dd></div>
         @endforeach
     </dl>
 @endif

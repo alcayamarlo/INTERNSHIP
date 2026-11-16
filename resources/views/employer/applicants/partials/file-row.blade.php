@@ -1,11 +1,12 @@
-<li class="d-flex justify-content-between align-items-center gap-2 border-bottom py-2">
-    <span>{{ $file['title'] }}
-        @if(! empty($file['issuer']))<small class="text-muted d-block">{{ $file['issuer'] }}</small>@endif
-        @if(! empty($file['description']))<small class="text-muted d-block">{{ $file['description'] }}</small>@endif
-        @if(! empty($file['tools_used']))<small class="text-muted d-block">Tools: {{ $file['tools_used'] }}</small>@endif
-        @if(! empty($file['achievements']))<small class="d-block">{{ $file['achievements'] }}</small>@endif
-        @if(! empty($file['project_url']))<a class="small d-block" href="{{ $file['project_url'] }}" target="_blank" rel="noopener noreferrer nofollow">Open project link</a>@endif
-    </span>
+<li>
+    <div class="sb-grow">
+        <span class="sb-row-title">{{ $file['title'] }}</span>
+        @if(! empty($file['issuer']))<span class="sb-row-sub">{{ $file['issuer'] }}</span>@endif
+        @if(! empty($file['description']))<span class="sb-row-sub">{{ $file['description'] }}</span>@endif
+        @if(! empty($file['tools_used']))<span class="sb-row-sub">Tools: {{ $file['tools_used'] }}</span>@endif
+        @if(! empty($file['achievements']))<small class="d-block mt-1">{{ $file['achievements'] }}</small>@endif
+        @if(! empty($file['project_url']))<a class="small d-block mt-1" href="{{ $file['project_url'] }}" target="_blank" rel="noopener noreferrer nofollow">Open project link</a>@endif
+    </div>
     @if($file['preview_url'])
         <button type="button" class="btn btn-sm btn-outline-primary employer-file-preview"
             data-preview-url="{{ $file['preview_url'] }}"

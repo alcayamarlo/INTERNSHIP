@@ -14,8 +14,6 @@
     // Pending past its date (or the posting closed) shows as Expired until the hourly job marks it.
     $displayStatus = fn ($invitation) => $invitation->isPending() && $invitation->hasLapsed()
         ? InvitationStatus::Expired : $invitation->status;
-    // Status pills reuse the application page's colours (student-internships.css).
-    $pillClass = ['pending' => 'reviewed', 'accepted' => 'accepted', 'declined' => 'withdrawn', 'expired' => 'rejected'];
 
     $tabs = ['pending' => 'Pending', 'accepted' => 'Accepted', 'declined' => 'Declined'];
     if (($counts['expired'] ?? 0) > 0) {
@@ -24,7 +22,7 @@
     $selected = $invitations->first(fn ($invitation) => (string) $invitation->id === (string) request('invitation'));
     $activeTab = $selected?->status->value ?? (array_key_exists((string) request('tab'), $tabs) ? request('tab') : 'pending');
     $selected ??= $invitations->first(fn ($invitation) => $invitation->status->value === $activeTab);
-    $detailData = ['displayStatus' => $displayStatus, 'pillClass' => $pillClass, 'hasResume' => $hasResume, 'hasOjt' => $hasOjt ?? false];
+    $detailData = ['displayStatus' => $displayStatus,'hasResume' => $hasResume, 'hasOjt' => $hasOjt ?? false];
 @endphp
 
 <div class="sb-dash sbx" id="invitationsPage"
