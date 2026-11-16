@@ -2,10 +2,6 @@
 
 @section('title', 'Academic settings')
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/admin-academics.css') }}?v={{ @filemtime(public_path('css/admin-academics.css')) }}">
-@endpush
-
 @php
     // Tabs: [hash/id, label, icon]. The hash keeps the open tab across refreshes.
     $academicTabs = [
@@ -24,10 +20,10 @@
 @endphp
 
 @section('content')
-<div class="admin-academics-page">
-<div class="aa-tabbed">
+<div>
+<div class="sb-dash">
 <x-page-header title="Academic settings" subtitle="Manage school programs, majors, internship hours, and academic calendar defaults.">
-    <a href="{{ route('admin.academics.programs.create') }}" class="btn btn-primary aa-add-btn"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add program</a>
+    <a href="{{ route('admin.academics.programs.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add program</a>
 </x-page-header>
 
 @if($errors->any())
@@ -46,9 +42,9 @@
 {{-- =========================================================
      TABS
 ========================================================== --}}
-<div class="aa-tabs" role="tablist" aria-label="Academic settings sections" data-default-tab="{{ $defaultTab }}">
+<div class="sb-section-tabs" role="tablist" aria-label="Academic settings sections" data-default-tab="{{ $defaultTab }}">
     @foreach($academicTabs as $tabId => [$tabLabel, $tabIcon])
-        <button type="button" class="aa-tab" role="tab" id="aa-tab-{{ $tabId }}" aria-controls="aa-panel-{{ $tabId }}"
+        <button type="button" class="sb-section-tab" role="tab" id="aa-tab-{{ $tabId }}" aria-controls="aa-panel-{{ $tabId }}"
                 data-tab="{{ $tabId }}" aria-selected="{{ $tabId === $defaultTab ? 'true' : 'false' }}" tabindex="{{ $tabId === $defaultTab ? '0' : '-1' }}">
             <i class="bi {{ $tabIcon }}" aria-hidden="true"></i> {{ $tabLabel }}
         </button>
@@ -58,11 +54,11 @@
 {{-- =========================================================
      PROGRAMS
 ========================================================== --}}
-<div class="aa-panel" role="tabpanel" id="aa-panel-programs" aria-labelledby="aa-tab-programs" tabindex="0" @if($defaultTab !== 'programs') hidden @endif>
-    <section class="card aa-card">
+<div class="sb-tab-panel" role="tabpanel" id="aa-panel-programs" aria-labelledby="aa-tab-programs" tabindex="0" @if($defaultTab !== 'programs') hidden @endif>
+    <section class="card">
         <div class="card-header"><h2><i class="bi bi-mortarboard" aria-hidden="true"></i> Programs</h2></div>
         <div class="table-responsive">
-            <table class="table table-hover align-middle aa-table">
+            <table class="table table-hover align-middle">
                 <thead><tr><th scope="col">Program</th><th scope="col">Majors</th><th scope="col">Required hours</th><th scope="col">Assigned coordinator</th><th scope="col">Students</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
                 <tbody>
                     @forelse($programs as $program)
@@ -92,15 +88,15 @@
      DEPLOYMENT REQUIREMENTS
      Form actions end in #requirements: the redirect back keeps that hash, so this tab stays open.
 ========================================================== --}}
-<div class="aa-panel" role="tabpanel" id="aa-panel-requirements" aria-labelledby="aa-tab-requirements" tabindex="0" @if($defaultTab !== 'requirements') hidden @endif>
-    <div class="aa-columns aa-columns--wide-left">
+<div class="sb-tab-panel" role="tabpanel" id="aa-panel-requirements" aria-labelledby="aa-tab-requirements" tabindex="0" @if($defaultTab !== 'requirements') hidden @endif>
+    <div class="sb-form">
 
-        <section class="card aa-card">
+        <section class="card">
             <div class="card-header"><h2><i class="bi bi-file-earmark-check" aria-hidden="true"></i> Deployment requirements</h2></div>
             <div class="card-body">
                 <p class="text-muted">Manage the documents students need before deployment. Requirements with uploaded files cannot be deleted; deactivate them to hide them from new submissions.</p>
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle aa-table aa-requirements-table">
+                    <table class="table table-hover align-middle">
                         <thead><tr><th scope="col">Document</th><th scope="col">Uploaded by</th><th scope="col">Order</th><th scope="col">Active</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
                         <tbody>
                             @forelse($deploymentRequirements as $requirement)
@@ -159,7 +155,7 @@
             </div>
         </section>
 
-        <section class="card aa-card aa-card--second">
+        <section class="card">
             <div class="card-header"><h2><i class="bi bi-plus-circle" aria-hidden="true"></i> Add requirement</h2></div>
             <div class="card-body">
                 <form method="POST" action="{{ route('admin.academics.deployment-requirements.store') }}#requirements" class="d-grid gap-3">
@@ -186,29 +182,29 @@
 {{-- =========================================================
      CALENDAR AND STUDENT ID (one form, two cards)
 ========================================================== --}}
-<div class="aa-panel" role="tabpanel" id="aa-panel-calendar" aria-labelledby="aa-tab-calendar" tabindex="0" @if($defaultTab !== 'calendar') hidden @endif>
+<div class="sb-tab-panel" role="tabpanel" id="aa-panel-calendar" aria-labelledby="aa-tab-calendar" tabindex="0" @if($defaultTab !== 'calendar') hidden @endif>
     <form method="POST" action="{{ route('admin.academics.settings.update') }}#calendar">
         @csrf
-        <div class="aa-columns aa-columns--calendar">
+        <div class="sb-form sb-form--even">
 
-            <section class="card aa-card">
+            <section class="card">
                 <div class="card-header"><h2><i class="bi bi-calendar3" aria-hidden="true"></i> Term date ranges</h2></div>
                 <div class="card-body">
-                    <p class="academic-section-subtitle mb-3">Defaults follow typical Cebu school calendars. Confirm with the registrar.</p>
+                    <p class="sb-form-intro mb-3">Defaults follow typical Cebu school calendars. Confirm with the registrar.</p>
                     @error('term_ranges')<div class="alert alert-danger py-2">{{ $message }}</div>@enderror
 
-                    <div class="aa-term-grid" role="group" aria-label="Term date ranges">
-                        <div class="aa-term-head" aria-hidden="true">
+                    <div class="sb-matrix" role="group" aria-label="Term date ranges">
+                        <div class="sb-matrix-head" aria-hidden="true">
                             <span>Term</span><span>Start month</span><span>Start day</span><span>End month</span><span>End day</span>
                         </div>
                         <?php foreach ($termOptions as $termKey => $termHeading):
                             $prefix = ['first' => 'first_semester', 'second' => 'second_semester', 'summer' => 'summer'][$termKey];
                         ?>
-                            <div class="aa-term-row">
-                                <h3 class="aa-term-name">{{ $termHeading }}</h3>
+                            <div class="sb-matrix-row">
+                                <h3 class="sb-matrix-name">{{ $termHeading }}</h3>
                                 @foreach(['start' => 'Start', 'end' => 'End'] as $edge => $edgeLabel)
-                                    <div class="aa-term-cell">
-                                        <label class="aa-term-label" for="{{ $prefix }}_{{ $edge }}_month"><span class="visually-hidden">{{ $termHeading }} </span>{{ $edgeLabel }} month</label>
+                                    <div class="sb-matrix-cell">
+                                        <label class="sb-matrix-label" for="{{ $prefix }}_{{ $edge }}_month"><span class="visually-hidden">{{ $termHeading }} </span>{{ $edgeLabel }} month</label>
                                         <select id="{{ $prefix }}_{{ $edge }}_month" name="{{ $prefix }}_{{ $edge }}_month" class="form-select @error($prefix.'_'.$edge.'_month') is-invalid @enderror">
                                             @foreach($monthOptions as $month => $monthLabel)
                                                 <option value="{{ $month }}" @selected((int) old($prefix.'_'.$edge.'_month', $settings->{$prefix.'_'.$edge.'_month'}) === $month)>{{ $monthLabel }}</option>
@@ -216,8 +212,8 @@
                                         </select>
                                         @error($prefix.'_'.$edge.'_month')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                     </div>
-                                    <div class="aa-term-cell">
-                                        <label class="aa-term-label" for="{{ $prefix }}_{{ $edge }}_day"><span class="visually-hidden">{{ $termHeading }} </span>{{ $edgeLabel }} day</label>
+                                    <div class="sb-matrix-cell">
+                                        <label class="sb-matrix-label" for="{{ $prefix }}_{{ $edge }}_day"><span class="visually-hidden">{{ $termHeading }} </span>{{ $edgeLabel }} day</label>
                                         <input id="{{ $prefix }}_{{ $edge }}_day" name="{{ $prefix }}_{{ $edge }}_day" type="number" min="1" max="31" value="{{ old($prefix.'_'.$edge.'_day', $settings->{$prefix.'_'.$edge.'_day'}) }}" class="form-control @error($prefix.'_'.$edge.'_day') is-invalid @enderror">
                                         @error($prefix.'_'.$edge.'_day')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                     </div>
@@ -260,10 +256,10 @@
                 </div>
             </section>
 
-            <section class="card aa-card" aria-labelledby="evaluationPeriodsHeading">
+            <section class="card" aria-labelledby="evaluationPeriodsHeading">
                 <div class="card-header"><h2 id="evaluationPeriodsHeading"><i class="bi bi-clipboard-data" aria-hidden="true"></i> Monthly evaluation periods</h2></div>
                 <div class="card-body">
-                    <p class="academic-section-subtitle mb-3">Name printed as "Period of Evaluation" on each month's Monthly Evaluation. Leave a month blank to print the month name. Changing a name does not change evaluations already requested.</p>
+                    <p class="sb-form-intro mb-3">Name printed as "Period of Evaluation" on each month's Monthly Evaluation. Leave a month blank to print the month name. Changing a name does not change evaluations already requested.</p>
                     <div class="row g-2">
                         @foreach($settings->evaluationPeriodLabels() as $month => $label)
                             <div class="col-6 col-md-4">
@@ -275,14 +271,14 @@
                     </div>
                     <div class="mt-3">
                         <label class="form-label" for="journal_due_days">Weekly report due (days after the week ends)</label>
-                        <input type="number" min="0" max="14" id="journal_due_days" name="journal_due_days" value="{{ old('journal_due_days', $settings->journal_due_days ?? 3) }}" class="form-control form-control-sm @error('journal_due_days') is-invalid @enderror" style="max-width: 120px;">
+                        <input type="number" min="0" max="14" id="journal_due_days" name="journal_due_days" value="{{ old('journal_due_days', $settings->journal_due_days ?? 3) }}" class="form-control form-control-sm sb-input-narrow @error('journal_due_days') is-invalid @enderror">
                         @error('journal_due_days')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         <div class="form-text">A week's Activity Narrative Report is due this many days after its Friday. Students are reminded before and when overdue.</div>
                     </div>
                 </div>
             </section>
 
-            <section class="card aa-card" aria-labelledby="ojtDepartmentsHeading">
+            <section class="card" aria-labelledby="ojtDepartmentsHeading">
                 <div class="card-header"><h2 id="ojtDepartmentsHeading"><i class="bi bi-diagram-3" aria-hidden="true"></i> OJT departments (Designation)</h2></div>
                 <div class="card-body">
                     <label class="form-label" for="ojt_departments_text">One department per line</label>
@@ -293,10 +289,10 @@
                 </div>
             </section>
 
-            <section class="card aa-card aa-card--second">
+            <section class="card">
                 <div class="card-header"><h2><i class="bi bi-person-check" aria-hidden="true"></i> Internship eligibility</h2></div>
                 <div class="card-body d-grid gap-3">
-                    <p class="academic-section-subtitle mb-0">Eligibility checks apply when students submit internship applications.</p>
+                    <p class="sb-form-intro mb-0">Eligibility checks apply when students submit internship applications.</p>
                     <div>
                         <input type="hidden" name="require_fourth_year_standing" value="0">
                         <div class="form-check">
@@ -336,7 +332,7 @@
 {{-- Tab logic (plain JS). Runs right after the markup so a saved hash opens its tab before first paint. --}}
 <script>
     (function () {
-        var tablist = document.querySelector('.aa-tabs');
+        var tablist = document.querySelector('.sb-section-tabs[role="tablist"]');
         if (!tablist) return;
         var tabs = Array.prototype.slice.call(tablist.querySelectorAll('[role="tab"]'));
         var ids = tabs.map(function (tab) { return tab.dataset.tab; });

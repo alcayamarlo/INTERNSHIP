@@ -7,7 +7,7 @@
     <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to Users</a>
 </x-page-header>
 
-<div class="card mb-3" style="max-width: 900px;">
+<div class="card mb-3 sb-measure">
     <div class="card-body">
         <h2 class="h6">CSV format</h2>
         <p class="text-muted mb-2">The first row must be a header with these column names (case-insensitive). <code>school_id</code>, <code>last_name</code>, <code>first_name</code>, and <code>date_of_birth</code> are required; the rest are optional.</p>
@@ -18,7 +18,7 @@
     </div>
 </div>
 
-<div class="card" style="max-width: 900px;">
+<div class="card sb-measure">
     <div class="card-body">
         <form method="POST" action="{{ route('admin.students.import.store') }}" enctype="multipart/form-data" class="row g-3">
             @csrf

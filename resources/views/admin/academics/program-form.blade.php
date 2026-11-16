@@ -2,12 +2,8 @@
 
 @section('title', $program->exists ? 'Edit program' : 'Add program')
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/admin-academics.css') }}?v={{ @filemtime(public_path('css/admin-academics.css')) }}">
-@endpush
-
 @section('content')
-<div class="admin-academics-page">
+<div class="sb-dash">
 <x-page-header :title="$program->exists ? 'Edit program' : 'Add program'" subtitle="Set the program details, available majors, required internship hours, and assigned coordinator." />
 
 <div class="card">

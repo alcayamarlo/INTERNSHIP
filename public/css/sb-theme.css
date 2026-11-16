@@ -209,16 +209,16 @@ html body.sb-app .sb-status--danger { background: var(--surface) !important; col
 html body.sb-app .sb-tag--brand { border-color: transparent !important; }
 
 /* ---------- Tabs (pills) ---------- */
-html body.sb-app .nav-tabs, html body.sb-app .ojt-tabs [role="tablist"], html body.sb-app .aa-tabs { border: 0 !important; gap: 8px; flex-wrap: wrap; }
-html body.sb-app :is(.nav-tabs .nav-link, .ojt-tab, .aa-tab, .student-profile-page .tab) {
+html body.sb-app .nav-tabs, html body.sb-app .ojt-tabs [role="tablist"] { border: 0 !important; gap: 8px; flex-wrap: wrap; }
+html body.sb-app :is(.nav-tabs .nav-link, .ojt-tab, .student-profile-page .tab) {
     min-height: 40px; padding: 8px 16px; border: 1px solid var(--line) !important; border-radius: var(--r-pill) !important; background: var(--surface) !important;
     color: var(--text) !important; font-weight: 600; font-size: 13px; margin: 0; box-shadow: none;
 }
-html body.sb-app :is(.nav-tabs .nav-link, .ojt-tab, .aa-tab, .student-profile-page .tab):hover { background: var(--surface-alt) !important; }
-html body.sb-app :is(.nav-tabs .nav-link.active, .ojt-tab.active, .ojt-tab[aria-selected="true"], .aa-tab[aria-selected="true"], .student-profile-page .tab[aria-selected="true"]) {
+html body.sb-app :is(.nav-tabs .nav-link, .ojt-tab, .student-profile-page .tab):hover { background: var(--surface-alt) !important; }
+html body.sb-app :is(.nav-tabs .nav-link.active, .ojt-tab.active, .ojt-tab[aria-selected="true"], .student-profile-page .tab[aria-selected="true"]) {
     background: var(--burgundy) !important; border-color: var(--burgundy) !important; color: var(--on-burgundy) !important;
 }
-html body.sb-app :is(.ojt-tab, .aa-tab, .student-profile-page .tab)::after { display: none !important; }
+html body.sb-app :is(.ojt-tab, .student-profile-page .tab)::after { display: none !important; }
 
 /* ---------- Tables ---------- */
 html body.sb-app .table { --bs-table-bg: transparent; --bs-table-color: var(--text); --bs-table-hover-bg: var(--surface-alt); --bs-table-striped-bg: var(--surface-alt); border-color: var(--line); margin-bottom: 0; }
@@ -1243,3 +1243,27 @@ html body.sb-app .sb-remove-chip-btn:focus-visible { outline: 2px solid var(--bu
 /* Width caps for single forms and settings cards (replaces inline max-width). */
 html body.sb-app .sb-measure { max-width: 900px; }
 html body.sb-app .sb-measure--sm { max-width: 560px; }
+
+/* Tab panels (role="tabpanel") inside a page, and an even two-column form. */
+html body.sb-app .sb-tab-panel { min-width: 0; }
+html body.sb-app .sb-tab-panel:focus { outline: none; }
+html body.sb-app .sb-tab-panel:focus-visible { outline: 2px solid var(--burgundy-text); outline-offset: 4px; border-radius: var(--r-panel); }
+html body.sb-app .sb-form--even { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); }
+@media (max-width: 1199.98px) { html body.sb-app .sb-form--even { grid-template-columns: minmax(0, 1fr); } }
+html body.sb-app .sb-input-narrow { max-width: 120px; }
+
+/* Matrix of fields: a header row, then one row per item (name + 4 fields). Cell labels are hidden
+   while the header shows; below 520px of width the header hides and each cell shows its label. */
+html body.sb-app .sb-matrix { container-type: inline-size; display: grid; gap: 10px; }
+html body.sb-app :is(.sb-matrix-head, .sb-matrix-row) { display: grid; grid-template-columns: 104px repeat(2, minmax(0, 1.5fr) minmax(0, .8fr)); align-items: start; gap: 10px; }
+html body.sb-app .sb-matrix-head { padding: 8px 10px; border-radius: 10px; background: var(--burgundy-tint); color: var(--burgundy-tint-text); font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
+html body.sb-app .sb-matrix-row { padding: 0 10px; }
+html body.sb-app .sb-matrix-name { margin: 0; padding-top: 9px; font-size: 14px; font-weight: 600; color: var(--text); }
+html body.sb-app .sb-matrix-cell { min-width: 0; }
+html body.sb-app .sb-matrix-label { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+@container (max-width: 520px) {
+    html body.sb-app .sb-matrix-head { display: none; }
+    html body.sb-app .sb-matrix-row { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; }
+    html body.sb-app .sb-matrix-name { grid-column: 1 / -1; padding-top: 4px; }
+    html body.sb-app .sb-matrix-label { position: static; display: block; width: auto; height: auto; margin: 0 0 4px; overflow: visible; clip: auto; white-space: normal; font-size: 13px; font-weight: 500; color: var(--muted); }
+}

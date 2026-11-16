@@ -5,7 +5,7 @@
 @section('content')
 <x-page-header :title="$category->exists ? 'Edit Skill Category' : 'Add Skill Category'" subtitle="Names are unique without regard to case or repeated whitespace." />
 
-<div class="card" style="max-width: 720px;">
+<div class="card sb-measure">
     <div class="card-body">
         <form method="POST" action="{{ $category->exists ? route('admin.skill-categories.update', $category) : route('admin.skill-categories.store') }}">
             @csrf

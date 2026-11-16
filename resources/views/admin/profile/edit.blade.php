@@ -5,7 +5,7 @@
 @section('content')
 <x-page-header title="Admin Profile" subtitle="Update your profile picture." />
 
-<div class="card" style="max-width: 560px;">
+<div class="card sb-measure--sm">
     <div class="card-body text-center">
         @if($avatarUrl)
             <img src="{{ $avatarUrl }}" alt="{{ $user->name }}" class="sb-avatar-xl mb-3">

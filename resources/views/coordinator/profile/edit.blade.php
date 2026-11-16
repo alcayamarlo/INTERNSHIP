@@ -5,11 +5,11 @@
 @section('content')
 <x-page-header title="Your Profile" subtitle="Update your personal and institution information" />
 
-<div class="row g-4">
+<div class="sb-form sb-form--lead">
     <!-- Profile Picture Card -->
-    <div class="col-lg-4">
+    <div>
         <div class="card">
-            <div class="card-body text-center">
+            <div class="card-body sb-identity">
                 <div class="mb-3">
                     @php
                         $coordinatorPictureUrl = \App\Support\PublicFileUrl::relative($coordinator->profile_picture);
@@ -52,7 +52,7 @@
     </div>
 
     <!-- Profile Form -->
-    <div class="col-lg-8">
+    <div>
         <form method="POST" action="{{ route('coordinator.profile.update') }}" enctype="multipart/form-data" data-ajax-form id="coordinatorProfileForm">
             @csrf
             @method('PUT')
