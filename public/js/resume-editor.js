@@ -39,7 +39,7 @@
     const isEmpty = (value) => (Array.isArray(value) ? value.length === 0 : value === '');
 
     const readList = (list, path) => {
-        const isValues = list.classList.contains('re-list--values');
+        const isValues = list.classList.contains('sb-list-edit--values');
         const out = [];
 
         [...list.children].filter((child) => child.matches('[data-item]')).forEach((item) => {
@@ -152,7 +152,7 @@
             }
 
             const note = document.createElement('div');
-            note.className = 'invalid-feedback d-block re-error';
+            note.className = 'invalid-feedback d-block sb-field-error';
             note.dataset.errorFor = key;
             note.dataset.errorSource = source;
             note.textContent = message;
@@ -163,7 +163,7 @@
                 target.classList.add('is-invalid');
                 target.setAttribute('aria-invalid', 'true');
                 // Row inputs sit side by side, so their message goes under the whole row.
-                const row = target.closest('.re-row, .re-value');
+                const row = target.closest('.sb-list-row, .sb-list-value');
                 if (row) row.append(note); else target.after(note);
             }
             first ??= target;

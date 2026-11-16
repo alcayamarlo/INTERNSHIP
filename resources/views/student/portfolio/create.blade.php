@@ -5,8 +5,8 @@
 @section('content')
 <x-page-header title="Upload to Portfolio" subtitle="Add projects and supporting documents" />
 
-<div class="row justify-content-center">
-    <div class="col-lg-8">
+<div class="sb-form sb-form--single">
+    <div>
         <!-- Tab Navigation -->
         <ul class="nav nav-tabs mb-4" role="tablist">
             <li class="nav-item" role="presentation">
@@ -102,7 +102,7 @@
 
 <!-- Info Box -->
 <div class="row justify-content-center mt-4">
-    <div class="col-lg-8">
+    <div>
         <div class="alert alert-info">
             <strong><i class="bi bi-info-circle"></i> Supported File Types:</strong>
             <ul class="mb-0 mt-2">

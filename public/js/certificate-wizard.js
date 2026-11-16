@@ -140,12 +140,12 @@
     const renderSkills = () => {
         chips.replaceChildren(...skills.map((name, index) => {
             const chip = document.createElement('li');
-            chip.className = 'cw-chip';
+            chip.className = 'sb-remove-chip';
             const text = document.createElement('span');
             text.textContent = name;
             const remove = document.createElement('button');
             remove.type = 'button';
-            remove.className = 'cw-chip-remove';
+            remove.className = 'sb-remove-chip-btn';
             remove.setAttribute('aria-label', `Remove ${name}`);
             remove.textContent = '×';
             remove.addEventListener('click', () => {

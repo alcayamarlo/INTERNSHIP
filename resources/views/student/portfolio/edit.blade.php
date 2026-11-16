@@ -5,8 +5,8 @@
 @section('content')
 <x-page-header title="Edit Portfolio Item" subtitle="Update your portfolio information" />
 
-<div class="row justify-content-center">
-    <div class="col-lg-8">
+<div class="sb-form sb-form--single">
+    <div>
         <div class="card">
             <div class="card-body">
                 <form method="POST" action="{{ route('student.portfolio.update', $portfolio) }}" enctype="multipart/form-data" data-ajax-form data-ajax-redirect>
@@ -109,7 +109,7 @@
             </div>
             <div class="card-body">
                 <p class="text-muted mb-3">Deleting this portfolio item cannot be undone.</p>
-                <form method="POST" action="{{ route('student.portfolio.destroyPortfolio', $portfolio) }}" style="display:inline;" data-confirm="Are you sure? This cannot be undone." data-ajax-form>
+                <form method="POST" action="{{ route('student.portfolio.destroyPortfolio', $portfolio) }}" class="d-inline" data-confirm="Are you sure? This cannot be undone." data-ajax-form>
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger">

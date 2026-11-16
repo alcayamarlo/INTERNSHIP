@@ -189,9 +189,6 @@
 @include('student.competencies.partials.wizard')
 @endsection
 
-@push('styles')
-<link rel="stylesheet" href="{{ asset('css/certificate-wizard.css') }}?v=1">
-@endpush
 @push('scripts')
 <script src="{{ asset('js/certificate-wizard.js') }}?v={{ @filemtime(public_path('js/certificate-wizard.js')) }}" defer></script>
 @endpush

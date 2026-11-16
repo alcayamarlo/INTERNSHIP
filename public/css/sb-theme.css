@@ -1132,3 +1132,114 @@ html body.sb-app .sb-form-col .sb-repeat-row > :first-child { grid-column: 1 / -
 html body.sb-app .sb-form-col .sb-repeat-row > :nth-child(2) { grid-column: 1; grid-row: 2; }
 html body.sb-app .sb-form-col .sb-repeat-row > .btn { grid-column: 2; grid-row: 2; height: auto; }
 html body.sb-app .sb-repeat-row + .sb-repeat-row { padding-top: 8px; border-top: 1px dashed var(--line); }
+
+/* =========================================================================================
+   Editor with a live document preview (Student > Resume editor): form column, sticky preview,
+   labelled fields, editable lists (rows, values, entries) with move and remove controls, add
+   buttons, and a sticky action bar. The preview sheet stays white like paper in both themes.
+   ========================================================================================= */
+html body.sb-app .sb-editor { display: grid; grid-template-columns: minmax(0, 1fr) minmax(380px, .92fr); gap: 20px; align-items: start; }
+html body.sb-app .sb-editor-form { display: grid; gap: 20px; min-width: 0; }
+html body.sb-app .sb-editor-preview { position: sticky; top: calc(var(--sb-topbar-height, 64px) + 16px); max-height: calc(100vh - var(--sb-topbar-height, 64px) - 32px); overflow-y: auto; }
+@media (max-width: 1199.98px) {
+    html body.sb-app .sb-editor { grid-template-columns: minmax(0, 1fr); }
+    html body.sb-app .sb-editor-preview { position: static; max-height: none; }
+}
+html body.sb-app .sb-error-summary ul { margin: 6px 0 0; padding-left: 18px; }
+html body.sb-app .sb-field-grid { display: grid; gap: 12px; }
+html body.sb-app .sb-field-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+html body.sb-app .sb-field { display: flex; flex-direction: column; gap: 4px; margin: 0; min-width: 0; }
+html body.sb-app .sb-field > span { font-size: 13px; font-weight: 600; color: var(--text); }
+html body.sb-app .sb-field small { font-weight: 500; color: var(--muted); }
+html body.sb-app .sb-req { color: var(--burgundy-text); }
+html body.sb-app .sb-form-subhead { margin: 20px 0 2px; font-size: 14px; font-weight: 600; color: var(--text); }
+html body.sb-app .sb-list-edit { display: grid; gap: 8px; }
+html body.sb-app .sb-list-edit.is-empty[data-empty-text]::before { content: attr(data-empty-text); padding: 10px 12px; border: 1px dashed var(--line); border-radius: 12px; font-size: 13px; color: var(--muted); }
+html body.sb-app .sb-list-row { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.4fr) auto; gap: 6px; align-items: center; }
+html body.sb-app .sb-list-value { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; align-items: center; }
+html body.sb-app :is(.sb-list-row, .sb-list-value) > .sb-field-error { grid-column: 1 / -1; margin-top: 0; }
+html body.sb-app .sb-list-entry { display: grid; gap: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+html body.sb-app .sb-list-entry-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+html body.sb-app .sb-list-entry-label { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--burgundy-text); }
+html body.sb-app .sb-list-controls { display: inline-flex; gap: 2px; }
+html body.sb-app .sb-mini-btn { display: inline-grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 1px solid transparent; border-radius: 9px; background: transparent; color: var(--muted); transition: background-color var(--sb-dur-fast, 120ms) ease, color var(--sb-dur-fast, 120ms) ease; }
+html body.sb-app .sb-mini-btn:hover { background: var(--burgundy-tint); color: var(--burgundy-text); }
+html body.sb-app :is(.sb-mini-btn, .sb-add-btn):focus-visible { outline: 2px solid var(--burgundy-text); outline-offset: 2px; }
+/* The first item cannot move up and the last cannot move down. */
+html body.sb-app .sb-list-item:first-child > .sb-list-controls [data-move="-1"],
+html body.sb-app .sb-list-item:first-child > .sb-list-entry-head [data-move="-1"],
+html body.sb-app .sb-list-item:last-child > .sb-list-controls [data-move="1"],
+html body.sb-app .sb-list-item:last-child > .sb-list-entry-head [data-move="1"] { opacity: .35; }
+html body.sb-app .sb-add-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; padding: 6px 14px; border: 1px dashed var(--line); border-radius: var(--r-pill); background: transparent; color: var(--burgundy-text); font-size: 13px; font-weight: 600; }
+html body.sb-app .sb-add-btn:hover { border-color: var(--burgundy-text); background: var(--burgundy-tint); }
+html body.sb-app .sb-add-btn--small { margin-top: 6px; padding: 4px 10px; font-size: 12.5px; }
+html body.sb-app .sb-sticky-actions { position: sticky; bottom: 12px; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow-pop); }
+html body.sb-app .sb-sticky-actions-buttons { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+html body.sb-app .sb-save-status { font-size: 13px; color: var(--muted); }
+html body.sb-app .sb-save-status:is([data-tone="warn"], [data-tone="ok"]) { font-weight: 600; color: var(--text); }
+html body.sb-app .sb-save-status[data-tone="error"] { font-weight: 600; color: var(--burgundy-text); }
+html body.sb-app .sb-link-muted { color: var(--muted); text-decoration: none; }
+html body.sb-app .sb-doc-preview { overflow: hidden; }
+html body.sb-app .sb-doc-preview-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+html body.sb-app .sb-doc-preview-bar h2 { margin: 0; font-size: 16px; font-weight: 600; }
+html body.sb-app .sb-doc-preview-status { font-size: 12px; color: var(--muted); }
+html body.sb-app .sb-doc-preview-status[data-tone="busy"] { color: var(--burgundy-text); }
+html body.sb-app .sb-doc-preview-status[data-tone="error"] { font-weight: 600; color: var(--burgundy-text); }
+html body.sb-app .sb-doc-preview-error { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 16px 0; padding: 10px 12px; border-radius: 12px; background: var(--burgundy-tint); color: var(--text); font-size: 13px; }
+html body.sb-app .sb-doc-preview-error[hidden] { display: none !important; }
+html body.sb-app .sb-doc-preview-stage { position: relative; margin: 16px; overflow: hidden; border-radius: 6px; background: #fff; box-shadow: 0 2px 14px rgba(0, 0, 0, .18); transition: opacity var(--sb-dur-fast, 120ms) ease; }
+html body.sb-app .sb-doc-preview-stage.is-updating { opacity: .72; }
+html body.sb-app .sb-doc-preview-frame { display: block; width: 794px; height: 1123px; border: 0; background: #fff; transform-origin: 0 0; }
+html body.sb-app .sb-doc-preview-note { margin: 0 16px 16px; font-size: 12px; color: var(--muted); }
+@media (max-width: 575.98px) {
+    html body.sb-app .sb-field-grid--2 { grid-template-columns: minmax(0, 1fr); }
+    html body.sb-app .sb-list-row { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "label controls" "value controls"; }
+    html body.sb-app .sb-list-row > [data-key="label"] { grid-area: label; }
+    html body.sb-app .sb-list-row > [data-key="value"] { grid-area: value; }
+    html body.sb-app .sb-list-row > .sb-list-controls { grid-area: controls; flex-direction: column; }
+    html body.sb-app .sb-sticky-actions { bottom: 8px; }
+    html body.sb-app .sb-sticky-actions-buttons, html body.sb-app .sb-sticky-actions-buttons .btn { width: 100%; }
+    html body.sb-app .sb-doc-preview-stage { margin: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { html body.sb-app .sb-mini-btn, html body.sb-app .sb-doc-preview-stage { transition: none; } }
+
+/* =========================================================================================
+   Step-by-step dialog (Student > Add a certificate): step counter and bar, steps, choice cards
+   and pills (radio inputs), a combobox with suggestions, and removable chips.
+   ========================================================================================= */
+html body.sb-app .sb-step-count { font-size: 13px; font-weight: 600; color: var(--muted); }
+html body.sb-app .sb-step-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 0 16px; }
+html body.sb-app .sb-step-bar span { height: 4px; border-radius: var(--r-pill); background: var(--line); transition: background var(--sb-dur-base, 200ms) ease; }
+html body.sb-app .sb-step-bar span.is-done { background: var(--burgundy); }
+html body.sb-app .sb-wizard-step { margin: 0; padding: 0; border: 0; }
+html body.sb-app .sb-wizard-step[hidden] { display: none; }
+html body.sb-app .sb-wizard-title { float: none; width: auto; margin-bottom: 16px; font-size: 17px; font-weight: 600; color: var(--text); }
+html body.sb-app .sb-field-block { margin-bottom: 18px; }
+html body.sb-app .sb-field-error-text { margin-top: 4px; font-size: 13px; color: var(--burgundy-text); }
+html body.sb-app .sb-field-error-text:empty { display: none; }
+html body.sb-app .sb-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 575.98px) { html body.sb-app .sb-choice-grid { grid-template-columns: minmax(0, 1fr); } }
+html body.sb-app :is(.sb-choice-card, .sb-choice-pill) { position: relative; cursor: pointer; }
+html body.sb-app :is(.sb-choice-card, .sb-choice-pill) input { position: absolute; opacity: 0; pointer-events: none; }
+html body.sb-app .sb-choice-card { display: grid; gap: 4px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+html body.sb-app .sb-choice-name { font-weight: 600; color: var(--text); }
+html body.sb-app .sb-choice-note { font-size: 12px; color: var(--muted); }
+html body.sb-app .sb-choice-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+html body.sb-app .sb-choice-pill[hidden] { display: none; }
+html body.sb-app .sb-choice-pill span { display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border: 1px solid var(--line); border-radius: var(--r-pill); background: var(--surface); font-weight: 600; color: var(--text); }
+html body.sb-app .sb-choice-card:has(input:checked), html body.sb-app .sb-choice-pill input:checked + span { border-color: var(--burgundy); background: var(--burgundy-tint); color: var(--burgundy-tint-text); }
+html body.sb-app .sb-choice-card:has(input:focus-visible), html body.sb-app .sb-choice-pill input:focus-visible + span { outline: 2px solid var(--burgundy-text); outline-offset: 2px; }
+html body.sb-app .sb-choice-card:has(input.is-invalid), html body.sb-app .sb-choice-pill input.is-invalid + span { border-color: var(--burgundy); }
+html body.sb-app .sb-input-row { display: flex; gap: 8px; }
+html body.sb-app .sb-combobox { position: relative; flex: 1 1 auto; min-width: 0; }
+html body.sb-app .sb-suggestions { position: absolute; top: calc(100% + 4px); right: 0; left: 0; z-index: 10; max-height: 220px; margin: 0; padding: 4px; overflow-y: auto; list-style: none; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow-pop); }
+html body.sb-app .sb-suggestions [role="option"] { padding: 8px 10px; border-radius: 8px; cursor: pointer; }
+html body.sb-app .sb-suggestions [role="option"]:hover, html body.sb-app .sb-suggestions [role="option"][aria-selected="true"] { background: var(--burgundy-tint); color: var(--burgundy-tint-text); }
+html body.sb-app .sb-counter { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+html body.sb-app .sb-chip-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
+html body.sb-app .sb-remove-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 4px 4px 12px; border: 1px solid var(--burgundy-border); border-radius: var(--r-pill); background: var(--burgundy-tint); color: var(--burgundy-tint-text); font-size: 14px; font-weight: 600; }
+html body.sb-app .sb-remove-chip-btn { display: inline-grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: var(--r-pill); background: transparent; color: inherit; font-size: 18px; line-height: 1; }
+html body.sb-app .sb-remove-chip-btn:focus-visible { outline: 2px solid var(--burgundy-text); }
+/* Width caps for single forms and settings cards (replaces inline max-width). */
+html body.sb-app .sb-measure { max-width: 900px; }
+html body.sb-app .sb-measure--sm { max-width: 560px; }

@@ -5,8 +5,8 @@
 @section('content')
 <x-page-header title="Edit certificate" subtitle="Update the details or replace the file" />
 
-<div class="row justify-content-center">
-<div class="col-lg-8">
+<div class="sb-form sb-form--single">
+<div>
     <div class="card">
         <div class="card-body">
             <form method="POST" action="{{ route('student.certificates.update', $certificate) }}" enctype="multipart/form-data" data-ajax-form>

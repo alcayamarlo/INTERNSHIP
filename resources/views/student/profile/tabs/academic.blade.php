@@ -18,7 +18,7 @@
                         <strong>{{ number_format($renderedInternshipHours) }} / {{ number_format($requiredInternshipHours) }} hours required</strong>
                     </div>
                     <div class="progress" role="progressbar" aria-label="Internship hours progress" aria-valuemin="0" aria-valuemax="{{ $requiredInternshipHours }}" aria-valuenow="{{ min($renderedInternshipHours, $requiredInternshipHours) }}">
-                        <div class="progress-bar bg-info" style="width: {{ $internshipHoursProgress }}%"></div>
+                        <div class="progress-bar" style="width: {{ $internshipHoursProgress }}%"></div>
                     </div>
                 @else
                     <p class="text-muted mb-0">Set your program to see the required internship hours.</p>
