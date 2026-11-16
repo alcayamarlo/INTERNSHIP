@@ -4672,7 +4672,7 @@ body.skillbridge-app .messenger-shell .messenger-row.outgoing .messenger-bubble 
 .msgr-msg .messenger-bubble { position: relative; }
 
 /* Jumped-to message flashes briefly */
-.messenger-row.is-flash .messenger-bubble { animation: msgrFlash 1.4s ease-out; }
+.messenger-row.is-flash .messenger-bubble { animation: msgrFlash var(--dur-fill, 600ms) var(--ease-out, ease-out); }
 @keyframes msgrFlash {
     0%, 35% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--sb-brand) 45%, transparent); }
     100% { box-shadow: 0 0 0 0 transparent; }

@@ -891,7 +891,7 @@ html body.sb-app .sb-stepper { position: relative; display: grid; grid-auto-flow
 html body.sb-app .sb-stepper::before,
 html body.sb-app .sb-stepper::after { content: ""; position: absolute; top: 16px; height: 2px; border-radius: var(--r-pill); }
 html body.sb-app .sb-stepper::before { left: 12.5%; right: 12.5%; background: var(--line); }
-html body.sb-app .sb-stepper::after { left: 12.5%; width: calc(75% * var(--sb-progress, 0)); background: var(--burgundy); }
+html body.sb-app .sb-stepper::after { left: 12.5%; width: 75%; transform: scaleX(var(--sb-progress, 0)); background: var(--burgundy); }
 html body.sb-app .sb-step { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 6px; text-align: center; }
 html body.sb-app .sb-step-dot {
     display: grid; place-items: center; width: 34px; height: 34px; border: 2px solid var(--line); border-radius: 50%;
@@ -1021,7 +1021,7 @@ html body.sb-app .sb-level-name,
 html body.sb-app .sb-level-score { font-size: 12px; color: var(--muted); }
 html body.sb-app .sb-level-score { text-align: right; font-variant-numeric: lining-nums tabular-nums; }
 html body.sb-app .sb-level-track { height: 6px; border-radius: var(--r-pill); background: var(--burgundy-tint); overflow: hidden; }
-html body.sb-app .sb-level-fill { height: 100%; border-radius: inherit; background: var(--burgundy); transform: scaleX(0); transform-origin: left; transition: transform var(--sb-dur-base) var(--sb-ease-out); }
+html body.sb-app .sb-level-fill { height: 100%; border-radius: inherit; background: var(--burgundy); transform: scaleX(var(--sb-bar, 0)); transform-origin: left; transition: transform var(--sb-dur-base) var(--sb-ease-out); }
 html[data-theme="dark"] body.sb-app .sb-level-fill { background: var(--burgundy-text); }
 html body.sb-app .sb-level.is-current :is(.sb-level-name, .sb-level-score) { color: var(--text); font-weight: 600; }
 @media (prefers-reduced-motion: reduce) {
@@ -1326,7 +1326,7 @@ html body.sb-app .sb-checks > li.is-pass > .bi { color: var(--burgundy-text); }
 html body.sb-app .sb-disclosure > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--burgundy-text); cursor: pointer; }
 html body.sb-app .sb-disclosure[open] > summary { margin-bottom: 14px; }
 html body.sb-app .sb-disclosure > summary:focus-visible { outline: 2px solid var(--burgundy-text); outline-offset: 2px; border-radius: 6px; }
-html body.sb-app .sb-ring { --sb-value: 0; flex: 0 0 72px; display: grid; place-items: center; width: 72px; height: 72px; border-radius: 50%; background: conic-gradient(var(--burgundy-text) calc(var(--sb-value) * 1%), var(--line) 0); }
+html body.sb-app .sb-ring { --sb-value: 0; --sb-ring: var(--sb-value); flex: 0 0 72px; display: grid; place-items: center; width: 72px; height: 72px; border-radius: 50%; background: conic-gradient(var(--burgundy-text) calc(var(--sb-ring) * 1%), var(--line) 0); }
 html body.sb-app .sb-ring > span { display: grid; place-items: center; width: 58px; height: 58px; border-radius: 50%; background: var(--surface); font-size: 18px; font-weight: 700; color: var(--text); }
 html body.sb-app .sb-photo { display: block; width: 160px; max-width: 100%; height: auto; border-radius: var(--r-panel); }
 html body.sb-app .sb-file-placeholder { display: grid; place-items: center; align-content: center; gap: 8px; min-height: 240px; padding: 24px; border: 1px dashed var(--line); border-radius: var(--r-panel); background: var(--surface-alt); color: var(--muted); text-align: center; }
