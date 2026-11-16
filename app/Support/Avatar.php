@@ -35,7 +35,12 @@ final class Avatar
         }
 
         try {
-            $version = Storage::disk(UploadDisks::public())->lastModified($path);
+            $disk = Storage::disk(UploadDisks::public());
+            // A saved path whose file is gone shows the initials instead of a broken image.
+            if (! $disk->exists($path)) {
+                return null;
+            }
+            $version = $disk->lastModified($path);
         } catch (\Throwable) {
             $version = null;
         }

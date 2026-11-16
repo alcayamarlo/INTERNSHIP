@@ -7,7 +7,8 @@ use App\Http\Requests\Profile\EmployerProfileRequest;
 use App\Models\Employer;
 use App\Services\ActivityLogService;
 use App\Services\FileUploadService;
-use App\Support\PublicFileUrl;
+use App\Support\Avatar;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -17,6 +18,46 @@ class ProfileController extends Controller
         private ActivityLogService $activityLog,
         private FileUploadService $fileUpload
     ) {}
+
+    /**
+     * Upload or replace only the company logo (the Upload Logo button). It does not send the rest
+     * of the profile, so an unfinished company profile cannot block the logo.
+     */
+    public function updateLogo(Request $request)
+    {
+        $request->validate(['company_logo' => FileUploadService::imageRules(true)]);
+        $user = Auth::user();
+        $employer = $user->employer()->firstOrCreate([], [
+            'company_name' => $user->name,
+            'contact_person' => $user->name,
+        ]);
+
+        $previousLogo = $employer->logo;
+        $newLogo = $this->fileUpload->uploadImage($request->file('company_logo'), 'logos/employers', (string) $employer->id);
+
+        try {
+            $employer->update(['logo' => $newLogo]);
+        } catch (\Throwable $exception) {
+            $this->fileUpload->delete($newLogo);
+
+            throw $exception;
+        }
+
+        if ($previousLogo && $previousLogo !== $newLogo) {
+            $this->fileUpload->delete($previousLogo);
+        }
+        $this->activityLog->log($user, 'profile_update', ['role' => 'employer', 'field' => 'logo']);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Company logo updated.',
+                'logo_url' => Avatar::url($newLogo),
+            ]);
+        }
+
+        return redirect()->route('employer.profile.edit')->with('success', 'Company logo updated.');
+    }
     /**
      * Display the employer's profile.
      */
@@ -107,7 +148,8 @@ class ProfileController extends Controller
             throw $exception;
         }
 
-        if ($previousLogo && $previousLogo !== $newLogo) {
+        // Only a logo that was actually replaced is deleted; saving the profile without a new logo keeps it.
+        if ($newLogo && $previousLogo && $previousLogo !== $newLogo) {
             $this->fileUpload->delete($previousLogo);
         }
 
@@ -115,7 +157,7 @@ class ProfileController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Company profile updated successfully!',
-                'logo_url' => PublicFileUrl::relative($employer->fresh()->logo),
+                'logo_url' => Avatar::url($employer->fresh()->logo),
             ]);
         }
 

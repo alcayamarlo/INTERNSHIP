@@ -14,7 +14,7 @@ class ProfileController extends Controller
     {
         return view('admin.profile.edit', [
             'user' => Auth::user(),
-            'avatarUrl' => PublicFileUrl::relative(Auth::user()->avatar),
+            'avatarUrl' => \App\Support\Avatar::url(Auth::user()->avatar),
         ]);
     }
 

@@ -17,7 +17,7 @@
         <div class="card sb-form-section sb-identity">
                 <div class="sb-logo-box">
                     @php
-                        $employerLogoUrl = \App\Support\PublicFileUrl::relative($employer->logo);
+                        $employerLogoUrl = \App\Support\Avatar::url($employer->logo);
                         $employerInitials = collect(preg_split('/\s+/', trim($employer->company_name)))
                             ->filter()
                             ->map(fn ($part) => mb_substr($part, 0, 1))
@@ -28,9 +28,8 @@
                     <span data-company-initials @if($employerLogoUrl) hidden @endif>{{ strtoupper($employerInitials ?: 'C') }}</span>
                 </div>
 
-                <form method="POST" action="{{ route('employer.profile.update') }}" enctype="multipart/form-data" id="logoForm" class="d-none">
+                <form method="POST" action="{{ route('employer.profile.update-logo') }}" enctype="multipart/form-data" id="logoForm" class="d-none">
                     @csrf
-                    @method('PUT')
                     <input type="file" name="company_logo" id="logoInput" accept="image/jpeg,image/jpg,image/png">
                 </form>
 
@@ -114,7 +113,6 @@
 @push('scripts')
 <script>
 (() => {
-    const form = document.getElementById('employerProfileForm');
     const uploadForm = document.getElementById('logoForm');
     const input = document.getElementById('logoInput');
     const button = document.getElementById('uploadCompanyLogo');
@@ -125,17 +123,15 @@
         if (!input.files.length) return;
 
         const originalLabel = button.textContent;
-        const data = new FormData(form);
-        data.set('_token', uploadForm.elements.namedItem('_token').value);
-        data.set('_method', 'PUT');
-        data.set('company_logo', input.files[0]);
+        // Only the logo is sent (its own endpoint), so an unfinished company profile cannot block it.
+        const data = new FormData(uploadForm);
         button.disabled = true;
         button.textContent = 'Uploading…';
         feedback.textContent = '';
         feedback.className = 'small mt-2';
 
         try {
-            const response = await fetch(form.action, {
+            const response = await fetch(uploadForm.action, {
                 method: 'POST',
                 body: data,
                 headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }

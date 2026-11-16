@@ -7,9 +7,10 @@ use App\Http\Requests\Profile\CoordinatorProfileRequest;
 use App\Models\Coordinator;
 use App\Services\ActivityLogService;
 use App\Services\FileUploadService;
+use App\Support\Avatar;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Support\PublicFileUrl;
 
 class ProfileController extends Controller
 {
@@ -78,7 +79,8 @@ class ProfileController extends Controller
             throw $exception;
         }
 
-        if ($previousPicture && $previousPicture !== $newPicture) {
+        // Only a picture that was actually replaced is deleted; saving the profile without a new picture keeps it.
+        if ($newPicture && $previousPicture && $previousPicture !== $newPicture) {
             $this->fileUpload->delete($previousPicture);
         }
 
@@ -91,12 +93,49 @@ class ProfileController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Profile updated successfully!',
-                'profile_picture_url' => PublicFileUrl::relative($coordinator->fresh()->profile_picture),
+                'profile_picture_url' => Avatar::url($coordinator->fresh()->profile_picture),
             ]);
         }
 
         return redirect()->route('coordinator.profile.edit')
             ->with('success', 'Profile updated successfully!');
+    }
+
+    /**
+     * Upload or replace only the profile picture (the Upload Photo button). It does not send the
+     * rest of the profile, so an unfinished profile cannot block the picture.
+     */
+    public function updatePicture(Request $request)
+    {
+        $request->validate(['profile_picture' => FileUploadService::imageRules(true)]);
+        $user = Auth::user();
+        $coordinator = $user->coordinator()->firstOrCreate([]);
+
+        $previousPicture = $coordinator->profile_picture;
+        $newPicture = $this->fileUpload->uploadImage($request->file('profile_picture'), 'profiles/coordinators', (string) $coordinator->id);
+
+        try {
+            $coordinator->update(['profile_picture' => $newPicture]);
+        } catch (\Throwable $exception) {
+            $this->fileUpload->delete($newPicture);
+
+            throw $exception;
+        }
+
+        if ($previousPicture && $previousPicture !== $newPicture) {
+            $this->fileUpload->delete($previousPicture);
+        }
+        $this->activityLog->log($user, 'profile_update', ['role' => 'coordinator', 'field' => 'profile_picture']);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile picture updated.',
+                'profile_picture_url' => Avatar::url($newPicture),
+            ]);
+        }
+
+        return redirect()->route('coordinator.profile.edit')->with('success', 'Profile picture updated.');
     }
 
     /**

@@ -95,3 +95,57 @@ it('saves an employer profile and logo asynchronously', function () {
         ->assertSee('data-ajax-form', false)
         ->assertSee('data-employer-feedback', false);
 });
+
+function crossRolePng(string $name): UploadedFile
+{
+    return UploadedFile::fake()->createWithContent($name, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII='));
+}
+
+it('keeps the employer logo when the profile is saved without a new one', function () {
+    Storage::fake('public');
+    $user = User::factory()->create(['role' => UserRole::Employer]);
+    $employer = Employer::create(['user_id' => $user->id, 'company_name' => 'Keep Logo Co', 'contact_person' => $user->name]);
+    $profile = ['_method' => 'PUT', 'company_name' => 'Keep Logo Co', 'industry' => 'Technology', 'contact_person' => $user->name,
+        'email' => $user->email, 'phone' => '09123456789', 'street' => '1 Main Street', 'city' => 'Cebu City', 'province' => 'Cebu', 'zip_code' => '6000'];
+
+    $this->actingAs($user)->postJson(route('employer.profile.update-logo'), ['company_logo' => crossRolePng('logo.png')])->assertOk();
+    $logo = $employer->fresh()->logo;
+    Storage::disk('public')->assertExists($logo);
+
+    // Saving the rest of the profile afterwards must not delete the logo file.
+    $this->postJson(route('employer.profile.update'), $profile)->assertOk();
+    expect($employer->fresh()->logo)->toBe($logo);
+    Storage::disk('public')->assertExists($logo);
+    $this->get(route('employer.profile.edit'))->assertOk()->assertSee('/storage/'.$logo, false);
+});
+
+it('uploads a coordinator picture on its own, even with an unfinished profile, and keeps it on later saves', function () {
+    Storage::fake('public');
+    $user = User::factory()->create(['role' => UserRole::Coordinator, 'phone' => null]);
+    $coordinator = Coordinator::create(['user_id' => $user->id, 'department' => 'Internship Office']);
+
+    // No position, office address or phone yet: the picture still saves.
+    $this->actingAs($user)
+        ->postJson(route('coordinator.profile.update-picture'), ['profile_picture' => crossRolePng('me.png')])
+        ->assertOk()
+        ->assertJsonPath('success', true);
+    $picture = $coordinator->fresh()->profile_picture;
+    Storage::disk('public')->assertExists($picture);
+
+    // The placeholder phone format (+63 900 000 0000) is accepted, and saving keeps the picture.
+    $this->postJson(route('coordinator.profile.update'), ['_method' => 'PUT', 'name' => $user->name, 'email' => $user->email,
+        'phone' => '+63 900 000 0002', 'department' => 'Internship Office', 'position' => 'Coordinator', 'office_address' => 'Main Campus'])
+        ->assertOk();
+    expect($coordinator->fresh()->profile_picture)->toBe($picture);
+    Storage::disk('public')->assertExists($picture);
+});
+
+it('shows initials instead of a broken image when a saved picture file is missing', function () {
+    Storage::fake('public');
+    $user = User::factory()->create(['role' => UserRole::Employer]);
+    Employer::create(['user_id' => $user->id, 'company_name' => 'Gone Logo Co', 'contact_person' => $user->name, 'logo' => 'logos/employers/missing.jpg']);
+
+    expect(\App\Support\Avatar::url('logos/employers/missing.jpg'))->toBeNull()
+        ->and(\App\Support\Avatar::for($user)['url'])->toBeNull();
+    $this->actingAs($user)->get(route('employer.profile.edit'))->assertOk()->assertDontSee('logos/employers/missing.jpg', false);
+});

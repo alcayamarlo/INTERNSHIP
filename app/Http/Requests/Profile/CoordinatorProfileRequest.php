@@ -23,7 +23,7 @@ class CoordinatorProfileRequest extends FormRequest
             // Personal Information
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email,' . auth()->id()],
-            'phone' => ['required', 'regex:/^(\+?\d{1,3}[-.\s]?)?\d{7,14}$/'],
+            'phone' => ['required', 'regex:/^\+?\d[\d\s\-().]{5,18}\d$/'],
 
             // Profile Picture
             'profile_picture' => FileUploadService::imageRules(),

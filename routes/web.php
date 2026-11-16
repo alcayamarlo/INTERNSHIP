@@ -268,6 +268,7 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             Route::get('/dashboard', [EmployerDashboardController::class, 'index'])->name('dashboard');
             Route::get('/profile', [EmployerProfileController::class, 'edit'])->name('profile.edit');
             Route::put('/profile', [EmployerProfileController::class, 'update'])->name('profile.update');
+            Route::post('/company-logo', [EmployerProfileController::class, 'updateLogo'])->name('profile.update-logo');
             Route::delete('/company-logo', [EmployerProfileController::class, 'deleteCompanyLogo'])->name('profile.delete-logo');
             // Posting, browsing students, and inviting need an admin-verified company.
             Route::resource('internships', EmployerInternshipController::class)->except(['show'])
@@ -301,6 +302,7 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             Route::get('/dashboard', [CoordinatorDashboardController::class, 'index'])->name('dashboard');
             Route::get('/profile', [App\Http\Controllers\Coordinator\ProfileController::class, 'edit'])->name('profile.edit');
             Route::put('/profile', [App\Http\Controllers\Coordinator\ProfileController::class, 'update'])->name('profile.update');
+            Route::post('/profile-picture', [App\Http\Controllers\Coordinator\ProfileController::class, 'updatePicture'])->name('profile.update-picture');
             Route::delete('/profile-picture', [App\Http\Controllers\Coordinator\ProfileController::class, 'deleteProfilePicture'])->name('profile.delete-picture');
             Route::get('/students', [CoordinatorDashboardController::class, 'students'])->name('students.index');
             Route::get('/students/{student}', [CoordinatorDashboardController::class, 'showStudent'])->name('students.show');
