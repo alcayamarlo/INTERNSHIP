@@ -707,21 +707,3 @@ if (window.Echo && currentUserId) {
     });
 }
 
-document.querySelectorAll('[data-count-up]').forEach((element) => {
-    const endValue = Number(element.dataset.countUp);
-    if (!Number.isFinite(endValue)) return;
-    if (reducedMotion) {
-        element.textContent = String(endValue);
-        return;
-    }
-
-    const start = performance.now();
-    const duration = 800;
-    const tick = (now) => {
-        const progress = Math.min(1, (now - start) / duration);
-        const eased = 1 - (1 - progress) ** 3;
-        element.textContent = String(Math.round(endValue * eased));
-        if (progress < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-});

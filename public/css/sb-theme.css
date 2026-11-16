@@ -330,8 +330,11 @@ html body.sb-app .sb-empty-icon {
 }
 html body.sb-app .sb-empty h3 { font-size: 16px; font-weight: 600; color: var(--text); margin: 4px 0 0; }
 html body.sb-app .sb-empty p { font-size: 13px; margin: 0; color: var(--muted); }
-.sb-skeleton { background: var(--burgundy-tint); border-radius: 12px; animation: sb-skeleton 1.4s ease-in-out infinite; }
-@keyframes sb-skeleton { 50% { opacity: .55; } }
+/* Loading placeholder: a very subtle light band sweeps across (transform only). */
+.sb-skeleton { position: relative; overflow: hidden; background: var(--surface-alt); border-radius: 12px; }
+.sb-skeleton::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--burgundy) 7%, transparent), transparent); animation: sb-skeleton 1.4s var(--ease-in-out) infinite; }
+@keyframes sb-skeleton { to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) { .sb-skeleton::after { display: none; } }
 
 /* ---------- Breadcrumbs ---------- */
 html body.sb-app .sb-breadcrumbs { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
@@ -1021,7 +1024,7 @@ html body.sb-app .sb-level-name,
 html body.sb-app .sb-level-score { font-size: 12px; color: var(--muted); }
 html body.sb-app .sb-level-score { text-align: right; font-variant-numeric: lining-nums tabular-nums; }
 html body.sb-app .sb-level-track { height: 6px; border-radius: var(--r-pill); background: var(--burgundy-tint); overflow: hidden; }
-html body.sb-app .sb-level-fill { height: 100%; border-radius: inherit; background: var(--burgundy); transform: scaleX(var(--sb-bar, 0)); transform-origin: left; transition: transform var(--sb-dur-base) var(--sb-ease-out); }
+html body.sb-app .sb-level-fill { display: block; width: 100%; height: 100%; border-radius: inherit; background: var(--burgundy); transform: scaleX(var(--sb-bar, 0)); transform-origin: left; transition: transform var(--sb-dur-base) var(--sb-ease-out); }
 html[data-theme="dark"] body.sb-app .sb-level-fill { background: var(--burgundy-text); }
 html body.sb-app .sb-level.is-current :is(.sb-level-name, .sb-level-score) { color: var(--text); font-weight: 600; }
 @media (prefers-reduced-motion: reduce) {

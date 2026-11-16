@@ -35,14 +35,22 @@
             const button = event.target instanceof Element ? event.target.closest('[data-theme-toggle]') : null;
             if (!button) return;
 
-            const current = root.dataset.theme === 'dark' ? 'dark' : 'light';
-            root.dataset.theme = current === 'dark' ? 'light' : 'dark';
-            try {
-                window.localStorage.setItem(storageKey, root.dataset.theme);
-            } catch {
-                // The selected theme remains active until this page is closed.
+            const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+            const apply = () => {
+                root.dataset.theme = next;
+                try {
+                    window.localStorage.setItem(storageKey, next);
+                } catch {
+                    // The selected theme remains active until this page is closed.
+                }
+                syncThemeButtons();
+            };
+            if (typeof document.startViewTransition !== 'function' || reduceMotion) {
+                apply();
+                return;
             }
-            syncThemeButtons();
+            root.classList.add('sb-theme-vt');
+            document.startViewTransition(apply).finished.finally(() => root.classList.remove('sb-theme-vt'));
         });
 
         // App sidebar: collapse to an icon rail (desktop/tablet) and close the drawer with Escape.
@@ -291,26 +299,6 @@
                     if (icon) icon.hidden = false;
                 });
             });
-        });
-
-        document.querySelectorAll('[data-count-up]').forEach((element) => {
-            const endValue = Number(element.dataset.countUp);
-            if (!Number.isFinite(endValue)) return;
-            if (reduceMotion) {
-                element.textContent = String(endValue);
-                return;
-            }
-
-            const initialValue = Number(element.textContent.replace(/[^\d.-]/g, ''));
-            const startValue = Number.isFinite(initialValue) ? initialValue : 0;
-            const startTime = performance.now();
-            const tick = (now) => {
-                const progress = Math.min(1, (now - startTime) / 800);
-                const eased = 1 - (1 - progress) ** 3;
-                element.textContent = String(Math.round(startValue + (endValue - startValue) * eased));
-                if (progress < 1) window.requestAnimationFrame(tick);
-            };
-            window.requestAnimationFrame(tick);
         });
     };
 

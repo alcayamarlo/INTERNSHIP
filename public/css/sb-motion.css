@@ -162,8 +162,10 @@ body.sb-app dialog[open] {
 
 /* =====================================================================
    PAGE TO PAGE
-   Browsers with cross-document view transitions crossfade between signed-in
-   pages; others load pages as before. The sidebar and top bar do not fade.
+   Browsers with cross-document view transitions crossfade only the content
+   area between signed-in pages; the sidebar, top bar and page background stay
+   still. Others load pages as before. When a view transition plays, the layout
+   adds html.sb-vt and the content entrance is skipped (the crossfade is enough).
    ===================================================================== */
 @media (prefers-reduced-motion: no-preference) {
     @view-transition {
@@ -173,18 +175,91 @@ body.sb-app dialog[open] {
 
 body.sb-app .sb-sidebar { view-transition-name: sb-sidebar; }
 body.sb-app .sb-topbar { view-transition-name: sb-topbar; }
+body.sb-app .sb-content { view-transition-name: sb-content; }
 
-::view-transition-old(root),
-::view-transition-new(root) {
+html.sb-vt body.sb-app .sb-content {
+    animation: none;
+}
+
+::view-transition-old(sb-content),
+::view-transition-new(sb-content) {
     animation-duration: var(--dur-base);
     animation-timing-function: var(--ease-in-out);
 }
 
+html:not(.sb-theme-vt)::view-transition-old(root),
+html:not(.sb-theme-vt)::view-transition-new(root),
 ::view-transition-old(sb-sidebar),
 ::view-transition-new(sb-sidebar),
 ::view-transition-old(sb-topbar),
 ::view-transition-new(sb-topbar) {
     animation: none;
+}
+
+/* =====================================================================
+   THEME SWITCH: a 200ms crossfade of the whole page (skillbridge-ui.js adds
+   html.sb-theme-vt for it). Never on first load; instant without support.
+   ===================================================================== */
+html.sb-theme-vt body.sb-app :is(.sb-sidebar, .sb-topbar, .sb-content) {
+    view-transition-name: none;
+}
+
+html.sb-theme-vt::view-transition-old(root),
+html.sb-theme-vt::view-transition-new(root) {
+    animation-duration: var(--dur-base);
+    animation-timing-function: var(--ease-in-out);
+}
+
+/* =====================================================================
+   COUNT-UP: numbers stay hidden until sb-motion.js counts them up from 0 to
+   their real value (or shows them as they are when they are not plain numbers).
+   ===================================================================== */
+@media screen {
+    body.sb-app :is(.sb-kpi-value, .sb-stat-value, .sb-tile-value, [data-count-up]) {
+        font-variant-numeric: tabular-nums;
+    }
+
+    html.sb-anim:not(.sb-anim-done) body.sb-app :is(.sb-kpi-value, .sb-stat-value, .sb-tile-value, [data-count-up]):not(.is-counted) {
+        opacity: 0;
+    }
+}
+
+/* =====================================================================
+   VALIDATION: error messages settle into place (fade and 4px drop) instead of
+   popping in. The space they take appears at once, so nothing below jumps twice.
+   ===================================================================== */
+@keyframes sb-reveal {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: none; }
+}
+
+@media screen {
+    html.sb-anim body.sb-app :is(.invalid-feedback, .sb-field-error, .sb-field-error-text, .sb-error-summary) {
+        animation: sb-reveal var(--dur-base) var(--ease-out);
+    }
+}
+
+/* =====================================================================
+   LIVE FILTERS: when table-filters.js swaps in new results, they fade in and
+   the first 8 rows or cards settle 40ms apart.
+   ===================================================================== */
+@media screen {
+    html.sb-anim body.sb-app [data-tf-results].is-swapped {
+        animation: sb-enter var(--dur-base) var(--ease-out);
+        --rise: 4px;
+    }
+
+    html.sb-anim body.sb-app [data-tf-results].is-swapped :is(tbody > tr, .sbx-list > *, .sb-card-grid > *):nth-child(-n + 8) {
+        animation: sb-enter var(--dur-base) var(--ease-out) backwards;
+    }
+
+    html.sb-anim body.sb-app [data-tf-results].is-swapped :is(tbody > tr, .sbx-list > *, .sb-card-grid > *):nth-child(2) { animation-delay: calc(var(--stagger) * 1); }
+    html.sb-anim body.sb-app [data-tf-results].is-swapped :is(tbody > tr, .sbx-list > *, .sb-card-grid > *):nth-child(3) { animation-delay: calc(var(--stagger) * 2); }
+    html.sb-anim body.sb-app [data-tf-results].is-swapped :is(tbody > tr, .sbx-list > *, .sb-card-grid > *):nth-child(4) { animation-delay: calc(var(--stagger) * 3); }
+    html.sb-anim body.sb-app [data-tf-results].is-swapped :is(tbody > tr, .sbx-list > *, .sb-card-grid > *):nth-child(5) { animation-delay: calc(var(--stagger) * 4); }
+    html.sb-anim body.sb-app [data-tf-results].is-swapped :is(tbody > tr, .sbx-list > *, .sb-card-grid > *):nth-child(6) { animation-delay: calc(var(--stagger) * 5); }
+    html.sb-anim body.sb-app [data-tf-results].is-swapped :is(tbody > tr, .sbx-list > *, .sb-card-grid > *):nth-child(7) { animation-delay: calc(var(--stagger) * 6); }
+    html.sb-anim body.sb-app [data-tf-results].is-swapped :is(tbody > tr, .sbx-list > *, .sb-card-grid > *):nth-child(8) { animation-delay: calc(var(--stagger) * 7); }
 }
 
 /* =====================================================================
