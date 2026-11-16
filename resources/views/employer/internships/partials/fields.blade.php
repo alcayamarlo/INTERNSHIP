@@ -17,15 +17,6 @@
         </select>
         @error('status')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
-    <div class="col-md-4">
-        <label class="form-label" for="internship-work-setup">Work Setup <span class="text-danger" aria-hidden="true">*</span></label>
-        <select id="internship-work-setup" class="form-select @error('work_setup') is-invalid @enderror" name="work_setup" required>
-            @foreach($workSetups as $setup)
-                <option value="{{ $setup->value }}" {{ old('work_setup', $internship->work_setup?->value) === $setup->value ? 'selected' : '' }}>{{ $setup->label() }}</option>
-            @endforeach
-        </select>
-        @error('work_setup')<div class="invalid-feedback">{{ $message }}</div>@enderror
-    </div>
     <div class="col-12">
         @php $selectedPrograms = collect(old('program_ids', $internship->exists ? $internship->programs->pluck('id')->all() : []))->map(fn ($id) => (int) $id); @endphp
         <fieldset>
@@ -53,6 +44,11 @@
         @error('duration')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
     <div class="col-md-4">
+        <label class="form-label" for="internship-slots">Number of slots</label>
+        <input type="number" id="internship-slots" min="1" max="1000" step="1" class="form-control @error('slots') is-invalid @enderror" name="slots" value="{{ old('slots', $internship->slots) }}" placeholder="e.g. 3">
+        @error('slots')<div class="invalid-feedback">{{ $message }}</div>@enderror
+    </div>
+    <div class="col-md-4">
         <label class="form-label" for="expires_at">Application deadline</label>
         <input type="date" id="expires_at" class="form-control @error('expires_at') is-invalid @enderror" name="expires_at" value="{{ old('expires_at', $internship->expires_at?->format('Y-m-d')) }}" @unless($internship->expires_at?->isPast()) min="{{ now()->format('Y-m-d') }}" @endunless aria-describedby="expires_at_help">
         <div id="expires_at_help" class="form-text">Optional. Applications close at the end of this day, and students who match get a reminder a few days before.</div>
@@ -76,8 +72,9 @@
         <textarea id="internship-responsibilities" class="form-control" name="responsibilities" rows="4">{{ old('responsibilities', $internship->responsibilities) }}</textarea>
     </div>
     <div class="col-md-6">
-        <label class="form-label" for="internship-requirements">General Requirements</label>
-        <textarea id="internship-requirements" class="form-control" name="requirements" rows="4">{{ old('requirements', $internship->requirements) }}</textarea>
+        <label class="form-label" for="internship-qualifications">Qualifications</label>
+        <textarea id="internship-qualifications" class="form-control @error('qualifications') is-invalid @enderror" name="qualifications" rows="4">{{ old('qualifications', $internship->qualifications) }}</textarea>
+        @error('qualifications')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 </div>
 </section>

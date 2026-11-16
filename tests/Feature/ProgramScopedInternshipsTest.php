@@ -127,22 +127,6 @@ it('lets employers choose which programs an internship is open to', function () 
         ->assertSee('Open to programs');
 });
 
-it('filters by work mode from the filter panel and ignores unknown modes', function () {
-    $f = programScopeFixture();
-    $f['itMatch']->update(['work_setup' => 'hybrid']);
-    $f['itOther']->update(['work_setup' => 'onsite']);
-
-    $this->actingAs($f['studentUser'])->get(route('student.internships.index', ['work_setup' => ['hybrid']]))
-        ->assertOk()
-        ->assertSee('data-internship-id="'.$f['itMatch']->id.'"', false)
-        ->assertDontSee('data-internship-id="'.$f['itOther']->id.'"', false); // the recommendations strip is not filtered
-
-    // An unknown value is ignored rather than hiding everything.
-    $this->actingAs($f['studentUser'])->get(route('student.internships.index', ['work_setup' => ['underwater']]))
-        ->assertOk()
-        ->assertSee('IT Matched Role')
-        ->assertSee('IT Unmatched Role');
-});
 
 it('applies through a resume dialog instead of a dropdown on every card', function () {
     $f = programScopeFixture();
@@ -158,10 +142,10 @@ it('applies through a resume dialog instead of a dropdown on every card', functi
 
 it('renders a swappable results area so filters apply without clicking Filter', function () {
     $f = programScopeFixture();
-    $f['itMatch']->update(['work_setup' => 'remote']);
+    $f['itMatch']->update(['location' => 'Swappable City']);
 
     // The script fetches the same page with the chosen filters and swaps #ibResults in place.
-    $this->actingAs($f['studentUser'])->get(route('student.internships.index', ['work_setup' => ['remote']]))
+    $this->actingAs($f['studentUser'])->get(route('student.internships.index', ['location' => 'Swappable City']))
         ->assertOk()
         ->assertSee('id="ibResults"', false)
         ->assertSee('data-total="1"', false)

@@ -17,7 +17,7 @@
     $programLabel = $internship->programs->isEmpty() ? 'All programs' : $internship->programs->pluck('code')->implode(', ');
     $facts = [
         ['bi-geo-alt', 'Location', $internship->location ?: 'Not stated'],
-        ['bi-laptop', 'Work mode', $internship->work_setup->label()],
+        ['bi-people', 'Slots', $internship->slots ? $internship->slots.' '.\Illuminate\Support\Str::plural('slot', $internship->slots) : 'Not stated'],
         ['bi-clock', 'Duration', $internship->duration ?: 'Not stated'],
         ['bi-cash-coin', 'Allowance', $internship->allowance ? '₱'.number_format($internship->allowance, 2).'/mo' : 'Not stated'],
         ['bi-mortarboard', 'Program', $programLabel],
@@ -54,15 +54,15 @@
 
         <article class="card" id="applicationCard">
             <div class="card-body">
-                <div class="sb-grid {{ $internship->requirements ? 'sb-grid--2' : '' }}">
+                <div class="sb-grid {{ $internship->qualifications ? 'sb-grid--2' : '' }}">
                     <section class="sb-block">
                         <h2>Description</h2>
                         <p>{!! nl2br(e($internship->description)) !!}</p>
                     </section>
-                    @if($internship->requirements)
+                    @if($internship->qualifications)
                         <section class="sb-block">
-                            <h2>General requirements</h2>
-                            <p>{!! nl2br(e($internship->requirements)) !!}</p>
+                            <h2>Qualifications</h2>
+                            <p>{!! nl2br(e($internship->qualifications)) !!}</p>
                         </section>
                     @endif
                 </div>
@@ -84,7 +84,7 @@
                         <div class="table-responsive">
                             <table class="table align-middle mb-0">
                                 <thead>
-                                    <tr><th scope="col">Skill</th><th scope="col">Required level</th><th scope="col">Your evidence</th><th scope="col">Status</th></tr>
+                                    <tr><th scope="col">Skill</th><th scope="col">Required level</th><th scope="col">Your level</th><th scope="col">Status</th></tr>
                                 </thead>
                                 <tbody>
                                     @foreach($internship->requirementsList as $req)
@@ -95,10 +95,12 @@
                                         <tr>
                                             <td class="fw-semibold">{{ $req->requirement_name }}</td>
                                             <td>{{ $levelLabel($req->required_level) }}</td>
-                                            <td>{{ $met ? 'Meets the required level.' : ($missing['reason_label'] ?? 'No evidence added for this skill yet.') }}</td>
+                                            <td>{{ ($met ? $matchedByName->get($req->requirement_name)['student_level'] ?? null : $missing['student_level'] ?? null) ?? 'None yet' }}<small class="d-block text-muted">{{ $met ? 'Meets the required level.' : ($missing['reason_label'] ?? 'No evidence added for this skill yet.') }}</small></td>
                                             <td>
                                                 @if($met)
                                                     <span class="sb-status sb-status--success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Met</span>
+                                                @elseif(($missing['score'] ?? 0) > 0)
+                                                    <span class="sb-status sb-status--warning">Partial · {{ $missing['score'] }}%</span>
                                                 @else
                                                     <span class="sb-status sb-status--neutral"><i class="bi bi-x-circle" aria-hidden="true"></i> Not met</span>
                                                 @endif

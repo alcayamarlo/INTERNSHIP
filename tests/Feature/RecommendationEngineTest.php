@@ -88,9 +88,12 @@ it('weights evidence by proficiency level regardless of verification status and 
     $recommendations = app(CompetencyMatchingService::class)->getRecommendations($student, 5);
 
     expect($recommendations)->toHaveCount(1)
-        ->and($recommendations[0]->match_percentage)->toBe(50)
+        // PHP meets its level (100%); Communication is Beginner against Advanced: partial credit 1/3.
+        // Both are required (weight 2): (2 x 1 + 2 x 1/3) / 4 = 67%.
+        ->and($recommendations[0]->match_percentage)->toBe(67)
         ->and($recommendations[0]->recommendation_details)->toBeArray()
-        ->and($recommendations[0]->recommendation_details['matched_requirements'])->toContain(['name' => 'PHP Development', 'required_level' => 'Intermediate'])
+        ->and(collect($recommendations[0]->recommendation_details['matched_requirements'])->firstWhere('name', 'PHP Development'))->toMatchArray(['required_level' => 'Intermediate', 'student_level' => 'Advanced', 'score' => 100])
+        ->and(collect($recommendations[0]->recommendation_details['missing_requirements'])->firstWhere('name', 'Communication'))->toMatchArray(['student_level' => 'Beginner', 'score' => 33])
         ->and(collect($recommendations[0]->recommendation_details['missing_requirements'])->pluck('name'))->toContain('Communication')
         ->and(collect($recommendations[0]->recommendation_details['missing_requirements'])->firstWhere('name', 'Communication')['reason'])->toBe('below_required_level')
         ->and($recommendations[0]->recommendation_details['matched_count'])->toBe(1);

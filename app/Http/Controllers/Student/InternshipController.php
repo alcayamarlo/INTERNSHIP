@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Student;
 
 use App\Enums\ApplicationStatus;
-use App\Enums\WorkSetup;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Application\ApplyInternshipRequest;
 use App\Models\DeploymentRequirement;
@@ -67,18 +66,13 @@ class InternshipController extends Controller
             $query->whereHas('requirementsList', fn ($q) => $q->where('requirement_name', 'like', "%{$skill}%"));
         }
 
-        // Work mode checkboxes in the filter panel: any of the ticked modes (unknown values are ignored).
-        $workModes = array_values(array_intersect(
-            array_map('strval', (array) $request->get('work_setup', [])),
-            array_column(WorkSetup::cases(), 'value'),
-        ));
-        if ($workModes) {
-            $query->whereIn('work_setup', $workModes);
-        }
-
         // Best competency match first, newest first among equal scores.
         $matches = $query->latest()->get()
-            ->each(fn (Internship $internship) => $internship->match_percentage = $this->matchingService->calculateMatch($student, $internship))
+            ->each(function (Internship $internship) use ($student) {
+                $result = $this->matchingService->calculateMatchWithDetails($student, $internship);
+                $internship->match_percentage = $result['match_percentage'];
+                $internship->match_details = $result['details'];
+            })
             ->sortByDesc('match_percentage')
             ->values();
         $page = LengthAwarePaginator::resolveCurrentPage();

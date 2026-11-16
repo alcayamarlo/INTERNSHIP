@@ -120,8 +120,8 @@ it('invalidates competency score and recommendation caches when evidence changes
     ]);
 
     Cache::put("student_comp_score_{$student->id}", 42, 600);
-    Cache::put("recommendations_v2_{$student->id}_5", collect(), 1800);
-    Cache::put("match_details_v2_{$student->id}_{$internship->id}", 42, 3600);
+    Cache::put("recommendations_v3_{$student->id}_5", collect(), 1800);
+    Cache::put("match_details_v3_{$student->id}_{$internship->id}", 42, 3600);
 
     $competency = StudentCompetency::create([
         'student_id' => $student->id,
@@ -132,8 +132,8 @@ it('invalidates competency score and recommendation caches when evidence changes
     ]);
 
     expect(Cache::has("student_comp_score_{$student->id}"))->toBeFalse()
-        ->and(Cache::has("recommendations_v2_{$student->id}_5"))->toBeFalse()
-        ->and(Cache::has("match_details_v2_{$student->id}_{$internship->id}"))->toBeFalse();
+        ->and(Cache::has("recommendations_v3_{$student->id}_5"))->toBeFalse()
+        ->and(Cache::has("match_details_v3_{$student->id}_{$internship->id}"))->toBeFalse();
 
     Cache::put("student_comp_score_{$student->id}", 42, 600);
     $competency->update(['verification_status' => 'rejected']);

@@ -4,7 +4,6 @@ namespace App\Http\Requests\Internship;
 
 use App\Enums\ProficiencyLevel;
 use App\Enums\UserRole;
-use App\Enums\WorkSetup;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -29,10 +28,10 @@ class StoreInternshipRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'responsibilities' => ['nullable', 'string'],
-            'requirements' => ['nullable', 'string'],
+            'qualifications' => ['nullable', 'string'],
+            'slots' => ['nullable', 'integer', 'min:1', 'max:1000'],
             'duration' => ['nullable', 'string', 'max:100'],
             'allowance' => ['nullable', 'numeric', 'min:0'],
-            'work_setup' => ['required', Rule::enum(WorkSetup::class)],
             'location' => ['nullable', 'string', 'max:255'],
             'status' => ['required', 'in:open,closed'],
             'expires_at' => $this->deadlineRules(),
@@ -77,7 +76,6 @@ class StoreInternshipRequest extends FormRequest
         return [
             'title.required' => 'Internship title is required.',
             'description.required' => 'Internship description is required.',
-            'work_setup.required' => 'Please select a work setup.',
             'expires_at.after_or_equal' => 'The application deadline cannot be in the past.',
             'expires_at.date_format' => 'Enter the application deadline as a date.',
         ];

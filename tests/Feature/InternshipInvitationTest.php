@@ -338,7 +338,7 @@ it('shows invitations as a split inbox with status tabs, a stepper, and days lef
 
     // The pending invitation is selected and waits on step 2.
     expect($panel)->toContain($internship->title)
-        ->toContain('Makati City · Remote')
+        ->toContain('Makati City')
         ->toContain('Verified company')
         ->toContain('days left)')
         ->toContain('What happens when you accept')

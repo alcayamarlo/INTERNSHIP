@@ -3,7 +3,7 @@
 @php
     $meta = array_filter([
         $internship->location ?: 'Location not set',
-        $internship->work_setup?->label(),
+        $internship->slots ? $internship->slots.' '.\Illuminate\Support\Str::plural('slot', $internship->slots) : null,
         $internship->duration,
         $internship->allowance ? '₱'.number_format((float) $internship->allowance, 2).' allowance' : null,
     ]);

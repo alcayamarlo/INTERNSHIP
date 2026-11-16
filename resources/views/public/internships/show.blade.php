@@ -35,9 +35,9 @@
                 <p>{!! nl2br(e($internship->responsibilities)) !!}</p>
             @endif
 
-            @if($internship->requirements)
+            @if($internship->qualifications)
                 <h2>General requirements</h2>
-                <p>{!! nl2br(e($internship->requirements)) !!}</p>
+                <p>{!! nl2br(e($internship->qualifications)) !!}</p>
             @endif
 
             @if($internship->requirementsList->count())
@@ -57,7 +57,6 @@
                 </div>
                 <ul class="public-job-meta">
                     @if($internship->location)<li><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ $internship->location }}</li>@endif
-                    @if($internship->work_setup)<li><i class="bi bi-laptop" aria-hidden="true"></i> {{ $internship->work_setup->label() }}</li>@endif
                     @if($internship->duration)<li><i class="bi bi-clock" aria-hidden="true"></i> {{ $internship->duration }}</li>@endif
                     @if($internship->expires_at)<li><i class="bi bi-calendar-event" aria-hidden="true"></i> Apply by {{ $internship->expires_at->format('M d, Y') }}</li>@endif
                 </ul>

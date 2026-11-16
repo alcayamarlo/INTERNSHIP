@@ -8,7 +8,6 @@
     <p class="public-job-company"><i class="bi bi-building" aria-hidden="true"></i> {{ $internship->employer?->company_name }} <x-verified-badge :employer="$internship->employer" /></p>
     <ul class="public-job-meta">
         @if($internship->location)<li><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ $internship->location }}</li>@endif
-        @if($internship->work_setup)<li><i class="bi bi-laptop" aria-hidden="true"></i> {{ $internship->work_setup->label() }}</li>@endif
         @if($internship->duration)<li><i class="bi bi-clock" aria-hidden="true"></i> {{ $internship->duration }}</li>@endif
         @if($internship->expires_at)<li><i class="bi bi-calendar-event" aria-hidden="true"></i> Apply by {{ $internship->expires_at->format('M d, Y') }}</li>@endif
     </ul>

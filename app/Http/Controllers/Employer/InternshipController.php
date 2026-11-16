@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Employer;
 
 use App\Enums\ProficiencyLevel;
-use App\Enums\WorkSetup;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Internship\StoreInternshipRequest;
 use App\Http\Requests\Internship\UpdateInternshipRequest;
@@ -104,7 +103,6 @@ class InternshipController extends Controller
     private function formOptions(): array
     {
         return [
-            'workSetups' => WorkSetup::cases(),
             'levels' => ProficiencyLevel::cases(),
             'programs' => Program::orderBy('name')->get(),
             'onRequestDocuments' => DeploymentRequirement::onRequest()->orderBy('sort_order')->get(['code', 'name']),

@@ -80,7 +80,7 @@
         <x-status-badge :status="$display->value" :label="$display->label()" />
     </div>
     <p class="sb-detail-meta sb-inline-meta">{{ $employer->company_name }} <x-verified-badge :employer="$employer" /></p>
-    <p class="sb-detail-meta">{{ $internship->location ?: 'Location not set' }}@if($internship->work_setup) · {{ $internship->work_setup->label() }}@endif</p>
+    <p class="sb-detail-meta">{{ $internship->location ?: 'Location not set' }}</p>
 
     <p class="sb-note sb-mt">
         Invited {{ $invitedAt->format('M d, Y h:i A') }}

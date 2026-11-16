@@ -1,8 +1,8 @@
 {{--
-    Preview of one internship for the Browse Internships split view.
-    Rendered once per row inside a <template> (the page script copies it into the preview
-    panel or the mobile preview dialog), and once directly for the first row.
-    Needs: $internship (with employer, programs, requirementsList, match_percentage), $applied, $resumes.
+    Full details of one internship, shown in the Browse Internships pop-up (one copy per row in a
+    <template>; the page script copies the selected one into the dialog).
+    Needs: $internship (with employer, programs, requirementsList, match_percentage, match_details),
+    $applied, $resumes.
 --}}
 @php
     $levelLabel = fn ($level) => $level instanceof \App\Enums\ProficiencyLevel ? $level->label() : ucfirst((string) $level);
@@ -10,17 +10,22 @@
         ->map(fn ($line) => trim(preg_replace('/^\s*[-*•]\s*/u', '', $line)))
         ->filter()
         ->values();
-    $facts = [
+    $details = $internship->match_details ?? [];
+    // Per-skill breakdown: required level vs the student's level, from the match details.
+    $bySkill = collect($details['matched_requirements'] ?? [])->merge($details['missing_requirements'] ?? [])->keyBy('name');
+    $facts = array_filter([
         ['bi-geo-alt', 'Location', $internship->location ?: 'Not stated'],
-        ['bi-laptop', 'Work mode', $internship->work_setup->label()],
         ['bi-clock', 'Duration', $internship->duration ?: 'Not stated'],
-        ['bi-cash-coin', 'Allowance', $internship->allowance ? '₱'.number_format($internship->allowance, 2).'/mo' : 'Not stated'],
-    ];
+        ['bi-people', 'Slots', $internship->slots ? $internship->slots.' '.\Illuminate\Support\Str::plural('slot', $internship->slots) : 'Not stated'],
+        ['bi-calendar-event', 'Apply by', $internship->expires_at ? $internship->expires_at->format('M d, Y') : 'No deadline'],
+        ['bi-mortarboard', 'Programs', $internship->programs->isEmpty() ? 'All programs' : $internship->programs->pluck('code')->implode(', ')],
+        $internship->allowance ? ['bi-cash-coin', 'Allowance', '₱'.number_format($internship->allowance, 2).'/mo'] : null,
+    ]);
 @endphp
 <div class="sb-detail" data-preview-content data-preview-id="{{ $internship->id }}">
     <div class="sb-preview-scroll">
         <div class="sb-detail-head">
-            <div class="">
+            <div>
                 <h2 class="sb-detail-title">{{ $internship->title }}</h2>
                 <p class="sb-detail-meta sb-inline-meta">
                     <i class="bi bi-building" aria-hidden="true"></i>
@@ -36,7 +41,7 @@
             </div>
         </div>
 
-        <dl class="sb-fields">
+        <dl class="sb-fields sb-fields--tiles">
             @foreach($facts as [$icon, $label, $value])
                 <div>
                     <dt><i class="bi {{ $icon }}" aria-hidden="true"></i> {{ $label }}</dt>
@@ -50,10 +55,17 @@
             <p>{!! nl2br(e($internship->description)) !!}</p>
         </section>
 
+        @if($internship->qualifications)
+            <section class="sb-block">
+                <h3>Qualifications</h3>
+                <p>{!! nl2br(e($internship->qualifications)) !!}</p>
+            </section>
+        @endif
+
         @if($responsibilities->isNotEmpty())
             <section class="sb-block">
                 <h3>Responsibilities</h3>
-                <ul class="sb-bullets">
+                <ul>
                     @foreach($responsibilities as $line)
                         <li>{{ $line }}</li>
                     @endforeach
@@ -63,18 +75,31 @@
 
         @if($internship->requirementsList->count())
             <section class="sb-block">
-                <h3>Competency requirements</h3>
-                <ul class="sb-chips">
-                    @foreach($internship->requirementsList as $req)
-                        <li class="">{{ $req->requirement_name }} <span class="sb-chip-level">· {{ $levelLabel($req->required_level) }}</span></li>
-                    @endforeach
-                </ul>
+                <h3>Required skills</h3>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                            <tr><th scope="col">Skill</th><th scope="col">Required</th><th scope="col">Your level</th><th scope="col" class="text-end">Score</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach($internship->requirementsList as $req)
+                                @php $skill = $bySkill->get($req->requirement_name); @endphp
+                                <tr>
+                                    <td class="fw-semibold">{{ $req->requirement_name }}</td>
+                                    <td>{{ $levelLabel($req->required_level) }}</td>
+                                    <td>{{ $skill['student_level'] ?? 'None yet' }}</td>
+                                    <td class="text-end">{{ $skill['score'] ?? 0 }}%</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </section>
         @endif
     </div>
 
     <div class="sb-preview-actions" data-apply-slot>
-        <a href="{{ route('student.internships.show', $internship) }}" class="btn btn-outline-primary">Full details</a>
+        <a href="{{ route('student.internships.show', $internship) }}" class="btn btn-outline-primary">Open full page</a>
         @if($applied)
             <a href="{{ route('student.applications.index') }}" class="btn btn-outline-secondary" aria-label="Already applied; view My Applications"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Applied · View application</a>
         @elseif($hasOjt ?? false)

@@ -25,7 +25,7 @@ class CompetencyMatchingService
      */
     public function calculateMatchWithDetails(Student $student, Internship $internship): array
     {
-        $cacheKey = "match_details_v2_{$student->id}_{$internship->id}";
+        $cacheKey = "match_details_v3_{$student->id}_{$internship->id}";
 
         return Cache::remember($cacheKey, 3600, function () use ($student, $internship) {
             return $this->buildRecommendationResult($student, $internship);
@@ -43,7 +43,7 @@ class CompetencyMatchingService
 
     public function getRecommendations(Student $student, int $limit = 10)
     {
-        $cacheKey = "recommendations_v2_{$student->id}_{$limit}";
+        $cacheKey = "recommendations_v3_{$student->id}_{$limit}";
         $coordinator = $student->assignedCoordinator();
         // Read outside the cache so a posting the coordinator just marked unsuitable disappears at once.
         $flaggedIds = $coordinator
@@ -79,11 +79,11 @@ class CompetencyMatchingService
     public function invalidateCache(Student $student): void
     {
         foreach (self::RECOMMENDATION_LIMITS as $limit) {
-            Cache::forget("recommendations_v2_{$student->id}_{$limit}");
+            Cache::forget("recommendations_v3_{$student->id}_{$limit}");
         }
 
         foreach (Internship::query()->pluck('id') as $internshipId) {
-            Cache::forget("match_details_v2_{$student->id}_{$internshipId}");
+            Cache::forget("match_details_v3_{$student->id}_{$internshipId}");
         }
     }
 
@@ -130,6 +130,8 @@ class CompetencyMatchingService
                 $missingRequirements[] = [
                     'name' => $requirement->requirement_name,
                     'required_level' => $requiredLevelLabel,
+                    'student_level' => null,
+                    'score' => 0,
                     'reason' => 'no_evidence',
                     'reason_label' => 'No evidence added for this skill yet.',
                 ];
@@ -140,19 +142,32 @@ class CompetencyMatchingService
                 ? $studentMatch->proficiency_level->score()
                 : ProficiencyLevel::from($studentMatch->proficiency_level)->score();
 
+            $studentLevelLabel = $studentMatch->proficiency_level instanceof ProficiencyLevel
+                ? $studentMatch->proficiency_level->label()
+                : ProficiencyLevel::from($studentMatch->proficiency_level)->label();
+            // Level per skill: Beginner 1, Intermediate 2, Advanced 3 (Expert 4). Meeting or exceeding
+            // the required level scores 100%; below it scores student level / required level.
+            $skillScore = min($studentScore / $requiredScore, 1.0);
+
             if ($studentScore >= $requiredScore) {
                 $matchedRequirements[] = [
                     'name' => $requirement->requirement_name,
                     'required_level' => $requiredLevelLabel,
+                    'student_level' => $studentLevelLabel,
+                    'score' => 100,
                 ];
                 $matchedCount++;
-                $weightedScore += $weight * min($studentScore / $requiredScore, 1.0);
+                $weightedScore += $weight * $skillScore;
                 continue;
             }
 
+            // Below the required level: partial credit, not a full match and not zero.
+            $weightedScore += $weight * $skillScore;
             $missingRequirements[] = [
                 'name' => $requirement->requirement_name,
                 'required_level' => $requiredLevelLabel,
+                'student_level' => $studentLevelLabel,
+                'score' => (int) round($skillScore * 100),
                 'reason' => 'below_required_level',
                 'reason_label' => 'Your current level is below the required '.$requiredLevelLabel.' level.',
             ];

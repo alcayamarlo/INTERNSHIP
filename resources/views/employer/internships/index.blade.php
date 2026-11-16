@@ -52,7 +52,7 @@
                                             aria-pressed="{{ $selected?->is($internship) ? 'true' : 'false' }}" aria-controls="postingDetailPanel">
                                         <span class="sbx-row-text">
                                             <span class="sbx-row-title">{{ $internship->title }}</span>
-                                            <span class="sbx-row-meta">{{ $internship->location ?: 'Location not set' }} · {{ $internship->work_setup->label() }}</span>
+                                            <span class="sbx-row-meta">{{ $internship->location ?: 'Location not set' }}</span>
                                         </span>
                                         <x-status-badge :status="$internship->status" :label="ucfirst($internship->status)" :tone="$statusTone($internship)" />
                                     </button>

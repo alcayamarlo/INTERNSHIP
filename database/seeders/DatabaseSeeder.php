@@ -176,7 +176,7 @@ class DatabaseSeeder extends Seeder
             'title' => 'Web Developer Intern',
             'description' => 'Join our development team to build modern web applications.',
             'responsibilities' => "Develop features using Laravel\nCollaborate with senior developers\nWrite clean, tested code",
-            'requirements' => 'BS IT or related field, knowledge of PHP and Laravel.',
+            'qualifications' => 'BS IT or related field, knowledge of PHP and Laravel.',
             'duration' => '3 months',
             'allowance' => 8000,
             'work_setup' => WorkSetup::Hybrid,

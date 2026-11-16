@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
-use App\Enums\WorkSetup;
 use App\Models\Internship;
 use Illuminate\Http\Request;
 
@@ -47,16 +46,10 @@ class PublicInternshipController extends Controller
             $query->where('location', 'like', "%{$location}%");
         }
 
-        $setup = WorkSetup::tryFrom((string) $request->query('setup'));
-        if ($setup) {
-            $query->where('work_setup', $setup->value);
-        }
-
         $internships = $query->latest()->paginate(100)->withQueryString();
 
         return view('public.internships.index', [
             'internships' => $internships,
-            'setups' => WorkSetup::cases(),
         ]);
     }
 

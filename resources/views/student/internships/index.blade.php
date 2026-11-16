@@ -3,12 +3,10 @@
 @section('title', 'Internships')
 
 @php
-    $selectedMode = collect((array) request('work_setup', []))->map(fn ($mode) => (string) $mode)->first();
-    $hasFilters = collect(['search', 'location', 'company', 'skill', 'work_setup', 'scope'])->contains(fn ($field) => request()->filled($field));
+    $hasFilters = collect(['search', 'location', 'company', 'skill', 'scope'])->contains(fn ($field) => request()->filled($field));
     // "Show all programs": leaving it untouched keeps the default (browsing = your program, searching = every program).
     $scopeLocked = ! $programName;
     $explicitProgramScope = request()->filled('scope') && $scope === 'program';
-    $first = $internships->first();
 @endphp
 
 @section('content')
@@ -43,9 +41,9 @@
         <h1>Browse internships</h1>
         <p data-internship-scope="{{ $scope }}">
             @if($scope === 'program')
-                Showing internships for your program ({{ $programName }}), best competency match first. Select a row to preview.
+                Showing internships for your program ({{ $programName }}), best competency match first. Select an internship to see its details.
             @else
-                Showing internships from all programs, best competency match first. Select a row to preview.
+                Showing internships from all programs, best competency match first. Select an internship to see its details.
             @endif
         </p>
     </div>
@@ -74,15 +72,6 @@
         <div class="sb-filter-field">
             <label for="ibSkill">Skill</label>
             <input id="ibSkill" type="text" class="form-control" name="skill" placeholder="e.g. Python" value="{{ request('skill') }}">
-        </div>
-        <div class="sb-filter-field sb-filter-field--sm">
-            <label for="ibMode">Mode</label>
-            <select id="ibMode" class="form-select" name="work_setup[]">
-                <option value="">Any</option>
-                @foreach(\App\Enums\WorkSetup::cases() as $mode)
-                    <option value="{{ $mode->value }}" @selected($selectedMode === $mode->value)>{{ $mode->label() }}</option>
-                @endforeach
-            </select>
         </div>
         <div class="sb-filter-actions">
             {{-- Filters apply as you type or choose; this button stays for browsers without JavaScript --}}
@@ -118,9 +107,9 @@
     </div>
 @else
 {{-- =========================================================
-     SPLIT VIEW: table (left) + preview (right)
+     LIST: selecting a row opens its full details in a pop-up
 ========================================================== --}}
-<div class="sb-split-table sb-split-table--wide">
+<div>
 
     <section class="card" aria-labelledby="ibListTitle">
         <h2 id="ibListTitle" class="visually-hidden">Internships</h2>
@@ -131,7 +120,6 @@
                         <th scope="col">Internship</th>
                         <th scope="col">Company</th>
                         <th scope="col">Location</th>
-                        <th scope="col">Mode</th>
                         <th scope="col">Match</th>
                         <th scope="col">Status</th>
                     </tr>
@@ -139,11 +127,11 @@
                 <tbody>
                     @foreach($internships as $internship)
                         @php $applied = $appliedInternshipIds->contains($internship->id); @endphp
-                        <tr class="sb-select-row {{ $loop->first ? 'is-selected' : '' }}" tabindex="0"
+                        <tr class="sb-select-row" tabindex="0"
                             data-internship-id="{{ $internship->id }}"
-                            aria-controls="ibPreview"
-                            aria-selected="{{ $loop->first ? 'true' : 'false' }}"
-                            aria-label="{{ $internship->title }} at {{ $internship->employer->company_name }}, {{ $internship->match_percentage }}% match. Press Enter to preview.">
+                            aria-controls="ibPreviewModal"
+                            aria-haspopup="dialog"
+                            aria-label="{{ $internship->title }} at {{ $internship->employer->company_name }}, {{ $internship->match_percentage }}% match. Press Enter for details.">
                             <td>
                                 <span class="sb-row-title">{{ $internship->title }}</span>
                                 @if($internship->requirementsList->count())
@@ -152,7 +140,6 @@
                             </td>
                             <td>{{ $internship->employer->company_name }}</td>
                             <td>{{ $internship->location ?: '—' }}</td>
-                            <td><span class="sb-tag">{{ $internship->work_setup->label() }}</span></td>
                             <td><span class="sb-tag"><span class="d-none" aria-hidden="true"></span>{{ $internship->match_percentage }}% match</span></td>
                             <td data-status-cell>
                                 @if($applied)
@@ -200,13 +187,9 @@
         </div>
     </section>
 
-    {{-- Preview panel: shows the selected row (first row by default) --}}
-    <aside class="card sb-preview" id="ibPreview" aria-label="Internship preview" aria-live="polite">
-        @include('student.internships.partials.preview', ['internship' => $first, 'applied' => $appliedInternshipIds->contains($first->id)])
-    </aside>
 </div>
 
-{{-- One preview per row; the script copies the selected one into the panel (no page reload) --}}
+{{-- Full details per row; the script copies the selected one into the pop-up (no page reload) --}}
 <div hidden>
     @foreach($internships as $internship)
         <template id="ibPreview-{{ $internship->id }}">
@@ -215,12 +198,12 @@
     @endforeach
 </div>
 
-{{-- Phones: the preview opens as a dialog --}}
-<div class="modal fade" id="ibPreviewModal" tabindex="-1" aria-label="Internship preview" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+{{-- Internship details pop-up: scrollable, full screen on phones --}}
+<div class="modal fade" id="ibPreviewModal" tabindex="-1" aria-label="Internship details" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
         <div class="modal-content sb-preview">
             <div class="modal-header">
-                <h2 class="modal-title h6">Internship preview</h2>
+                <h2 class="modal-title h6">Internship details</h2>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-0" data-preview-modal-body></div>
@@ -246,7 +229,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <label class="form-label" for="ibApplyResume">Resume to send <span class="text-danger" aria-hidden="true">*</span></label>
+                    <label class="form-label" for="ibApplyResume">Resume to send <span class="sb-req" aria-hidden="true">*</span></label>
                     <select id="ibApplyResume" name="resume_id" class="form-select" required>
                         <option value="">Choose a resume</option>
                         @foreach($resumes as $resume)
@@ -274,47 +257,27 @@
         const filterForm = document.querySelector('.sb-filterbar');
         const scopeAll = document.querySelector('[data-scope-all]');
         const scopeProgram = document.querySelector('[data-scope-program]');
-        const phone = window.matchMedia('(max-width: 767.98px)');
-        const stacked = window.matchMedia('(max-width: 1199.98px)');
 
         // "Show all programs": unticking sends scope=program; leaving it untouched keeps the default.
         scopeAll?.addEventListener('change', () => { if (scopeProgram) scopeProgram.disabled = scopeAll.checked; });
 
-        // ---------- split view: select a row, show its preview ----------
+        // ---------- select a row: its full details open in the pop-up ----------
         // Looked up on every use, because filtering replaces the results area.
         const rows = () => Array.from(document.querySelectorAll('.sb-select-row'));
         const previewFor = (id) => document.getElementById('ibPreview-' + id)?.content.cloneNode(true);
 
-        function select(row, { fromPointer = false } = {}) {
-            rows().forEach((other) => {
-                const selected = other === row;
-                other.classList.toggle('is-selected', selected);
-                other.setAttribute('aria-selected', selected ? 'true' : 'false');
-            });
+        function select(row) {
+            rows().forEach((other) => other.classList.toggle('is-selected', other === row));
             const content = previewFor(row.dataset.internshipId);
-            if (!content) return;
-
-            const previewModal = document.getElementById('ibPreviewModal');
-            if (phone.matches && previewModal && window.bootstrap) {
-                // Phones: open the preview as a dialog.
-                previewModal.querySelector('[data-preview-modal-body]').replaceChildren(content);
-                bootstrap.Modal.getOrCreateInstance(previewModal).show();
-                return;
-            }
-
-            const panel = document.getElementById('ibPreview');
-            if (!panel) return;
-            panel.replaceChildren(content);
-            // Same fade/slide as elsewhere (the "rise" keyframe); re-added so it plays on every change.
-            panel.classList.remove('is-changing');
-            void panel.offsetWidth;
-            panel.classList.add('is-changing');
-            if (stacked.matches && fromPointer) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const dialog = document.getElementById('ibPreviewModal');
+            if (!content || !dialog || !window.bootstrap) return;
+            dialog.querySelector('[data-preview-modal-body]').replaceChildren(content);
+            bootstrap.Modal.getOrCreateInstance(dialog).show();
         }
 
         document.addEventListener('click', (event) => {
             const row = event.target.closest('.sb-select-row');
-            if (row) select(row, { fromPointer: true });
+            if (row && !event.target.closest('a, button')) select(row);
         });
         document.addEventListener('keydown', (event) => {
             const row = event.target.closest?.('.sb-select-row');
@@ -328,7 +291,7 @@
                 event.preventDefault();
                 const all = rows();
                 const next = all[all.indexOf(row) + (event.key === 'ArrowDown' ? 1 : -1)];
-                if (next) { next.focus(); select(next); }
+                if (next) next.focus();
             }
         });
 
@@ -454,7 +417,7 @@
             const cell = document.querySelector('.sb-select-row[data-internship-id="' + applyingId + '"] [data-status-cell]');
             if (cell) cell.innerHTML = '<span class="sb-status sb-status--success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Applied</span>';
             const template = document.getElementById('ibPreview-' + applyingId);
-            [template?.content, document.getElementById('ibPreview'), document.getElementById('ibPreviewModal')].forEach((scope) => {
+            [template?.content, document.getElementById('ibPreviewModal')].forEach((scope) => {
                 scope?.querySelectorAll('[data-apply-id="' + applyingId + '"]').forEach((button) => button.replaceWith(appliedLink(url)));
             });
         });

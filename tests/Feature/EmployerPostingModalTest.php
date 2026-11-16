@@ -29,8 +29,8 @@ it('opens the posting form as a dialog from both buttons, keeping the create pag
         ->assertSee('role="dialog" aria-modal="true"', false)
         ->assertSee('Post New Internship')
         ->assertSee('Describe the role and the competencies you are looking for.')
-        ->assertSeeInOrder(['Title', 'Status', 'Work Setup', 'Open to programs', 'Location', 'Duration', 'Application deadline',
-            'Description', 'Responsibilities', 'General Requirements', 'Competency Requirements', 'Applicant requirements'])
+        ->assertSeeInOrder(['Title', 'Status', 'Open to programs', 'Location', 'Duration', 'Number of slots', 'Application deadline',
+            'Description', 'Responsibilities', 'Qualifications', 'Competency Requirements', 'Applicant requirements'])
         ->assertDontSee('Allowance')
         ->assertSee('form="newInternshipForm">Post Internship</button>', false)
         ->assertSee('Required')
@@ -55,7 +55,7 @@ it('returns field errors to the dialog and saves a valid posting', function () {
     $this->actingAs($user)
         ->postJson(route('employer.internships.store'), ['_modal' => 'newInternship', 'status' => 'open'], ['X-Requested-With' => 'XMLHttpRequest'])
         ->assertUnprocessable()
-        ->assertJsonValidationErrors(['title', 'description', 'work_setup']);
+        ->assertJsonValidationErrors(['title', 'description']);
 
     $this->post(route('employer.internships.store'), [
         '_modal' => 'newInternship',
@@ -143,7 +143,7 @@ it('lists postings by status with real counts and shows the selected one in the 
     $panel = postingPanel($html);
 
     expect($panel)->toContain('Web Intern')
-        ->toContain('Makati City · Hybrid · 3 months')
+        ->toContain('Makati City · 3 months')
         ->toContain('HTML &amp; CSS · Intermediate')
         ->toContain('All programs')
         ->toContain('No deadline')
