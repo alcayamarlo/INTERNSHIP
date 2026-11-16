@@ -37,6 +37,10 @@ class ResumeController extends Controller
             'linkedApplications' => $linkedApplications,
             'maxResumes' => ResumeBuilderService::MAX_GENERATED_RESUMES,
             'resumeContent' => $this->resumeContent,
+            // The resume is built from the profile, so empty profile parts mean gaps in the resume.
+            // Documents is left out: the resume itself is one of its items.
+            'profileGaps' => collect($student->profileCompletionSummary()['sections'])
+                ->except('documents')->reject(fn (array $section) => $section['complete'])->pluck('label')->all(),
         ]);
     }
 

@@ -2,16 +2,9 @@
 
 @section('title', 'Verification Queue')
 
-@push('styles')
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/coordinator-verification.css') }}?v={{ @filemtime(public_path('css/coordinator-verification.css')) }}">
-@endpush
-
 @section('content')
 <main
-    class="verification-page"
+    class="sb-dash sbx"
     id="verificationPage"
     data-base-url="{{ $verificationBaseUrl }}"
     data-students-url="{{ route('coordinator.verification.students.show', ['student' => '__student__'], false) }}"
@@ -22,70 +15,80 @@
     <x-page-header
         title="Verification Queue"
         subtitle="Review each student's submissions. Verify with one click; give a reason only when you reject."
-        eyebrow="Student submissions"
-    >
-        <p class="vq-summary" aria-label="Verification summary">
-            <span><strong id="countPending">0</strong> pending</span>
-            <span aria-hidden="true">·</span>
-            <span><strong id="countVerified">0</strong> verified</span>
-            <span aria-hidden="true">·</span>
-            <span><strong id="countRejected">0</strong> rejected</span>
-        </p>
-    </x-page-header>
+        eyebrow="Student submissions" />
 
-    <section class="card vq-card" aria-label="Student submissions">
-        <div class="verification-filters" role="search" aria-label="Filter submissions">
-            <label class="verification-search">
-                <span class="visually-hidden">Search by student name or student ID</span>
-                <i class="bi bi-search" aria-hidden="true"></i>
-                <input id="studentSearch" type="search" placeholder="Search student name or ID…" autocomplete="off">
-            </label>
+    <section class="sb-kpis" aria-label="Verification summary">
+        <div class="card sb-kpi">
+            <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+            <strong class="sb-kpi-value" id="countPending">0</strong>
+            <span class="sb-kpi-label">Pending</span>
+        </div>
+        <div class="card sb-kpi">
+            <i class="bi bi-patch-check" aria-hidden="true"></i>
+            <strong class="sb-kpi-value" id="countVerified">0</strong>
+            <span class="sb-kpi-label">Verified</span>
+        </div>
+        <div class="card sb-kpi">
+            <i class="bi bi-x-circle" aria-hidden="true"></i>
+            <strong class="sb-kpi-value" id="countRejected">0</strong>
+            <span class="sb-kpi-label">Rejected</span>
+        </div>
+    </section>
 
-            <label class="verification-program">
-                <span class="visually-hidden">Filter by program</span>
-                <select id="programFilter">
+    <div class="card sb-filterbar" role="search" aria-label="Filter submissions">
+        <div class="sb-filter-row">
+            <div class="sb-filter-field">
+                <label class="form-label" for="studentSearch">Search</label>
+                <input id="studentSearch" class="form-control" type="search" placeholder="Search student name or ID…" aria-describedby="studentSearchHelp" autocomplete="off">
+                <span id="studentSearchHelp" class="visually-hidden">Search by student name or student ID</span>
+            </div>
+            <div class="sb-filter-field">
+                <label class="form-label" for="programFilter">Program</label>
+                <select id="programFilter" class="form-select">
                     <option value="">All programs</option>
                     @foreach($programs as $program)
                         <option value="{{ $program }}">{{ $program }}</option>
                     @endforeach
                 </select>
-            </label>
-
-            <div class="filter-group" role="group" aria-label="Verification status">
-                <button type="button" class="filter-chip is-active" data-filter-group="status" data-filter-value="pending" aria-pressed="true">Pending <span class="vq-chip-count" data-status-count="pending"></span></button>
-                <button type="button" class="filter-chip" data-filter-group="status" data-filter-value="verified" aria-pressed="false">Verified <span class="vq-chip-count" data-status-count="verified"></span></button>
-                <button type="button" class="filter-chip" data-filter-group="status" data-filter-value="rejected" aria-pressed="false">Rejected <span class="vq-chip-count" data-status-count="rejected"></span></button>
-                <button type="button" class="filter-chip" data-filter-group="status" data-filter-value="all" aria-pressed="false">Everything <span class="vq-chip-count" data-status-count="all"></span></button>
-            </div>
-
-            <div class="filter-group" role="group" aria-label="Submission type">
-                <button type="button" class="filter-chip is-active" data-filter-group="type" data-filter-value="all" aria-pressed="true">All</button>
-                <button type="button" class="filter-chip" data-filter-group="type" data-filter-value="portfolio" aria-pressed="false">Portfolio</button>
             </div>
         </div>
-
-        <div class="vq-split">
-            <div class="vq-list-col">
-                <p class="vq-list-head" id="studentListLabel" aria-live="polite">Students · <span id="studentCount">0</span></p>
-                <ul class="vq-list" id="studentList" role="listbox" aria-labelledby="studentListLabel" aria-controls="studentPanel"></ul>
-                <p class="vq-list-empty" id="studentListEmpty" hidden></p>
+        <div class="sb-filter-extra">
+            <div class="sb-pill-tabs" role="group" aria-label="Verification status">
+                <button type="button" class="sb-pill-tab is-active" data-filter-group="status" data-filter-value="pending" aria-pressed="true">Pending <span class="sb-tab-count" data-status-count="pending"></span></button>
+                <button type="button" class="sb-pill-tab" data-filter-group="status" data-filter-value="verified" aria-pressed="false">Verified <span class="sb-tab-count" data-status-count="verified"></span></button>
+                <button type="button" class="sb-pill-tab" data-filter-group="status" data-filter-value="rejected" aria-pressed="false">Rejected <span class="sb-tab-count" data-status-count="rejected"></span></button>
+                <button type="button" class="sb-pill-tab" data-filter-group="status" data-filter-value="all" aria-pressed="false">Everything <span class="sb-tab-count" data-status-count="all"></span></button>
             </div>
-
-            <section class="vq-panel" id="studentPanel" aria-label="Selected student">
-                <div class="vq-panel-content" id="studentPanelContent"></div>
-                <div id="emptyQueue" class="empty-queue" hidden>
-                    <span class="empty-queue-icon"><i class="bi bi-inbox" aria-hidden="true"></i></span>
-                    <strong id="emptyQueueTitle">Nothing to review here right now.</strong>
-                    <span>Try another program or status, or clear the search.</span>
-                    <button type="button" id="clearFilters" class="clear-filters">Clear filters</button>
-                </div>
-            </section>
+            <div class="sb-pill-tabs" role="group" aria-label="Submission type">
+                <button type="button" class="sb-pill-tab is-active" data-filter-group="type" data-filter-value="all" aria-pressed="true">All</button>
+                <button type="button" class="sb-pill-tab" data-filter-group="type" data-filter-value="portfolio" aria-pressed="false">Portfolio</button>
+            </div>
         </div>
-    </section>
+    </div>
 
-    <div id="verificationToast" class="verification-toast" role="status" aria-live="polite" hidden>
-        <span id="toastMessage"></span>
-        <button type="button" id="undoAction" hidden>Undo</button>
+    <div class="sbx-split sb-layout-2">
+        <section class="card sbx-list-card" aria-labelledby="studentListLabel">
+            <p class="sb-block-title" id="studentListLabel" aria-live="polite">Students · <span id="studentCount">0</span></p>
+            <ul class="sbx-list" id="studentList" role="listbox" aria-labelledby="studentListLabel" aria-controls="studentPanel"></ul>
+            <p class="sbx-empty" id="studentListEmpty" hidden></p>
+        </section>
+
+        <section class="card sbx-detail" id="studentPanel" aria-label="Selected student">
+            <div class="sb-detail" id="studentPanelContent"></div>
+            <div id="emptyQueue" class="sb-empty" hidden>
+                <i class="bi bi-inbox" aria-hidden="true"></i>
+                <strong class="sb-empty-title" id="emptyQueueTitle">Nothing to review here right now.</strong>
+                <p>Try another program or status, or clear the search.</p>
+                <button type="button" id="clearFilters" class="btn btn-outline-secondary btn-sm">Clear filters</button>
+            </div>
+        </section>
+    </div>
+
+    <div id="verificationToast" class="toast show position-fixed bottom-0 end-0 m-3 z-3" role="status" aria-live="polite" hidden>
+        <div class="toast-body d-flex align-items-center gap-3">
+            <span id="toastMessage"></span>
+            <button type="button" id="undoAction" class="btn btn-link btn-sm p-0 ms-auto" hidden>Undo</button>
+        </div>
     </div>
 </main>
 
@@ -95,7 +98,7 @@
         <button type="button" class="btn-close" id="closeVerificationPreview" aria-label="Close preview"></button>
     </div>
     <div class="row g-3 sb-dialog-body">
-        <div class="col-lg-8" id="verificationPreviewPane"></div>
+        <div class="col-lg-8 sb-file-preview" id="verificationPreviewPane"></div>
         <dl class="col-lg-4">
             <dt>Category</dt><dd id="verificationPreviewCategory"></dd>
             <dt>Issuer</dt><dd id="verificationPreviewIssuer"></dd>
@@ -109,9 +112,9 @@
     </div>
 </dialog>
 
-<div class="drawer-backdrop" id="studentDrawerBackdrop" hidden></div>
+<div class="offcanvas-backdrop fade" id="studentDrawerBackdrop" hidden></div>
 <aside
-    class="student-drawer"
+    class="offcanvas offcanvas-end sb-drawer"
     id="studentDrawer"
     role="dialog"
     aria-modal="true"
@@ -119,36 +122,36 @@
     aria-hidden="true"
     tabindex="-1"
 >
-    <div class="drawer-header">
-        <div class="drawer-avatar" id="drawerAvatar"></div>
-        <div class="drawer-identity">
-            <h2 id="drawerName"></h2>
-            <p id="drawerStudentId"></p>
+    <div class="offcanvas-header">
+        <div class="sb-person">
+            <span class="sb-initials sb-initials--lg" id="drawerAvatar" aria-hidden="true"></span>
+            <div class="sb-person-text">
+                <h2 id="drawerName" class="h5 mb-0"></h2>
+                <small id="drawerStudentId"></small>
+            </div>
         </div>
-        <button type="button" class="drawer-close" id="closeStudentDrawer" aria-label="Close student details">
-            <i class="bi bi-x-lg" aria-hidden="true"></i>
-        </button>
+        <button type="button" class="btn-close" id="closeStudentDrawer" aria-label="Close student details"></button>
     </div>
-    <div class="drawer-body" id="drawerContent">
-        <section class="drawer-section">
-            <h3>Student profile</h3>
-            <dl class="drawer-details" id="drawerDetails"></dl>
+    <div class="offcanvas-body" id="drawerContent">
+        <section class="sb-block mt-0">
+            <h3 class="h6 mb-2">Student profile</h3>
+            <dl class="sb-fields" id="drawerDetails"></dl>
         </section>
-        <section class="drawer-section">
-            <h3 id="drawerProgressTitle">Verification progress</h3>
-            <div class="drawer-progress-track"><span id="drawerProgressBar"></span></div>
-            <p class="drawer-progress-text" id="drawerProgressText"></p>
+        <section class="sb-block">
+            <h3 class="h6 mb-2" id="drawerProgressTitle">Verification progress</h3>
+            <div class="progress progress--thin" role="progressbar" aria-labelledby="drawerProgressText"><div class="progress-bar" id="drawerProgressBar"></div></div>
+            <p class="sb-row-sub mt-2 mb-0" id="drawerProgressText"></p>
         </section>
-        <section class="drawer-section">
-            <h3>Portfolio summary</h3>
-            <dl class="drawer-details" id="drawerPortfolioStats"></dl>
+        <section class="sb-block">
+            <h3 class="h6 mb-2">Portfolio summary</h3>
+            <dl class="sb-fields" id="drawerPortfolioStats"></dl>
         </section>
-        <section class="drawer-section">
-            <h3>Submissions</h3>
-            <ul class="drawer-item-list" id="drawerItems"></ul>
+        <section class="sb-block">
+            <h3 class="h6 mb-2">Submissions</h3>
+            <ul class="sb-rows" id="drawerItems"></ul>
         </section>
-        <section class="drawer-section" id="deploymentDocumentUploadSection">
-            <h3>Upload deployment document</h3>
+        <section class="sb-block" id="deploymentDocumentUploadSection">
+            <h3 class="h6 mb-2">Upload deployment document</h3>
             <form method="POST" enctype="multipart/form-data" id="deploymentDocumentUploadForm">
                 @csrf
                 <label class="form-label" for="deploymentDocumentType">Document type</label>
@@ -159,9 +162,9 @@
                 <p class="small mt-2 mb-0" id="deploymentDocumentFeedback" role="status" aria-live="polite"></p>
             </form>
         </section>
-        <section class="drawer-section">
-            <h3>Recent activity</h3>
-            <ol class="drawer-activity-list" id="drawerActivity"></ol>
+        <section class="sb-block">
+            <h3 class="h6 mb-2">Recent activity</h3>
+            <ol class="sb-rows" id="drawerActivity"></ol>
         </section>
     </div>
 </aside>

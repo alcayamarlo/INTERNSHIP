@@ -9,9 +9,9 @@
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <h2 class="h6 mb-0"><i class="bi bi-clock" aria-hidden="true"></i> Daily Time Record</h2>
         @if($mode === 'employer' && $hasPending && ! $placement->isCleared())
-            <form method="POST" action="{{ route('employer.interns.attendance.approve-all', $placement) }}" data-confirm="Approve every pending time entry?" data-confirm-title="Approve all">
+            <form method="POST" action="{{ route('employer.interns.attendance.approve-all', $placement) }}" data-confirm-label="Approve all" data-confirm="Approve every pending time entry?" data-confirm-title="Approve all">
                 @csrf
-                <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-check2-all" aria-hidden="true"></i> Approve all pending</button>
+                <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-check2-all" aria-hidden="true"></i> Approve all pending</button>
             </form>
         @endif
     </div>
@@ -34,7 +34,7 @@
                         <td data-label="Date" class="text-nowrap"><strong>{{ $log->work_date->format('D, M d, Y') }}</strong></td>
                         <td data-label="Time" class="text-nowrap small">{{ $log->timeInLabel() }} – {{ $log->timeOutLabel() }}@if($log->break_minutes)<div class="text-muted">{{ $log->break_minutes }} min break</div>@endif</td>
                         <td data-label="Hours"><strong>{{ number_format((float) $log->hours, 2) }}</strong></td>
-                        <td data-label="Tasks" class="small sb-stack-block" style="min-width: 220px;">{{ $log->task_summary }}
+                        <td data-label="Tasks" class="small sb-stack-block sb-cell-text">{{ $log->task_summary }}
                             @if($log->reviewer_remarks)<div class="text-muted mt-1"><i class="bi bi-chat-left-text" aria-hidden="true"></i> {{ $log->reviewer_remarks }}</div>@endif
                         </td>
                         <td data-label="Status"><x-status-badge :status="$log->status" /></td>
@@ -50,12 +50,12 @@
                         @elseif($mode === 'employer')
                             <td class="text-nowrap sb-stack-block sb-stack-hide-empty">
                                 @unless($locked)
-                                    <form method="POST" action="{{ route('employer.interns.attendance.review', [$placement, $log]) }}" class="d-flex flex-column gap-1" style="min-width: 190px;">
+                                    <form method="POST" action="{{ route('employer.interns.attendance.review', [$placement, $log]) }}" class="d-flex flex-column gap-1 sb-cell-form">
                                         @csrf @method('PATCH')
                                         <input type="text" name="reviewer_remarks" class="form-control form-control-sm" placeholder="Remarks (required to reject)" maxlength="1000" aria-label="Remarks for {{ $log->work_date->format('M d') }}">
                                         <div class="d-flex gap-1">
                                             @unless($log->isApproved())
-                                                <button type="submit" name="status" value="approved" class="btn btn-sm btn-success flex-fill">Approve</button>
+                                                <button type="submit" name="status" value="approved" class="btn btn-sm btn-primary flex-fill">Approve</button>
                                             @endunless
                                             @if($log->status !== 'rejected')
                                                 <button type="submit" name="status" value="rejected" class="btn btn-sm btn-outline-danger flex-fill">Reject</button>

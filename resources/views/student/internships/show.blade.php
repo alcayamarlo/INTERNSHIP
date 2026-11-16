@@ -2,10 +2,6 @@
 
 @section('title', $internship->title)
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/student-internships.css') }}?v={{ @filemtime(public_path('css/student-internships.css')) }}">
-@endpush
-
 @php
     // Competency table: status and evidence come from the match breakdown ("why this score").
     $matchedByName = collect($matchDetails['matched_requirements'])->keyBy('name');
@@ -35,212 +31,194 @@
 @endphp
 
 @section('content')
-<div class="id-page">
-
 <x-breadcrumbs :items="[['label' => 'Dashboard', 'url' => route('student.dashboard')], ['label' => 'Internships', 'url' => route('student.internships.index')], ['label' => $internship->title]]" />
 
-{{-- =========================================================
-     HEADER
-========================================================== --}}
-<header class="id-head">
-    <div class="id-head-main">
-        <div class="id-title-row">
-            <h1>{{ $internship->title }}</h1>
-            <x-status-badge :status="$internship->status" :label="ucfirst($internship->status)" />
-            <x-verified-badge :employer="$internship->employer" class="id-verified" />
-        </div>
-        <p class="id-company"><i class="bi bi-building" aria-hidden="true"></i> {{ $internship->employer->company_name }}</p>
-    </div>
-    <div class="id-head-actions">
-        @include('partials.report-button', ['type' => 'internship', 'id' => $internship->id, 'label' => 'this posting'])
-        <a href="{{ route('student.internships.index') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to internships</a>
-    </div>
-</header>
+<x-page-header :title="$internship->title" :subtitle="$internship->employer->company_name">
+    <x-status-badge :status="$internship->status" :label="ucfirst($internship->status)" />
+    <x-verified-badge :employer="$internship->employer" />
+    @include('partials.report-button', ['type' => 'internship', 'id' => $internship->id, 'label' => 'this posting'])
+    <a href="{{ route('student.internships.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to internships</a>
+</x-page-header>
 
-<div class="id-layout">
+<div class="sb-layout-2">
+    <div class="sb-stack">
+        <section class="card" aria-label="Internship facts">
+            <div class="card-body">
+                <dl class="sb-fields sb-fields--tiles">
+                    @foreach($facts as [$icon, $label, $value])
+                        <div><dt><i class="bi {{ $icon }}" aria-hidden="true"></i>{{ $label }}</dt><dd>{{ $value }}</dd></div>
+                    @endforeach
+                </dl>
+            </div>
+        </section>
 
-    {{-- =========================================================
-         LEFT: facts and details
-    ========================================================== --}}
-    <div class="id-main">
-
-        <dl class="ib-card id-facts" aria-label="Internship facts">
-            @foreach($facts as [$icon, $label, $value])
-                <div class="id-fact">
-                    <i class="bi {{ $icon }}" aria-hidden="true"></i>
-                    <div>
-                        <dt>{{ $label }}</dt>
-                        <dd>{{ $value }}</dd>
-                    </div>
+        <article class="card" id="applicationCard">
+            <div class="card-body">
+                <div class="sb-grid {{ $internship->requirements ? 'sb-grid--2' : '' }}">
+                    <section class="sb-block">
+                        <h2>Description</h2>
+                        <p>{!! nl2br(e($internship->description)) !!}</p>
+                    </section>
+                    @if($internship->requirements)
+                        <section class="sb-block">
+                            <h2>General requirements</h2>
+                            <p>{!! nl2br(e($internship->requirements)) !!}</p>
+                        </section>
+                    @endif
                 </div>
-            @endforeach
-        </dl>
 
-        <article class="ib-card id-content" id="applicationCard">
-            <div class="id-two-col {{ $internship->requirements ? '' : 'is-single' }}">
-                <section>
-                    <h2>Description</h2>
-                    <p>{!! nl2br(e($internship->description)) !!}</p>
-                </section>
-                @if($internship->requirements)
-                    <section>
-                        <h2>General requirements</h2>
-                        <p>{!! nl2br(e($internship->requirements)) !!}</p>
+                @if($responsibilities->isNotEmpty())
+                    <section class="sb-block">
+                        <h2>Responsibilities</h2>
+                        <ul>
+                            @foreach($responsibilities as $line)
+                                <li>{{ $line }}</li>
+                            @endforeach
+                        </ul>
+                    </section>
+                @endif
+
+                @if($internship->requirementsList->count())
+                    <section class="sb-block">
+                        <h2>Competency requirements</h2>
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <thead>
+                                    <tr><th scope="col">Skill</th><th scope="col">Required level</th><th scope="col">Your evidence</th><th scope="col">Status</th></tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($internship->requirementsList as $req)
+                                        @php
+                                            $met = $matchedByName->has($req->requirement_name);
+                                            $missing = $missingByName->get($req->requirement_name);
+                                        @endphp
+                                        <tr>
+                                            <td class="fw-semibold">{{ $req->requirement_name }}</td>
+                                            <td>{{ $levelLabel($req->required_level) }}</td>
+                                            <td>{{ $met ? 'Meets the required level.' : ($missing['reason_label'] ?? 'No evidence added for this skill yet.') }}</td>
+                                            <td>
+                                                @if($met)
+                                                    <span class="sb-status sb-status--success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Met</span>
+                                                @else
+                                                    <span class="sb-status sb-status--neutral"><i class="bi bi-x-circle" aria-hidden="true"></i> Not met</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </section>
                 @endif
             </div>
-
-            @if($responsibilities->isNotEmpty())
-                <section class="id-section">
-                    <h2>Responsibilities</h2>
-                    <ul class="id-bullets">
-                        @foreach($responsibilities as $line)
-                            <li>{{ $line }}</li>
-                        @endforeach
-                    </ul>
-                </section>
-            @endif
-
-            @if($internship->requirementsList->count())
-                <section class="id-section">
-                    <h2>Competency requirements</h2>
-                    <div class="table-responsive">
-                        <table class="table align-middle id-table">
-                            <thead>
-                                <tr><th scope="col">Skill</th><th scope="col">Required level</th><th scope="col">Your evidence</th><th scope="col">Status</th></tr>
-                            </thead>
-                            <tbody>
-                                @foreach($internship->requirementsList as $req)
-                                    @php
-                                        $met = $matchedByName->has($req->requirement_name);
-                                        $missing = $missingByName->get($req->requirement_name);
-                                    @endphp
-                                    <tr>
-                                        <td class="fw-semibold">{{ $req->requirement_name }}</td>
-                                        <td>{{ $levelLabel($req->required_level) }}</td>
-                                        <td class="id-evidence">{{ $met ? 'Meets the required level.' : ($missing['reason_label'] ?? 'No evidence added for this skill yet.') }}</td>
-                                        <td>
-                                            @if($met)
-                                                <span class="id-pill id-pill--ok"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Met</span>
-                                            @else
-                                                <span class="id-pill id-pill--no"><i class="bi bi-x-circle" aria-hidden="true"></i> Not met</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-            @endif
         </article>
     </div>
 
-    {{-- =========================================================
-         RIGHT: match score, application, feedback (sticky)
-    ========================================================== --}}
-    <aside class="id-side" aria-label="Your match and application">
-
-        {{-- Match score --}}
-        <section class="ib-card id-card" aria-labelledby="idMatchTitle" id="matchBreakdown">
-            <h2 class="id-card-label" id="idMatchTitle">Your match score</h2>
-            {{-- data-count-up: the app's existing number count-up (resources/js/app.js), skipped with reduced motion --}}
-            <div class="id-score"><span data-count-up="{{ $matchPercentage }}">{{ $matchPercentage }}</span>%</div>
-            <div class="progress id-progress" role="progressbar" aria-label="Match score" aria-valuenow="{{ $matchPercentage }}" aria-valuemin="0" aria-valuemax="100">
-                <div class="progress-bar" style="width: {{ $matchPercentage }}%"></div>
-            </div>
-            <p class="id-why"><strong>Why this score:</strong> {{ $matchDetails['explanation'] }}</p>
-
-            @if(count($matchDetails['missing_requirements']))
-                <h3 class="id-subhead">Missing competencies</h3>
-                <ul class="id-missing">
-                    @foreach($matchDetails['missing_requirements'] as $item)
-                        <li><i class="bi bi-x-circle" aria-hidden="true"></i> <span>{{ $item['name'] }} <small>({{ $item['required_level'] }} required)</small></span></li>
-                    @endforeach
-                </ul>
-            @endif
-            @if($matchDetails['total_requirements'] > 0 && count($matchDetails['missing_requirements']))
-                <a href="{{ route('student.competencies.index', ['add' => 1]) }}" class="btn btn-outline-primary w-100"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add or update a certificate</a>
-            @endif
-        </section>
-
-        {{-- Application status --}}
-        <section class="ib-card id-card" aria-labelledby="idApplyTitle" data-apply-card>
-            <h2 class="id-card-label" id="idApplyTitle">Application</h2>
-            @if($requestedDocumentNames->isNotEmpty())
-                <p class="id-note"><i class="bi bi-person-vcard" aria-hidden="true"></i> This company asks applicants for: {{ $requestedDocumentNames->implode(', ') }}. {{ $hasApplied ? 'Upload them' : 'After you apply, upload them' }} on your <a href="{{ route('student.profile.edit') }}#documents">Documents tab</a>.</p>
-            @endif
-
-            @if($hasApplied)
-                <div class="id-notice id-notice--ok"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> You have already applied to this internship.</div>
-                <a href="{{ route('student.applications.index') }}" class="btn btn-primary w-100">View my applications</a>
-            @elseif($hasOjt)
-                <div class="id-notice" data-has-ojt><i class="bi bi-lock-fill" aria-hidden="true"></i> {{ \App\Services\ApplicationService::HAS_OJT_MESSAGE }}</div>
-                <a href="{{ route('student.ojt.index') }}" class="btn btn-outline-primary w-100">Go to My OJT</a>
-            @elseif(! $internship->isAcceptingApplications())
-                <div class="id-notice">{{ $internship->expires_at && $internship->expires_at->isPast() ? 'This internship posting has expired and is no longer accepting applications.' : 'This internship is no longer accepting applications.' }}</div>
-            @elseif($eligibilityReasons !== [])
-                <div class="id-notice id-notice--warn">
-                    <strong>You are not yet eligible to apply.</strong>
-                    <ul>
-                        @foreach($eligibilityReasons as $reason)
-                            <li>{{ $reason }}</li>
-                        @endforeach
-                    </ul>
+    <aside class="sb-stack" aria-label="Your match and application">
+        <section class="card" aria-labelledby="idMatchTitle" id="matchBreakdown">
+            <div class="card-header"><h2 id="idMatchTitle">Your match score</h2></div>
+            <div class="card-body sb-stack sb-stack--tight">
+                {{-- data-count-up: the app's existing number count-up (resources/js/app.js), skipped with reduced motion --}}
+                <div class="sb-stat-value"><span data-count-up="{{ $matchPercentage }}">{{ $matchPercentage }}</span>%</div>
+                <div class="progress progress--thin" role="progressbar" aria-label="Match score" aria-valuenow="{{ $matchPercentage }}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar" style="width: {{ $matchPercentage }}%"></div>
                 </div>
-            @elseif($needsCharacterReference)
-                <div class="id-notice id-notice--warn">This internship requires at least one character reference. <a href="{{ route('student.profile.edit') }}#references">Add a reference</a>, then come back to apply.</div>
-            @elseif($resumes->isEmpty())
-                <p class="id-muted">Create a resume before applying.</p>
-                <a href="{{ route('student.resume.index') }}" class="btn btn-outline-primary w-100">Manage my resumes</a>
-            @else
-                <p class="id-muted">Pick a resume and add an optional cover letter.</p>
-                <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#idApplyModal"><i class="bi bi-send" aria-hidden="true"></i> Apply</button>
-            @endif
+                <p class="sb-note"><strong>Why this score:</strong> {{ $matchDetails['explanation'] }}</p>
+
+                @if(count($matchDetails['missing_requirements']))
+                    <div>
+                        <h3 class="sb-block-title">Missing competencies</h3>
+                        <ul class="sb-checks">
+                            @foreach($matchDetails['missing_requirements'] as $item)
+                                <li><i class="bi bi-x-circle" aria-hidden="true"></i> <span>{{ $item['name'] }} <small class="text-muted">({{ $item['required_level'] }} required)</small></span></li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+                @if($matchDetails['total_requirements'] > 0 && count($matchDetails['missing_requirements']))
+                    <a href="{{ route('student.competencies.index', ['add' => 1]) }}" class="btn btn-outline-primary w-100"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add or update a certificate</a>
+                @endif
+            </div>
         </section>
 
-        {{-- Recommendation feedback (collapsed once saved) --}}
-        <section class="ib-card id-card" aria-labelledby="idFeedbackTitle">
-            <h2 class="id-card-label" id="idFeedbackTitle">Recommendation feedback</h2>
-            @if($recommendationFeedback)
-                <span class="id-pill {{ $recommendationFeedback->feedback === 'helpful' ? 'id-pill--ok' : 'id-pill--no' }}">
-                    <i class="bi {{ $recommendationFeedback->feedback === 'helpful' ? 'bi-hand-thumbs-up-fill' : 'bi-hand-thumbs-down-fill' }}" aria-hidden="true"></i>
-                    Marked {{ $recommendationFeedback->feedback === 'helpful' ? 'helpful' : 'not helpful' }}
-                </span>
-                @if($recommendationFeedback->comment)
-                    <p class="id-muted id-comment">“{{ $recommendationFeedback->comment }}”</p>
+        <section class="card" aria-labelledby="idApplyTitle" data-apply-card>
+            <div class="card-header"><h2 id="idApplyTitle">Application</h2></div>
+            <div class="card-body sb-stack sb-stack--tight" data-apply-body>
+                @if($requestedDocumentNames->isNotEmpty())
+                    <p class="sb-note"><i class="bi bi-person-vcard" aria-hidden="true"></i> This company asks applicants for: {{ $requestedDocumentNames->implode(', ') }}. {{ $hasApplied ? 'Upload them' : 'After you apply, upload them' }} on your <a href="{{ route('student.profile.edit') }}#documents">Documents tab</a>.</p>
                 @endif
-            @endif
 
-            <details class="id-feedback" @if($feedbackOpen) open @endif>
-                <summary>{{ $recommendationFeedback ? 'Edit feedback' : 'Rate this recommendation' }}</summary>
-                <form method="POST" action="{{ route('student.internships.recommendation-feedback', $internship) }}">
-                    @csrf
-                    <fieldset class="mb-3">
-                        <legend class="form-label">Was this recommendation helpful?</legend>
-                        <div class="id-choice">
-                            <input type="radio" class="btn-check" name="feedback" id="idFeedbackHelpful" value="helpful" @checked(old('feedback', $recommendationFeedback?->feedback) === 'helpful')>
-                            <label class="btn btn-outline-success" for="idFeedbackHelpful"><i class="bi bi-hand-thumbs-up" aria-hidden="true"></i> Helpful</label>
-                            <input type="radio" class="btn-check" name="feedback" id="idFeedbackNot" value="not_helpful" @checked(old('feedback', $recommendationFeedback?->feedback) === 'not_helpful')>
-                            <label class="btn btn-outline-danger" for="idFeedbackNot"><i class="bi bi-hand-thumbs-down" aria-hidden="true"></i> Not helpful</label>
-                        </div>
-                        @error('feedback')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
-                    </fieldset>
-                    <div class="mb-3">
-                        <label class="form-label" for="idFeedbackComment">Comment <span class="id-muted">(optional)</span></label>
-                        <textarea class="form-control @error('comment') is-invalid @enderror" id="idFeedbackComment" name="comment" rows="3" placeholder="Share why this recommendation was helpful or not helpful...">{{ old('comment', $recommendationFeedback?->comment) }}</textarea>
-                        @error('comment')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                @if($hasApplied)
+                    <div class="sb-callout"><p><i class="bi bi-check-circle-fill" aria-hidden="true"></i> You have already applied to this internship.</p></div>
+                    <a href="{{ route('student.applications.index') }}" class="btn btn-primary w-100">View my applications</a>
+                @elseif($hasOjt)
+                    <div class="sb-callout" data-has-ojt><p><i class="bi bi-lock-fill" aria-hidden="true"></i> {{ \App\Services\ApplicationService::HAS_OJT_MESSAGE }}</p></div>
+                    <a href="{{ route('student.ojt.index') }}" class="btn btn-outline-primary w-100">Go to My OJT</a>
+                @elseif(! $internship->isAcceptingApplications())
+                    <div class="sb-callout"><p>{{ $internship->expires_at && $internship->expires_at->isPast() ? 'This internship posting has expired and is no longer accepting applications.' : 'This internship is no longer accepting applications.' }}</p></div>
+                @elseif($eligibilityReasons !== [])
+                    <div class="sb-callout">
+                        <h3>You are not yet eligible to apply.</h3>
+                        <ul>
+                            @foreach($eligibilityReasons as $reason)
+                                <li>{{ $reason }}</li>
+                            @endforeach
+                        </ul>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-star" aria-hidden="true"></i> Save feedback</button>
-                </form>
-            </details>
+                @elseif($needsCharacterReference)
+                    <div class="sb-callout"><p>This internship requires at least one character reference. <a href="{{ route('student.profile.edit') }}#references">Add a reference</a>, then come back to apply.</p></div>
+                @elseif($resumes->isEmpty())
+                    <p class="sb-note">Create a resume before applying.</p>
+                    <a href="{{ route('student.resume.index') }}" class="btn btn-outline-primary w-100">Manage my resumes</a>
+                @else
+                    <p class="sb-note" data-apply-hint>Pick a resume and add an optional cover letter.</p>
+                    <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#idApplyModal"><i class="bi bi-send" aria-hidden="true"></i> Apply</button>
+                @endif
+            </div>
+        </section>
+
+        <section class="card" aria-labelledby="idFeedbackTitle">
+            <div class="card-header"><h2 id="idFeedbackTitle">Recommendation feedback</h2></div>
+            <div class="card-body sb-stack sb-stack--tight">
+                @if($recommendationFeedback)
+                    @php $helpful = $recommendationFeedback->feedback === 'helpful'; @endphp
+                    <p>
+                        <span class="sb-status {{ $helpful ? 'sb-status--success' : 'sb-status--neutral' }}">
+                            <i class="bi {{ $helpful ? 'bi-hand-thumbs-up-fill' : 'bi-hand-thumbs-down-fill' }}" aria-hidden="true"></i>
+                            Marked {{ $helpful ? 'helpful' : 'not helpful' }}
+                        </span>
+                    </p>
+                    @if($recommendationFeedback->comment)
+                        <p class="sb-note">“{{ $recommendationFeedback->comment }}”</p>
+                    @endif
+                @endif
+
+                <details class="sb-disclosure" @if($feedbackOpen) open @endif>
+                    <summary>{{ $recommendationFeedback ? 'Edit feedback' : 'Rate this recommendation' }}</summary>
+                    <form method="POST" action="{{ route('student.internships.recommendation-feedback', $internship) }}">
+                        @csrf
+                        <fieldset class="mb-3">
+                            <legend class="form-label">Was this recommendation helpful?</legend>
+                            <div class="sb-choice-pills">
+                                <label class="sb-choice-pill"><input type="radio" name="feedback" id="idFeedbackHelpful" value="helpful" @checked(old('feedback', $recommendationFeedback?->feedback) === 'helpful')><span><i class="bi bi-hand-thumbs-up" aria-hidden="true"></i>&nbsp;Helpful</span></label>
+                                <label class="sb-choice-pill"><input type="radio" name="feedback" id="idFeedbackNot" value="not_helpful" @checked(old('feedback', $recommendationFeedback?->feedback) === 'not_helpful')><span><i class="bi bi-hand-thumbs-down" aria-hidden="true"></i>&nbsp;Not helpful</span></label>
+                            </div>
+                            @error('feedback')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        </fieldset>
+                        <div class="mb-3">
+                            <label class="form-label" for="idFeedbackComment">Comment <span class="text-muted">(optional)</span></label>
+                            <textarea class="form-control @error('comment') is-invalid @enderror" id="idFeedbackComment" name="comment" rows="3" placeholder="Share why this recommendation was helpful or not helpful...">{{ old('comment', $recommendationFeedback?->comment) }}</textarea>
+                            @error('comment')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-star" aria-hidden="true"></i> Save feedback</button>
+                    </form>
+                </details>
+            </div>
         </section>
     </aside>
 </div>
 
-{{-- =========================================================
-     APPLY: resume + optional cover letter (shared AJAX handler in resources/js/app.js)
-========================================================== --}}
+{{-- Apply: resume + optional cover letter (shared AJAX handler in resources/js/app.js) --}}
 @if($canApply)
     <div class="modal fade" id="idApplyModal" tabindex="-1" aria-labelledby="idApplyModalTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -249,22 +227,22 @@
                 <div class="modal-header">
                     <div>
                         <h2 class="modal-title h5" id="idApplyModalTitle">Apply to {{ $internship->title }}</h2>
-                        <p class="id-muted mb-0">{{ $internship->employer->company_name }}</p>
+                        <p class="sb-note mb-0">{{ $internship->employer->company_name }}</p>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label" for="application-resume">Resume <span class="text-danger" aria-hidden="true">*</span></label>
+                        <label class="form-label" for="application-resume">Resume <span class="sb-req" aria-hidden="true">*</span></label>
                         <select class="form-select" id="application-resume" name="resume_id" required>
                             <option value="">Choose a resume</option>
                             @foreach($resumes as $resume)
-                                <option value="{{ $resume->id }}">{{ $resume->category?->label() ?? 'Resume' }}{{ $resume->generated_at ? ' · '.$resume->generated_at->format('M Y') : '' }}</option>
+                                <option value="{{ $resume->id }}" @selected($resumes->count() === 1)>{{ $resume->category?->label() ?? 'Resume' }}{{ $resume->generated_at ? ' · '.$resume->generated_at->format('M Y') : '' }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div>
-                        <label class="form-label" for="application-cover-letter">Cover letter <span class="id-muted">(optional)</span></label>
+                        <label class="form-label" for="application-cover-letter">Cover letter <span class="text-muted">(optional)</span></label>
                         <textarea class="form-control" id="application-cover-letter" name="cover_letter" rows="5" placeholder="Tell the employer why you're a great fit...">{{ old('cover_letter') }}</textarea>
                     </div>
                     <div data-application-feedback class="small mt-2" role="status" aria-live="polite"></div>
@@ -277,25 +255,23 @@
         </div>
     </div>
 @endif
-
-</div>
 @endsection
 
 @push('scripts')
 <script>
     // Applied from the dialog: the Application card switches to the "already applied" state.
     document.getElementById('idApplyModal')?.addEventListener('sb:application-submitted', (event) => {
-        const card = document.querySelector('[data-apply-card]');
-        if (!card) return;
-        card.querySelectorAll('.id-muted, [data-bs-target="#idApplyModal"]').forEach((element) => element.remove());
+        const body = document.querySelector('[data-apply-body]');
+        if (!body) return;
+        body.querySelectorAll('[data-apply-hint], [data-bs-target="#idApplyModal"]').forEach((element) => element.remove());
         const notice = document.createElement('div');
-        notice.className = 'id-notice id-notice--ok';
-        notice.innerHTML = '<i class="bi bi-check-circle-fill" aria-hidden="true"></i> You have already applied to this internship.';
+        notice.className = 'sb-callout';
+        notice.innerHTML = '<p><i class="bi bi-check-circle-fill" aria-hidden="true"></i> You have already applied to this internship.</p>';
         const link = document.createElement('a');
         link.className = 'btn btn-primary w-100';
         link.href = event.detail?.applications_url || @json(route('student.applications.index'));
         link.textContent = 'View my applications';
-        card.append(notice, link);
+        body.append(notice, link);
     });
 </script>
 @endpush

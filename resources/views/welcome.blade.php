@@ -1,5 +1,5 @@
 @php
-    // Photo for the CTA background (public/images/landing/cta-bg.*). Other slots use partials.landing-media.
+    // Photo for the CTA background (public/images/landing/cta-bg.*).
     $ctaImg = null;
     foreach (['images/landing', 'images'] as $dir) {
         foreach (['webp', 'jpg', 'jpeg', 'png'] as $ext) {
@@ -34,18 +34,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>SkillBridge — St. Cecilia's College</title>
     <meta name="description" content="SkillBridge connects students, coordinators, and employers around internship readiness and verified competencies.">
-    <meta name="theme-color" content="#E11D2E">
+    <meta name="theme-color" content="#7A010E">
     <meta property="og:type" content="website">
     <meta property="og:title" content="SkillBridge — St. Cecilia's College">
     <meta property="og:description" content="Internship readiness and verified competencies for students, coordinators, and employers.">
-    <meta property="og:image" content="{{ asset('images/brand/skillbridge-logo-icon-512.png') }}?v=2">
+    <meta property="og:image" content="{{ asset('images/brand/stcc-logo.png') }}?v=1">
     <meta name="twitter:card" content="summary">
-    <link rel="icon" type="image/svg+xml" href="{{ asset('images/brand/favicon.svg') }}?v=2">
-    <link rel="icon" href="{{ asset('images/brand/favicon.ico') }}?v=2" sizes="any">
-    <link rel="apple-touch-icon" href="{{ asset('images/brand/apple-touch-icon.png') }}?v=2">
+    <link rel="icon" type="image/png" href="{{ asset('images/brand/stcc-logo.png') }}?v=1">
+    <link rel="apple-touch-icon" href="{{ asset('images/brand/stcc-logo.png') }}?v=1">
     <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}?v={{ @filemtime(public_path('css/skillbridge-ui.css')) }}">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}?v={{ @filemtime(public_path('js/skillbridge-ui.js')) }}"></script>
-    <script defer src="{{ asset('js/sb-job-board.js') }}?v=1"></script>
     <link rel="stylesheet" href="{{ asset('css/skillbridge-public.css') }}?v=15">
     @include('partials.public-theme-head')
     <link rel="stylesheet" href="{{ asset('css/sb-eye-comfort.css') }}?v={{ @filemtime(public_path('css/sb-eye-comfort.css')) }}">
@@ -54,14 +52,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,500&family=Manrope:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="{{ asset('css/sb-glass.css') }}?v={{ @filemtime(public_path('css/sb-glass.css')) }}">
+    {{-- Brand colors only (white / burgundy / black); the landing layout and fonts are unchanged. --}}
+    <link rel="stylesheet" href="{{ asset('css/sb-tokens.css') }}?v={{ @filemtime(public_path('css/sb-tokens.css')) }}">
     <script defer src="{{ asset('js/sb-hero.js') }}?v={{ @filemtime(public_path('js/sb-hero.js')) }}"></script>
 </head>
 <body class="skillbridge-public sb-glass">
     <div class="public-page">
         <nav class="sb-sticky-nav" data-sticky-nav aria-label="Sections">
-            <a class="sb-sticky-brand" href="#top" aria-label="SkillBridge, back to the top"><span class="public-brand-mark" aria-hidden="true"><img src="{{ asset('images/brand/skillbridge-logo-icon.svg') }}?v=2" alt="" width="36" height="36"></span><strong>SkillBridge</strong></a>
+            <a class="sb-sticky-brand" href="#top" aria-label="SkillBridge, back to the top"><span class="public-brand-mark" aria-hidden="true"><img class="sb-seal" src="{{ asset('images/brand/stcc-logo.png') }}?v=1" alt="St. Cecilia's College-Cebu logo" width="36" height="36"></span><strong>SkillBridge</strong></a>
             <div class="sb-sticky-links"><a href="#top">Home</a><a href="#how-it-works">How it works</a><a href="#about">About</a><a href="{{ route('internships.index') }}">Internships</a><a href="#audiences">Who it's for</a><a href="#questions">FAQs</a></div>
-            <a class="sb-sticky-login" href="{{ route('login') }}">Log in</a>
+            <a class="sb-sticky-login" href="{{ route('login') }}">Sign in</a>
         </nav>
         <main id="main-content">
             <section class="public-hero sb-hero" id="top" aria-labelledby="hero-heading">
@@ -206,11 +206,11 @@
                         <div class="sb-stage3d">
                             <div class="sb-stage">
                                 <svg viewBox="0 0 1240 520" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Stylised arch bridge that is built in three stages" focusable="false">
-                                    <rect width="1240" height="520" fill="#e3e8f5"/>
-                                    <rect y="368" width="1240" height="152" fill="#c9d1e8"/>
+                                    <rect width="1240" height="520" fill="#F8EDEF"/>
+                                    <rect y="368" width="1240" height="152" fill="#F1D9DD"/>
                                     <g class="sb-g1"><g fill="#0b0d12"><path d="M258 262h66l-8 150h-50z"/><path d="M916 262h66l-8 150h-50z"/></g><g fill="#4a4f5c"><rect x="200" y="246" width="320" height="18"/><rect x="720" y="246" width="320" height="18"/></g></g>
                                     <g class="sb-g2"><path d="M290 244 Q620 -70 950 244" fill="none" stroke="#0b0d12" stroke-width="12" stroke-linecap="round"/><g stroke="#4a4f5c" stroke-width="3"><path d="M352 244V136M416 244V86M480 244V54M744 244V54M808 244V86M872 244V136"/></g></g>
-                                    <g class="sb-g3"><rect x="520" y="246" width="200" height="18" fill="#d92d3a"/><g stroke="#d92d3a" stroke-width="3"><path d="M560 244V44M620 244V36M680 244V44"/></g></g>
+                                    <g class="sb-g3"><rect x="520" y="246" width="200" height="18" fill="#7A010E"/><g stroke="#7A010E" stroke-width="3"><path d="M560 244V44M620 244V36M680 244V44"/></g></g>
                                     <path d="M240 440H1000" stroke="#fff" stroke-width="2" opacity=".5"/>
                                 </svg>
                             </div>
@@ -312,7 +312,7 @@
         @include('partials.public-footer', ['base' => ''])
 
         <div class="public-mobile-cta" data-mobile-cta>
-            <a class="public-button public-button-primary" href="{{ route('login') }}">Log in</a>
+            <a class="public-button public-button-primary" href="{{ route('login') }}">Sign in</a>
         </div>
     </div>
     @include('partials.auth-modal')

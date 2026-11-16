@@ -43,7 +43,7 @@ enum UserRole: string
             self::Admin => 'Administrator',
             self::Student => 'Student',
             self::Employer => 'Employer',
-            self::Coordinator => 'Institution Coordinator',
+            self::Coordinator => 'Coordinator',
         };
     }
 

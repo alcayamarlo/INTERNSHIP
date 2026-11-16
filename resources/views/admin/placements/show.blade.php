@@ -8,6 +8,7 @@
 </x-page-header>
 
 @include('ojt.partials.progress', ['placement' => $placement, 'showStudent' => true])
+@include('ojt.partials.appraisals', ['placement' => $placement, 'mode' => 'readonly'])
 @include('ojt.partials.evaluation', ['placement' => $placement])
 @include('ojt.partials.attendance', ['placement' => $placement, 'mode' => 'readonly'])
 @include('ojt.partials.journals', ['placement' => $placement, 'mode' => 'readonly'])

@@ -1,0 +1,163 @@
+/* =========================================================================================
+   SkillBridge brand tokens: white, burgundy and black only. COLORS ONLY (no layout or type),
+   so the public landing site can load this file on its own. The app also loads sb-theme.css.
+
+   Every older color variable (--sb-*, Bootstrap --bs-*) is pointed at these tokens, so pages
+   that still use the old names follow the brand in both light and dark mode.
+   Specificity: html:root:root:root:root[...] body beats every older definition (max 0,4,1).
+   ========================================================================================= */
+
+/* ---------- Brand tokens: light (default) ---------- */
+html:root:root:root:root,
+html:root:root:root:root body {
+    --burgundy: #7A010E;          /* fills: primary buttons, active nav, progress, badges */
+    --burgundy-text: #7A010E;     /* burgundy used as text: links, key numbers */
+    --burgundy-hover: #5E010B;
+    --burgundy-tint: #F8EDEF;     /* icon tiles, soft chips, table header rows */
+    --burgundy-tint-text: #7A010E;
+    --burgundy-border: #F1D9DD;
+    --black: #000000;
+    --bg: #FFFFFF;
+    --surface: #FFFFFF;
+    --surface-alt: #FAF5F6;       /* inner panels */
+    --line: #ECECEE;
+    --text: #000000;
+    --muted: #6B6B72;
+    --on-burgundy: #FFFFFF;
+    --solid-bg: #000000;          /* solid chip (Ongoing/Active), avatar */
+    --solid-text: #FFFFFF;
+    --chart-4: #3A3A40;
+    --chart-5: #A0A0A6;
+    --shadow-card: 0 10px 30px rgba(0, 0, 0, .04);
+    --shadow-pop: 0 18px 40px rgba(0, 0, 0, .08);
+    --shadow-active: 0 8px 18px color-mix(in srgb, var(--burgundy) 28%, transparent);
+    --focus-ring: 0 0 0 3px color-mix(in srgb, var(--burgundy) 32%, transparent);
+    color-scheme: light;
+}
+
+/* ---------- Brand tokens: dark ---------- */
+html:root:root:root:root[data-theme="dark"],
+html:root:root:root:root[data-theme="dark"] body {
+    /* Burgundy fills stay #7A010E. Burgundy as text is #DA5C70 (the spec's #D0485F is 4.18:1 on
+       cards; #DA5C70 keeps 4.5:1+ on every dark surface). */
+    --burgundy-text: #DA5C70;
+    --burgundy-hover: #940214;
+    --burgundy-tint: #2A0F14;
+    --burgundy-tint-text: #F0B6BF;
+    --burgundy-border: #4A1C24;
+    --black: #F4F4F5;
+    --bg: #0A0A0B;
+    --surface: #141416;
+    --surface-alt: #1B1B1E;
+    --line: #26262A;
+    --text: #F4F4F5;
+    --muted: #A0A0A6;
+    --solid-bg: #F4F4F5;
+    --solid-text: #0A0A0B;
+    --chart-4: #C9C9CE;
+    --chart-5: #6B6B72;
+    --shadow-card: 0 10px 30px rgba(0, 0, 0, .35);
+    --shadow-pop: 0 18px 40px rgba(0, 0, 0, .5);
+    color-scheme: dark;
+}
+
+/* ---------- Older variables -> brand tokens (both modes; tokens switch by theme) ---------- */
+html:root:root:root:root body,
+html:root:root:root:root[data-theme="dark"] body {
+    /* accent */
+    --sb-red: var(--burgundy); --sb-red-deep: var(--burgundy); --sb-red-60: var(--burgundy); --sb-red-60-deep: var(--burgundy);
+    --sb-brand: var(--burgundy); --sb-brand-700: var(--burgundy); --sb-brand-deep: var(--burgundy);
+    --sb-cyan: var(--burgundy); --sb-cyan-dark: var(--burgundy);
+    --sb-danger-solid: var(--burgundy); --sb-danger-solid-deep: var(--burgundy-hover);
+    --sb-brand-content: var(--burgundy-text); --sb-danger-ink: var(--burgundy-text); --sb-bad-ink: var(--burgundy-text);
+    --sb-warning-ink: var(--burgundy-text); --sb-warn-ink: var(--burgundy-text); --sb-yellow: var(--burgundy-text);
+    --sb-red-soft: var(--burgundy-tint); --sb-brand-soft: var(--burgundy-tint); --sb-cyan-soft: var(--burgundy-tint);
+    --sb-red-60-tint-1: var(--burgundy-tint); --sb-red-60-tint-2: var(--burgundy-tint); --sb-red-60-tint-3: var(--burgundy-border);
+    --sb-danger-bg: var(--burgundy-tint); --sb-bad-bg: var(--burgundy-tint); --sb-warning-bg: var(--burgundy-tint); --sb-warn-bg: var(--burgundy-tint);
+    --sb-danger-border: var(--burgundy-border); --sb-warning-border: var(--burgundy-border); --sb-cyan-border: var(--burgundy-border);
+    --sb-red-ring: color-mix(in srgb, var(--burgundy) 32%, transparent);
+    --sb-brand-ring: color-mix(in srgb, var(--burgundy) 32%, transparent);
+    --sb-focus: color-mix(in srgb, var(--burgundy) 40%, transparent);
+    /* success / info are neutral (black and gray), never green or blue */
+    --sb-success-ink: var(--text); --sb-ok-ink: var(--text); --sb-green: var(--text); --sb-blue: var(--text);
+    --sb-info-ink: var(--text); --sb-purple: var(--muted);
+    --sb-success-bg: var(--surface-alt); --sb-ok-bg: var(--surface-alt); --sb-info-bg: var(--surface-alt);
+    --sb-success-border: var(--line); --sb-info-border: var(--line);
+    --sb-success-solid: var(--solid-bg); --sb-success-solid-deep: var(--solid-bg); --sb-success-solid-ink: var(--solid-text);
+    /* surfaces and text */
+    --sb-canvas: var(--bg); --sb-bg: var(--bg); --sb-bg-deep: var(--bg);
+    --sb-surface: var(--surface); --sb-card: var(--surface);
+    --sb-surface-raised: var(--surface-alt); --sb-card-light: var(--surface-alt); --sb-surface-soft: var(--surface-alt);
+    --sb-hover-neutral: var(--surface-alt); --sb-row-hover: var(--surface-alt);
+    --sb-ink: var(--text); --sb-text: var(--text); --sb-text-soft: var(--text);
+    --sb-muted: var(--muted); --sb-grey-secondary: var(--muted);
+    --sb-border: var(--line); --sb-chart-grid: var(--line); --sb-input-border: var(--line); --sb-control-border: var(--line);
+    --sb-track: var(--burgundy-tint);
+    --sb-shadow: var(--shadow-card); --sb-card-shadow: var(--shadow-card); --sb-shadow-sm: 0 1px 2px rgba(0, 0, 0, .04);
+    --sb-hover-shadow: var(--shadow-pop); --sb-lift-shadow: var(--shadow-pop);
+    --sb-sidebar: var(--surface); --sb-sidebar-2: var(--surface); --sb-sidebar-ink: var(--text); --sb-sidebar-muted: var(--muted);
+    --sb-side-1: var(--surface); --sb-side-2: var(--surface); --sb-side-3: var(--surface); --sb-side-deep: var(--surface); --sb-side-ring: var(--line);
+
+    /* Bootstrap */
+    --bs-body-bg: var(--bg);
+    --bs-body-color: var(--text);
+    --bs-emphasis-color: var(--text);
+    --bs-secondary-color: var(--muted);
+    --bs-tertiary-color: var(--muted);
+    --bs-secondary-bg: var(--surface-alt);
+    --bs-tertiary-bg: var(--surface-alt);
+    --bs-border-color: var(--line);
+    --bs-border-color-translucent: var(--line);
+    --bs-heading-color: var(--text);
+    --bs-link-color: var(--burgundy-text);
+    --bs-link-hover-color: var(--burgundy-text);
+    --bs-link-color-rgb: 122, 1, 14;
+    --bs-link-hover-color-rgb: 94, 1, 11;
+    --bs-focus-ring-color: color-mix(in srgb, var(--burgundy) 32%, transparent);
+    --bs-primary: #7A010E; --bs-primary-rgb: 122, 1, 14;
+    --bs-danger: #7A010E; --bs-danger-rgb: 122, 1, 14;
+    --bs-warning: #7A010E; --bs-warning-rgb: 122, 1, 14;
+    --bs-success: #000000; --bs-success-rgb: 0, 0, 0;
+    --bs-info: #6B6B72; --bs-info-rgb: 107, 107, 114;
+    --bs-secondary: #6B6B72; --bs-secondary-rgb: 107, 107, 114;
+    --bs-dark: #000000; --bs-dark-rgb: 0, 0, 0;
+    --bs-primary-text-emphasis: var(--burgundy-text); --bs-danger-text-emphasis: var(--burgundy-text); --bs-warning-text-emphasis: var(--burgundy-text);
+    --bs-success-text-emphasis: var(--text); --bs-info-text-emphasis: var(--text);
+    --bs-primary-bg-subtle: var(--burgundy-tint); --bs-danger-bg-subtle: var(--burgundy-tint); --bs-warning-bg-subtle: var(--burgundy-tint);
+    --bs-success-bg-subtle: var(--surface-alt); --bs-info-bg-subtle: var(--surface-alt);
+    --bs-primary-border-subtle: var(--burgundy-border); --bs-danger-border-subtle: var(--burgundy-border); --bs-warning-border-subtle: var(--burgundy-border);
+    --bs-success-border-subtle: var(--line); --bs-info-border-subtle: var(--line);
+    --bs-form-valid-color: var(--text); --bs-form-valid-border-color: var(--line);
+    --bs-form-invalid-color: var(--burgundy-text); --bs-form-invalid-border-color: var(--burgundy);
+}
+
+/* Dark mode: "success" and "dark" are light-on-dark so they stay visible. */
+html:root:root:root:root[data-theme="dark"] body {
+    --bs-success: #F4F4F5; --bs-success-rgb: 244, 244, 245;
+    --bs-dark: #F4F4F5; --bs-dark-rgb: 244, 244, 245;
+    --bs-info: #A0A0A6; --bs-info-rgb: 160, 160, 166;
+    --bs-secondary: #A0A0A6; --bs-secondary-rgb: 160, 160, 166;
+    --bs-primary-rgb: 218, 92, 112; /* .text-primary / .link-* as text */
+    --bs-danger-rgb: 218, 92, 112;
+    --bs-warning-rgb: 218, 92, 112;
+    --bs-link-color-rgb: 218, 92, 112;
+    --bs-link-hover-color-rgb: 240, 182, 191;
+}
+
+/* Solid badges keep readable text in both modes. */
+html body .text-bg-success, html body .badge.bg-success, html body .badge.bg-dark, html body .text-bg-dark { background-color: var(--solid-bg) !important; color: var(--solid-text) !important; }
+html body .text-bg-danger, html body .badge.bg-danger, html body .text-bg-primary, html body .badge.bg-primary { background-color: var(--burgundy) !important; color: var(--on-burgundy) !important; }
+html body .text-bg-warning, html body .badge.bg-warning { background-color: var(--burgundy-tint) !important; color: var(--burgundy-tint-text) !important; }
+html body .text-bg-info, html body .badge.bg-info, html body .text-bg-secondary, html body .badge.bg-secondary, html body .text-bg-light, html body .badge.bg-light { background-color: var(--surface-alt) !important; color: var(--text) !important; border: 1px solid var(--line); }
+html body .bg-success:not(.badge), html body .bg-dark:not(.badge) { background-color: var(--solid-bg) !important; }
+html body .bg-danger:not(.badge), html body .bg-primary:not(.badge) { background-color: var(--burgundy) !important; }
+html body .bg-warning:not(.badge), html body .bg-info:not(.badge) { background-color: var(--burgundy-tint) !important; }
+html body .text-danger, html body .text-warning, html body .text-primary { color: var(--burgundy-text) !important; }
+html body .text-success, html body .text-info { color: var(--text) !important; }
+html body .border-danger, html body .border-warning, html body .border-primary { border-color: var(--burgundy) !important; }
+html body .border-success, html body .border-info { border-color: var(--line) !important; }
+
+/* The OJT seal: a circle on white in both modes, never recolored or stretched (landing and app). */
+html body .sb-seal { border-radius: 50%; background: #fff; object-fit: contain; aspect-ratio: 1; }
+html[data-theme="dark"] body .sb-seal { box-shadow: 0 0 0 2px #fff; }
+html body .lm-logo:has(> .sb-seal) { padding: 0; border-radius: 50%; overflow: hidden; }

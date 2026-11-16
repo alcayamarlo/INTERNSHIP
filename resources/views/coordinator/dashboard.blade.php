@@ -2,20 +2,17 @@
 
 @section('title', 'Coordinator Dashboard')
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/coordinator-dashboard.css') }}?v={{ @filemtime(public_path('css/coordinator-dashboard.css')) }}">
-@endpush
 
 @section('content')
 
-<div class="cd-dashboard">
+{{-- Shared dashboard layout (public/css/sb-theme.css). --}}
+<div class="sb-dash">
 
 <x-page-header
     title="Coordinator Dashboard"
-    subtitle="Manage students and track placements at St. Cecilia’s College-Cebu, Inc."
+    :subtitle="'Manage students and track placements at '.($coordinator->institution?->name ?? 'your school').'.'"
     eyebrow="Coordinator workspace"
 >
-    <span class="sb-status sb-status--success">Verification workspace ready</span>
     <span class="sb-tag"><i class="bi bi-calendar3" aria-hidden="true"></i> {{ now()->format('M d, Y') }}</span>
     <a href="{{ route('coordinator.verification.index') }}" class="btn btn-primary">
         <i class="bi bi-shield-check" aria-hidden="true"></i> Review verification queue
@@ -23,7 +20,7 @@
 </x-page-header>
 
 {{-- Row 1: stat cards --}}
-<div class="sb-stat-grid cd-stats">
+<div class="sb-grid sb-grid--4">
 
     <x-dashboard-stat-card
         title="Active Students"
@@ -59,7 +56,7 @@
 
 
 {{-- Row 2: OJT progress + announcements --}}
-<div class="sb-layout-2 cd-row--top">
+<div class="sb-layout-2">
     <x-dashboard-ojt />
     <x-dashboard-announcements />
 </div>

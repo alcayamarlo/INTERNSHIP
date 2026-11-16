@@ -2,27 +2,20 @@
 
 @section('title', 'Edit Company Profile')
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/employer-profile.css') }}?v={{ @filemtime(public_path('css/employer-profile.css')) }}">
-@endpush
-
 @section('content')
-
-<div class="ep">
+<div class="sb-dash">
 <x-page-header title="Company Profile" subtitle="Update your company information and contact details">
     @if($employer->isVerified())
         <x-verified-badge :employer="$employer" />
     @else
-        <span class="badge text-bg-warning" data-company-pending>Pending admin verification</span>
+        <x-status-badge status="warning" label="Pending admin verification" data-company-pending />
     @endif
 </x-page-header>
 
-<div class="row g-4">
+<div class="sb-form sb-form--lead">
 
-    <div class="col-lg-4">
-        <div class="card">
-            <div class="card-body text-center">
-                <div class="sb-logo-box mx-auto mb-3">
+        <div class="card sb-form-section sb-identity">
+                <div class="sb-logo-box">
                     @php
                         $employerLogoUrl = \App\Support\PublicFileUrl::relative($employer->logo);
                         $employerInitials = collect(preg_split('/\s+/', trim($employer->company_name)))
@@ -41,36 +34,29 @@
                     <input type="file" name="company_logo" id="logoInput" accept="image/jpeg,image/jpg,image/png">
                 </form>
 
-                <p class="ep-name">{{ $employer->company_name }}</p>
-                @if($employer->industry)<p class="ep-industry">{{ $employer->industry }}</p>@endif
+                <p class="sb-identity-name">{{ $employer->company_name }}</p>
+                @if($employer->industry)<p class="sb-identity-sub">{{ $employer->industry }}</p>@endif
 
                 <button type="button" class="btn btn-outline-primary" id="uploadCompanyLogo">
                     <i class="bi bi-cloud-upload" aria-hidden="true"></i> {{ $employer->logo ? 'Change Logo' : 'Upload Logo' }}
                 </button>
-                <p class="text-muted small mt-2 mb-0">JPG or PNG</p>
+                <p class="sb-identity-sub">JPG or PNG</p>
                 <div data-employer-feedback class="small mt-2" role="status" aria-live="polite"></div>
-            </div>
         </div>
-    </div>
 
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header">
-                <h2><i class="bi bi-building" aria-hidden="true"></i> Company Information</h2>
-            </div>
-
-            <div class="card-body">
+        <section class="card sb-form-section" aria-labelledby="companyInfoTitle">
+                <h2 class="sb-form-title" id="companyInfoTitle">Company Information</h2>
                 <form method="POST" action="{{ route('employer.profile.update') }}" enctype="multipart/form-data" data-ajax-form id="employerProfileForm">
                     @csrf
                     @method('PUT')
 
-                    <div class="mb-3 ep-f-name">
+                    <div class="row g-3">
+                    <div class="col-12">
                         <label class="form-label" for="company_name">Company Name <span class="text-danger" aria-hidden="true">*</span></label>
                         <input id="company_name" type="text" class="form-control @error('company_name') is-invalid @enderror" name="company_name" value="{{ old('company_name', $employer->company_name) }}" required>
                         @error('company_name')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
 
-                    <div class="row g-3 mb-3">
                         <div class="col-md-6">
                             <label class="form-label" for="industry">Industry <span class="text-danger" aria-hidden="true">*</span></label>
                             <input id="industry" type="text" class="form-control @error('industry') is-invalid @enderror" name="industry" value="{{ old('industry', $employer->industry) }}" required>
@@ -89,21 +75,27 @@
                             </select>
                             @error('company_size')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label" for="position">Your job title</label>
+                        <input id="position" type="text" class="form-control @error('position') is-invalid @enderror" name="position" maxlength="100" placeholder="e.g. Solutions Architect" value="{{ old('position', $employer->position) }}" aria-describedby="positionHint">
+                        <div id="positionHint" class="form-text">Printed as "Designation / Job Title" on the interns' Final Performance Evaluation.</div>
+                        @error('position')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
 
-                    <div class="mb-3 ep-f-site">
+                    <div class="col-md-6">
                         <label class="form-label" for="website">Website</label>
                         <input id="website" type="url" class="form-control @error('website') is-invalid @enderror" name="website" placeholder="https://www.example.com" value="{{ old('website', $employer->website) }}">
                         @error('website')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
 
-                    <div class="mb-4 ep-f-desc">
+                    <div class="col-12">
                         <label class="form-label" for="description">Company Description</label>
                         <textarea id="description" class="form-control @error('description') is-invalid @enderror" name="description" rows="3" placeholder="Describe your company, mission, and culture">{{ old('description', $employer->description) }}</textarea>
                         @error('description')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
 
-                    <div class="d-flex flex-wrap gap-2 ep-actions">
+                    <div class="col-12 sb-form-actions">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-circle" aria-hidden="true"></i> Save Changes
                         </button>
@@ -111,13 +103,12 @@
                             <i class="bi bi-x-circle" aria-hidden="true"></i> Cancel
                         </a>
                     </div>
+                    </div>
                 </form>
-            </div>
-        </div>
-    </div>
+        </section>
 
 </div>
-</div>{{-- /.ep --}}
+</div>
 @endsection
 
 @push('scripts')

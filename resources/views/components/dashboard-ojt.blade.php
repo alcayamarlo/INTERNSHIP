@@ -47,7 +47,7 @@
 @endphp
 
 @if($card)
-    <div class="card mb-4" data-dashboard-ojt>
+    <div class="card" data-dashboard-ojt>
         <div class="card-header">
             <h2><i class="bi bi-clock-history" aria-hidden="true"></i> OJT Progress</h2>
             <a href="{{ $card['type'] === 'student' ? route('student.ojt.index') : $card['href'] }}" class="sb-card-link">Open →</a>
@@ -56,37 +56,25 @@
             @if($card['type'] === 'student')
                 @if($placement = $card['placement'])
                     @php $percent = $placement->progressPercent(); @endphp
-                    <div class="row text-center g-3 mb-3">
-                        <div class="col-4">
-                            <div class="fs-4 fw-bold">{{ number_format($placement->approvedHours(), 1) }}</div>
-                            <div class="small text-muted">Hours approved</div>
-                        </div>
-                        <div class="col-4">
-                            <div class="fs-4 fw-bold">{{ $placement->required_hours }}</div>
-                            <div class="small text-muted">Hours required</div>
-                        </div>
-                        <div class="col-4">
-                            <div class="fs-4 fw-bold">{{ $percent }}%</div>
-                            <div class="small text-muted">Progress</div>
-                        </div>
-                    </div>
+                    <dl class="sb-mini-stats sb-mini-stats--big mb-3">
+                        <div><dt>Hours approved</dt><dd>{{ number_format($placement->approvedHours(), 1) }}</dd></div>
+                        <div><dt>Hours required</dt><dd>{{ $placement->required_hours }}</dd></div>
+                        <div><dt>Progress</dt><dd>{{ $percent }}%</dd></div>
+                    </dl>
                     <div class="small text-muted mb-1">{{ $placement->internship?->title }} · {{ $placement->employer?->company_name }}</div>
-                    <div class="progress" style="height: 10px;" role="progressbar" aria-label="OJT hours progress" aria-valuenow="{{ $percent }}" aria-valuemin="0" aria-valuemax="100">
-                        <div class="progress-bar {{ $percent >= 100 ? 'bg-success' : '' }}" style="width: {{ $percent }}%"></div>
+                    <div class="progress" role="progressbar" aria-label="OJT hours progress" aria-valuenow="{{ $percent }}" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar" style="width: {{ $percent }}%"></div>
                     </div>
                     <div class="small text-muted mt-2">Status: {{ $placement->statusLabel() }}@if($placement->isCleared()) — your certificate is ready.@endif</div>
                 @else
                     <p class="text-muted mb-0">Your OJT record opens once an employer accepts your application.</p>
                 @endif
             @else
-                <div class="row text-center g-3">
+                <dl class="sb-mini-stats sb-mini-stats--big">
                     @foreach($card['stats'] as [$label, $value])
-                        <div class="col-4">
-                            <div class="fs-4 fw-bold">{{ $value }}</div>
-                            <div class="small text-muted">{{ $label }}</div>
-                        </div>
+                        <div><dt>{{ $label }}</dt><dd>{{ $value }}</dd></div>
                     @endforeach
-                </div>
+                </dl>
             @endif
         </div>
     </div>

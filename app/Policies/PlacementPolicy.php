@@ -46,6 +46,12 @@ class PlacementPolicy
         return $user->isRole(UserRole::Coordinator) && $this->coordinatorCanAccess($user, $placement);
     }
 
+    /** Coordinators managing the student request Monthly Evaluations (active placements are checked in AppraisalService). */
+    public function requestAppraisal(User $user, Placement $placement): bool
+    {
+        return $user->isRole(UserRole::Coordinator) && $this->coordinatorCanAccess($user, $placement);
+    }
+
     public function downloadCertificate(User $user, Placement $placement): bool
     {
         return $placement->isCleared() && $this->view($user, $placement);

@@ -3,27 +3,36 @@
 @section('title', 'Student Skill Tags')
 
 @section('content')
+<div class="sb-dash">
 <x-page-header title="Student skill tags" subtitle="The skill list students pick from on their profile. Rename typos, merge duplicates (for example JS into JavaScript), or delete tags." />
 
-<form method="GET" action="{{ route('admin.skill-tags.index') }}" class="sb-toolbar" role="search" aria-label="Search skill tags">
-    <input type="search" name="q" value="{{ $search }}" class="form-control" placeholder="Search tags" aria-label="Search tags">
-    <select name="sort" class="form-select" aria-label="Sort" onchange="this.form.requestSubmit()">
+<form method="GET" action="{{ route('admin.skill-tags.index') }}" class="card sb-filterbar" role="search" aria-label="Search skill tags">
+    <div class="sb-filter-row">
+        <div class="sb-filter-field">
+            <label class="form-label" for="tagSearch">Search tags</label>
+            <input id="tagSearch" type="search" name="q" value="{{ $search }}" class="form-control" placeholder="Search tags">
+        </div>
+        <div class="sb-filter-field sb-filter-field--sm">
+            <label class="form-label" for="tagSort">Sort</label>
+            <select id="tagSort" name="sort" class="form-select" onchange="this.form.requestSubmit()">
         <option value="usage" @selected($sort === 'usage')>Most used first</option>
         <option value="name" @selected($sort === 'name')>A to Z</option>
-    </select>
-    <div class="sb-toolbar-actions"><button type="submit" class="btn btn-primary">Search</button></div>
+            </select>
+        </div>
+        <div class="sb-filter-actions"><button type="submit" class="btn btn-primary">Search</button></div>
+    </div>
 </form>
 
 <div class="card">
     <div class="table-responsive">
-        <table class="table table-hover mb-0 align-middle">
+        <table class="table table-hover mb-0 align-middle sb-table-stack">
             <thead><tr><th>Tag</th><th>Students</th><th>Rename</th><th>Merge into</th><th><span class="visually-hidden">Delete</span></th></tr></thead>
             <tbody>
                 @forelse($tags as $tag)
                     <tr data-skill-tag="{{ $tag->id }}">
-                        <td><strong>{{ $tag->name }}</strong></td>
-                        <td>{{ $tag->student_skills_count }}</td>
-                        <td>
+                        <td class="sb-stack-block"><span class="sb-row-title">{{ $tag->name }}</span></td>
+                        <td data-label="Students">{{ $tag->student_skills_count }}</td>
+                        <td data-label="Rename" class="sb-stack-block">
                             <form method="POST" action="{{ route('admin.skill-tags.update', $tag) }}" class="d-flex gap-1">
                                 @csrf
                                 @method('PUT')
@@ -32,7 +41,7 @@
                                 <button type="submit" class="btn btn-sm btn-outline-primary">Save</button>
                             </form>
                         </td>
-                        <td>
+                        <td data-label="Merge into" class="sb-stack-block">
                             <form method="POST" action="{{ route('admin.skill-tags.merge', $tag) }}" class="d-flex gap-1"
                                 data-confirm="Merge &quot;{{ $tag->name }}&quot; into the selected tag? Its {{ $tag->student_skills_count }} {{ \Illuminate\Support\Str::plural('student', $tag->student_skills_count) }} move to that tag and &quot;{{ $tag->name }}&quot; is removed. This cannot be undone."
                                 data-confirm-title="Merge skill tags" data-confirm-label="Merge">
@@ -48,7 +57,7 @@
                                 <button type="submit" class="btn btn-sm btn-outline-warning">Merge</button>
                             </form>
                         </td>
-                        <td class="text-end">
+                        <td class="text-end sb-stack-block">
                             <form method="POST" action="{{ route('admin.skill-tags.destroy', $tag) }}"
                                 data-confirm="Delete &quot;{{ $tag->name }}&quot;?{{ $tag->student_skills_count ? ' It will be removed from '.$tag->student_skills_count.' student '.\Illuminate\Support\Str::plural('profile', $tag->student_skills_count).'.' : '' }} This cannot be undone."
                                 data-confirm-title="Delete skill tag" data-confirm-label="Delete">
@@ -59,11 +68,12 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="text-center text-muted py-4">No tags match.</td></tr>
+                    <tr><td colspan="5" class="sb-table-empty sb-stack-block text-center text-muted">No tags match.</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
     @if($tags->hasPages())<div class="card-footer">{{ $tags->links() }}</div>@endif
+</div>
 </div>
 @endsection

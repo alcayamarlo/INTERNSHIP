@@ -8,12 +8,12 @@
 </x-page-header>
 
 <div class="row g-4">
-    <div class="col-lg-7">
+    <div class="col-lg-8">
         <form method="POST" action="{{ route($routePrefix.'.criteria.store', $program) }}" class="card" novalidate>
             @csrf
             <input type="hidden" name="school_year" value="{{ $schoolYear }}">
             <input type="hidden" name="term" value="{{ $term }}">
-            <div class="card-header"><h2>{{ $current ? 'Edit criteria (saves version '.($current->version + 1).')' : 'Set criteria' }}</h2></div>
+            <div class="card-header"><h2>{{ $current ? 'Edit criteria' : 'Set criteria' }}</h2></div>
             <div class="card-body">
                 @unless($current)
                     <p class="small text-muted">No criteria yet for this term, so the school-wide rules apply. Saving here replaces them for {{ $program->code }}.</p>
@@ -61,27 +61,6 @@
             </div>
             <div class="card-footer text-end"><button type="submit" class="btn btn-primary">Save criteria</button></div>
         </form>
-    </div>
-
-    <div class="col-lg-5">
-        <div class="card">
-            <div class="card-header"><h2>Version history</h2></div>
-            <ul class="list-group list-group-flush">
-                @forelse($versions as $version)
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between">
-                            <strong>Version {{ $version->version }}</strong>
-                            @if($loop->first)<span class="badge text-bg-success">Current</span>@endif
-                        </div>
-                        <small class="d-block">@include('coordinator.criteria.partials.summary', ['criterion' => $version])</small>
-                        <small class="text-muted d-block">{{ $version->created_at->format('M d, Y h:i A') }} · {{ $version->createdBy?->name ?? 'Unknown' }}</small>
-                        @if($version->notes)<small class="d-block mt-1">{{ $version->notes }}</small>@endif
-                    </li>
-                @empty
-                    <li class="list-group-item text-muted">No versions yet.</li>
-                @endforelse
-            </ul>
-        </div>
     </div>
 </div>
 @endsection

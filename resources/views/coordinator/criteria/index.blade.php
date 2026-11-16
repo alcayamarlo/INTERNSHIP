@@ -3,11 +3,12 @@
 @section('title', 'Eligibility Criteria')
 
 @section('content')
-<x-page-header title="Eligibility Criteria" subtitle="Internship requirements per program and term. Each save keeps the earlier versions as history." />
+<div class="sb-dash">
+<x-page-header title="Eligibility Criteria" subtitle="Internship requirements per program and term." />
 
-<form method="GET" action="{{ route($routePrefix.'.criteria.index') }}" class="card mb-4" aria-label="Choose a term">
-    <div class="card-body row g-3 align-items-end">
-        <div class="col-md-4">
+<form method="GET" action="{{ route($routePrefix.'.criteria.index') }}" class="card sb-filterbar" aria-label="Choose a term">
+    <div class="sb-filter-row">
+        <div class="sb-filter-field">
             <label class="form-label" for="criteriaSchoolYear">School year</label>
             <select id="criteriaSchoolYear" name="school_year" class="form-select" onchange="this.form.requestSubmit()">
                 @foreach($schoolYears as $year)
@@ -15,7 +16,7 @@
                 @endforeach
             </select>
         </div>
-        <div class="col-md-4">
+        <div class="sb-filter-field">
             <label class="form-label" for="criteriaTerm">Term</label>
             <select id="criteriaTerm" name="term" class="form-select" onchange="this.form.requestSubmit()">
                 @foreach($terms as $key => $label)
@@ -23,12 +24,12 @@
                 @endforeach
             </select>
         </div>
-        <div class="col-md-4"><button type="submit" class="btn btn-primary">Show</button></div>
+        <div class="sb-filter-actions"><button type="submit" class="btn btn-primary">Show</button></div>
     </div>
 </form>
 
 @if($schoolYear === $currentTerm['school_year'] && $term === $currentTerm['term'])
-    <p class="small text-muted">This is the current term, so these criteria apply to students right now.</p>
+    <p class="sb-note mb-0">This is the current term, so these criteria apply to students right now.</p>
 @endif
 
 <div class="card">
@@ -38,11 +39,10 @@
             <tbody>
                 @forelse($programs as $row)
                     <tr>
-                        <td>{{ $row['program']->display_name }}</td>
+                        <td><span class="sb-row-title">{{ $row['program']->display_name }}</span></td>
                         <td>
                             @if($row['current'])
                                 @include('coordinator.criteria.partials.summary', ['criterion' => $row['current']])
-                                <small class="text-muted d-block">Version {{ $row['current']->version }}</small>
                             @else
                                 <span class="text-muted">None set. The school-wide rules apply:
                                     {{ collect([$globalRules['require_fourth_year'] ? '4th Year standing' : null, $globalRules['require_major_subjects_passed'] ? 'major subjects passed' : null])->filter()->implode(', ') ?: 'no requirements' }}.</span>
@@ -53,10 +53,11 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="3" class="text-center text-muted py-4">No programs are assigned to you yet. Ask an admin to assign your programs.</td></tr>
+                    <tr><td colspan="3" class="sb-table-empty text-center text-muted">No programs are assigned to you yet. Ask an admin to assign your programs.</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
+</div>
 </div>
 @endsection

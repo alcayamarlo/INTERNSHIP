@@ -2,9 +2,6 @@
 
 @section('title', 'My Applications')
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/student-internships.css') }}?v={{ @filemtime(public_path('css/student-internships.css')) }}">
-@endpush
 
 @php
     use App\Enums\ApplicationStatus as Status;
@@ -42,7 +39,7 @@
 @endphp
 
 @section('content')
-<div class="ma-page">
+<div class="sb-dash">
 
 <x-breadcrumbs :items="[['label' => 'Dashboard', 'url' => route('student.dashboard')], ['label' => 'Internships', 'url' => route('student.internships.index')], ['label' => 'My Applications']]" />
 
@@ -53,7 +50,7 @@
 {{-- =========================================================
      SUMMARY (all applications, whatever the filters)
 ========================================================== --}}
-<section class="ma-tiles" aria-label="Application summary" data-live-region="application-summary" data-live-topics="applications">
+<section class="sb-kpis" aria-label="Application summary" data-live-region="application-summary" data-live-topics="applications">
     @foreach([
         ['total', 'Total applications', 'bi-send'],
         ['applied', 'Applied', 'bi-hourglass-split'],
@@ -61,11 +58,11 @@
         ['accepted', 'Accepted', 'bi-trophy'],
         ['interviews', 'Interviews scheduled', 'bi-calendar-event'],
     ] as [$key, $label, $icon])
-        <div class="ib-card ma-tile">
+        <div class="card sb-kpi">
             <i class="bi {{ $icon }}" aria-hidden="true"></i>
             {{-- data-count-up: the app's existing number count-up (resources/js/app.js) --}}
-            <span class="ma-tile-value" data-count-up="{{ $summary[$key] }}">{{ $summary[$key] }}</span>
-            <span class="ma-tile-label">{{ $label }}</span>
+            <span class="sb-kpi-value" data-count-up="{{ $summary[$key] }}">{{ $summary[$key] }}</span>
+            <span class="sb-kpi-label">{{ $label }}</span>
         </div>
     @endforeach
 </section>
@@ -73,15 +70,15 @@
 {{-- =========================================================
      FILTERS (one row). Status, sort and rows per page join this form through form="maFilters".
 ========================================================== --}}
-<form method="GET" action="{{ route('student.applications.index') }}" id="maFilters" class="ib-card ma-filterbar" aria-label="Filter applications">
+<form method="GET" action="{{ route('student.applications.index') }}" id="maFilters" class="card sb-filterbar" aria-label="Filter applications">
     <input type="hidden" name="status" value="{{ $activeStatus === 'all' ? '' : $activeStatus }}" data-status-input>
-    <div class="ma-filter-fields">
-        <div class="ma-field"><label for="maTitle">Job title</label><input id="maTitle" name="job_title" class="form-control" value="{{ request('job_title') }}" placeholder="e.g. Web developer"></div>
-        <div class="ma-field"><label for="maCompany">Company</label><input id="maCompany" name="company" class="form-control" value="{{ request('company') }}" placeholder="Company name"></div>
-        <div class="ma-field"><label for="maLocation">Location</label><input id="maLocation" name="location" class="form-control" value="{{ request('location') }}" placeholder="e.g. Cebu City"></div>
-        <div class="ma-field"><label for="maFrom">Applied from</label><input id="maFrom" type="date" name="applied_from" class="form-control" value="{{ request('applied_from') }}"></div>
-        <div class="ma-field"><label for="maTo">Applied to</label><input id="maTo" type="date" name="applied_to" class="form-control" value="{{ request('applied_to') }}"></div>
-        <div class="ma-filter-actions">
+    <div class="sb-filter-row">
+        <div class="sb-filter-field"><label for="maTitle">Job title</label><input id="maTitle" name="job_title" class="form-control" value="{{ request('job_title') }}" placeholder="e.g. Web developer"></div>
+        <div class="sb-filter-field"><label for="maCompany">Company</label><input id="maCompany" name="company" class="form-control" value="{{ request('company') }}" placeholder="Company name"></div>
+        <div class="sb-filter-field"><label for="maLocation">Location</label><input id="maLocation" name="location" class="form-control" value="{{ request('location') }}" placeholder="e.g. Cebu City"></div>
+        <div class="sb-filter-field"><label for="maFrom">Applied from</label><input id="maFrom" type="date" name="applied_from" class="form-control" value="{{ request('applied_from') }}"></div>
+        <div class="sb-filter-field"><label for="maTo">Applied to</label><input id="maTo" type="date" name="applied_to" class="form-control" value="{{ request('applied_to') }}"></div>
+        <div class="sb-filter-actions">
             <button type="submit" class="btn btn-primary"><i class="bi bi-funnel" aria-hidden="true"></i> Apply filters</button>
             <a href="{{ route('student.applications.index') }}" class="btn btn-outline-secondary" data-filter-clear>Clear</a>
         </div>
@@ -94,23 +91,23 @@
      RESULTS: tabs, table, upcoming interviews. Swapped in place on tab/filter/sort changes,
      and refreshed live when an application changes (data-live-region).
 ========================================================== --}}
-<div id="maResults" class="ma-results" data-live-region="my-applications" data-live-topics="applications" data-total="{{ $applications->total() }}" aria-busy="false">
+<div id="maResults" class="sb-results" data-live-region="my-applications" data-live-topics="applications" data-total="{{ $applications->total() }}" aria-busy="false">
 
-    <nav class="sb-section-tabs ma-tabs" aria-label="Filter by status">
+    <nav class="sb-section-tabs" aria-label="Filter by status">
         @foreach($tabs as $tab => $label)
             <a href="{{ $tabUrl($tab) }}" class="sb-section-tab {{ $activeStatus === $tab ? 'active' : '' }}" data-status-tab="{{ $tab === 'all' ? '' : $tab }}" @if($activeStatus === $tab) aria-current="page" @endif>
-                {{ $label }} <span class="ma-tab-count">{{ $tabCounts[$tab] ?? 0 }}</span>
+                {{ $label }} <span class="sb-tab-count">{{ $tabCounts[$tab] ?? 0 }}</span>
             </a>
         @endforeach
     </nav>
 
-    <div class="ma-split">
-        <section class="ib-card ma-list" aria-labelledby="maListTitle">
+    <div class="sb-layout-2">
+        <section class="card" aria-labelledby="maListTitle">
             <h2 id="maListTitle" class="visually-hidden">Applications</h2>
 
-            <div class="ma-sortbar">
-                <p class="ma-sort-note"><i class="bi bi-sort-down" aria-hidden="true"></i> {{ $sortNote }}</p>
-                <label class="ma-sort-pill">
+            <div class="sb-toolbar-row">
+                <p class="sb-note"><i class="bi bi-sort-down" aria-hidden="true"></i> {{ $sortNote }}</p>
+                <label class="sb-inline-field">
                     <span>Sort:</span>
                     <select name="sort" form="maFilters" class="form-select form-select-sm" aria-label="Sort applications">
                         @foreach($sortOptions as $value => $label)
@@ -122,7 +119,7 @@
 
             @if($applications->count())
                 <div class="table-responsive">
-                    <table class="table align-middle ma-table sb-table-stack">
+                    <table class="table align-middle sb-table-stack">
                         <thead>
                             <tr>
                                 <th scope="col">Internship</th>
@@ -137,28 +134,28 @@
                         <tbody>
                             @foreach($applications as $app)
                                 @php $editable = in_array($app->status, [Status::Applied, Status::Submitted], true); @endphp
-                                <tr class="ma-row">
+                                <tr>
                                     <td class="sb-stack-block">
-                                        <a href="{{ route('student.applications.show', $app) }}" class="ma-title">{{ $app->internship->title }}</a>
-                                        <span class="ma-company">{{ $app->internship->employer->company_name }}</span>
+                                        <a href="{{ route('student.applications.show', $app) }}" class="sb-row-title">{{ $app->internship->title }}</a>
+                                        <span class="sb-row-sub">{{ $app->internship->employer->company_name }}</span>
                                     </td>
                                     <td data-label="Location">{{ $app->internship->location ?: '—' }}</td>
-                                    <td data-label="Match"><span class="ma-match">{{ $app->match_percentage ?? 0 }}%</span></td>
-                                    <td data-label="Status"><span class="ma-status ma-status--{{ $pill($app->status) }}"><span class="ma-status-dot" aria-hidden="true"></span>{{ $app->status->label() }}</span></td>
+                                    <td data-label="Match"><span class="sb-tag">{{ $app->match_percentage ?? 0 }}%</span></td>
+                                    <td data-label="Status"><x-status-badge :status="$app->status->value" :label="$app->status->label()" /></td>
                                     <td data-label="Applied">{{ $app->applied_at?->format('M j, Y') ?? '—' }}</td>
                                     <td data-label="Interview">{{ $app->interview_at?->format('M j, Y · g:i A') ?? '—' }}</td>
                                     <td data-label="Actions" class="text-end">
-                                        <span class="ma-actions">
-                                            <a href="{{ route('student.applications.show', $app) }}" class="ma-icon" title="View" aria-label="View application for {{ $app->internship->title }}"><i class="bi bi-eye" aria-hidden="true"></i></a>
+                                        <span class="sb-icon-actions">
+                                            <a href="{{ route('student.applications.show', $app) }}" class="sb-icon-btn" title="View" aria-label="View application for {{ $app->internship->title }}"><i class="bi bi-eye" aria-hidden="true"></i></a>
                                             @if($editable)
-                                                <a href="{{ route('student.applications.edit', $app) }}" class="ma-icon" title="Edit" aria-label="Edit application for {{ $app->internship->title }}"><i class="bi bi-pencil" aria-hidden="true"></i></a>
+                                                <a href="{{ route('student.applications.edit', $app) }}" class="sb-icon-btn" title="Edit" aria-label="Edit application for {{ $app->internship->title }}"><i class="bi bi-pencil" aria-hidden="true"></i></a>
                                                 {{-- Uses the app's shared confirmation dialog before withdrawing --}}
                                                 <form method="POST" action="{{ route('student.applications.destroy', $app) }}" class="d-inline"
                                                       data-confirm="Withdraw your application to {{ $app->internship->title }} at {{ $app->internship->employer->company_name }}? The company will no longer see it."
                                                       data-confirm-title="Withdraw application" data-confirm-label="Withdraw">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="ma-icon ma-icon--danger" title="Withdraw" aria-label="Withdraw application for {{ $app->internship->title }}"><i class="bi bi-x-circle" aria-hidden="true"></i></button>
+                                                    <button type="submit" class="sb-icon-btn sb-icon-btn--danger" title="Withdraw" aria-label="Withdraw application for {{ $app->internship->title }}"><i class="bi bi-x-circle" aria-hidden="true"></i></button>
                                                 </form>
                                             @endif
                                         </span>
@@ -170,9 +167,9 @@
                 </div>
 
                 {{-- Footer: count, page links, rows per page --}}
-                <div class="ma-footer">
-                    <p class="ma-showing">Showing {{ $applications->firstItem() }}–{{ $applications->lastItem() }} of {{ $applications->total() }} {{ \Illuminate\Support\Str::plural('application', $applications->total()) }}</p>
-                    <div class="ma-footer-right">
+                <div class="card-footer sb-list-footer">
+                    <p class="sb-note">Showing {{ $applications->firstItem() }}–{{ $applications->lastItem() }} of {{ $applications->total() }} {{ \Illuminate\Support\Str::plural('application', $applications->total()) }}</p>
+                    <div class="sb-footer-tools">
                         @if($applications->hasPages())
                             <nav aria-label="Application pages">
                                 <ul class="pagination mb-0">
@@ -200,7 +197,7 @@
                                 </ul>
                             </nav>
                         @endif
-                        <label class="ma-per-page">
+                        <label class="sb-inline-field">
                             <span>Rows per page</span>
                             <select name="per_page" form="maFilters" class="form-select form-select-sm" aria-label="Rows per page">
                                 @foreach([10, 25, 50] as $size)
@@ -218,25 +215,25 @@
         </section>
 
         {{-- Upcoming interviews --}}
-        <aside class="ib-card ma-interviews" aria-labelledby="maInterviewsTitle">
-            <h2 class="ma-card-title" id="maInterviewsTitle"><i class="bi bi-calendar-event" aria-hidden="true"></i> Upcoming interviews</h2>
+        <aside class="card" aria-labelledby="maInterviewsTitle">
+            <h2 class="sb-card-title" id="maInterviewsTitle"><i class="bi bi-calendar-event" aria-hidden="true"></i> Upcoming interviews</h2>
             @forelse($upcomingInterviews as $interview)
-                <a href="{{ route('student.applications.show', $interview) }}" class="ma-interview">
-                    <span class="ma-date" aria-hidden="true">
-                        <span class="ma-date-month">{{ $interview->interview_at->format('M') }}</span>
-                        <span class="ma-date-day">{{ $interview->interview_at->format('j') }}</span>
+                <a href="{{ route('student.applications.show', $interview) }}" class="sb-agenda-item">
+                    <span class="sb-date-tile" aria-hidden="true">
+                        <span class="sb-date-month">{{ $interview->interview_at->format('M') }}</span>
+                        <span class="sb-date-day">{{ $interview->interview_at->format('j') }}</span>
                     </span>
-                    <span class="ma-interview-main">
-                        <span class="ma-interview-title">{{ $interview->internship->title }}</span>
-                        <span class="ma-interview-meta">{{ $interview->internship->employer->company_name }}</span>
-                        <span class="ma-interview-meta">
+                    <span class="sb-agenda-main">
+                        <span class="sb-row-title">{{ $interview->internship->title }}</span>
+                        <span class="sb-row-sub">{{ $interview->internship->employer->company_name }}</span>
+                        <span class="sb-row-sub">
                             <i class="bi bi-geo-alt" aria-hidden="true"></i> {{ $interview->internship->location ?: 'Location not provided' }}
                             · <i class="bi bi-clock" aria-hidden="true"></i> {{ $interview->interview_at->format('D, M j · g:i A') }}
                         </span>
                     </span>
                 </a>
             @empty
-                <div class="ma-interviews-empty">
+                <div class="sb-empty">
                     <i class="bi bi-calendar-x" aria-hidden="true"></i>
                     <p class="mb-1"><strong>No upcoming interviews</strong></p>
                     <p class="mb-0">When a company schedules an interview, it will appear here.</p>

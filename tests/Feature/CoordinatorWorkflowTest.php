@@ -112,7 +112,7 @@ it('shows application stages and unplaced students', function () {
     $this->actingAs($w['coordinatorUser'])->get(route('coordinator.applications.index'))
         ->assertOk()
         ->assertSee('Web Intern')
-        ->assertSeeInOrder(['Students not placed yet', '<span class="ap-tab-count">1</span>'], false)
+        ->assertSeeInOrder(['Students not placed yet', '<span class="sb-tab-count">1</span>'], false)
         ->assertSee('data-unplaced="'.$w['student']->id.'"', false);
     $this->get(route('coordinator.applications.index', ['stage' => 'placed']))->assertOk()->assertSee('No applications match.');
 });

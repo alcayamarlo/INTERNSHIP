@@ -2,10 +2,6 @@
 
 @section('title', 'Internships')
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/student-internships.css') }}?v={{ @filemtime(public_path('css/student-internships.css')) }}">
-@endpush
-
 @php
     $selectedMode = collect((array) request('work_setup', []))->map(fn ($mode) => (string) $mode)->first();
     $hasFilters = collect(['search', 'location', 'company', 'skill', 'work_setup', 'scope'])->contains(fn ($field) => request()->filled($field));
@@ -16,7 +12,7 @@
 @endphp
 
 @section('content')
-<div class="ib-page">
+<div class="sb-dash">
 
 <x-breadcrumbs :items="[['label' => 'Dashboard', 'url' => route('student.dashboard')], ['label' => 'Internships']]" />
 
@@ -27,12 +23,22 @@
         <span>{{ \App\Services\ApplicationService::HAS_OJT_MESSAGE }}</span>
         <a href="{{ route('student.ojt.index') }}" class="alert-link ms-auto">Go to My OJT →</a>
     </div>
+@elseif($eligibilityReasons ?? [])
+    {{-- Shown before Apply: browsing stays open, applying waits for the coordinator. --}}
+    <div class="alert alert-warning" role="status" data-not-eligible>
+        <strong><i class="bi bi-hourglass-split" aria-hidden="true"></i> You are not yet eligible to apply.</strong> You can still browse internships.
+        <ul class="mb-0 mt-1">
+            @foreach($eligibilityReasons as $reason)
+                <li>{{ $reason }}</li>
+            @endforeach
+        </ul>
+    </div>
 @endif
 
 {{-- =========================================================
      HEADER
 ========================================================== --}}
-<div class="sb-page-header ib-head">
+<div class="sb-page-header">
     <div>
         <h1>Browse internships</h1>
         <p data-internship-scope="{{ $scope }}">
@@ -51,25 +57,25 @@
 {{-- =========================================================
      FILTERS (one row)
 ========================================================== --}}
-<form method="GET" action="{{ route('student.internships.index') }}" class="ib-card ib-filterbar" role="search" aria-label="Filter internships">
-    <div class="ib-filter-fields">
-        <div class="ib-field">
+<form method="GET" action="{{ route('student.internships.index') }}" class="card sb-filterbar" role="search" aria-label="Filter internships">
+    <div class="sb-filter-row">
+        <div class="sb-filter-field">
             <label for="ibSearch">Title</label>
             <input id="ibSearch" type="text" class="form-control" name="search" placeholder="e.g. Web developer" value="{{ request('search') }}">
         </div>
-        <div class="ib-field">
+        <div class="sb-filter-field">
             <label for="ibLocation">Location</label>
             <input id="ibLocation" type="text" class="form-control" name="location" placeholder="e.g. Cebu City" value="{{ request('location') }}">
         </div>
-        <div class="ib-field">
+        <div class="sb-filter-field">
             <label for="ibCompany">Company</label>
             <input id="ibCompany" type="text" class="form-control" name="company" placeholder="Company name" value="{{ request('company') }}">
         </div>
-        <div class="ib-field">
+        <div class="sb-filter-field">
             <label for="ibSkill">Skill</label>
             <input id="ibSkill" type="text" class="form-control" name="skill" placeholder="e.g. Python" value="{{ request('skill') }}">
         </div>
-        <div class="ib-field ib-field--mode">
+        <div class="sb-filter-field sb-filter-field--sm">
             <label for="ibMode">Mode</label>
             <select id="ibMode" class="form-select" name="work_setup[]">
                 <option value="">Any</option>
@@ -78,13 +84,13 @@
                 @endforeach
             </select>
         </div>
-        <div class="ib-filter-actions">
+        <div class="sb-filter-actions">
             {{-- Filters apply as you type or choose; this button stays for browsers without JavaScript --}}
             <button type="submit" class="btn btn-primary" data-filter-submit><i class="bi bi-search" aria-hidden="true"></i> Filter</button>
             <a href="{{ route('student.internships.index') }}" class="btn btn-outline-secondary" data-filter-clear>Clear</a>
         </div>
     </div>
-    <div class="ib-filter-extra">
+    <div class="sb-filter-extra">
         {{-- Unticking sends scope=program; leaving it untouched keeps the controller's default. --}}
         <input type="hidden" name="scope" value="program" data-scope-program @disabled(! $explicitProgramScope)>
         <div class="form-check mb-0">
@@ -92,7 +98,7 @@
             <label class="form-check-label" for="ibScopeAll">Show all programs</label>
         </div>
         @if($scopeLocked)
-            <span class="ib-hint">No program on your profile, so every program is shown.</span>
+            <span class="sb-note">No program on your profile, so every program is shown.</span>
         @endif
     </div>
 </form>
@@ -101,9 +107,9 @@
 <p class="visually-hidden" role="status" aria-live="polite" data-filter-status></p>
 
 {{-- Results: replaced in place when a filter changes (no page reload) --}}
-<div id="ibResults" class="ib-results-region" data-results data-total="{{ $internships->total() }}" aria-busy="false">
+<div id="ibResults" class="sb-results" data-results data-total="{{ $internships->total() }}" aria-busy="false">
 @if($internships->isEmpty())
-    <div class="ib-card">
+    <div class="card">
         <x-empty-state icon="bi-search" title="No internships found" message="Try different keywords or clear the filters to see everything that is open.">
             @if($hasFilters)
                 <a href="{{ route('student.internships.index') }}" class="btn btn-outline-primary">Clear filters</a>
@@ -114,12 +120,12 @@
 {{-- =========================================================
      SPLIT VIEW: table (left) + preview (right)
 ========================================================== --}}
-<div class="ib-split">
+<div class="sb-split-table sb-split-table--wide">
 
-    <section class="ib-card ib-list" aria-labelledby="ibListTitle">
+    <section class="card" aria-labelledby="ibListTitle">
         <h2 id="ibListTitle" class="visually-hidden">Internships</h2>
         <div class="table-responsive">
-            <table class="table align-middle ib-table">
+            <table class="table align-middle">
                 <thead>
                     <tr>
                         <th scope="col">Internship</th>
@@ -133,26 +139,26 @@
                 <tbody>
                     @foreach($internships as $internship)
                         @php $applied = $appliedInternshipIds->contains($internship->id); @endphp
-                        <tr class="ib-row {{ $loop->first ? 'is-selected' : '' }}" tabindex="0"
+                        <tr class="sb-select-row {{ $loop->first ? 'is-selected' : '' }}" tabindex="0"
                             data-internship-id="{{ $internship->id }}"
                             aria-controls="ibPreview"
                             aria-selected="{{ $loop->first ? 'true' : 'false' }}"
                             aria-label="{{ $internship->title }} at {{ $internship->employer->company_name }}, {{ $internship->match_percentage }}% match. Press Enter to preview.">
                             <td>
-                                <span class="ib-row-title">{{ $internship->title }}</span>
+                                <span class="sb-row-title">{{ $internship->title }}</span>
                                 @if($internship->requirementsList->count())
-                                    <span class="ib-row-skills">{{ $internship->requirementsList->take(2)->pluck('requirement_name')->implode(' · ') }}</span>
+                                    <span class="sb-row-sub">{{ $internship->requirementsList->take(2)->pluck('requirement_name')->implode(' · ') }}</span>
                                 @endif
                             </td>
                             <td>{{ $internship->employer->company_name }}</td>
                             <td>{{ $internship->location ?: '—' }}</td>
-                            <td><span class="ib-mode">{{ $internship->work_setup->label() }}</span></td>
-                            <td><span class="ib-match"><span class="ib-match-dot" aria-hidden="true"></span>{{ $internship->match_percentage }}% match</span></td>
+                            <td><span class="sb-tag">{{ $internship->work_setup->label() }}</span></td>
+                            <td><span class="sb-tag"><span class="d-none" aria-hidden="true"></span>{{ $internship->match_percentage }}% match</span></td>
                             <td data-status-cell>
                                 @if($applied)
-                                    <span class="ib-status ib-status--applied"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Applied</span>
+                                    <span class="sb-status sb-status--success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Applied</span>
                                 @else
-                                    <span class="ib-status">Not applied</span>
+                                    <span class="sb-status sb-status--neutral">Not applied</span>
                                 @endif
                             </td>
                         </tr>
@@ -162,8 +168,8 @@
         </div>
 
         {{-- Pagination: "Showing 1–10 of N internships" + page links --}}
-        <div class="ib-list-footer">
-            <p class="ib-showing">Showing {{ $internships->firstItem() }}–{{ $internships->lastItem() }} of {{ $internships->total() }} {{ \Illuminate\Support\Str::plural('internship', $internships->total()) }}</p>
+        <div class="card-footer sb-list-footer">
+            <p class="sb-note">Showing {{ $internships->firstItem() }}–{{ $internships->lastItem() }} of {{ $internships->total() }} {{ \Illuminate\Support\Str::plural('internship', $internships->total()) }}</p>
             @if($internships->hasPages())
                 <nav aria-label="Internship pages">
                     <ul class="pagination mb-0">
@@ -195,7 +201,7 @@
     </section>
 
     {{-- Preview panel: shows the selected row (first row by default) --}}
-    <aside class="ib-card ib-preview" id="ibPreview" aria-label="Internship preview" aria-live="polite">
+    <aside class="card sb-preview" id="ibPreview" aria-label="Internship preview" aria-live="polite">
         @include('student.internships.partials.preview', ['internship' => $first, 'applied' => $appliedInternshipIds->contains($first->id)])
     </aside>
 </div>
@@ -212,7 +218,7 @@
 {{-- Phones: the preview opens as a dialog --}}
 <div class="modal fade" id="ibPreviewModal" tabindex="-1" aria-label="Internship preview" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content ib-preview ib-preview--modal">
+        <div class="modal-content sb-preview">
             <div class="modal-header">
                 <h2 class="modal-title h6">Internship preview</h2>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -235,7 +241,7 @@
                 <div class="modal-header">
                     <div>
                         <h2 class="modal-title h5" id="ibApplyTitle">Apply to <span data-apply-title></span></h2>
-                        <p class="ib-muted mb-0" data-apply-company></p>
+                        <p class="sb-note mb-0" data-apply-company></p>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -244,10 +250,10 @@
                     <select id="ibApplyResume" name="resume_id" class="form-select" required>
                         <option value="">Choose a resume</option>
                         @foreach($resumes as $resume)
-                            <option value="{{ $resume->id }}">{{ $resume->category?->label() ?? 'Resume' }}{{ $resume->generated_at ? ' · '.$resume->generated_at->format('M Y') : '' }}</option>
+                            <option value="{{ $resume->id }}" @selected($resumes->count() === 1)>{{ $resume->category?->label() ?? 'Resume' }}{{ $resume->generated_at ? ' · '.$resume->generated_at->format('M Y') : '' }}</option>
                         @endforeach
                     </select>
-                    <p class="ib-hint mt-2 mb-0">Need a different one? <a href="{{ route('student.resume.index') }}">Manage your resumes</a>.</p>
+                    <p class="sb-note mt-2 mb-0">Need a different one? <a href="{{ route('student.resume.index') }}">Manage your resumes</a>.</p>
                     <div data-application-feedback class="small mt-2" role="status" aria-live="polite"></div>
                 </div>
                 <div class="modal-footer">
@@ -265,7 +271,7 @@
 @push('scripts')
 <script>
     (function () {
-        const filterForm = document.querySelector('.ib-filterbar');
+        const filterForm = document.querySelector('.sb-filterbar');
         const scopeAll = document.querySelector('[data-scope-all]');
         const scopeProgram = document.querySelector('[data-scope-program]');
         const phone = window.matchMedia('(max-width: 767.98px)');
@@ -276,7 +282,7 @@
 
         // ---------- split view: select a row, show its preview ----------
         // Looked up on every use, because filtering replaces the results area.
-        const rows = () => Array.from(document.querySelectorAll('.ib-row'));
+        const rows = () => Array.from(document.querySelectorAll('.sb-select-row'));
         const previewFor = (id) => document.getElementById('ibPreview-' + id)?.content.cloneNode(true);
 
         function select(row, { fromPointer = false } = {}) {
@@ -307,11 +313,11 @@
         }
 
         document.addEventListener('click', (event) => {
-            const row = event.target.closest('.ib-row');
+            const row = event.target.closest('.sb-select-row');
             if (row) select(row, { fromPointer: true });
         });
         document.addEventListener('keydown', (event) => {
-            const row = event.target.closest?.('.ib-row');
+            const row = event.target.closest?.('.sb-select-row');
             if (!row) return;
             if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
@@ -437,7 +443,7 @@
         const appliedLink = (url) => {
             const link = document.createElement('a');
             link.href = url;
-            link.className = 'btn btn-outline-secondary ib-applied';
+            link.className = 'btn btn-outline-secondary';
             link.setAttribute('aria-label', 'Already applied; view My Applications');
             link.innerHTML = '<i class="bi bi-check-circle-fill" aria-hidden="true"></i> Applied · View application';
             return link;
@@ -445,8 +451,8 @@
         form.addEventListener('sb:application-submitted', (event) => {
             if (!applyingId) return;
             const url = event.detail?.applications_url || @json(route('student.applications.index'));
-            const cell = document.querySelector('.ib-row[data-internship-id="' + applyingId + '"] [data-status-cell]');
-            if (cell) cell.innerHTML = '<span class="ib-status ib-status--applied"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Applied</span>';
+            const cell = document.querySelector('.sb-select-row[data-internship-id="' + applyingId + '"] [data-status-cell]');
+            if (cell) cell.innerHTML = '<span class="sb-status sb-status--success"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Applied</span>';
             const template = document.getElementById('ibPreview-' + applyingId);
             [template?.content, document.getElementById('ibPreview'), document.getElementById('ibPreviewModal')].forEach((scope) => {
                 scope?.querySelectorAll('[data-apply-id="' + applyingId + '"]').forEach((button) => button.replaceWith(appliedLink(url)));

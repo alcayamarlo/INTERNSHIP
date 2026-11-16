@@ -6,12 +6,12 @@
 <style>
     .student-page-shell {
         padding: 6px 0 0;
-        color: #edf8ff;
+        color: var(--on-burgundy);
     }
 
     .student-page-title {
         margin: 0 0 8px;
-        color: #f4f9ff;
+        color: #fafafa;
         font-size: clamp(1.8rem, 1.2vw + 1.1rem, 2.5rem);
         font-weight: 800;
         letter-spacing: -0.05em;
@@ -19,7 +19,7 @@
 
     .student-page-subtitle {
         margin: 0;
-        color: rgba(186,209,228,.8);
+        color: color-mix(in srgb, var(--burgundy-text) 80%, transparent);
         font-size: 0.95rem;
     }
 
@@ -27,47 +27,47 @@
     .student-page-shell .form-control,
     .student-page-shell .form-select,
     .student-page-shell .btn {
-        border-color: rgba(117,176,215,.18) !important;
-        background: rgba(16,31,45,.86) !important;
-        color: #edf8ff !important;
+        border-color: color-mix(in srgb, var(--burgundy-border) 18%, transparent) !important;
+        background: color-mix(in srgb, #000 86%, transparent) !important;
+        color: var(--on-burgundy) !important;
     }
 
     .student-page-shell .card {
         border-radius: 18px;
-        border: 1px solid rgba(148,163,184,.14);
-        box-shadow: 0 10px 22px rgba(2,9,20,.12);
+        border: 1px solid rgba(166, 166, 166, 0.14);
+        box-shadow: 0 10px 22px color-mix(in srgb, #000 12%, transparent);
         overflow: hidden;
     }
 
     .student-page-shell .card:hover {
-        border-color: rgba(49,217,244,.36) !important;
+        border-color: color-mix(in srgb, var(--burgundy) 36%, transparent) !important;
     }
 
     .student-page-shell .card-header {
-        background: rgba(13,30,44,.92) !important;
-        border-bottom: 1px solid rgba(117,176,215,.18);
+        background: color-mix(in srgb, #000 92%, transparent) !important;
+        border-bottom: 1px solid color-mix(in srgb, var(--burgundy-border) 18%, transparent);
         padding: 1rem 1.1rem;
     }
 
     .student-page-shell .btn-primary {
         border: 0;
-        background: linear-gradient(135deg, #6ab6d7, #4f9ed1) !important;
-        color: #eef9ff !important;
+        background: linear-gradient(135deg, var(--burgundy-border), var(--burgundy)) !important;
+        color: var(--on-burgundy) !important;
         font-weight: 700;
-        box-shadow: 0 8px 20px rgba(37,194,255,.15);
+        box-shadow: 0 8px 20px color-mix(in srgb, var(--burgundy) 15%, transparent);
     }
 
     .student-page-shell .card .h3 {
-        color: #eef8ff;
+        color: var(--on-burgundy);
         font-weight: 800;
         letter-spacing: -0.04em;
         font-size: clamp(1.4rem, 1vw + 0.8rem, 1.8rem);
     }
 
     .student-page-shell .table thead th {
-        background: rgba(12,28,40,.9);
-        color: rgba(220,235,246,.9);
-        border-color: rgba(117,176,215,.16);
+        background: color-mix(in srgb, #000 90%, transparent);
+        color: color-mix(in srgb, var(--on-burgundy) 90%, transparent);
+        border-color: color-mix(in srgb, var(--burgundy-border) 16%, transparent);
         font-size: 0.72rem;
         letter-spacing: 0.08em;
         text-transform: uppercase;
@@ -76,8 +76,8 @@
     }
 
     .student-page-shell .table td {
-        color: rgba(216,232,243,.9);
-        border-color: rgba(117,176,215,.08);
+        color: color-mix(in srgb, var(--burgundy-text) 90%, transparent);
+        border-color: color-mix(in srgb, var(--burgundy-border) 8%, transparent);
         padding: 0.8rem 0.9rem;
         font-size: 0.92rem;
     }

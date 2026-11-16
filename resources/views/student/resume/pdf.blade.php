@@ -5,9 +5,9 @@
     <title>Resume — {{ $content['name'] }}</title>
     <style>
         :root {
-            --resume-sidebar: #B3001B;
-            --resume-accent: #E31B2D;
-            --resume-name: #B3001B;
+            --resume-sidebar: #5E010B;
+            --resume-accent: #5E010B;
+            --resume-name: #5E010B;
             --resume-text: #2B2B2B;
             --resume-muted: #666666;
             --resume-rule: #DDDDDD;
@@ -31,7 +31,7 @@
             line-height: 1.4;
         }
 
-        /* Full-height red band, repeated on every page. */
+        /* Full-height burgundy band, repeated on every page. */
         .sidebar-band {
             position: fixed;
             top: -14mm;
@@ -61,6 +61,8 @@
             overflow: hidden;
         }
         .photo img { width: 38mm; height: 38mm; }
+        /* The OJT seal, top right of the main column (the résumé is the only print that carries it). */
+        .seal { float: right; width: 16mm; height: 16mm; margin: 0 0 2mm 4mm; }
         .photo-initials { display: block; padding-top: 11mm; font-size: 26pt; font-weight: bold; letter-spacing: 1px; }
 
         .side-heading {
@@ -184,6 +186,8 @@
     </div>
 
     <div class="main">
+        @php $sealFile = public_path('images/brand/ojt-seal-print.jpg'); @endphp
+        @if(is_file($sealFile))<img class="seal" src="data:image/jpeg;base64,{{ base64_encode(file_get_contents($sealFile)) }}" alt="">@endif
         <h1 class="name">{{ $content['name'] }}</h1>
         @if($headline !== '')<p class="headline">{{ $headline }}</p>@endif
         @if(filled($content['summary'] ?? null))<p class="summary">{{ $content['summary'] }}</p>@endif

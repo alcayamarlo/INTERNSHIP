@@ -2,13 +2,10 @@
 
 @section('title', 'Employer Dashboard')
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/employer-dashboard.css') }}?v={{ @filemtime(public_path('css/employer-dashboard.css')) }}">
-@endpush
-
 @section('content')
 
-<div class="ed">
+{{-- Shared dashboard layout (public/css/sb-theme.css): header, four stat cards, announcements + OJT, then main column and rail. --}}
+<div class="sb-dash">
 
 @php
     $statTotal = max($applicationStats['total'], 1);
@@ -41,7 +38,7 @@
 
 {{-- Dashboard statistics --}}
 
-<div class="sb-stat-grid">
+<div class="sb-grid sb-grid--4">
 
     <x-dashboard-stat-card
         title="Pending Review"
@@ -78,7 +75,7 @@
 
 </div>
 
-<div class="ed-pair">
+<div class="sb-grid sb-grid--2">
     <x-dashboard-announcements />
     <x-dashboard-ojt />
 </div>
@@ -118,7 +115,7 @@
                                     <div class="text-muted small">{{ $application->company_profile['program'] ?? 'Program not set' }}</div>
                                 </td>
                                 <td>{{ $application->internship->title }}</td>
-                                <td><x-status-badge :status="$application->status->value" :label="$application->status->label()" /></td>
+                                <td><x-status-badge :status="$application->status->value" :label="$application->status->companyLabel()" /></td>
                                 <td><span class="text-muted">{{ $application->applied_at->diffForHumans() }}</span></td>
                                 <td class="text-end">
                                     <a href="{{ route('employer.applicants.show', $application) }}" class="btn btn-sm btn-outline-primary">View</a>
@@ -145,7 +142,7 @@
     <x-dashboard-quick-actions title="Quick Actions" icon="bi-lightning-charge">
 
         <a href="{{ route('employer.internships.create') }}" class="list-group-item list-group-item-action">
-            <i class="bi bi-plus-circle" aria-hidden="true"></i> Create New Listing
+            <i class="bi bi-plus-circle" aria-hidden="true"></i> Post Internship
         </a>
         <a href="{{ route('employer.applicants.index') }}" class="list-group-item list-group-item-action">
             <i class="bi bi-eye" aria-hidden="true"></i> Review Applicants
@@ -227,6 +224,6 @@
 
 </div>
 
-</div>{{-- /.ed --}}
+</div>{{-- /.sb-dash --}}
 
 @endsection

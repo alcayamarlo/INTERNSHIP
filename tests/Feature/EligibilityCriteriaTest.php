@@ -50,9 +50,12 @@ it('lets a coordinator set criteria for their program, saving each edit as a new
     $this->get(route('coordinator.criteria.index'))->assertOk()->assertSee('BSIT')->assertSee('Set criteria');
 
     $payload = ['school_year' => $term['school_year'], 'term' => $term['term'], 'require_fourth_year' => '1', 'require_major_subjects_passed' => '1', 'required_hours' => '500'];
-    $this->post(route('coordinator.criteria.store', $program), $payload)->assertRedirect()->assertSessionHas('success', 'Criteria saved as version 1.');
+    // Saving goes back to the program list for the same term.
+    $this->post(route('coordinator.criteria.store', $program), $payload)
+        ->assertRedirect(route('coordinator.criteria.index', $term))
+        ->assertSessionHas('success', "Criteria saved for {$program->display_name}.");
     $this->post(route('coordinator.criteria.store', $program), [...$payload, 'required_hours' => '520', 'notes' => 'Raised for the new term'])
-        ->assertSessionHas('success', 'Criteria saved as version 2.');
+        ->assertRedirect(route('coordinator.criteria.index', $term));
 
     $versions = EligibilityCriterion::query()->forTerm($program->id, $term['school_year'], $term['term'])->orderBy('version')->get();
     expect($versions)->toHaveCount(2)
@@ -60,12 +63,16 @@ it('lets a coordinator set criteria for their program, saving each edit as a new
         ->and($versions[1]->required_hours)->toBe(520)
         ->and(app(EligibilityCriteria::class)->latestFor($program->id, $term['school_year'], $term['term'])->version)->toBe(2);
 
+    // Versions are kept in the database, but the pages no longer show a version history.
+    $this->get(route('coordinator.criteria.index', $term))
+        ->assertOk()
+        ->assertSee('520 OJT hours')
+        ->assertDontSee('Version 2');
     $this->get(route('coordinator.criteria.show', [$program, ...$term]))
         ->assertOk()
-        ->assertSee('Version 2')
-        ->assertSee('Version 1')
-        ->assertSee('520 OJT hours')
-        ->assertSee('Raised for the new term');
+        ->assertSee('value="520"', false)
+        ->assertSee('Raised for the new term')
+        ->assertDontSee('Version history');
     $this->assertDatabaseHas('system_logs', ['action' => 'eligibility_criteria_saved']);
 });
 
@@ -94,7 +101,7 @@ it('does not let a coordinator manage another coordinator\'s program, but admins
 
     $admin = User::factory()->create(['role' => UserRole::Admin]);
     $this->actingAs($admin)->get(route('admin.criteria.index'))->assertOk()->assertSee('BSIT');
-    $this->post(route('admin.criteria.store', $program), [...$term, 'required_hours' => '450'])->assertRedirect(route('admin.criteria.show', [$program, ...$term]));
+    $this->post(route('admin.criteria.store', $program), [...$term, 'required_hours' => '450'])->assertRedirect(route('admin.criteria.index', $term));
     expect(EligibilityCriterion::count())->toBe(1);
 });
 

@@ -2,22 +2,23 @@
 
 @section('title', 'Intern · '.($profile['name'] ?? 'OJT'))
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/ojt-tabs.css') }}?v={{ @filemtime(public_path('css/ojt-tabs.css')) }}">
-@endpush
-
 @section('content')
 @php
     // Same tab buttons as the student's My OJT page, plus the employer-only Evaluation tab.
     $tabs = [
         'progress' => ['Progress', 'bi-speedometer2'],
         'time-record' => ['Time Record', 'bi-clock-history'],
-        'weekly-journal' => ['Weekly Journal', 'bi-journal-text'],
-        'evaluation' => ['Evaluation', 'bi-clipboard-check'],
+        'weekly-journal' => ['Weekly Report', 'bi-journal-text'],
+        'monthly-evaluation' => ['Monthly Evaluation', 'bi-clipboard-data'],
+        // The end-of-OJT evaluation; named apart from the Monthly Evaluation so both are expected.
+        'evaluation' => ['Final Evaluation', 'bi-clipboard-check'],
     ];
     $activeTab = array_key_exists((string) request('tab'), $tabs) ? request('tab') : 'progress';
+    if (! request('tab') && old('appraisal_id')) {
+        $activeTab = 'monthly-evaluation';
+    }
     // A failed evaluation submit reopens the Evaluation tab.
-    if (! request('tab') && ($errors->hasAny(['strengths', 'improvements', 'comments', 'would_hire']) || collect($errors->keys())->contains(fn ($key) => str_starts_with($key, 'scores')))) {
+    if (! request('tab') && ($errors->hasAny(['comments', 'department_assigned', 'field_of_training', 'supervisor_designation', 'certified_by_name', 'certified_by_position']) || collect($errors->keys())->contains(fn ($key) => str_starts_with($key, 'work_scores') || str_starts_with($key, 'trait_scores')))) {
         $activeTab = 'evaluation';
     }
 @endphp
@@ -25,10 +26,10 @@
     <a href="{{ route('employer.interns.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back</a>
 </x-page-header>
 
-<div class="ojt-tabs d-flex align-items-center justify-content-between gap-2">
-    <div class="d-flex gap-2" role="tablist" aria-label="OJT sections" data-ojt-tabs>
+<div class="sb-tabbar">
+    <div class="sb-section-tabs" role="tablist" aria-label="OJT sections" data-ojt-tabs>
         @foreach($tabs as $key => [$label, $icon])
-            <button type="button" role="tab" id="ojt-tab-{{ $key }}" class="ojt-tab" data-tab="{{ $key }}"
+            <button type="button" role="tab" id="ojt-tab-{{ $key }}" class="sb-section-tab" data-tab="{{ $key }}"
                     aria-controls="ojt-panel-{{ $key }}" aria-selected="{{ $key === $activeTab ? 'true' : 'false' }}"
                     tabindex="{{ $key === $activeTab ? '0' : '-1' }}">
                 <i class="bi {{ $icon }}" aria-hidden="true"></i> {{ $label }}
@@ -38,7 +39,8 @@
 </div>
 
 {{-- Progress: hours, coordinator, emergency contact and the OJT schedule --}}
-<section id="ojt-panel-progress" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-progress" @if($activeTab !== 'progress') hidden @endif>
+<section id="ojt-panel-progress" class="sb-tab-panel" role="tabpanel" aria-labelledby="ojt-tab-progress" @if($activeTab !== 'progress') hidden @endif>
+@include('ojt.partials.deadlines', ['placement' => $placement, 'actor' => 'supervisor'])
 @include('ojt.partials.progress', ['placement' => $placement])
 
 @include('employer.partials.coordinator-contact', ['student' => $placement->student])
@@ -58,17 +60,32 @@
         <div class="card-body">
             <form method="POST" action="{{ route('employer.interns.schedule', $placement) }}" class="row g-2 align-items-end">
                 @csrf @method('PUT')
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label" for="start_date">Start date</label>
                     <input type="date" id="start_date" name="start_date" value="{{ old('start_date', $placement->start_date->toDateString()) }}" class="form-control @error('start_date') is-invalid @enderror" required>
                     @error('start_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label" for="end_date">Expected end date</label>
                     <input type="date" id="end_date" name="end_date" value="{{ old('end_date', $placement->end_date?->toDateString()) }}" class="form-control @error('end_date') is-invalid @enderror">
                     @error('end_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
-                <div class="col-md-4"><button type="submit" class="btn btn-outline-primary w-100">Save schedule</button></div>
+                <div class="col-md-3">
+                    <label class="form-label" for="department">Department / designation</label>
+                    <select id="department" name="department" class="form-select @error('department') is-invalid @enderror">
+                        <option value="">Select...</option>
+                        @foreach(app(\App\Services\OjtDocumentData::class)->designations($placement->department) as $designation)
+                            <option value="{{ $designation }}" @selected(old('department', $placement->department) === $designation)>{{ $designation }}</option>
+                        @endforeach
+                    </select>
+                    @error('department')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label" for="supervisor_name">Supervisor's name on forms</label>
+                    <input id="supervisor_name" name="supervisor_name" maxlength="80" value="{{ old('supervisor_name', $placement->supervisor_name) }}" placeholder="{{ app(\App\Services\OjtDocumentData::class)->defaultSupervisor($placement) }}" class="form-control @error('supervisor_name') is-invalid @enderror">
+                    @error('supervisor_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-12 col-lg-auto"><button type="submit" class="btn btn-outline-primary w-100">Save schedule</button></div>
             </form>
         </div>
     </div>
@@ -77,83 +94,129 @@
 </section>
 
 {{-- Time Record --}}
-<section id="ojt-panel-time-record" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-time-record" @if($activeTab !== 'time-record') hidden @endif>
+<section id="ojt-panel-time-record" class="sb-tab-panel" role="tabpanel" aria-labelledby="ojt-tab-time-record" @if($activeTab !== 'time-record') hidden @endif>
 @include('ojt.partials.attendance', ['placement' => $placement, 'mode' => 'employer'])
 </section>
 
 {{-- Weekly Journal --}}
-<section id="ojt-panel-weekly-journal" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-weekly-journal" @if($activeTab !== 'weekly-journal') hidden @endif>
+<section id="ojt-panel-weekly-journal" class="sb-tab-panel" role="tabpanel" aria-labelledby="ojt-tab-weekly-journal" @if($activeTab !== 'weekly-journal') hidden @endif>
 @include('ojt.partials.journals', ['placement' => $placement, 'mode' => 'employer'])
 </section>
 
+{{-- Monthly Evaluation --}}
+<section id="ojt-panel-monthly-evaluation" class="sb-tab-panel" role="tabpanel" aria-labelledby="ojt-tab-monthly-evaluation" @if($activeTab !== 'monthly-evaluation') hidden @endif>
+@include('ojt.partials.appraisals', ['placement' => $placement, 'mode' => 'employer'])
+</section>
+
 {{-- Evaluation --}}
-<section id="ojt-panel-evaluation" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-evaluation" @if($activeTab !== 'evaluation') hidden @endif>
+<section id="ojt-panel-evaluation" class="sb-tab-panel" role="tabpanel" aria-labelledby="ojt-tab-evaluation" @if($activeTab !== 'evaluation') hidden @endif>
 @if($placement->evaluation?->coordinator_review_status === 'returned')
-    <div class="alert alert-warning" role="status" data-evaluation-returned>
+    <div class="sb-callout mt-0 mb-4" role="status" data-evaluation-returned>
         <i class="bi bi-arrow-return-left" aria-hidden="true"></i> The coordinator returned your evaluation: {{ $placement->evaluation->coordinator_comment }} Update it below and save.
     </div>
 @endif
 
 <div class="card mb-4">
-    <div class="card-header"><h2 class="h6 mb-0"><i class="bi bi-clipboard-check" aria-hidden="true"></i> Performance evaluation</h2></div>
+    <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <h2 class="h6 mb-0"><i class="bi bi-clipboard-check" aria-hidden="true"></i> Final Performance Evaluation</h2>
+        @if($placement->evaluation && ! $placement->evaluation->isLegacy())
+            <a href="{{ route('ojt.evaluations.print', $placement) }}" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener"><i class="bi bi-printer" aria-hidden="true"></i> Print</a>
+        @endif
+    </div>
     <div class="card-body">
         @if($placement->isCleared())
             <p class="text-muted">The coordinator has cleared this OJT, so the evaluation is locked.</p>
             @include('ojt.partials.evaluation', ['placement' => $placement])
+        @elseif($placement->evaluation?->isLegacy())
+            <p class="text-muted small">This evaluation was submitted on the earlier 1-5 form and is kept as is.</p>
+            @include('ojt.partials.evaluation', ['placement' => $placement])
         @elseif(! $placement->rating_requested_at && ! $placement->evaluation)
-            <x-empty-state icon="bi-clipboard-check" title="No rating requested yet" message="Your coordinator hasn't requested a performance rating for this intern yet." />
+            <x-empty-state icon="bi-clipboard-check" title="No final evaluation requested yet" message="Your coordinator requests the Final Performance Evaluation near the end of the OJT." />
         @else
-            @php $evaluation = $placement->evaluation; @endphp
-            <p class="small text-muted">Rate each criterion from 1 (poor) to 5 (outstanding). You can update the evaluation until the coordinator clears the OJT.</p>
-            <form method="POST" action="{{ route('employer.interns.evaluation.store', $placement) }}">
+            @php
+                $evaluation = $placement->evaluation;
+                $employerProfile = auth()->user()->employer;
+            @endphp
+            <p class="small text-muted">
+                The school's Final Performance Evaluation Report. Rate each factor with a whole number up to its maximum. You can update it until the coordinator clears the OJT.
+                @if($placement->rating_due_on)<strong>Due {{ $placement->rating_due_on->format('M d, Y') }}.</strong>@endif
+            </p>
+            <form method="POST" action="{{ route('employer.interns.evaluation.store', $placement) }}" novalidate>
                 @csrf
-                <div class="table-responsive">
-                    <table class="table table-sm align-middle sb-rubric">
-                        <thead>
-                            <tr>
-                                <th scope="col">Criterion</th>
-                                @foreach(\App\Models\Evaluation::SCALE as $value => $label)
-                                    <th scope="col" class="text-center small">{{ $value }}<div class="text-muted fw-normal">{{ $label }}</div></th>
-                                @endforeach
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach(\App\Models\Evaluation::CRITERIA as $key => $label)
-                                @php $current = (int) old('scores.'.$key, $evaluation?->scores[$key] ?? 0); @endphp
-                                <tr>
-                                    <td>{{ $label }} @error('scores.'.$key)<div class="text-danger small">{{ $message }}</div>@enderror</td>
-                                    @foreach(\App\Models\Evaluation::SCALE as $value => $scaleLabel)
-                                        <td class="text-center" data-label="{{ $value }}">
-                                            <input class="form-check-input" type="radio" name="scores[{{ $key }}]" value="{{ $value }}" aria-label="{{ $label }}: {{ $value }} {{ $scaleLabel }}" @checked($current === $value) required>
-                                        </td>
-                                    @endforeach
-                                </tr>
+                <h3 class="h6 mt-2">Part II. Training details</h3>
+                <div class="row g-2 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label" for="department_assigned">Division / department assigned <span class="sb-req" aria-hidden="true">*</span></label>
+                        @php $assigned = old('department_assigned', $evaluation?->department_assigned ?? $placement->department); @endphp
+                        <select id="department_assigned" name="department_assigned" required class="form-select @error('department_assigned') is-invalid @enderror">
+                            <option value="">Select...</option>
+                            @foreach(app(\App\Services\OjtDocumentData::class)->designations($evaluation?->department_assigned ?? $placement->department) as $designation)
+                                <option value="{{ $designation }}" @selected($assigned === $designation)>{{ $designation }}</option>
                             @endforeach
-                        </tbody>
-                    </table>
+                        </select>
+                        @error('department_assigned')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="field_of_training">Field of training assigned <span class="sb-req" aria-hidden="true">*</span></label>
+                        <input id="field_of_training" name="field_of_training" maxlength="150" required class="form-control @error('field_of_training') is-invalid @enderror"
+                               value="{{ old('field_of_training', $evaluation?->field_of_training ?? $placement->internship?->title) }}">
+                        @error('field_of_training')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="supervisor_designation">Your designation / job title <span class="sb-req" aria-hidden="true">*</span></label>
+                        <input id="supervisor_designation" name="supervisor_designation" maxlength="100" required class="form-control @error('supervisor_designation') is-invalid @enderror"
+                               value="{{ old('supervisor_designation', $evaluation?->supervisor_designation ?? $employerProfile?->position) }}" placeholder="e.g. Solutions Architect">
+                        @error('supervisor_designation')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        @if(blank($employerProfile?->position))<div class="form-text">Saved to your profile for next time.</div>@endif
+                    </div>
                 </div>
+
+                <h3 class="h6">Part III. Final performance evaluation</h3>
+                @foreach(['work_scores' => ['Work performance', \App\Models\Evaluation::WORK_FACTORS], 'trait_scores' => ['Personality traits', \App\Models\Evaluation::TRAIT_FACTORS]] as $group => [$groupLabel, $factors])
+                    <div class="table-responsive mb-3">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead><tr><th scope="col">{{ $groupLabel }}</th><th scope="col" class="text-center">Max rating</th><th scope="col" class="text-center sb-cell-score">Actual rating</th></tr></thead>
+                            <tbody>
+                                @foreach($factors as $key => $factor)
+                                    @php $stored = $evaluation?->{$group}[$key] ?? null; @endphp
+                                    <tr>
+                                        <td>
+                                            <strong>{{ $loop->iteration }}. {{ $factor['label'] }}</strong>
+                                            <div class="small text-muted">{{ $factor['description'] }}</div>
+                                            @error($group.'.'.$key)<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                                        </td>
+                                        <td class="text-center">{{ $factor['points'] }}%</td>
+                                        <td>
+                                            <input type="number" name="{{ $group }}[{{ $key }}]" min="0" max="{{ $factor['points'] }}" step="1" required inputmode="numeric"
+                                                   class="form-control form-control-sm text-center @error($group.'.'.$key) is-invalid @enderror"
+                                                   value="{{ old($group.'.'.$key, $stored) }}" aria-label="{{ $factor['label'] }}, 0 to {{ $factor['points'] }}">
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endforeach
+
+                <h3 class="h6">Part IV. Final comments / recommendations</h3>
+                <label class="visually-hidden" for="comments">Final comments / recommendations</label>
+                <textarea id="comments" name="comments" rows="5" maxlength="5000" required class="form-control mb-3 @error('comments') is-invalid @enderror">{{ old('comments', $evaluation?->comments) }}</textarea>
+                @error('comments')<div class="invalid-feedback d-block mb-2">{{ $message }}</div>@enderror
+
+                <h3 class="h6">Certified true and correct <span class="text-muted fw-normal small">(optional, e.g. HR)</span></h3>
                 <div class="row g-2">
                     <div class="col-md-6">
-                        <label class="form-label" for="strengths">Strengths</label>
-                        <textarea id="strengths" name="strengths" rows="2" class="form-control" maxlength="2000">{{ old('strengths', $evaluation?->strengths) }}</textarea>
+                        <label class="form-label" for="certified_by_name">Name</label>
+                        <input id="certified_by_name" name="certified_by_name" maxlength="150" class="form-control @error('certified_by_name') is-invalid @enderror" value="{{ old('certified_by_name', $evaluation?->certified_by_name) }}">
+                        @error('certified_by_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label" for="improvements">Areas for improvement</label>
-                        <textarea id="improvements" name="improvements" rows="2" class="form-control" maxlength="2000">{{ old('improvements', $evaluation?->improvements) }}</textarea>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label" for="comments">Overall comments</label>
-                        <textarea id="comments" name="comments" rows="2" class="form-control" maxlength="2000">{{ old('comments', $evaluation?->comments) }}</textarea>
-                    </div>
-                    <div class="col-12">
-                        <input type="hidden" name="would_hire" value="0">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="would_hire" name="would_hire" value="1" @checked(old('would_hire', $evaluation?->would_hire))>
-                            <label class="form-check-label" for="would_hire">We would consider hiring this intern</label>
-                        </div>
+                        <label class="form-label" for="certified_by_position">Position</label>
+                        <input id="certified_by_position" name="certified_by_position" maxlength="100" class="form-control @error('certified_by_position') is-invalid @enderror" value="{{ old('certified_by_position', $evaluation?->certified_by_position) }}" placeholder="e.g. HR Officer">
+                        @error('certified_by_position')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary mt-3">{{ $evaluation ? 'Update evaluation' : 'Submit evaluation' }}</button>
+                <button type="submit" class="btn btn-primary mt-3">{{ $evaluation ? 'Update final evaluation' : 'Submit final evaluation' }}</button>
             </form>
         @endif
     </div>

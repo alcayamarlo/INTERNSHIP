@@ -8,10 +8,10 @@
         $internship->allowance ? '₱'.number_format((float) $internship->allowance, 2).' allowance' : null,
     ]);
 @endphp
-<div class="pp-detail-inner" data-posting-detail="{{ $internship->id }}">
-    <div class="pp-head">
-        <h2 class="pp-title">{{ $internship->title }}</h2>
-        <span class="sb-row-actions pp-actions">
+<div class="sb-detail" data-posting-detail="{{ $internship->id }}">
+    <div class="sb-detail-head">
+        <h2 class="sb-detail-title">{{ $internship->title }}</h2>
+        <span class="sb-row-actions sb-detail-actions">
             <a href="{{ route('employer.internships.edit', $internship) }}" class="btn btn-sm btn-outline-secondary" title="Edit posting" aria-label="Edit {{ $internship->title }}">
                 <i class="bi bi-pencil" aria-hidden="true"></i>
             </a>
@@ -33,39 +33,39 @@
             </form>
         </span>
     </div>
-    <p class="pp-meta">{{ implode(' · ', $meta) }}</p>
+    <p class="sb-detail-meta">{{ implode(' · ', $meta) }}</p>
     @if($internship->hidden_at)
-        <p class="pp-hidden"><span class="badge text-bg-danger">Hidden by an administrator</span> {{ $internship->hidden_reason }}</p>
+        <p class="sb-detail-alert"><span class="badge text-bg-danger">Hidden by an administrator</span> {{ $internship->hidden_reason }}</p>
     @endif
 
-    <div class="pp-stats">
-        <div class="pp-stat">
-            <span class="pp-stat-label">Applicants</span>
-            <span class="pp-stat-value">{{ $internship->applications_count }}</span>
+    <div class="sb-tiles">
+        <div class="sb-tile">
+            <span class="sb-tile-label">Applicants</span>
+            <span class="sb-tile-value">{{ $internship->applications_count }}</span>
         </div>
-        <div class="pp-stat">
-            <span class="pp-stat-label">Deadline</span>
-            <span class="pp-stat-value">{{ $internship->expires_at ? $internship->expires_at->timezone('Asia/Manila')->format('M d, Y') : 'No deadline' }}</span>
-            @if($internship->expires_at?->isPast())<span class="pp-stat-note">Passed</span>@endif
+        <div class="sb-tile">
+            <span class="sb-tile-label">Deadline</span>
+            <span class="sb-tile-value">{{ $internship->expires_at ? $internship->expires_at->timezone('Asia/Manila')->format('M d, Y') : 'No deadline' }}</span>
+            @if($internship->expires_at?->isPast())<span class="sb-tile-note">Passed</span>@endif
         </div>
     </div>
 
-    <section class="pp-section">
-        <h3 class="pp-section-title">Competencies</h3>
+    <section class="sb-block">
+        <h3 class="sb-block-title">Competencies</h3>
         @if($internship->requirementsList->isNotEmpty())
-            <ul class="pp-tags">
+            <ul class="sb-tags">
                 @foreach($internship->requirementsList as $requirement)
                     <li>{{ $requirement->requirement_name }} · {{ $requirement->required_level?->label() ?? ucfirst((string) $requirement->getRawOriginal('required_level')) }}</li>
                 @endforeach
             </ul>
         @else
-            <p class="pp-muted">No competencies listed.</p>
+            <p class="sb-note">No competencies listed.</p>
         @endif
     </section>
 
-    <section class="pp-section">
-        <h3 class="pp-section-title">Open to programs</h3>
-        <ul class="pp-tags">
+    <section class="sb-block">
+        <h3 class="sb-block-title">Open to programs</h3>
+        <ul class="sb-tags">
             @forelse($internship->programs as $program)
                 <li>{{ $program->display_name }}</li>
             @empty
@@ -74,25 +74,25 @@
         </ul>
     </section>
 
-    <section class="pp-section">
-        <div class="pp-section-head">
-            <h3 class="pp-section-title">Applicants</h3>
+    <section class="sb-block">
+        <div class="sb-block-head">
+            <h3 class="sb-block-title">Applicants</h3>
             @if($internship->applications_count)
-                <a href="{{ route('employer.applicants.index') }}" class="pp-link">View all applicants</a>
+                <a href="{{ route('employer.applicants.index') }}" class="sb-block-link">View all applicants</a>
             @endif
         </div>
         @if($internship->applications->isNotEmpty())
-            <ul class="pp-applicants">
+            <ul class="sb-rows">
                 @foreach($internship->applications as $application)
                     <li>
                         <a href="{{ route('employer.applicants.show', $application) }}">{{ $application->student?->user?->name ?? 'Student' }}</a>
-                        <span class="pp-muted">{{ ($application->applied_at ?? $application->created_at)?->timezone('Asia/Manila')->format('M d, Y') }}</span>
-                        <x-status-badge :status="$application->status->value" :label="$application->status->label()" />
+                        <span class="sb-note">{{ ($application->applied_at ?? $application->created_at)?->timezone('Asia/Manila')->format('M d, Y') }}</span>
+                        <x-status-badge :status="$application->status->value" :label="$application->status->companyLabel()" />
                     </li>
                 @endforeach
             </ul>
         @else
-            <p class="pp-muted">No applicants yet. Students who match will see this posting first.</p>
+            <p class="sb-note">No applicants yet. Students who match will see this posting first.</p>
         @endif
     </section>
 </div>

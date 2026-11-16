@@ -43,13 +43,19 @@ class ImageProcessor
      * Saves a square JPEG under a random name and returns its path.
      *
      * @param  array{x: float, y: float, size: float}|null  $crop  Fractions of the upright image: left, top,
-     *         and side length relative to its width. Null crops the centre.
+     *                                                             and side length relative to its width. Null crops the centre.
      *
      * @throws ValidationException when the file is not a real JPG, PNG, or WebP image
      */
     public function storeSquare(UploadedFile $file, string $field, string $directory, string $disk, int $size, ?array $crop = null): string
     {
-        $jpeg = $this->square((string) file_get_contents($file->getRealPath()), $size, $crop, $field);
+        // An upload that cannot be read (e.g. an antivirus removed it) is rejected like any other bad file, not a 500.
+        $source = $file->getRealPath();
+        $bytes = $source !== false && is_readable($source) ? @file_get_contents($source) : false;
+        if ($bytes === false || $bytes === '') {
+            throw ValidationException::withMessages([$field => self::TYPE_MESSAGE]);
+        }
+        $jpeg = $this->square($bytes, $size, $crop, $field);
         $path = trim($directory, '/').'/'.Str::random(40).'.jpg';
 
         if (! Storage::disk($disk)->put($path, $jpeg)) {

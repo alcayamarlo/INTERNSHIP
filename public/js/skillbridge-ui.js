@@ -3,11 +3,10 @@
 
     const root = document.documentElement;
     const storageKey = 'skillbridge-theme';
-    const themeQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const syncThemeButtons = () => {
-        const isDark = root.dataset.theme === 'dark' || (!root.dataset.theme && themeQuery.matches);
+        const isDark = root.dataset.theme === 'dark';
         document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
             button.setAttribute('aria-pressed', String(isDark));
             button.setAttribute('aria-label', `Switch to ${isDark ? 'light' : 'dark'} mode`);
@@ -31,15 +30,12 @@
 
     const initialize = () => {
         syncThemeButtons();
-        themeQuery.addEventListener('change', () => {
-            if (!root.dataset.theme) syncThemeButtons();
-        });
 
         document.addEventListener('click', (event) => {
             const button = event.target instanceof Element ? event.target.closest('[data-theme-toggle]') : null;
             if (!button) return;
 
-            const current = root.dataset.theme || (themeQuery.matches ? 'dark' : 'light');
+            const current = root.dataset.theme === 'dark' ? 'dark' : 'light';
             root.dataset.theme = current === 'dark' ? 'light' : 'dark';
             try {
                 window.localStorage.setItem(storageKey, root.dataset.theme);
@@ -68,6 +64,29 @@
             }
         };
         syncSidebar();
+        // Same rule as the first-paint script in layouts/app: rail from 640px to 1023px, the saved choice
+        // from 1024px, and the drawer below 640px (the rail class is not used there).
+        const applySidebarWidth = () => {
+            const width = window.innerWidth;
+            let saved = null;
+            try {
+                saved = window.localStorage.getItem('skillbridge-sidebar');
+            } catch {
+                saved = null;
+            }
+            const rail = (width >= 640 && width < 1024) || (width >= 1024 && saved === 'collapsed');
+            if (rail !== rootElement.classList.contains('sb-collapsed')) {
+                rootElement.classList.toggle('sb-collapsed', rail);
+                syncSidebar();
+            }
+        };
+        let resizeFrame = null;
+        window.addEventListener('resize', () => {
+            if (resizeFrame) {
+                cancelAnimationFrame(resizeFrame);
+            }
+            resizeFrame = requestAnimationFrame(applySidebarWidth);
+        });
         collapseButton?.addEventListener('click', () => {
             const collapsed = rootElement.classList.toggle('sb-collapsed');
             try {

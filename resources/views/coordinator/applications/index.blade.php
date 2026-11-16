@@ -2,52 +2,59 @@
 
 @section('title', 'Applications')
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/coordinator-applications.css') }}?v={{ @filemtime(public_path('css/coordinator-applications.css')) }}">
-@endpush
-
 @section('content')
 @php($monitor = \App\Http\Controllers\Coordinator\ApplicationMonitorController::class)
-<div class="ap-page">
+<div class="sb-dash">
 
 <x-page-header title="Applications and placements" subtitle="Where your students are in the internship process.">
-    <p class="ap-summary" data-live-region="application-summary" data-live-topics="applications placements">
-        <span><strong>{{ $totalApplications }}</strong> application{{ $totalApplications === 1 ? '' : 's' }}</span>
-        <span aria-hidden="true">·</span>
-        <span><strong>{{ $counts['placed'] }}</strong> placed</span>
-        <span aria-hidden="true">·</span>
-        <span><strong>{{ $unplacedTotal }}</strong> not placed</span>
-    </p>
     @if($pendingValidation)
-        <a href="{{ route('coordinator.placements.index', ['status' => 'pending_validation']) }}" class="btn btn-warning"><i class="bi bi-shield-exclamation" aria-hidden="true"></i> {{ $pendingValidation }} placement{{ $pendingValidation === 1 ? '' : 's' }} to validate</a>
+        <a href="{{ route('coordinator.placements.index', ['status' => 'pending_validation']) }}" class="btn btn-primary"><i class="bi bi-shield-exclamation" aria-hidden="true"></i> {{ $pendingValidation }} placement{{ $pendingValidation === 1 ? '' : 's' }} to validate</a>
     @endif
 </x-page-header>
 
-<div class="card ap-card">
-    <div class="ap-tabs" role="tablist" aria-label="Applications and placements" data-ap-tabs>
-        <button type="button" role="tab" id="ap-tab-applications" class="ap-tab" data-tab="applications"
+<section class="sb-kpis" aria-label="Application summary" data-live-region="application-summary" data-live-topics="applications placements">
+    <div class="card sb-kpi">
+        <i class="bi bi-send" aria-hidden="true"></i>
+        <span class="sb-kpi-value">{{ $totalApplications }}</span>
+        <span class="sb-kpi-label">Application{{ $totalApplications === 1 ? '' : 's' }}</span>
+    </div>
+    <div class="card sb-kpi">
+        <i class="bi bi-briefcase" aria-hidden="true"></i>
+        <span class="sb-kpi-value">{{ $counts['placed'] }}</span>
+        <span class="sb-kpi-label">Placed</span>
+    </div>
+    <div class="card sb-kpi">
+        <i class="bi bi-person-dash" aria-hidden="true"></i>
+        <span class="sb-kpi-value">{{ $unplacedTotal }}</span>
+        <span class="sb-kpi-label">Not placed</span>
+    </div>
+</section>
+
+<div>
+    <div class="sb-section-tabs" role="tablist" aria-label="Applications and placements" data-ap-tabs>
+        <button type="button" role="tab" id="ap-tab-applications" class="sb-section-tab" data-tab="applications"
                 aria-controls="ap-panel-applications" aria-selected="true" tabindex="0">
             Applications
-            <span class="ap-tab-count" data-live-region="application-tab-count" data-live-topics="applications placements">{{ $applications->total() }}</span>
+            <span class="sb-tab-count" data-live-region="application-tab-count" data-live-topics="applications placements">{{ $applications->total() }}</span>
         </button>
-        <button type="button" role="tab" id="ap-tab-not-placed" class="ap-tab" data-tab="not-placed"
+        <button type="button" role="tab" id="ap-tab-not-placed" class="sb-section-tab" data-tab="not-placed"
                 aria-controls="ap-panel-not-placed" aria-selected="false" tabindex="-1">
-            <span class="ap-tab-label--long">Students not placed yet</span>
-            <span class="ap-tab-label--short">Not placed</span>
-            <span class="ap-tab-count">{{ $unplaced->total() }}</span>
+            <span class="d-none d-sm-inline">Students not placed yet</span>
+            <span class="d-sm-none">Not placed</span>
+            <span class="sb-tab-count">{{ $unplaced->total() }}</span>
         </button>
     </div>
 
     {{-- Tab 1: applications --}}
-    <section id="ap-panel-applications" class="ap-panel" role="tabpanel" aria-labelledby="ap-tab-applications">
-        <div class="ap-panel-tools">
-            <form method="GET" action="{{ route('coordinator.applications.index') }}" class="ap-filter" role="search" aria-label="Filter applications">
-                @if(! empty($filters['unplaced_q']))<input type="hidden" name="unplaced_q" value="{{ $filters['unplaced_q'] }}">@endif
-                <div class="ap-filter-field ap-filter-field--wide">
+    <section id="ap-panel-applications" class="card" role="tabpanel" aria-labelledby="ap-tab-applications">
+        <form method="GET" action="{{ route('coordinator.applications.index') }}" class="sb-filterbar sb-toolbar-row d-block" role="search" aria-label="Filter applications">
+            @if(! empty($filters['unplaced_q']))<input type="hidden" name="unplaced_q" value="{{ $filters['unplaced_q'] }}">@endif
+            <div class="sb-filter-row">
+                <div class="sb-filter-field">
                     <label class="form-label" for="monitorSearch">Student name</label>
                     <input id="monitorSearch" type="search" name="q" value="{{ $filters['q'] ?? '' }}" class="form-control" maxlength="100">
                 </div>
-                <div class="ap-filter-field">
+                <div class="sb-filter-field sb-filter-field--sm">
                     <label class="form-label" for="monitorStage">Stage</label>
                     <select id="monitorStage" name="stage" class="form-select" onchange="this.form.requestSubmit()">
                         <option value="">All</option>
@@ -56,7 +63,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="ap-filter-field">
+                <div class="sb-filter-field sb-filter-field--sm">
                     <label class="form-label" for="monitorProgram">Program</label>
                     <select id="monitorProgram" name="program_id" class="form-select" onchange="this.form.requestSubmit()">
                         <option value="">All my programs</option>
@@ -65,9 +72,9 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="ap-filter-action"><button type="submit" class="btn btn-primary">Filter</button></div>
-            </form>
-        </div>
+                <div class="sb-filter-actions"><button type="submit" class="btn btn-primary">Filter</button></div>
+            </div>
+        </form>
 
         <div data-live-region="application-list" data-live-topics="applications placements">
             <div class="table-responsive">
@@ -77,17 +84,17 @@
                         @forelse($applications as $application)
                             @php($stage = $monitor::stageOf($application))
                             <tr>
-                                <td><a href="{{ route('coordinator.students.show', $application->student) }}">{{ $application->student?->user?->name }}</a></td>
-                                <td>{{ $application->internship?->title }}</td>
-                                <td>{{ $application->internship?->employer?->company_name }}</td>
+                                <td><a href="{{ route('coordinator.students.show', $application->student) }}" class="sb-row-title">{{ $application->student?->user?->name }}</a></td>
+                                <td class="text-break">{{ $application->internship?->title }}</td>
+                                <td class="text-break">{{ $application->internship?->employer?->company_name }}</td>
                                 <td>
-                                    <span class="badge text-bg-light border">{{ $stages[$stage] ?? ucfirst($stage) }}</span>
-                                    @if($application->placement?->isPendingValidation())<small class="d-block text-warning-emphasis">Waiting for your validation</small>@endif
+                                    <x-status-badge :status="$stage" :label="$stages[$stage] ?? ucfirst($stage)" />
+                                    @if($application->placement?->isPendingValidation())<span class="sb-row-sub">Waiting for your validation</span>@endif
                                 </td>
-                                <td>{{ $application->applied_at?->format('M d, Y') }}</td>
+                                <td class="text-nowrap">{{ $application->applied_at?->format('M d, Y') }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="5" class="text-center text-muted py-4">No applications match.</td></tr>
+                            <tr><td colspan="5" class="sb-table-empty">No applications match.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -97,16 +104,16 @@
     </section>
 
     {{-- Tab 2: students not placed yet --}}
-    <section id="ap-panel-not-placed" class="ap-panel" role="tabpanel" aria-labelledby="ap-tab-not-placed" hidden>
-        <div class="ap-panel-tools">
-            <form method="GET" action="{{ route('coordinator.applications.index') }}#not-placed" class="ap-filter" role="search" aria-label="Filter students not placed yet">
-                @if(! empty($filters['q']))<input type="hidden" name="q" value="{{ $filters['q'] }}">@endif
-                @if(! empty($filters['stage']))<input type="hidden" name="stage" value="{{ $filters['stage'] }}">@endif
-                <div class="ap-filter-field ap-filter-field--wide">
+    <section id="ap-panel-not-placed" class="card" role="tabpanel" aria-labelledby="ap-tab-not-placed" hidden>
+        <form method="GET" action="{{ route('coordinator.applications.index') }}#not-placed" class="sb-filterbar sb-toolbar-row d-block" role="search" aria-label="Filter students not placed yet">
+            @if(! empty($filters['q']))<input type="hidden" name="q" value="{{ $filters['q'] }}">@endif
+            @if(! empty($filters['stage']))<input type="hidden" name="stage" value="{{ $filters['stage'] }}">@endif
+            <div class="sb-filter-row">
+                <div class="sb-filter-field">
                     <label class="form-label" for="unplacedSearch">Student name</label>
                     <input id="unplacedSearch" type="search" name="unplaced_q" value="{{ $filters['unplaced_q'] ?? '' }}" class="form-control" maxlength="100">
                 </div>
-                <div class="ap-filter-field">
+                <div class="sb-filter-field sb-filter-field--sm">
                     <label class="form-label" for="unplacedProgram">Program</label>
                     <select id="unplacedProgram" name="program_id" class="form-select" onchange="this.form.requestSubmit()">
                         <option value="">All my programs</option>
@@ -115,9 +122,9 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="ap-filter-action"><button type="submit" class="btn btn-primary">Filter</button></div>
-            </form>
-        </div>
+                <div class="sb-filter-actions"><button type="submit" class="btn btn-primary">Filter</button></div>
+            </div>
+        </form>
 
         <div class="table-responsive" id="unplaced">
             <table class="table table-hover mb-0">
@@ -125,19 +132,19 @@
                 <tbody>
                     @forelse($unplaced as $student)
                         <tr data-unplaced="{{ $student->id }}">
-                            <td><a href="{{ route('coordinator.students.show', $student) }}">{{ $student->user?->name }}</a></td>
+                            <td><a href="{{ route('coordinator.students.show', $student) }}" class="sb-row-title">{{ $student->user?->name }}</a></td>
                             <td>{{ collect([$student->program, $student->year_level])->filter()->implode(' · ') ?: 'Not set' }}</td>
                             <td>
                                 @if(in_array($student->id, $eligibleIds, true))
-                                    <span class="badge text-bg-success">Eligible</span>
+                                    <x-status-badge status="success" label="Eligible" />
                                 @else
-                                    <span class="badge text-bg-secondary">Not yet</span>
+                                    <x-status-badge status="neutral" label="Not yet" />
                                 @endif
                             </td>
                             <td>{{ $student->active_applications_count }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="4" class="text-center text-muted py-4">{{ empty($filters['unplaced_q']) ? 'Every student is placed.' : 'No students match.' }}</td></tr>
+                        <tr><td colspan="4" class="sb-table-empty">{{ empty($filters['unplaced_q']) ? 'Every student is placed.' : 'No students match.' }}</td></tr>
                     @endforelse
                 </tbody>
             </table>

@@ -18,7 +18,7 @@
                         <strong>{{ number_format($renderedInternshipHours) }} / {{ number_format($requiredInternshipHours) }} hours required</strong>
                     </div>
                     <div class="progress" role="progressbar" aria-label="Internship hours progress" aria-valuemin="0" aria-valuemax="{{ $requiredInternshipHours }}" aria-valuenow="{{ min($renderedInternshipHours, $requiredInternshipHours) }}">
-                        <div class="progress-bar bg-info" style="width: {{ $internshipHoursProgress }}%"></div>
+                        <div class="progress-bar" style="width: {{ $internshipHoursProgress }}%"></div>
                     </div>
                 @else
                     <p class="text-muted mb-0">Set your program to see the required internship hours.</p>
@@ -58,7 +58,10 @@
         <div class="profile-field-grid">
             <div>
                 <label class="form-label" for="student_number">Student ID number</label>
-                <input id="student_number" type="text" class="form-control @error('student_number') is-invalid @enderror" name="student_number" value="{{ old('student_number', $student->student_id_number) }}" placeholder="SCC-21-00013240" autocomplete="off" data-student-id-pattern="{{ $studentIdPattern }}" @readonly($profileVerified || $student->student_id_locked)>
+                <input id="student_number" type="text" class="form-control @error('student_number') is-invalid @enderror" name="student_number" value="{{ old('student_number', $student->student_id_number) }}" placeholder="SCC-21-00013240" autocomplete="off" data-student-id-pattern="{{ $studentIdPattern }}" @readonly($profileVerified || $student->student_id_locked || (filled($student->student_id_number) && ! $studentIdNeedsCorrection))>
+                @if(! $student->student_id_locked && ! $profileVerified && filled($student->student_id_number) && ! $studentIdNeedsCorrection)
+                    <small class="form-text text-muted">Your student ID can't be changed after it is saved. Contact your coordinator or administrator if it needs correction.</small>
+                @endif
                 @if($student->student_id_locked)
                     <small class="form-text text-muted">Your student ID was set when your account was created and can't be changed here. Contact your coordinator or administrator if it needs correction.</small>
                 @endif

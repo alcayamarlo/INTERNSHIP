@@ -42,56 +42,64 @@
 
     // One card per student: identity, program, year and competencies, completion, View profile.
     const renderStudent = (student) => {
-        const row = node('article', 'student-tracking-row student-card');
-        const identity = node('div', 'student-identity');
-        identity.append(node('span', 'student-avatar', initials(student.name)));
+        const row = node('article', 'card sb-entity');
+        const identity = node('div', 'sb-person');
+        const avatar = node('span', 'sb-initials sb-initials--lg', initials(student.name));
+        avatar.setAttribute('aria-hidden', 'true');
+        identity.append(avatar);
 
-        const identityCopy = node('div', 'student-identity-copy');
-        const studentId = node('span', 'student-school-id', student.student_id_number || 'School ID not provided');
+        const identityCopy = node('div', 'sb-person-text');
+        const studentId = node('small', null, student.student_id_number || 'School ID not provided');
+        identityCopy.append(node('h2', null, student.name), studentId, node('small', null, student.email));
         if (student.student_id_needs_correction) {
-            const flag = node('span', 'student-id-correction-flag', 'ID needs correction');
-            flag.setAttribute('aria-label', 'ID needs correction');
-            studentId.append(document.createTextNode(' '), flag);
+            const flag = node('span', 'sb-status sb-status--danger', 'ID needs correction');
+            identityCopy.append(flag);
         }
-        identityCopy.append(
-            node('strong', 'student-full-name', student.name),
-            studentId,
-            node('span', 'student-email', student.email),
-        );
         identity.append(identityCopy);
 
-        const program = node('p', 'student-card-program', student.program || 'Program not set');
+        const body = node('div', 'sb-entity-body');
+        const program = node('p', 'sb-row-title mb-0', student.program || 'Program not set');
         const details = node(
             'p',
-            'student-card-meta',
+            'sb-row-sub mb-0',
             `${student.year_level || 'Year level not set'} · ${student.competencies_count} competencies (${competencySummary(student)})`,
         );
 
         const completionValue = Math.max(0, Math.min(100, Number(student.profile_completion) || 0));
-        const completion = node('div', `student-completion${completionValue < 50 ? ' is-low' : ''}`);
-        const track = node('div', 'student-completion-track');
-        const fill = node('span');
+        const completion = node('div', 'sb-progress-cell');
+        const label = node('div', 'd-flex justify-content-between small');
+        label.append(node('span', 'text-muted', 'Profile completion'), node('strong', null, `${completionValue}%`));
+        const track = node('div', 'progress progress--thin');
+        track.setAttribute('role', 'progressbar');
+        track.setAttribute('aria-label', `Profile completion ${completionValue}%`);
+        track.setAttribute('aria-valuemin', '0');
+        track.setAttribute('aria-valuemax', '100');
+        track.setAttribute('aria-valuenow', String(completionValue));
+        const fill = node('div', 'progress-bar');
         fill.style.width = `${completionValue}%`;
         track.append(fill);
-        completion.append(track, node('span', 'student-completion-value', `${completionValue}%`));
+        completion.append(label, track);
+        body.append(program, details, completion);
 
-        completion.setAttribute('aria-label', `Profile completion ${completionValue}%`);
-
-        const view = node('a', 'student-view-button', 'View profile');
+        const foot = node('div', 'sb-entity-foot');
+        const view = node('a', 'btn btn-outline-primary btn-sm', 'View profile');
         view.href = student.view_url;
         view.setAttribute('aria-label', `View ${student.name}`);
+        foot.append(view);
 
-        row.append(identity, program, details, completion, view);
+        row.append(identity, body, foot);
         return row;
     };
 
     const makePageButton = (label, pageNumber, options = {}) => {
-        const button = node('button', 'students-page-button', label);
+        const item = node('li', `page-item${options.current ? ' active' : ''}${options.disabled ? ' disabled' : ''}`);
+        const button = node('button', 'page-link', label);
         button.type = 'button';
         button.disabled = options.disabled ?? false;
         if (options.current) button.setAttribute('aria-current', 'page');
         button.addEventListener('click', () => loadPage(pageNumber));
-        return button;
+        item.append(button);
+        return item;
     };
 
     const renderPagination = (meta) => {

@@ -10,7 +10,7 @@
     .nt-detail-head p { margin: 2px 0 0; color: var(--sb-muted); font-size: .875rem; }
     .nt-detail-head .btn, .nt-detail .btn { min-height: 36px; padding: 0 14px; font-size: .8125rem; line-height: 1; }
     .nt-detail-body { display: flex; align-items: flex-start; gap: 12px; padding: 20px; }
-    .nt-detail-icon { display: grid; flex: 0 0 auto; width: 36px; height: 36px; place-items: center; border: 1px solid var(--sb-border); border-radius: 50%; background: var(--sb-brand-soft); color: var(--sb-brand); font-size: 16px; }
+    .nt-detail-icon { display: grid; flex: 0 0 auto; width: 36px; height: 36px; place-items: center; border: 1px solid var(--sb-border); border-radius: 50%; background: var(--sb-brand-soft); color: var(--burgundy-text); font-size: 16px; }
     .nt-detail-main { min-width: 0; flex: 1 1 auto; }
     .nt-detail-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; color: var(--sb-muted); font-size: .8125rem; }
     .nt-detail-title { margin: 8px 0 6px; color: var(--sb-ink); font-size: 1.125rem; font-weight: 700; line-height: 1.3; letter-spacing: -.01em; overflow-wrap: anywhere; }

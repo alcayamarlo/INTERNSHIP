@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Coordinator;
 
 use App\Http\Controllers\Controller;
 use App\Models\Placement;
+use App\Services\AppraisalService;
 use App\Services\NotificationService;
+use App\Services\OjtDeadlineService;
 use App\Services\PlacementService;
 use App\Services\PlacementValidation;
 use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PlacementController extends Controller
 {
@@ -49,7 +52,13 @@ class PlacementController extends Controller
             'cleared' => (clone $scoped)->whereNotNull('cleared_at')->count(),
         ];
 
-        return view('coordinator.placements.index', compact('placements', 'summary', 'filter', 'search'));
+        $deadlineService = app(OjtDeadlineService::class);
+        $deadlines = $placements->getCollection()
+            ->filter(fn (Placement $placement) => $placement->isActive())
+            ->mapWithKeys(fn (Placement $placement) => [$placement->id => $deadlineService->pendingFor($placement)])
+            ->all();
+
+        return view('coordinator.placements.index', compact('placements', 'summary', 'filter', 'search', 'deadlines'));
     }
 
     public function show(Placement $placement)
@@ -63,13 +72,20 @@ class PlacementController extends Controller
             'attendanceLogs' => fn ($query) => $query->latest('work_date'),
             'attendanceLogs.reviewer:id,name',
             'journalEntries' => fn ($query) => $query->latest('week_start'),
+            'journalEntries.reviewer:id,name',
             'evaluation.evaluator:id,name',
+            'appraisals.supervisor:id,name',
             'clearedBy:id,name',
         ]);
 
         $validationChecks = $placement->isPendingValidation() ? app(PlacementValidation::class)->checks($placement) : [];
+        // Months that can still be requested: within the OJT dates, up to now, not yet requested.
+        $requested = $placement->appraisals->map(fn ($appraisal) => $appraisal->period_month->format('Y-m'))->all();
+        $requestMonths = $placement->isActive()
+            ? app(AppraisalService::class)->monthsFor($placement)->reject(fn ($month) => in_array($month->format('Y-m'), $requested, true))->values()
+            : collect();
 
-        return view('coordinator.placements.show', compact('placement', 'validationChecks'));
+        return view('coordinator.placements.show', compact('placement', 'validationChecks', 'requestMonths'));
     }
 
     public function clear(Request $request, Placement $placement)
@@ -85,14 +101,28 @@ class PlacementController extends Controller
         return back()->with('success', 'OJT cleared. The student can now download the certificate of completion.');
     }
 
-    public function requestRating(Placement $placement)
+    /** "Request final evaluation": asks the supervisor for the Final Performance Evaluation, with a due date. */
+    public function requestRating(Request $request, Placement $placement)
     {
         $this->authorize('requestRating', $placement);
+        // Like monthly evaluations: only for an OJT that is validated and still ongoing.
+        if (! $placement->isActive()) {
+            return back()->with('error', 'The final evaluation can be requested once the OJT is validated and ongoing.');
+        }
+        $validated = $request->validate([
+            'rating_due_on' => ['nullable', 'date', 'after_or_equal:today'],
+        ], [
+            'rating_due_on.after_or_equal' => 'The due date cannot be in the past.',
+        ]);
 
         $placement->update([
             'rating_requested_at' => now(),
             'rating_requested_by_user_id' => Auth::id(),
+            // A week by default when no date is chosen.
+            'rating_due_on' => $validated['rating_due_on'] ?? now()->addDays(7)->toDateString(),
         ]);
+        // A new request (or due date) can be reminded again.
+        DB::table('ojt_reminders')->where('placement_id', $placement->id)->where('kind', OjtDeadlineService::FINAL_EVALUATION)->delete();
 
         $placement->loadMissing('employer.user', 'student.user');
         if ($employerUser = $placement->employer?->user) {
@@ -100,12 +130,12 @@ class PlacementController extends Controller
                 $employerUser,
                 'ojt_update',
                 'Rating requested',
-                'Your coordinator requested a performance rating for '.($placement->student?->user?->name ?? 'this intern').'.',
+                'Your coordinator requested the Final Performance Evaluation for '.($placement->student?->user?->name ?? 'this intern').'. Due '.$placement->rating_due_on->format('M d, Y').'.',
                 ['placement_id' => $placement->id]
             );
         }
 
-        return back()->with('success', 'Rating request sent to the employer.');
+        return back()->with('success', 'Final evaluation requested from the company. Due '.$placement->rating_due_on->format('M d, Y').'.');
     }
 
     /** Deploys the student: the placement becomes active and hours can be logged. */

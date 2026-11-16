@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class AcademicSetting extends Model
 {
@@ -28,6 +29,9 @@ class AcademicSetting extends Model
         'summer_end_month',
         'summer_end_day',
         'required_ojt_hours',
+        'evaluation_period_labels',
+        'journal_due_days',
+        'ojt_departments',
     ];
 
     protected function casts(): array
@@ -38,7 +42,52 @@ class AcademicSetting extends Model
             'summer_enabled' => 'boolean',
             'require_fourth_year_standing' => 'boolean',
             'require_major_subjects_passed' => 'boolean',
+            'evaluation_period_labels' => 'array',
+            'journal_due_days' => 'integer',
+            'ojt_departments' => 'array',
         ];
+    }
+
+    /** Month number (1-12) => evaluation period name, falling back to the defaults (Jan Prelim ... Apr Finals). */
+    public function evaluationPeriodLabels(): array
+    {
+        $saved = is_array($this->evaluation_period_labels) ? $this->evaluation_period_labels : null;
+        $labels = [];
+        foreach (range(1, 12) as $month) {
+            $value = $saved === null ? (Appraisal::DEFAULT_PERIOD_LABELS[$month] ?? '') : (string) ($saved[$month] ?? $saved[(string) $month] ?? '');
+            $labels[$month] = trim($value);
+        }
+
+        return $labels;
+    }
+
+    /** The name printed as "Period of Evaluation" for a month: its configured name, or the month name. */
+    public function evaluationPeriodLabelFor(int $month): string
+    {
+        return $this->evaluationPeriodLabels()[$month] ?: Carbon::create(2000, $month, 1)->format('F');
+    }
+
+    /** Starting list for the "Designation" dropdown until the admin saves their own. */
+    public const DEFAULT_OJT_DEPARTMENTS = [
+        'IT Department',
+        'Administrative Department',
+        'Finance Department',
+        'Human Resources Department',
+        'Marketing Department',
+        'Operations Department',
+    ];
+
+    /**
+     * The "Designation" dropdown on every OJT form, so a department is always spelled the same way.
+     *
+     * @return list<string>
+     */
+    public function ojtDepartments(): array
+    {
+        $saved = is_array($this->ojt_departments) ? $this->ojt_departments : [];
+        $list = collect($saved)->map(fn ($name) => trim((string) $name))->filter()->unique()->values()->all();
+
+        return $list !== [] ? $list : self::DEFAULT_OJT_DEPARTMENTS;
     }
 
     public static function current(): self

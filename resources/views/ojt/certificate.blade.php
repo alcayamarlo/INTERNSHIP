@@ -27,19 +27,19 @@
     <div class="subtitle">On-the-Job Training</div>
 
     <div class="presented">This is to certify that</div>
-    <div class="name">{{ $placement->student?->user?->name }}</div>
-    <div class="small">{{ $placement->student?->program }}@if($placement->student?->student_id_number) &middot; {{ $placement->student->student_id_number }}@endif</div>
+    <div class="name">{{ $info['full_name'] }}</div>
+    <div class="small">{{ $info['course'] }}@if($info['student_id'] !== '') &middot; {{ $info['student_id'] }}@endif</div>
 
     <div class="body">
         has satisfactorily completed <strong>{{ number_format($approvedHours, 2) }} hours</strong> of on-the-job training
-        as <strong>{{ $placement->internship?->title }}</strong> at <strong>{{ $placement->employer?->company_name }}</strong>
+        as <strong>{{ $placement->internship?->title }}</strong> at <strong>{{ $info['company'] }}</strong>
         from {{ $placement->start_date?->format('F d, Y') }} to {{ ($placement->end_date ?? $placement->completed_at)?->format('F d, Y') }}.
     </div>
 
     <div class="signatures">
         <table>
             <tr>
-                <td><div class="line"><strong>{{ $placement->employer?->contact_person ?? 'On-site Supervisor' }}</strong><br>{{ $placement->employer?->company_name }}</div></td>
+                <td><div class="line"><strong>{{ $info['supervisor_name'] ?: 'On-site Supervisor' }}</strong><br>{{ $info['company'] }}</div></td>
                 <td><div class="line"><strong>{{ $placement->clearedBy?->name ?? 'OJT Coordinator' }}</strong><br>OJT Coordinator</div></td>
             </tr>
         </table>

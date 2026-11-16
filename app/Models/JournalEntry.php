@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\OjtDocumentData;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -14,10 +15,15 @@ class JournalEntry extends Model
     protected $fillable = [
         'placement_id',
         'week_start',
+        'week_number',
         'title',
         'accomplishments',
         'learnings',
         'challenges',
+        'actions_taken',
+        'daily_snapshot',
+        'header_snapshot',
+        'header_overrides',
         'status',
         'supervisor_comment',
         'reviewed_by_user_id',
@@ -32,6 +38,10 @@ class JournalEntry extends Model
     {
         return [
             'week_start' => 'date',
+            'week_number' => 'integer',
+            'daily_snapshot' => 'array',
+            'header_snapshot' => 'array',
+            'header_overrides' => 'array',
             'reviewed_at' => 'datetime',
             'coordinator_reviewed_at' => 'datetime',
         ];
@@ -56,6 +66,31 @@ class JournalEntry extends Model
     public function isAcknowledged(): bool
     {
         return $this->status === self::STATUS_ACKNOWLEDGED;
+    }
+
+    /** "Certified true and correct" by the supervisor (stored as acknowledged). */
+    public function isCertified(): bool
+    {
+        return $this->isAcknowledged();
+    }
+
+    /**
+     * The report's Inclusive Dates, e.g. "April 20 - 24, 2026": as printed when it was submitted, otherwise
+     * the days it covers (weekdays, a weekend day with a time record, OJT dates only).
+     */
+    public function inclusiveDates(): string
+    {
+        $frozen = $this->header_snapshot['inclusive_dates'] ?? null;
+        if (filled($frozen)) {
+            return (string) $frozen;
+        }
+
+        return OjtDocumentData::inclusiveDates(...$this->placement->reportDateRange($this->week_start));
+    }
+
+    public static function titleFor(?int $weekNumber): string
+    {
+        return ($weekNumber ? 'Week '.$weekNumber : 'Weekly').' – Activity Narrative Report';
     }
 
     public function weekLabel(): string

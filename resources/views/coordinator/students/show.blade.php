@@ -2,81 +2,59 @@
 
 @section('title', 'Student Profile')
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/coordinator-student-profile.css') }}?v={{ @filemtime(public_path('css/coordinator-student-profile.css')) }}">
-@endpush
-
 @section('content')
-<main class="student-profile-page">
-    <a class="profile-back-link" href="{{ route('coordinator.students.index') }}">
-        <span aria-hidden="true">←</span> Back to Students
-    </a>
+<x-page-header :title="$student->user->name" :subtitle="($student->program ?: 'Program not set').' · '.($student->year_level ?: 'Year level not set')">
+    <a class="btn btn-outline-secondary" href="{{ route('coordinator.students.index') }}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to Students</a>
+</x-page-header>
 
-    <section class="profile-hero" aria-labelledby="student-profile-name">
-        <div class="profile-ring" style="--profile-progress: {{ $profileCompletion }}%; --profile-color: {{ $profileCompletion >= 50 ? 'var(--sb-success-ink)' : 'var(--sb-warning-ink)' }};" role="img" aria-label="Profile {{ $profileCompletion }} percent complete">
-            <div class="profile-ring-inner">{{ $initials }}</div>
-        </div>
-
-        <div class="profile-hero-main">
-            <h1 id="student-profile-name">{{ $student->user->name }}</h1>
-            <p class="profile-program-line">
-                {{ $student->program ?: 'Program not set' }}<span aria-hidden="true"> · </span>{{ $student->year_level ?: 'Year level not set' }}
-            </p>
-            <p class="profile-institution">{{ $student->institution?->name ?? 'Institution not set' }}</p>
-            <div class="profile-chips">
-                <span class="profile-chip profile-chip-id">School ID {{ $student->student_id_number ?: 'Not provided' }}</span>
-                @if($studentIdNeedsCorrection)
-                    <span class="profile-chip profile-chip-warning">ID needs correction</span>
-                @endif
-                <span class="profile-chip">{{ $student->user->email }}</span>
-                <span class="profile-chip">{{ $student->user->phone ?: 'Phone not provided' }}</span>
+<div class="sb-stack">
+    <section class="card" aria-label="Student summary">
+        <div class="card-body sb-person">
+            <div class="sb-ring" style="--sb-value: {{ $profileCompletion }}" role="img" aria-label="Profile {{ $profileCompletion }} percent complete"><span>{{ $initials }}</span></div>
+            <div class="sb-person-text">
+                <strong>{{ $student->institution?->name ?? 'Institution not set' }}</strong>
+                <ul class="sb-tags mt-2">
+                    <li>School ID {{ $student->student_id_number ?: 'Not provided' }}</li>
+                    @if($studentIdNeedsCorrection)
+                        <li class="sb-tag--brand">ID needs correction</li>
+                    @endif
+                    <li>{{ $student->user->email }}</li>
+                    <li>{{ $student->user->phone ?: 'Phone not provided' }}</li>
+                </ul>
             </div>
-        </div>
-
-        <div class="profile-completion">
-            <strong>{{ $profileCompletion }}%</strong>
-            <span>Profile complete</span>
         </div>
     </section>
 
-    <section class="profile-stats" aria-label="Submission summary">
-        <article class="profile-stat-card">
-            <span class="profile-stat-label">Certificates</span>
-            <strong>{{ $competencies->count() }}</strong>
-        </article>
-        <article class="profile-stat-card">
-            <span class="profile-stat-label">Older certificate files</span>
-            <strong>{{ $certificates->count() }}</strong>
-        </article>
-        <article class="profile-stat-card">
-            <span class="profile-stat-label">Portfolio items</span>
-            <strong>{{ $portfolios->count() }}</strong>
-        </article>
-        <article class="profile-stat-card">
-            <span class="profile-stat-label">Verification progress</span>
-            <strong>{{ $verificationCounts['total'] ? $verificationCounts['verified'].'/'.$verificationCounts['total'].' verified' : '—' }}</strong>
-            @if ($verificationCounts['pending'] > 0)
-                <span class="profile-stat-caption">· {{ $verificationCounts['pending'] }} pending</span>
+    <section class="sb-kpis" aria-label="Submission summary">
+        <div class="card sb-kpi"><span class="sb-kpi-label">Profile complete</span><span class="sb-kpi-value">{{ $profileCompletion }}%</span></div>
+        <div class="card sb-kpi"><span class="sb-kpi-label">Certificates</span><span class="sb-kpi-value">{{ $competencies->count() }}</span></div>
+        <div class="card sb-kpi"><span class="sb-kpi-label">Older certificate files</span><span class="sb-kpi-value">{{ $certificates->count() }}</span></div>
+        <div class="card sb-kpi"><span class="sb-kpi-label">Portfolio items</span><span class="sb-kpi-value">{{ $portfolios->count() }}</span></div>
+        <div class="card sb-kpi">
+            <span class="sb-kpi-label">Verification progress</span>
+            @if($verificationCounts['total'])
+                <span class="sb-kpi-value">{{ $verificationCounts['verified'].'/'.$verificationCounts['total'].' verified' }}</span>
+                @if($verificationCounts['pending'] > 0)<span class="sb-note">· {{ $verificationCounts['pending'] }} pending</span>@endif
+            @else
+                <span class="sb-kpi-value">—</span>
             @endif
-        </article>
+        </div>
     </section>
 
     {{-- Three columns: details (left), review actions (middle), collections (right). --}}
-    <div class="profile-grid">
-
-        {{-- ===== Left: who the student is ===== --}}
-        <div class="profile-col profile-col-left">
-            <section class="profile-card">
-                <header class="profile-section-heading profile-card-head"><h2>Student details</h2></header>
-                <div class="profile-card-body">
-                    <dl class="profile-details">
+    <div class="sb-grid sb-grid--3">
+        <div class="sb-stack">
+            <section class="card">
+                <div class="card-header"><h2>Student details</h2></div>
+                <div class="card-body">
+                    <dl class="sb-fields">
                         <div><dt>Program</dt><dd>{{ $student->program ?: 'Not set' }}</dd></div>
                         <div><dt>Year level</dt><dd>{{ $student->year_level ?: 'Not set' }}</dd></div>
                         <div>
                             <dt>School ID</dt>
                             <dd>
                                 {{ $student->student_id_number ?: 'Not provided' }}
-                                @if($studentIdNeedsCorrection)<span class="profile-chip profile-chip-warning">ID needs correction</span>@endif
+                                @if($studentIdNeedsCorrection) <span class="sb-tag sb-tag--brand">ID needs correction</span>@endif
                             </dd>
                         </div>
                         <div><dt>Phone</dt><dd>{{ $student->user->phone ?: 'Not provided' }}</dd></div>
@@ -85,17 +63,15 @@
                 </div>
             </section>
 
-            <section class="profile-card">
-                <header class="profile-section-heading profile-card-head"><h2>Career objective</h2></header>
-                <div class="profile-card-body">
-                    <p class="profile-prose">{{ $student->career_objectives ?: 'Not added yet.' }}</p>
-                </div>
+            <section class="card">
+                <div class="card-header"><h2>Career objective</h2></div>
+                <div class="card-body"><p class="mb-0">{{ $student->career_objectives ?: 'Not added yet.' }}</p></div>
             </section>
 
-            <section class="profile-card">
-                <header class="profile-section-heading profile-card-head"><h2>Internship preference</h2></header>
-                <div class="profile-card-body">
-                    <dl class="profile-details">
+            <section class="card">
+                <div class="card-header"><h2>Internship preference</h2></div>
+                <div class="card-body">
+                    <dl class="sb-fields">
                         <div><dt>Field</dt><dd>{{ $student->preferred_internship_field ?: 'Not specified' }}</dd></div>
                         <div><dt>Work setup</dt><dd>{{ $student->preferred_work_setup ?: 'Not specified' }}</dd></div>
                         <div><dt>Location</dt><dd>{{ $student->preferred_location ?: 'Not specified' }}</dd></div>
@@ -104,282 +80,244 @@
             </section>
         </div>
 
-        {{-- ===== Middle: review actions ===== --}}
-        <div class="profile-col profile-col-middle">
-            <section class="profile-card profile-review-controls">
-                <header class="profile-section-heading profile-card-head">
+        <div class="sb-stack">
+            <section class="card">
+                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
                     <h2>Academic progress and profile verification</h2>
                     @if($student->profile_verified_at)
-                        <span class="profile-status profile-status-verified">Profile verified</span>
+                        <x-status-badge status="verified" label="Profile verified" />
                     @else
                         <form method="POST" action="{{ route('coordinator.students.verify-profile', $student) }}">
                             @csrf
-                            <button type="submit" class="btn btn-primary">Verify profile</button>
+                            <button type="submit" class="btn btn-primary btn-sm">Verify profile</button>
                         </form>
                     @endif
-                </header>
-                <div class="profile-card-body">
-                    <p class="profile-prose">Required internship hours: {{ $requiredInternshipHours ?? 'Not set for this program' }}</p>
-                    <div class="profile-hours-progress" role="img" aria-label="{{ $renderedInternshipHours }} of {{ $requiredInternshipHours ?? 0 }} internship hours rendered">
-                        <div class="profile-hours-progress-track"><span style="width: {{ $internshipHoursProgress }}%"></span></div>
-                        <p>{{ $renderedInternshipHours }} rendered{{ $requiredInternshipHours ? ' / '.$requiredInternshipHours.' required hours ('.$internshipHoursProgress.'%)' : ' hours' }}</p>
+                </div>
+                <div class="card-body sb-stack sb-stack--tight">
+                    <p>Required internship hours: {{ $requiredInternshipHours ?? 'Not set for this program' }}</p>
+                    <div>
+                        <div class="progress progress--thin" role="img" aria-label="{{ $renderedInternshipHours }} of {{ $requiredInternshipHours ?? 0 }} internship hours rendered">
+                            <div class="progress-bar" style="width: {{ $internshipHoursProgress }}%"></div>
+                        </div>
+                        <p class="sb-note mt-2">{{ $renderedInternshipHours }} rendered{{ $requiredInternshipHours ? ' / '.$requiredInternshipHours.' required hours ('.$internshipHoursProgress.'%)' : ' hours' }}</p>
                     </div>
-                    <form method="POST" action="{{ route('coordinator.students.academic-readiness.update', $student) }}" class="profile-readiness-form">
+                    <form method="POST" action="{{ route('coordinator.students.academic-readiness.update', $student) }}" class="sb-stack sb-stack--tight">
                         @csrf
                         @method('PUT')
-                        <label>
+                        <label class="sb-field">
                             <span>Rendered internship hours</span>
-                            <input type="number" name="rendered_internship_hours" min="0" max="10000" step="1" value="{{ old('rendered_internship_hours', $renderedInternshipHours) }}" required>
+                            <input type="number" class="form-control" name="rendered_internship_hours" min="0" max="10000" step="1" value="{{ old('rendered_internship_hours', $renderedInternshipHours) }}" required>
                         </label>
-                        <label>
+                        <label class="sb-field">
                             <span>GWA (from the registrar)</span>
-                            <input type="number" name="gwa" min="1" max="5" step="0.01" value="{{ old('gwa', $student->gwa) }}" placeholder="e.g. 1.75">
+                            <input type="number" class="form-control" name="gwa" min="1" max="5" step="0.01" value="{{ old('gwa', $student->gwa) }}" placeholder="e.g. 1.75">
                         </label>
-                        <label class="profile-checkbox-label">
+                        <div class="form-check">
                             <input type="hidden" name="major_subjects_passed" value="0">
-                            <input type="checkbox" name="major_subjects_passed" value="1" @checked(old('major_subjects_passed', $student->major_subjects_passed))>
-                            Student has passed all major subjects
-                        </label>
-                        <button type="submit" class="btn btn-primary">Save academic progress</button>
+                            <input class="form-check-input" type="checkbox" id="majorSubjectsPassed" name="major_subjects_passed" value="1" @checked(old('major_subjects_passed', $student->major_subjects_passed))>
+                            <label class="form-check-label" for="majorSubjectsPassed">Student has passed all major subjects</label>
+                        </div>
+                        <div><button type="submit" class="btn btn-primary">Save academic progress</button></div>
                     </form>
                 </div>
             </section>
 
-            <section class="profile-card" aria-labelledby="eligibilityHeading" data-eligibility>
-                <header class="profile-section-heading profile-card-head">
+            <section class="card" aria-labelledby="eligibilityHeading" data-eligibility>
+                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
                     <h2 id="eligibilityHeading">Internship eligibility</h2>
-                    <span class="profile-status {{ $eligibility['eligible'] ? 'profile-status-verified' : 'profile-status-pending' }}">{{ $eligibility['eligible'] ? 'Eligible to apply' : 'Not eligible yet' }}</span>
-                </header>
-                <div class="profile-card-body">
-                    <p class="profile-prose">{{ $eligibility['source'] === 'program' ? 'Checked against the program criteria for this term.' : 'Checked against the school-wide rules (no program criteria this term).' }}</p>
+                    <x-status-badge :status="$eligibility['eligible'] ? 'approved' : 'pending'" :label="$eligibility['eligible'] ? 'Eligible to apply' : 'Not eligible yet'" />
+                </div>
+                <div class="card-body sb-stack sb-stack--tight">
+                    <p class="sb-note">{{ $eligibility['source'] === 'program' ? 'Checked against the program criteria for this term.' : 'Checked against the school-wide rules (no program criteria this term).' }}</p>
                     @if($eligibility['rules'])
-                        <ul class="list-unstyled profile-rules">
+                        <ul class="sb-checks">
                             @foreach($eligibility['rules'] as $rule)
-                                <li data-rule="{{ $rule['key'] }}">
-                                    <i class="bi {{ $rule['passed'] ? 'bi-check-circle-fill text-success' : 'bi-x-circle-fill text-danger' }}" aria-hidden="true"></i>
+                                <li class="{{ $rule['passed'] ? 'is-pass' : 'is-fail' }}" data-rule="{{ $rule['key'] }}">
+                                    <i class="bi {{ $rule['passed'] ? 'bi-check-circle-fill' : 'bi-x-circle' }}" aria-hidden="true"></i>
                                     <span><strong>{{ $rule['label'] }}</strong>: {{ $rule['detail'] }}</span>
                                     <span class="visually-hidden">{{ $rule['passed'] ? '(passed)' : '(failed)' }}</span>
                                 </li>
                             @endforeach
                         </ul>
                     @else
-                        <p class="profile-prose">No eligibility rules apply this term.</p>
+                        <p>No eligibility rules apply this term.</p>
                     @endif
 
-                    {{-- One form per decision: the decision travels in a hidden field, not on the (auto-disabled) button.
-                         The reject form uses display: contents so its reason field sits on its own line and
-                         both buttons share the next line, while each control stays in its own form. --}}
-                    <div class="profile-eligibility-actions">
-                        <form method="POST" action="{{ route('coordinator.students.eligibility.store', $student) }}" class="profile-eligibility-reject">
+                    {{-- One form per decision: the decision travels in a hidden field, not on the (auto-disabled) button. --}}
+                    <div class="sb-inline-panel">
+                        <form method="POST" action="{{ route('coordinator.students.eligibility.store', $student) }}" class="d-grid gap-2">
                             @csrf
                             <input type="hidden" name="decision" value="rejected">
-                            <div class="profile-eligibility-reason">
+                            <div>
                                 <label class="form-label" for="eligibilityReason">Reason <span class="text-muted small">(required to mark not eligible; the student sees it)</span></label>
                                 <input id="eligibilityReason" type="text" name="reason" maxlength="1000" class="form-control @error('reason') is-invalid @enderror" value="{{ old('reason') }}" required>
                                 @error('reason')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
-                            <button type="submit" class="btn btn-outline-danger">Mark not eligible</button>
+                            <button type="submit" class="btn btn-outline-primary">Mark not eligible</button>
                         </form>
                         <form method="POST" action="{{ route('coordinator.students.eligibility.store', $student) }}">
                             @csrf
                             <input type="hidden" name="decision" value="approved">
-                            <button type="submit" class="btn btn-success w-100">Approve</button>
+                            <button type="submit" class="btn btn-primary w-100">Approve</button>
                         </form>
                     </div>
 
                     @if($eligibilityHistory->isNotEmpty())
-                        <h3 class="h6 mt-4">Decision history</h3>
-                        <ul class="list-unstyled small mb-0">
-                            @foreach($eligibilityHistory as $decision)
-                                <li class="mb-1">
-                                    <span class="badge {{ $decision->isRejected() ? 'text-bg-danger' : 'text-bg-success' }}">{{ $decision->isRejected() ? 'Not eligible' : 'Approved' }}</span>
-                                    {{ $decision->created_at->format('M d, Y h:i A') }} · {{ $decision->decidedBy?->name ?? 'Coordinator' }}
-                                    @if($decision->reason) · {{ $decision->reason }}@endif
-                                </li>
+                        <div>
+                            <h3 class="sb-block-title">Decision history</h3>
+                            <ul class="sb-rows">
+                                @foreach($eligibilityHistory as $decision)
+                                    <li class="small">
+                                        <x-status-badge :status="$decision->isRejected() ? 'rejected' : 'approved'" :label="$decision->isRejected() ? 'Not eligible' : 'Approved'" />
+                                        <span>{{ $decision->created_at->format('M d, Y h:i A') }} · {{ $decision->decidedBy?->name ?? 'Coordinator' }}@if($decision->reason) · {{ $decision->reason }}@endif</span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                </div>
+            </section>
+
+            @if($changeRequests->isNotEmpty())
+                <section class="card">
+                    <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <h2>Profile change requests</h2>
+                        <span class="sb-tag">{{ $changeRequests->where('status', 'pending')->count() }} pending</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="sb-review-list">
+                            @foreach($changeRequests as $changeRequest)
+                                <article class="sb-review-row">
+                                    <div class="sb-review-row-text">
+                                        <h3 class="sb-row-title">{{ match($changeRequest->field) { 'student_id_number' => 'Student ID', 'program_id' => 'Program', 'year_level' => 'Year level', default => ucfirst(str_replace('_', ' ', $changeRequest->field)) } }}</h3>
+                                        <p class="sb-row-sub mb-0">Current: {{ $changeRequest->current_value_label }} <span aria-hidden="true">→</span> Requested: {{ $changeRequest->requested_value_label }}</p>
+                                        @if($changeRequest->student_note)
+                                            <p class="small mt-2 mb-0">{{ $changeRequest->student_note }}</p>
+                                        @endif
+                                        @if($changeRequest->coordinator_note)
+                                            <p class="sb-row-sub mb-0">Coordinator note: {{ $changeRequest->coordinator_note }}</p>
+                                        @endif
+                                    </div>
+                                    <x-status-badge :status="$changeRequest->status" :label="ucfirst($changeRequest->status)" />
+                                    @if($changeRequest->status === 'pending')
+                                        <div class="sb-inline-panel">
+                                            <form method="POST" action="{{ route('coordinator.students.change-requests.review', [$student, $changeRequest]) }}">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="decision" value="approved">
+                                                <button type="submit" class="btn btn-primary btn-sm">Approve</button>
+                                            </form>
+                                            <form method="POST" action="{{ route('coordinator.students.change-requests.review', [$student, $changeRequest]) }}" class="d-flex flex-wrap gap-2">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="decision" value="rejected">
+                                                <label class="flex-grow-1">
+                                                    <span class="visually-hidden">Required rejection note</span>
+                                                    <input type="text" class="form-control form-control-sm" name="coordinator_note" maxlength="2000" placeholder="Reason for rejection" required>
+                                                </label>
+                                                <button type="submit" class="btn btn-outline-secondary btn-sm">Reject</button>
+                                            </form>
+                                        </div>
+                                    @endif
+                                </article>
+                            @endforeach
+                        </div>
+                    </div>
+                </section>
+            @endif
+        </div>
+
+        <div class="sb-stack">
+            <section class="card">
+                <div class="card-header d-flex align-items-center justify-content-between gap-2"><h2>Certificates</h2><span class="sb-tag">{{ $competencies->count() }}</span></div>
+                @if($competencies->isEmpty())
+                    <div class="card-body"><p class="sb-note">No certificates added yet.</p></div>
+                @else
+                    <ul class="sb-rows sb-rows--card">
+                        @foreach($competencies as $competency)
+                            <li>
+                                <div class="sb-grow">
+                                    <span class="sb-row-title">{{ $competency['name'] }}</span>
+                                    <span class="sb-row-sub">{{ $competency['category'] }}@if(! empty($competency['issuer'])) · {{ $competency['issuer'] }}@endif</span>
+                                    @if(! empty($competency['skills']))<span class="sb-row-sub">Skills learned: {{ implode(', ', $competency['skills']) }}</span>@endif
+                                </div>
+                                <span class="sb-tag sb-tag--brand" aria-label="{{ $competency['level_label'] }} proficiency">{{ $competency['level_label'] }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </section>
+
+            <section class="card">
+                <div class="card-header d-flex align-items-center justify-content-between gap-2"><h2>Skills</h2><span class="sb-tag">{{ $skills->count() }}</span></div>
+                <div class="card-body">
+                    @if($skills->isEmpty())
+                        <p class="sb-note">No skills added yet.</p>
+                    @else
+                        <ul class="sb-tags" aria-label="Self-declared skills">
+                            @foreach($skills as $skill)
+                                <li>{{ $skill['name'] }}@if($skill['level_label']) · {{ $skill['level_label'] }}@endif @if($skill['has_certificate'])<i class="bi bi-file-earmark-check" aria-hidden="true" title="Has certificate"></i><span class="visually-hidden">(has certificate)</span>@endif</li>
                             @endforeach
                         </ul>
                     @endif
                 </div>
             </section>
 
-            @if($changeRequests->isNotEmpty())
-                <section class="profile-card">
-                    <header class="profile-section-heading profile-card-head">
-                        <h2>Profile change requests</h2>
-                        <span class="profile-count">{{ $changeRequests->where('status', 'pending')->count() }} pending</span>
-                    </header>
-                    <div class="profile-card-body profile-change-requests">
-                        @foreach($changeRequests as $changeRequest)
-                            <article class="profile-change-request">
-                                <div class="profile-change-request-heading">
-                                    <div>
-                                        <h3>{{ match($changeRequest->field) { 'student_id_number' => 'Student ID', 'program_id' => 'Program', 'year_level' => 'Year level', default => ucfirst(str_replace('_', ' ', $changeRequest->field)) } }}</h3>
-                                        <p>Current: {{ $changeRequest->current_value_label }} <span aria-hidden="true">→</span> Requested: {{ $changeRequest->requested_value_label }}</p>
-                                    </div>
-                                    <span class="profile-status profile-status-{{ $changeRequest->status }}">{{ ucfirst($changeRequest->status) }}</span>
+            <section class="card">
+                <div class="card-header d-flex align-items-center justify-content-between gap-2"><h2>Older certificate files</h2><span class="sb-tag">{{ $certificates->count() }}</span></div>
+                @if($certificates->isEmpty())
+                    <div class="card-body"><p class="sb-note">No certificates uploaded yet.</p></div>
+                @else
+                    <ul class="sb-rows sb-rows--card">
+                        @foreach($certificates as $certificate)
+                            <li>
+                                <div class="sb-grow">
+                                    <span class="sb-row-title">{{ $certificate['title'] }}</span>
+                                    <span class="sb-row-sub">{{ $certificate['issuer'] ?: 'Issuer not specified' }}</span>
+                                    @if($certificate['has_file'])
+                                        <a href="{{ route('coordinator.verification.evidence', ['certificates', $certificate['id']]) }}" target="_blank" rel="noopener" class="small">View file</a>
+                                    @endif
                                 </div>
-                                @if($changeRequest->student_note)
-                                    <p class="profile-prose">{{ $changeRequest->student_note }}</p>
-                                @endif
-                                @if($changeRequest->coordinator_note)
-                                    <p class="profile-activity-note">Coordinator note: {{ $changeRequest->coordinator_note }}</p>
-                                @endif
-                                @if($changeRequest->status === 'pending')
-                                    <div class="profile-change-request-actions">
-                                        <form method="POST" action="{{ route('coordinator.students.change-requests.review', [$student, $changeRequest]) }}">
-                                            @csrf
-                                            @method('PATCH')
-                                            <input type="hidden" name="decision" value="approved">
-                                            <button type="submit" class="btn btn-primary">Approve</button>
-                                        </form>
-                                        <form method="POST" action="{{ route('coordinator.students.change-requests.review', [$student, $changeRequest]) }}">
-                                            @csrf
-                                            @method('PATCH')
-                                            <input type="hidden" name="decision" value="rejected">
-                                            <label>
-                                                <span class="visually-hidden">Required rejection note</span>
-                                                <input type="text" name="coordinator_note" maxlength="2000" placeholder="Reason for rejection" required>
-                                            </label>
-                                            <button type="submit" class="btn btn-outline-secondary">Reject</button>
-                                        </form>
-                                    </div>
-                                @endif
-                            </article>
+                                <x-status-badge :status="$certificate['status']" :label="ucfirst($certificate['status'])" />
+                            </li>
                         @endforeach
-                    </div>
-                </section>
-            @endif
-        </div>
-
-        {{-- ===== Right: collections and activity ===== --}}
-        <div class="profile-col profile-col-right">
-            <section class="profile-card">
-                <header class="profile-section-heading profile-card-head">
-                    <h2>Certificates</h2>
-                    <span class="profile-count">{{ $competencies->count() }}</span>
-                </header>
-                <div class="profile-card-body">
-                    @if ($competencies->isEmpty())
-                        <p class="profile-empty">No certificates added yet.</p>
-                    @else
-                        <div class="profile-skill-grid">
-                            @foreach ($competencies as $competency)
-                                @php
-                                    $filledSegments = match ($competency['level']) {
-                                        'beginner' => 1,
-                                        'intermediate' => 2,
-                                        default => 3,
-                                    };
-                                @endphp
-                                <article class="profile-item-card">
-                                    <div class="profile-item-heading">
-                                        <div>
-                                            <h3>{{ $competency['name'] }}</h3>
-                                            <p>{{ $competency['category'] }}@if(! empty($competency['issuer'])) · {{ $competency['issuer'] }}@endif</p>
-                                            @if(! empty($competency['skills']))<p>Skills learned: {{ implode(', ', $competency['skills']) }}</p>@endif
-                                        </div>
-                                    </div>
-                                    <div class="profile-level" aria-label="{{ $competency['level_label'] }} proficiency">
-                                        <div class="profile-level-segments" aria-hidden="true">
-                                            @for ($segment = 1; $segment <= 3; $segment++)
-                                                <span class="{{ $segment <= $filledSegments ? 'is-filled' : '' }}"></span>
-                                            @endfor
-                                        </div>
-                                        <div class="profile-level-labels"><span>Beginner</span><span>Intermediate</span><span>Advanced</span></div>
-                                    </div>
-                                </article>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
+                    </ul>
+                @endif
             </section>
 
-            <section class="profile-card">
-                <header class="profile-section-heading profile-card-head">
-                    <h2>Skills</h2>
-                    <span class="profile-count">{{ $skills->count() }}</span>
-                </header>
-                <div class="profile-card-body">
-                    @if ($skills->isEmpty())
-                        <p class="profile-empty">No skills added yet.</p>
-                    @else
-                        <div class="profile-chips" aria-label="Self-declared skills">
-                            @foreach ($skills as $skill)
-                                <span class="profile-chip">{{ $skill['name'] }}@if($skill['level_label']) · {{ $skill['level_label'] }}@endif @if($skill['has_certificate'])<i class="bi bi-file-earmark-check" aria-hidden="true" title="Has certificate"></i><span class="visually-hidden">(has certificate)</span>@endif</span>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
+            <section class="card">
+                <div class="card-header d-flex align-items-center justify-content-between gap-2"><h2>Portfolio</h2><span class="sb-tag">{{ $portfolios->count() }}</span></div>
+                @if($portfolios->isEmpty())
+                    <div class="card-body"><p class="sb-note">No portfolio items yet.</p></div>
+                @else
+                    <ul class="sb-rows sb-rows--card">
+                        @foreach($portfolios as $portfolio)
+                            <li>
+                                <div class="sb-grow">
+                                    <span class="sb-row-title">{{ $portfolio['title'] }}</span>
+                                    <span class="sb-row-sub">{{ $portfolio['description'] ?: 'No description provided.' }}</span>
+                                </div>
+                                <x-status-badge :status="$portfolio['status']" :label="ucfirst($portfolio['status'])" />
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
             </section>
 
-            <section class="profile-card">
-                <header class="profile-section-heading profile-card-head">
-                    <h2>Older certificate files</h2>
-                    <span class="profile-count">{{ $certificates->count() }}</span>
-                </header>
-                <div class="profile-card-body">
-                    @if ($certificates->isEmpty())
-                        <p class="profile-empty">No certificates uploaded yet.</p>
+            <section class="card">
+                <div class="card-header"><h2>Recent activity</h2></div>
+                <div class="card-body">
+                    @if($recentActivity->isEmpty())
+                        <p class="sb-note">No recent activity recorded.</p>
                     @else
-                        <div class="profile-item-list">
-                            @foreach ($certificates as $certificate)
-                                <article class="profile-item-card profile-certificate-card">
-                                    <div>
-                                        <h3>{{ $certificate['title'] }}</h3>
-                                        <p>{{ $certificate['issuer'] ?: 'Issuer not specified' }}</p>
-                                        @if($certificate['has_file'])
-                                            <a href="{{ route('coordinator.verification.evidence', ['certificates', $certificate['id']]) }}" target="_blank" rel="noopener" class="small">View file</a>
-                                        @endif
-                                    </div>
-                                    <span class="profile-status profile-status-{{ $certificate['status'] }}">{{ ucfirst($certificate['status']) }}</span>
-                                </article>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
-            </section>
-
-            <section class="profile-card">
-                <header class="profile-section-heading profile-card-head">
-                    <h2>Portfolio</h2>
-                    <span class="profile-count">{{ $portfolios->count() }}</span>
-                </header>
-                <div class="profile-card-body">
-                    @if ($portfolios->isEmpty())
-                        <p class="profile-empty">No portfolio items yet.</p>
-                    @else
-                        <div class="profile-item-list">
-                            @foreach ($portfolios as $portfolio)
-                                <article class="profile-item-card profile-certificate-card">
-                                    <div>
-                                        <h3>{{ $portfolio['title'] }}</h3>
-                                        <p>{{ $portfolio['description'] ?: 'No description provided.' }}</p>
-                                    </div>
-                                    <span class="profile-status profile-status-{{ $portfolio['status'] }}">{{ ucfirst($portfolio['status']) }}</span>
-                                </article>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
-            </section>
-
-            <section class="profile-card">
-                <header class="profile-section-heading profile-card-head"><h2>Recent activity</h2></header>
-                <div class="profile-card-body">
-                    @if ($recentActivity->isEmpty())
-                        <p class="profile-empty">No recent activity recorded.</p>
-                    @else
-                        <ol class="profile-timeline">
-                            @foreach ($recentActivity as $activity)
-                                <li class="{{ $activity['is_verification'] ? 'is-verification' : '' }}">
-                                    <span class="profile-timeline-dot" aria-hidden="true"></span>
-                                    <div>
-                                        <p><strong>{{ $activity['actor'] }}</strong> {{ $activity['action'] }} <strong>{{ $activity['item'] }}</strong></p>
-                                        @if ($activity['note'])
-                                            <p class="profile-activity-note">{{ $activity['note'] }}</p>
-                                        @endif
-                                        <time>{{ $activity['created_at'] }}</time>
-                                    </div>
+                        <ol class="sb-timeline">
+                            @foreach($recentActivity as $activity)
+                                <li class="{{ $activity['is_verification'] ? 'is-done' : '' }}">
+                                    <p><strong>{{ $activity['actor'] }}</strong> {{ $activity['action'] }} <strong>{{ $activity['item'] }}</strong></p>
+                                    @if($activity['note'])
+                                        <p class="sb-timeline-note">{{ $activity['note'] }}</p>
+                                    @endif
+                                    <time>{{ $activity['created_at'] }}</time>
                                 </li>
                             @endforeach
                         </ol>
@@ -388,5 +326,5 @@
             </section>
         </div>
     </div>
-</main>
+</div>
 @endsection

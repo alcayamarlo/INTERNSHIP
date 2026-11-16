@@ -2,10 +2,9 @@
 
 namespace App\Http\Requests\Admin;
 
-use App\Support\StudentIdFormat;
 use App\Enums\UserRole;
-use App\Models\AcademicSetting;
 use App\Services\AcademicCalendar;
+use App\Support\StudentIdFormat;
 use Illuminate\Foundation\Http\FormRequest;
 
 class AcademicSettingsRequest extends FormRequest
@@ -20,6 +19,15 @@ class AcademicSettingsRequest extends FormRequest
         $pattern = $this->input('student_id_pattern');
         if (is_string($pattern)) {
             $this->merge(['student_id_pattern' => trim($pattern)]);
+        }
+        // "Designation" list: one department per line.
+        if ($this->has('ojt_departments_text')) {
+            $lines = preg_split('/\R/u', (string) $this->input('ojt_departments_text')) ?: [];
+            $this->merge(['ojt_departments' => collect($lines)
+                ->map(fn ($line) => trim((string) preg_replace('/\s+/u', ' ', $line)))
+                ->filter()
+                ->values()
+                ->all()]);
         }
     }
 
@@ -54,6 +62,15 @@ class AcademicSettingsRequest extends FormRequest
             'summer_end_month' => ['required', 'integer', 'between:1,12'],
             'summer_end_day' => ['required', 'integer', 'between:1,31'],
             'required_ojt_hours' => ['sometimes', 'required', 'integer', 'between:1,2000'],
+            // Monthly Evaluation "Period of Evaluation" name per month (1-12). Blank uses the month name.
+            // Null (never saved) keeps the defaults: Jan Prelim, Feb Midterm, Mar Prefinals, Apr Finals.
+            'evaluation_period_labels' => ['sometimes', 'nullable', 'array:'.implode(',', range(1, 12))],
+            'evaluation_period_labels.*' => ['nullable', 'string', 'max:30'],
+            // Days after a week's Friday that its Activity Narrative Report is due.
+            'journal_due_days' => ['sometimes', 'required', 'integer', 'between:0,14'],
+            // The "Designation" dropdown on every OJT form. Empty keeps the default list.
+            'ojt_departments' => ['sometimes', 'nullable', 'array', 'max:50'],
+            'ojt_departments.*' => ['string', 'min:2', 'max:100', 'distinct:ignore_case'],
         ];
     }
 

@@ -2,10 +2,9 @@
 <html lang="en" data-theme="light">
 
 <head>
-    <link rel="icon" type="image/svg+xml" href="{ asset('images/brand/favicon.svg') }?v=2">
-    <link rel="icon" href="{ asset('images/brand/favicon.ico') }?v=2" sizes="any">
-    <link rel="apple-touch-icon" href="{ asset('images/brand/apple-touch-icon.png') }?v=2">
-    <meta name="theme-color" content="#E11D2E">
+    <link rel="icon" type="image/png" href="{{ asset('images/brand/stcc-logo.png') }}?v=1">
+    <link rel="apple-touch-icon" href="{{ asset('images/brand/stcc-logo.png') }}?v=1">
+    <meta name="theme-color" content="#7A010E">
 
     <meta charset="UTF-8">
 
@@ -24,7 +23,7 @@
     @endauth
 
     <title>
-        @yield('title', 'Dashboard') — SKILL BRIDGE
+        @yield('title', 'Dashboard') — SkillBridge
     </title>
 
 
@@ -34,7 +33,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 
     {{-- =========================================================
@@ -83,11 +82,13 @@
         })();
     </script>
 
-    {{-- Collapsed-sidebar preference is applied before first paint to avoid a layout jump. --}}
+    {{-- Sidebar width before first paint (no layout jump): icon rail from 640px to 1023px, the saved
+         choice from 1024px (full by default), and a drawer below 640px. skillbridge-ui.js repeats this on resize. --}}
     <script>
         try {
+            var sbWidth = window.innerWidth;
             var sbSidebar = localStorage.getItem('skillbridge-sidebar');
-            if (sbSidebar === 'collapsed' || (sbSidebar === null && window.innerWidth >= 992 && window.innerWidth < 1200)) {
+            if ((sbWidth >= 640 && sbWidth < 1024) || (sbWidth >= 1024 && sbSidebar === 'collapsed')) {
                 document.documentElement.classList.add('sb-collapsed');
             }
         } catch (error) {}
@@ -100,15 +101,11 @@
     <link rel="stylesheet" href="{{ asset('css/skillbridge-sidebar.css') }}?v={{ @filemtime(public_path('css/skillbridge-sidebar.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-eye-comfort.css') }}?v={{ @filemtime(public_path('css/sb-eye-comfort.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-motion.css') }}?v={{ @filemtime(public_path('css/sb-motion.css')) }}">
-    @if(auth()->user()?->isRole(\App\Enums\UserRole::Admin))
-        {{-- Admin workspace: Inter + admin sidebar/topbar/dashboard styles (loaded last so it wins). --}}
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="{{ asset('css/admin-dashboard.css') }}?v={{ @filemtime(public_path('css/admin-dashboard.css')) }}">
-    @endif
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
-    {{-- Landing-page palette (black / blue / red) for every dashboard; loaded last so it wins over the red theme. --}}
-    <link rel="stylesheet" href="{{ asset('css/sb-landing-theme.css') }}?v={{ @filemtime(public_path('css/sb-landing-theme.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-responsive.css') }}?v={{ @filemtime(public_path('css/sb-responsive.css')) }}">
+    {{-- Brand theme (white / burgundy / black), loaded last: Lucide icons, color tokens, shared components. --}}
+    <link rel="stylesheet" href="{{ asset('css/sb-icons.css') }}?v={{ @filemtime(public_path('css/sb-icons.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/sb-tokens.css') }}?v={{ @filemtime(public_path('css/sb-tokens.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/sb-theme.css') }}?v={{ @filemtime(public_path('css/sb-theme.css')) }}">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}?v={{ @filemtime(public_path('js/skillbridge-ui.js')) }}"></script>
     @vite('resources/js/app.js')
 
@@ -137,6 +134,8 @@
         (bool) $currentUser?->isRole(UserRole::Student) => [
             'Overview' => [
                 ['student.dashboard', 'student.dashboard', 'bi-grid-1x2', 'Dashboard'],
+                // Completing the profile is the first step for every student, so it is one click away.
+                ['student.profile.edit', 'student.profile.*', 'bi-person-badge', 'My Profile'],
             ],
             'Career' => [
                 ['student.competencies.index', 'student.competencies.*', 'bi-award', 'My Certificates'],
@@ -151,6 +150,8 @@
         (bool) $currentUser?->isRole(UserRole::Employer) => [
             'Overview' => [
                 ['employer.dashboard', 'employer.dashboard', 'bi-grid-1x2', 'Dashboard'],
+                // The job title saved here is printed on the evaluation forms.
+                ['employer.profile.edit', 'employer.profile.*', 'bi-building', 'Company Profile'],
             ],
             'Hiring' => [
                 ['employer.internships.index', 'employer.internships.*', 'bi-briefcase', 'Internships'],
@@ -187,6 +188,7 @@
                 ['admin.academics.index', 'admin.academics.*', 'bi-mortarboard', 'Academic settings'],
                 ['admin.criteria.index', 'admin.criteria.*', 'bi-list-check', 'Eligibility Criteria'],
                 ['admin.users.index', 'admin.users.*', 'bi-people', 'Users'],
+                ['admin.company-invitations.index', 'admin.company-invitations.*', 'bi-envelope-paper', 'Company Invitations'],
                 ['admin.placements.index', 'admin.placements.*', 'bi-clock-history', 'OJT Placements'],
                 ['admin.announcements.index', 'admin.announcements.*', 'bi-megaphone', 'Announcements'],
                 ['admin.skill-categories.index', 'admin.skill-categories.*', 'bi-tags', 'Skill Categories'],
@@ -230,7 +232,7 @@
 
     <div class="sb-brand">
 
-        <img class="sb-brand-logo" src="{{ asset('images/brand/skillbridge-logo-icon.svg') }}?v=2" width="36" height="36" alt="" aria-hidden="true">
+        <img class="sb-brand-logo sb-seal" src="{{ asset('images/brand/stcc-logo.png') }}?v=1" width="48" height="48" alt="St. Cecilia's College-Cebu logo">
 
         <div class="sb-brand-text">
             <span class="sb-brand-title">SkillBridge</span>
@@ -841,7 +843,7 @@
                             function () {
 
                                 if (
-                                    window.innerWidth <= 991
+                                    window.innerWidth < 640
                                 ) {
 
                                     closeSidebar();
@@ -897,7 +899,7 @@
                 function () {
 
                     if (
-                        window.innerWidth > 991
+                        window.innerWidth >= 640
                     ) {
 
                         closeSidebar();
@@ -1074,7 +1076,7 @@
 
                         <i
                             class="bi ${icon}"
-                            style="color:var(--sb-cyan);"
+                            style="color:var(--burgundy-text);"
                         ></i>
 
                         <span>

@@ -88,6 +88,10 @@ class ProfileController extends Controller
                 if (filled($validated['contact_person'] ?? null)) {
                     $employerUpdates['contact_person'] = $validated['contact_person'];
                 }
+                // The supervisor's job title, prefilled as "Designation / Job Title" on the final evaluation.
+                if (array_key_exists('position', $validated)) {
+                    $employerUpdates['position'] = filled($validated['position']) ? trim($validated['position']) : null;
+                }
                 if (filled($validated['street'] ?? null)) {
                     $employerUpdates['address'] = "{$validated['street']}, {$validated['city']}, {$validated['province']} {$validated['zip_code']}";
                 }

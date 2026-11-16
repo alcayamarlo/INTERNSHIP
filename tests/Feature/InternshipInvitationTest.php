@@ -344,7 +344,7 @@ it('shows invitations as a split inbox with status tabs, a stepper, and days lef
         ->toContain('What happens when you accept')
         ->toContain('data-inv-action="accept"')
         ->toContain('data-inv-action="decline"')
-        ->toMatch('/<li class="ap-step is-pending is-current"\s+aria-current="step"\s*>\s*<span class="ap-step-dot" aria-hidden="true">2<\/span>\s*<span class="ap-step-label">Your response/');
+        ->toMatch('/<li class="sb-step is-pending is-current"\s+aria-current="step"\s*>\s*<span class="sb-step-dot" aria-hidden="true">2<\/span>\s*<span class="sb-step-label">Your response/');
 });
 
 it('moves an accepted invitation to Company review, then to the outcome once the company decides', function () {
@@ -355,13 +355,13 @@ it('moves an accepted invitation to Company review, then to the outcome once the
     $this->actingAs($student->user)->post(route('student.invitations.accept', $invitation))->assertRedirect();
 
     $panel = invitationPanel($this->get(route('student.invitations.index', ['tab' => 'accepted']))->assertOk()->getContent());
-    expect($panel)->toMatch('/aria-current="step"\s*>\s*<span class="ap-step-dot" aria-hidden="true">3<\/span>\s*<span class="ap-step-label">Company review/')
+    expect($panel)->toMatch('/aria-current="step"\s*>\s*<span class="sb-step-dot" aria-hidden="true">3<\/span>\s*<span class="sb-step-label">Company review/')
         ->not->toContain('data-inv-action="accept"')
         ->toContain('View application');
 
     InternshipApplication::sole()->update(['status' => ApplicationStatus::Accepted]);
     $panel = invitationPanel($this->get(route('student.invitations.index', ['tab' => 'accepted']))->getContent());
-    expect($panel)->toMatch('/aria-current="step"\s*>\s*<span class="ap-step-dot" aria-hidden="true">4<\/span>\s*<span class="ap-step-label">Outcome<\/span>\s*<span class="ap-step-note">Hired/');
+    expect($panel)->toMatch('/aria-current="step"\s*>\s*<span class="sb-step-dot" aria-hidden="true">4<\/span>\s*<span class="sb-step-label">Outcome<\/span>\s*<span class="sb-step-note">Hired/');
 });
 
 it('shows a lapsed invitation as Expired with Accept disabled, and an empty tab with a browse link', function () {
@@ -377,4 +377,24 @@ it('shows a lapsed invitation as Expired with Accept disabled, and an empty tab 
     $this->get(route('student.invitations.index', ['tab' => 'accepted']))
         ->assertSee('No accepted invitations yet.')
         ->assertSee(route('student.internships.index'), false);
+});
+
+it('shows an invitation lapsed by a closed posting as Expired without its future date', function () {
+    [$employerUser, , $internship] = inviteEmployer();
+    $student = inviteStudent();
+    sendInvite($employerUser, $student, $internship)->assertCreated();
+    $invitation = InternshipInvitation::sole();
+    $futureDate = $invitation->expires_at->timezone('Asia/Manila')->format('M d, Y h:i A');
+    $internship->update(['status' => 'closed']);
+
+    $panel = invitationPanel($this->actingAs($student->user)->get(route('student.invitations.index'))->assertOk()->getContent());
+    expect($panel)->toContain('<strong>Expired</strong>: the internship is no longer accepting applications')
+        ->not->toContain('<strong>Expired</strong> '.$futureDate);
+
+    // Once the hourly job marks it expired, the company's list says the posting closed instead of the future date.
+    $invitation->update(['status' => InvitationStatus::Expired]);
+    $this->actingAs($employerUser)->get(route('employer.invitations.index'))
+        ->assertOk()
+        ->assertSee('Posting closed')
+        ->assertDontSee($futureDate);
 });

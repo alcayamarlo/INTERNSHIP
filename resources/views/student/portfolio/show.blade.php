@@ -2,89 +2,69 @@
 
 @section('title', $portfolio->title)
 
+@php
+    $extension = strtolower(pathinfo((string) $portfolio->file_path, PATHINFO_EXTENSION));
+    $isImage = in_array($extension, ['jpg', 'jpeg', 'png'], true);
+@endphp
+
 @section('content')
-<x-page-header :title="$portfolio->title" :subtitle="$portfolio->type->label().' · '.strtoupper(pathinfo((string) $portfolio->file_path, PATHINFO_EXTENSION)).' file'">
+<x-page-header :title="$portfolio->title" :subtitle="$portfolio->type->label().' · '.strtoupper($extension).' file'">
     <a href="{{ route('student.profile.edit') }}#portfolio" class="btn btn-outline-secondary"><i class="bi bi-chevron-left" aria-hidden="true"></i> Back to Portfolio</a>
 </x-page-header>
 
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-body">
-                @if($portfolio->description)
-                    <div class="mb-4">
-                        <h2 class="h6">Description</h2>
-                        <p class="text-muted">{{ $portfolio->description }}</p>
-                    </div>
-                @endif
+<div class="sb-layout-2">
+    <div class="sb-stack">
+        @if($portfolio->description)
+            <section class="card">
+                <div class="card-header"><h2>Description</h2></div>
+                <div class="card-body"><p class="mb-0">{{ $portfolio->description }}</p></div>
+            </section>
+        @endif
 
-                <!-- File Info -->
-                <div class="sb-tile mb-4">
-                    <div>
-                        <h3 class="mb-3"><i class="bi bi-info-circle" aria-hidden="true"></i> File Information</h3>
-                        <dl class="row mb-0">
-                            <dt class="col-sm-4">Filename:</dt>
-                            <dd class="col-sm-8"><code>{{ pathinfo((string) $portfolio->file_path, PATHINFO_BASENAME) }}</code></dd>
-
-                            <dt class="col-sm-4">File Type:</dt>
-                            <dd class="col-sm-8">{{ strtoupper(pathinfo((string) $portfolio->file_path, PATHINFO_EXTENSION)) }}</dd>
-
-                            <dt class="col-sm-4">Uploaded On:</dt>
-                            <dd class="col-sm-8">{{ $portfolio->created_at->format('M d, Y \a\t g:i A') }}</dd>
-
-                            <dt class="col-sm-4">Last Modified:</dt>
-                            <dd class="col-sm-8">{{ $portfolio->updated_at->format('M d, Y \a\t g:i A') }}</dd>
-                        </dl>
-                    </div>
-                </div>
-
-                <!-- Preview (for PDFs and images) -->
-                @php
-                    $extension = strtolower(pathinfo((string) $portfolio->file_path, PATHINFO_EXTENSION));
-                    $isPreviewable = in_array($extension, ['pdf', 'jpg', 'jpeg', 'png']);
-                @endphp
-
-                @if($isPreviewable)
-                    <div class="mb-4">
-                        <h2 class="h6 mb-3">Preview</h2>
-                        <div class="border rounded p-3 bg-light" style="min-height: 300px; display: flex; align-items: center; justify-content: center;">
-                            @if(in_array($extension, ['jpg', 'jpeg', 'png']))
-                                <img src="{{ route('student.portfolio.preview', $portfolio, false) }}" alt="{{ $portfolio->title }}" class="img-fluid" style="max-height: 400px;" onerror="this.hidden=true;this.insertAdjacentHTML('afterend', '&lt;p&gt;Preview not available. The file could not be loaded.&lt;/p&gt;');">
-                            @elseif($extension === 'pdf')
-                                <div class="text-center">
-                                    <i class="bi bi-file-pdf fs-1 text-danger"></i>
-                                    <p class="mt-3 text-muted">Click "Open Preview" or "Download" to view the PDF</p>
-                                </div>
-                            @endif
+        @if($isImage || $extension === 'pdf')
+            <section class="card">
+                <div class="card-header"><h2>Preview</h2></div>
+                <div class="card-body">
+                    @if($isImage)
+                        <div class="sb-file-preview">
+                            <img src="{{ route('student.portfolio.preview', $portfolio, false) }}" alt="{{ $portfolio->title }}" onerror="this.hidden=true;this.insertAdjacentHTML('afterend', '&lt;p class=&quot;sb-note&quot;&gt;Preview not available. The file could not be loaded.&lt;/p&gt;');">
                         </div>
-                    </div>
-                @endif
-
-                <!-- Action Buttons -->
-                <div class="btn-group-vertical w-100" role="group">
-                    <a href="{{ route('student.portfolio.preview', $portfolio, false) }}" class="btn btn-outline-primary text-start" target="_blank">
-                        <i class="bi bi-eye"></i> Open Preview in New Tab
-                    </a>
-                    <a href="{{ route('student.portfolio.download', $portfolio, false) }}" class="btn btn-outline-success text-start">
-                        <i class="bi bi-download"></i> Download File
-                    </a>
-                    <a href="{{ route('student.portfolio.edit', $portfolio) }}" class="btn btn-outline-secondary text-start">
-                        <i class="bi bi-pencil"></i> Edit Details
-                    </a>
+                    @else
+                        <div class="sb-file-placeholder">
+                            <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>
+                            <p>Click "Open Preview" or "Download" to view the PDF</p>
+                        </div>
+                    @endif
                 </div>
-
-                <div class="mt-3">
-                    <a href="{{ route('student.profile.edit') }}#portfolio" class="btn btn-outline-secondary w-100">
-                        <i class="bi bi-x-circle"></i> Back to Portfolio
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Info Box -->
-        <div class="alert alert-info mt-4">
-            <strong><i class="bi bi-lightbulb"></i> Tip:</strong> Keep your portfolio updated with recent projects and certifications. Employers review this when evaluating your internship application.
-        </div>
+            </section>
+        @endif
     </div>
+
+    <aside class="sb-stack">
+        <section class="card">
+            <div class="card-header"><h2><i class="bi bi-info-circle" aria-hidden="true"></i> File Information</h2></div>
+            <div class="card-body">
+                <dl class="sb-fields">
+                    <div><dt>Filename</dt><dd><code>{{ pathinfo((string) $portfolio->file_path, PATHINFO_BASENAME) }}</code></dd></div>
+                    <div><dt>File Type</dt><dd>{{ strtoupper($extension) }}</dd></div>
+                    <div><dt>Uploaded On</dt><dd>{{ $portfolio->created_at->format('M d, Y \a\t g:i A') }}</dd></div>
+                    <div><dt>Last Modified</dt><dd>{{ $portfolio->updated_at->format('M d, Y \a\t g:i A') }}</dd></div>
+                </dl>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-body d-grid gap-2">
+                <a href="{{ route('student.portfolio.preview', $portfolio, false) }}" class="btn btn-outline-primary" target="_blank"><i class="bi bi-eye" aria-hidden="true"></i> Open Preview in New Tab</a>
+                <a href="{{ route('student.portfolio.download', $portfolio, false) }}" class="btn btn-outline-secondary"><i class="bi bi-download" aria-hidden="true"></i> Download File</a>
+                <a href="{{ route('student.portfolio.edit', $portfolio) }}" class="btn btn-outline-secondary"><i class="bi bi-pencil" aria-hidden="true"></i> Edit Details</a>
+                <a href="{{ route('student.profile.edit') }}#portfolio" class="btn btn-outline-secondary"><i class="bi bi-x-circle" aria-hidden="true"></i> Back to Portfolio</a>
+            </div>
+        </section>
+
+        <div class="sb-callout">
+            <p><strong><i class="bi bi-lightbulb" aria-hidden="true"></i> Tip:</strong> Keep your portfolio updated with recent projects and certifications. Employers review this when evaluating your internship application.</p>
+        </div>
+    </aside>
 </div>
 @endsection

@@ -27,6 +27,18 @@ enum ApplicationStatus: string
         };
     }
 
+    /**
+     * The label companies see. A new application reads "Pending" on the company side, matching the
+     * Applicants filter (Pending, Under Review, Accepted, Rejected); students still see "Applied".
+     */
+    public function companyLabel(): string
+    {
+        return match ($this) {
+            self::Applied, self::Submitted => 'Pending',
+            default => $this->label(),
+        };
+    }
+
     public function badgeClass(): string
     {
         return match ($this) {

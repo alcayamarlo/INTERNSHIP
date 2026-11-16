@@ -28,30 +28,28 @@
 @endphp
 
 @if($isAdmin)
-    <section class="ad-charts" aria-labelledby="adInsights">
-        <div class="ad-section-head ad-reveal" style="--ad-i: 8">
+    <section class="sb-dash" aria-labelledby="adInsights">
+        <div class="sb-section-head">
             <h2 id="adInsights">Platform insights</h2>
             <p>Track applications, competencies, and the skills employers need most.</p>
         </div>
-        <div class="ad-chart-grid">
+        <div class="sb-grid sb-grid--2">
             @foreach($order as $index => $chartId)
                 @php [$title, $icon, $label] = $chartCards[$chartId]; @endphp
-                <div class="ad-card ad-chart-card ad-reveal {{ $chartId === 'skillsChart' ? 'ad-chart-card--wide' : '' }}" style="--ad-i: {{ 9 + $index }}">
-                    <div class="ad-card-head"><h2><i class="bi {{ $icon }}" aria-hidden="true"></i> {{ $title }}</h2></div>
-                    <div class="sb-chart ad-chart"><canvas id="{{ $chartId }}" role="img" aria-label="{{ $label }} chart"></canvas></div>
+                <div class="card {{ $chartId === 'skillsChart' ? 'sb-span-all' : '' }}">
+                    <div class="card-header"><h2><i class="bi {{ $icon }}" aria-hidden="true"></i> {{ $title }}</h2></div>
+                    <div class="card-body"><div class="sb-chart"><canvas id="{{ $chartId }}" role="img" aria-label="{{ $label }} chart"></canvas></div></div>
                 </div>
             @endforeach
         </div>
     </section>
 @else
-    <div class="row g-4 mb-4">
+    <div class="sb-grid sb-grid--2">
         @foreach($order as $chartId)
             @php [$title, $icon, $label] = $chartCards[$chartId]; @endphp
-            <div class="col-lg-6">
-                <div class="card h-100">
+            <div class="card {{ $chartId === 'skillsChart' ? 'sb-span-all' : '' }}">
                     <div class="card-header"><h2><i class="bi {{ $icon }}" aria-hidden="true"></i> {{ $title }}</h2></div>
                     <div class="card-body"><div class="sb-chart"><canvas id="{{ $chartId }}" role="img" aria-label="{{ $label }}"></canvas></div></div>
-                </div>
             </div>
         @endforeach
     </div>
@@ -64,35 +62,32 @@
         const isAdmin = @json($isAdmin);
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const chartColors = {
-            red: '#e11d2e',
-            redFill: 'rgba(225,29,46,.12)',
-            green: '#187443',
-            amber: '#8a5700',
-            danger: '#b42332',
-            blue: '#235e91',
-            purple: '#684c8d',
-            muted: '#7a5f63',
-            grid: 'rgba(142,13,28,.1)',
+            red: '#7A010E',
+            redFill: 'rgba(122,1,14,.12)',
+            green: '#000000',
+            amber: '#6B6B72',
+            danger: '#7A010E',
+            blue: '#3A3A40',
+            purple: '#A0A0A6',
+            muted: '#6B6B72',
+            grid: 'rgba(0,0,0,.08)',
         };
         const refreshChartTheme = () => {
             const theme = getComputedStyle(document.documentElement);
             Object.assign(chartColors, {
-                red: theme.getPropertyValue('--sb-red').trim() || '#e11d2e',
-                green: theme.getPropertyValue('--sb-success-ink').trim() || '#187443',
-                amber: theme.getPropertyValue('--sb-warning-ink').trim() || '#8a5700',
-                danger: theme.getPropertyValue('--sb-danger-ink').trim() || '#b42332',
-                blue: theme.getPropertyValue('--sb-blue').trim() || '#235e91',
-                purple: theme.getPropertyValue('--sb-purple').trim() || '#684c8d',
-                muted: theme.getPropertyValue('--sb-muted').trim() || '#7a5f63',
-                grid: theme.getPropertyValue('--sb-chart-grid').trim() || 'rgba(142,13,28,.1)',
+                red: theme.getPropertyValue('--burgundy').trim() || '#7A010E',
+                green: theme.getPropertyValue('--text').trim() || '#000000',
+                amber: theme.getPropertyValue('--muted').trim() || '#6B6B72',
+                danger: theme.getPropertyValue('--burgundy-text').trim() || '#7A010E',
+                blue: theme.getPropertyValue('--chart-4').trim() || '#3A3A40',
+                purple: theme.getPropertyValue('--chart-5').trim() || '#A0A0A6',
+                muted: theme.getPropertyValue('--muted').trim() || '#6B6B72',
+                grid: theme.getPropertyValue('--line').trim() || 'rgba(0,0,0,.08)',
             });
             if (isAdmin) {
-                // Admin palette lives on <body> (public/css/admin-dashboard.css).
-                const admin = getComputedStyle(document.body);
-                chartColors.red = admin.getPropertyValue('--ad-chart-red').trim() || '#C8102E';
-                chartColors.redFill = admin.getPropertyValue('--ad-chart-fill').trim() || 'rgba(200,16,46,.10)';
-                chartColors.grid = admin.getPropertyValue('--ad-chart-grid').trim() || 'rgba(200,16,46,.07)';
-                chartColors.muted = admin.getPropertyValue('--ad-muted').trim() || chartColors.muted;
+                chartColors.red = theme.getPropertyValue('--burgundy').trim() || '#7A010E';
+                chartColors.redFill = 'rgba(122,1,14,.10)';
+                chartColors.grid = theme.getPropertyValue('--line').trim() || 'rgba(0,0,0,.07)';
             }
             Chart.defaults.color = chartColors.muted;
 
@@ -112,7 +107,7 @@
                         if (isAdmin) dataset.pointBackgroundColor = chartColors.red;
                     } else if (canvas.id === 'placementRateChart') {
                         dataset.borderColor = chartColors.green;
-                        dataset.backgroundColor = 'rgba(24,116,67,.12)';
+                        dataset.backgroundColor = 'rgba(0,0,0,.08)';
                     } else if (canvas.id === 'statusChart') {
                         dataset.backgroundColor = [chartColors.red, chartColors.green, chartColors.amber, chartColors.danger, chartColors.blue, chartColors.purple];
                     } else {
@@ -195,7 +190,7 @@
                     type: 'line',
                     data: {
                         labels: data.placement_rate_by_month.map(i => i.month),
-                        datasets: [{ label: 'Placement rate %', data: data.placement_rate_by_month.map(i => i.rate), borderColor: isAdmin ? red : chartColors.green, backgroundColor: isAdmin ? redFill : 'rgba(24,116,67,.12)', fill: true, ...lineStyle, ...(isAdmin ? { pointBackgroundColor: red } : {}) }]
+                        datasets: [{ label: 'Placement rate %', data: data.placement_rate_by_month.map(i => i.rate), borderColor: isAdmin ? red : chartColors.green, backgroundColor: isAdmin ? redFill : 'rgba(0,0,0,.12)', fill: true, ...lineStyle, ...(isAdmin ? { pointBackgroundColor: red } : {}) }]
                     },
                     options: isAdmin
                         ? { responsive: true, maintainAspectRatio: false, animation: lineDrawIn(data.placement_rate_by_month.length), interaction: { intersect: false, mode: 'index' }, scales: adminScales('y', { min: 0, max: 100 }), plugins: { legend: { display: false } } }

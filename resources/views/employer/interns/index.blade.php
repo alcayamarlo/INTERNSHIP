@@ -3,13 +3,14 @@
 @section('title', 'Interns')
 
 @section('content')
-<x-page-header title="Interns" subtitle="Supervise accepted students: approve daily time records, read journals and submit evaluations." />
+<div class="sb-dash">
+<x-page-header title="Interns" subtitle="Supervise accepted students: approve daily time records, certify weekly reports and submit evaluations." />
 
-<div class="mb-3 d-flex gap-2 flex-wrap">
-    <a href="{{ route('employer.interns.index') }}" class="btn btn-sm {{ ! $status ? 'btn-primary' : 'btn-outline-primary' }}">All</a>
-    <a href="{{ route('employer.interns.index', ['status' => 'active']) }}" class="btn btn-sm {{ $status === 'active' ? 'btn-primary' : 'btn-outline-primary' }}">Ongoing</a>
-    <a href="{{ route('employer.interns.index', ['status' => 'completed']) }}" class="btn btn-sm {{ $status === 'completed' ? 'btn-primary' : 'btn-outline-primary' }}">Completed</a>
-</div>
+<nav class="sb-pill-tabs mb-0" aria-label="Filter interns">
+    <a href="{{ route('employer.interns.index') }}" class="sb-pill-tab {{ ! $status ? 'is-active' : '' }}" @if(! $status) aria-current="page" @endif>All</a>
+    <a href="{{ route('employer.interns.index', ['status' => 'active']) }}" class="sb-pill-tab {{ $status === 'active' ? 'is-active' : '' }}" @if($status === 'active') aria-current="page" @endif>Ongoing</a>
+    <a href="{{ route('employer.interns.index', ['status' => 'completed']) }}" class="sb-pill-tab {{ $status === 'completed' ? 'is-active' : '' }}" @if($status === 'completed') aria-current="page" @endif>Completed</a>
+</nav>
 
 <div class="card" data-live-region="interns" data-live-topics="placements">
     <div class="table-responsive">
@@ -31,13 +32,13 @@
                     <tr>
                         <td class="sb-stack-block"><strong>{{ $placement->company_profile['name'] ?? '—' }}</strong><div class="small text-muted">{{ $placement->company_profile['program'] ?? '' }}</div></td>
                         <td data-label="Internship">{{ $placement->internship?->title }}</td>
-                        <td data-label="Hours" class="sb-stack-block" style="min-width: 150px;">
+                        <td data-label="Hours" class="sb-stack-block sb-progress-cell">
                             <div class="small">{{ number_format($placement->approvedHours(), 1) }} / {{ $placement->required_hours }} h</div>
-                            <div class="progress" style="height: 6px;" role="progressbar" aria-label="Hours progress" aria-valuenow="{{ $percent }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: {{ $percent }}%"></div></div>
+                            <div class="progress progress--thin" role="progressbar" aria-label="Hours progress" aria-valuenow="{{ $percent }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: {{ $percent }}%"></div></div>
                         </td>
                         <td data-label="To review" class="small">
-                            @if($placement->pending_logs_count)<span class="badge bg-warning text-dark">{{ $placement->pending_logs_count }} DTR</span>@endif
-                            @if($placement->unread_journals_count)<span class="badge bg-info text-dark">{{ $placement->unread_journals_count }} journal</span>@endif
+                            @if($placement->pending_logs_count)<span class="sb-status sb-status--warning">{{ $placement->pending_logs_count }} DTR</span>@endif
+                            @if($placement->unread_journals_count)<span class="sb-status sb-status--info">{{ $placement->unread_journals_count }} journal</span>@endif
                             @if(! $placement->pending_logs_count && ! $placement->unread_journals_count)<span class="text-muted">—</span>@endif
                         </td>
                         <td data-label="Evaluation">{{ $placement->evaluation ? number_format((float) $placement->evaluation->average_score, 2).' / 5' : '—' }}</td>
@@ -51,5 +52,6 @@
         </table>
     </div>
     @if($placements->hasPages())<div class="card-footer">{{ $placements->links() }}</div>@endif
+</div>
 </div>
 @endsection

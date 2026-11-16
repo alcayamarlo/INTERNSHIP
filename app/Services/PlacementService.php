@@ -142,6 +142,8 @@ class PlacementService
             'cleared_by_user_id' => $coordinator->id,
             'clearance_remarks' => $remarks,
             'certificate_number' => $placement->certificate_number ?? $this->certificateNumber($placement),
+            // The certificate keeps the trainee details it was issued with.
+            'certificate_snapshot' => collect(app(OjtDocumentData::class)->values($placement))->only(OjtDocumentData::SNAPSHOT_FIELDS)->all(),
         ]);
 
         $this->activityLog->log($coordinator, 'placement_cleared', ['placement_id' => $placement->id]);

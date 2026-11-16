@@ -7,7 +7,7 @@
     <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to Users</a>
 </x-page-header>
 
-<div class="card" style="max-width: 900px;">
+<div class="card sb-measure">
     <div class="card-body">
         <form method="POST" action="{{ route('admin.users.store') }}" class="row g-3">
             @csrf

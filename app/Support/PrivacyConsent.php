@@ -13,7 +13,7 @@ class PrivacyConsent
 {
     public const STATEMENT = 'I allow SkillBridge to store and share my profile with partner companies for internship purposes (Data Privacy Act of 2012, RA 10173).';
 
-    public const REQUIRED_MESSAGE = 'Please give your privacy consent before saving your profile.';
+    public const REQUIRED_MESSAGE = 'Tick the privacy box at the top of the page and click "I agree" before saving your profile.';
 
     public static function isMissing(Request $request, Student $student): bool
     {

@@ -7,11 +7,21 @@
     <div class="text-md-end">
         <form action="{{ route('student.resume.generate') }}" method="POST">
             @csrf
+            <a href="{{ route('student.internships.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to internships</a>
             <button type="submit" class="btn btn-primary"><i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Generate New Resume</button>
         </form>
         <small class="text-muted d-block mt-1" data-resume-limit-note>Only your {{ $maxResumes }} latest resumes are kept. Generating a new one removes the oldest.</small>
     </div>
 </x-page-header>
+
+@if($profileGaps ?? [])
+    {{-- The resume is filled from the profile; warn before a student sends a nearly empty one. --}}
+    <div class="alert alert-warning d-flex flex-wrap align-items-center gap-2" role="status" data-profile-gaps>
+        <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+        <span><strong>Your profile is not complete, so your resume will have gaps.</strong> Still missing: {{ implode(', ', $profileGaps) }}.</span>
+        <a href="{{ route('student.profile.edit') }}" class="alert-link ms-auto">Complete my profile →</a>
+    </div>
+@endif
 
 <div class="card">
     <div class="card-header"><h2>Generated Resumes</h2></div>

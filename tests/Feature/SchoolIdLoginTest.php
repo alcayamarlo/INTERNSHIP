@@ -86,13 +86,13 @@ it('rejects an unknown school ID and wrong password with the renamed login field
         'login' => 'SCC-26-00000099',
         'password' => '05142003',
     ])->assertRedirect('/login')
-        ->assertSessionHasErrors(['login' => 'Account not found.']);
+        ->assertSessionHasErrors(['login' => 'Incorrect email/School ID or password.']);
 
     $this->from('/login')->post('/login', [
         'login' => 'SCC-26-00000010',
         'password' => 'WrongPassword',
     ])->assertRedirect('/login')
-        ->assertSessionHasErrors(['login' => 'Wrong password.']);
+        ->assertSessionHasErrors(['login' => 'Incorrect email/School ID or password.']);
 
     $this->assertGuest();
 });

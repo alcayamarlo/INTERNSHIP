@@ -95,11 +95,17 @@
         });
     };
 
-    const makeProgress = (items, className = 'progress-track') => {
+    const makeProgress = (items, className = 'progress progress--thin') => {
         const verified = items.filter((item) => item.status === 'verified').length;
+        const percent = items.length ? Math.round((verified / items.length) * 100) : 0;
         const track = create('div', className);
-        const fill = create('span');
-        fill.style.width = `${items.length ? Math.round((verified / items.length) * 100) : 0}%`;
+        track.setAttribute('role', 'progressbar');
+        track.setAttribute('aria-label', `${verified} of ${items.length} verified`);
+        track.setAttribute('aria-valuemin', '0');
+        track.setAttribute('aria-valuemax', '100');
+        track.setAttribute('aria-valuenow', String(percent));
+        const fill = create('div', 'progress-bar');
+        fill.style.width = `${percent}%`;
         track.append(fill);
         return { track, verified, total: items.length };
     };
@@ -118,20 +124,20 @@
     };
 
     const buildRejectPanel = (student, item) => {
-        const panel = create('form', 'reject-panel');
-        const reasons = create('div', 'quick-reasons');
-        const input = create('input', 'reject-reason');
+        const panel = create('form', 'sb-inline-panel');
+        const reasons = create('div', 'd-flex flex-wrap gap-2');
+        const input = create('input', 'form-control');
         input.type = 'text';
         input.maxLength = 2000;
         input.required = true;
         input.placeholder = 'Reason for rejection (required)';
         input.setAttribute('aria-label', 'Reason for rejection');
         input.setAttribute('aria-invalid', 'false');
-        const error = create('p', 'reject-error', 'Please add a reason');
+        const error = create('p', 'small text-danger mb-0', 'Please add a reason');
         error.hidden = true;
 
         ['Evidence unclear', 'Certificate expired', 'Wrong file', 'Needs more detail'].forEach((reason) => {
-            const reasonButton = makeButton(reason, 'quick-reason', () => {
+            const reasonButton = makeButton(reason, 'btn btn-outline-secondary btn-sm', () => {
                 input.value = reason;
                 input.setAttribute('aria-invalid', 'false');
                 error.hidden = true;
@@ -141,9 +147,9 @@
             reasons.append(reasonButton);
         });
 
-        const controls = create('div', 'reject-panel-actions');
-        const cancel = makeButton('Cancel', 'cancel-reject', () => panel.remove());
-        const confirm = makeButton('Confirm reject', 'confirm-reject', async () => {
+        const controls = create('div', 'd-flex flex-wrap justify-content-end gap-2');
+        const cancel = makeButton('Cancel', 'btn btn-outline-secondary btn-sm', () => panel.remove());
+        const confirm = makeButton('Confirm reject', 'btn btn-danger btn-sm', async () => {
             const note = input.value.trim();
             if (!note) {
                 input.setAttribute('aria-invalid', 'true');
@@ -167,43 +173,43 @@
     };
 
     const renderSubmission = (student, item) => {
-        const row = create('article', 'submission-row');
-        const description = create('div', 'submission-description');
-        const title = create('strong', 'submission-title', item.title);
-        const typeTag = create('span', `type-tag type-${item.type}`, getTypeLabel(item.type));
-        const subtype = create('span', 'submission-subtype', item.subtype || '');
-        const submitted = create('span', 'submission-time', `${item.status_label || 'Submitted'} ${item.submitted || 'recently'}`);
+        const row = create('article', 'sb-review-row');
+        const description = create('div', 'sb-review-row-text');
+        const title = create('strong', 'sb-row-title d-inline', item.title);
+        const typeTag = create('span', 'sb-tag', getTypeLabel(item.type));
+        const subtype = create('span', 'me-2', item.subtype || '');
+        const submitted = create('span', '', `${item.status_label || 'Submitted'} ${item.submitted || 'recently'}`);
         // Line 1: title and type pill. Line 2: muted source and date.
-        const heading = create('div', 'submission-heading');
+        const heading = create('div', 'd-flex flex-wrap align-items-center gap-2');
         heading.append(title, typeTag);
-        const meta = create('div', 'submission-meta');
+        const meta = create('div', 'sb-row-sub mt-1');
         meta.append(subtype, submitted);
         description.append(heading, meta);
 
-        const actions = create('div', 'submission-actions');
-        const view = makeButton('View', 'action-button', () => openFilePreview(item));
+        const actions = create('div', 'sb-actions sb-actions--tight');
+        const view = makeButton('View', 'btn btn-outline-secondary btn-sm', () => openFilePreview(item));
         if (!item.has_evidence) {
             view.disabled = true;
             view.setAttribute('aria-disabled', 'true');
         }
         actions.append(view);
         if (item.has_evidence) {
-            const download = create('a', 'action-button', 'Download');
+            const download = create('a', 'btn btn-outline-secondary btn-sm', 'Download');
             download.href = getDownloadUrl(item.type, item.id);
             actions.append(download);
         }
         if (item.status === 'pending') {
-            const reject = makeButton('Reject', 'action-button reject', () => {
-                const current = row.querySelector('.reject-panel');
+            const reject = makeButton('Reject', 'btn btn-outline-danger btn-sm', () => {
+                const current = row.querySelector('.sb-inline-panel');
                 if (current) {
                     current.remove();
                 } else {
                     row.append(buildRejectPanel(student, item));
-                    row.querySelector('.reject-reason')?.focus();
+                    row.querySelector('.sb-inline-panel .form-control')?.focus();
                 }
             });
             const isDeploymentDocument = item.category === 'deployment_document';
-            const verify = makeButton(isDeploymentDocument ? 'Approve' : 'Verify', 'action-button verify', async () => {
+            const verify = makeButton(isDeploymentDocument ? 'Approve' : 'Verify', 'btn btn-primary btn-sm', async () => {
                 verify.disabled = true;
                 try {
                     await changeStatus(student, item, isDeploymentDocument ? 'approved' : 'verified');
@@ -213,7 +219,7 @@
             });
             actions.append(reject, verify);
         } else {
-            const status = create('span', `completed-status ${item.status}`);
+            const status = create('span', `sb-status ${item.status === 'verified' ? 'sb-status--success' : 'sb-status--danger'}`);
             status.textContent = item.category === 'resume'
                 ? 'Available'
                 : item.status === 'verified'
@@ -221,7 +227,7 @@
                     : '✕ Rejected';
             actions.append(status);
             if (item.category !== 'resume') {
-                const restore = makeButton('Move back to pending', 'move-pending-button', async () => {
+                const restore = makeButton('Move back to pending', 'btn btn-link btn-sm', async () => {
                     restore.disabled = true;
                     try {
                         await changeStatus(student, item, item.category === 'deployment_document' ? 'submitted' : 'pending');
@@ -244,26 +250,26 @@
 
     const renderOption = (student) => {
         const selected = student.id === state.selectedId;
-        const option = create('li', 'vq-student');
+        const option = create('li', 'sbx-row');
         option.id = optionId(student.id);
         option.dataset.studentId = student.id;
         option.setAttribute('role', 'option');
         option.setAttribute('aria-selected', String(selected));
         option.tabIndex = selected ? 0 : -1;
 
-        const copy = create('div', 'vq-student-copy');
+        const copy = create('div', 'sbx-row-text');
         copy.append(
-            create('span', 'vq-student-name', student.name),
-            create('span', 'vq-student-meta', `${programCode(student.program)} · ${student.year_level || 'Year not set'}`),
+            create('span', 'sbx-row-title', student.name),
+            create('span', 'sbx-row-meta', `${programCode(student.program)} · ${student.year_level || 'Year not set'}`),
         );
 
         const { verified, total } = makeProgress(student.items);
-        const progress = create('div', 'vq-student-progress');
-        const label = create('span', 'vq-student-verified');
-        label.append(create('span', 'vq-dot'), document.createTextNode('verified'));
+        const progress = create('div', 'sb-row-end');
+        const label = create('span', 'sb-row-sub');
+        label.append(document.createTextNode('verified'));
         progress.append(create('strong', '', `${verified}/${total}`), label);
 
-        option.append(create('span', 'student-avatar', student.initials || '?'), copy, progress);
+        option.append(create('span', 'sb-initials', student.initials || '?'), copy, progress);
         option.addEventListener('click', () => selectStudent(student.id));
         return option;
     };
@@ -278,41 +284,41 @@
     const renderPanel = (student, animate = false) => {
         const matchingItems = student.items.filter(matchesItem);
 
-        const header = create('header', 'vq-panel-header');
-        const identity = create('div', 'student-identity');
-        identity.append(create('span', 'drawer-avatar', student.initials || '?'));
-        const identityCopy = create('div', 'student-identity-copy');
+        const header = create('header', 'sb-detail-head');
+        const identity = create('div', 'sb-person');
+        identity.append(create('span', 'sb-initials sb-initials--lg', student.initials || '?'));
+        const identityCopy = create('div', 'sb-person-text');
         identityCopy.append(
-            makeButton(student.name, 'student-name-button', () => openDrawer(student.id)),
-            create('span', 'student-meta', `${student.program || 'Program not set'} · ${student.year_level || 'Year level not set'} · ID ${student.student_id_number || '—'}`),
+            makeButton(student.name, 'sb-row-button sb-detail-title', () => openDrawer(student.id)),
+            create('span', 'sb-detail-meta', `${student.program || 'Program not set'} · ${student.year_level || 'Year level not set'} · ID ${student.student_id_number || '—'}`),
         );
         identity.append(identityCopy);
 
         const pendingCount = student.items.filter((item) => item.status === 'pending' && item.category !== 'deployment_document').length;
-        const verifyAll = makeButton(`Verify all ${pendingCount} pending`, 'verify-all-button', () => verifyAllPending(student));
+        const verifyAll = makeButton(`Verify all ${pendingCount} pending`, 'btn btn-primary', () => verifyAllPending(student));
         verifyAll.disabled = pendingCount === 0;
         header.append(identity, verifyAll);
 
         const progress = makeProgress(student.items);
-        const progressWrap = create('div', 'student-progress vq-progress');
+        const progressWrap = create('div', 'sb-progress-cell');
         progressWrap.append(
-            create('p', 'student-progress-label', `${progress.verified} of ${progress.total} verified`),
+            create('p', 'small fw-semibold mb-1', `${progress.verified} of ${progress.total} verified`),
             progress.track,
         );
 
         const expanded = state.expanded.has(student.id);
         const shown = expanded ? matchingItems : matchingItems.slice(0, DOCUMENTS_SHOWN);
-        const submissions = create('div', 'submission-list');
+        const submissions = create('div', 'sb-review-list');
         shown.forEach((item) => submissions.append(renderSubmission(student, item)));
 
         const parts = [header, progressWrap, submissions];
         const hidden = matchingItems.length - shown.length;
         if (hidden > 0) {
-            const more = makeButton(`Show ${hidden} more document${hidden === 1 ? '' : 's'}`, 'move-pending-button vq-more', () => {
+            const more = makeButton(`Show ${hidden} more document${hidden === 1 ? '' : 's'}`, 'btn btn-outline-secondary btn-sm align-self-start', () => {
                 state.expanded.add(student.id);
                 renderPanel(student);
                 // Keep keyboard users in place: focus the first newly shown document.
-                panelContent.querySelectorAll('.submission-row')[shown.length]
+                panelContent.querySelectorAll('.sb-review-row')[shown.length]
                     ?.querySelector('button:not(:disabled), a')?.focus();
             });
             parts.push(more);
@@ -381,7 +387,7 @@
 
     const render = () => {
         const students = visibleStudents();
-        const focusedId = document.activeElement?.closest?.('.vq-student')?.dataset.studentId;
+        const focusedId = document.activeElement?.closest?.('.sbx-row')?.dataset.studentId;
 
         if (!students.some((student) => student.id === state.selectedId)) {
             state.selectedId = students[0]?.id ?? null;
@@ -593,7 +599,7 @@
     });
 
     const addDetail = (list, label, value) => {
-        const item = create('div', 'drawer-detail');
+        const item = create('div', '');
         item.append(create('dt', '', label), create('dd', '', value || '—'));
         list.append(item);
     };
@@ -640,11 +646,11 @@
         const drawerItems = document.getElementById('drawerItems');
         drawerItems.replaceChildren();
         data.items.forEach((item) => {
-            const entry = create('li', 'drawer-item');
-            const line = create('div', 'drawer-item-line');
+            const entry = create('li', '');
+            const line = create('div', 'd-flex justify-content-between align-items-start gap-2');
             line.append(
                 create('span', '', item.title),
-                create('span', `drawer-item-status ${item.status}`, item.status),
+                create('span', `sb-status sb-status--${['verified', 'approved'].includes(item.status) ? 'success' : (item.status === 'rejected' ? 'danger' : 'warning')}`, item.status.charAt(0).toUpperCase() + item.status.slice(1)),
             );
             entry.append(line);
             drawerItems.append(entry);
@@ -653,13 +659,13 @@
         const activity = document.getElementById('drawerActivity');
         activity.replaceChildren();
         if (!data.activity.length) {
-            activity.append(create('li', 'drawer-activity', 'No review activity yet.'));
+            activity.append(create('li', '', 'No review activity yet.'));
         } else {
             data.activity.forEach((entry) => {
-                const row = create('li', 'drawer-activity');
+                const row = create('li', '');
                 row.append(
-                    create('div', 'drawer-activity-line', `${entry.who} ${entry.action} ${entry.item}`),
-                    create('p', '', `${entry.created_at}${entry.note ? ` · ${entry.note}` : ''}`),
+                    create('div', 'sb-row-title', `${entry.who} ${entry.action} ${entry.item}`),
+                    create('p', 'sb-row-sub mb-0', `${entry.created_at}${entry.note ? ` · ${entry.note}` : ''}`),
                 );
                 activity.append(row);
             });
@@ -686,8 +692,8 @@
         drawer.setAttribute('aria-hidden', 'false');
         backdrop.hidden = false;
         requestAnimationFrame(() => {
-            drawer.classList.add('is-open');
-            backdrop.classList.add('is-open');
+            drawer.classList.add('show');
+            backdrop.classList.add('show');
             drawer.focus();
         });
         await refreshDrawer();
@@ -695,8 +701,8 @@
 
     const closeDrawer = () => {
         if (drawer.getAttribute('aria-hidden') === 'true') return;
-        drawer.classList.remove('is-open');
-        backdrop.classList.remove('is-open');
+        drawer.classList.remove('show');
+        backdrop.classList.remove('show');
         drawer.setAttribute('aria-hidden', 'true');
         state.activeStudentId = null;
         window.setTimeout(() => { backdrop.hidden = true; }, 200);

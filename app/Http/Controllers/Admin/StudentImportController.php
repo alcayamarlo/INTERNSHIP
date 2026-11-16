@@ -15,6 +15,7 @@ use App\Support\StudentIdFormat;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class StudentImportController extends Controller
@@ -96,6 +97,7 @@ class StudentImportController extends Controller
             'last_name' => ['required', 'string'],
             'first_name' => ['required', 'string'],
             'date_of_birth' => ['required', 'string'],
+            'section' => ['nullable', 'string', 'max:50'],
         ]);
 
         if ($validator->fails()) {
@@ -110,6 +112,18 @@ class StudentImportController extends Controller
         if (! $dateOfBirth) {
             return [...$base, 'status' => 'error', 'message' => 'Date of birth could not be read (expected YYYY-MM-DD or MM/DD/YYYY).'];
         }
+
+        // Stored as first/second/summer (what the profile form uses); registrar files often say "1st Semester".
+        $semester = $this->parseSemester((string) ($row['semester'] ?? ''));
+        if ($semester === false) {
+            return [...$base, 'status' => 'error', 'message' => 'Semester could not be read (use 1st Semester, 2nd Semester or Summer).'];
+        }
+        $schoolYear = preg_replace('/\s+/', '', (string) ($row['school_year'] ?? ''));
+        if ($schoolYear !== '' && ! preg_match('/^\d{4}-\d{4}$/', $schoolYear)) {
+            return [...$base, 'status' => 'error', 'message' => 'School year must look like 2026-2027.'];
+        }
+        $row['semester'] = $semester;
+        $row['school_year'] = $schoolYear;
 
         $existingStudent = Student::where('student_id_number', $schoolId)->first();
 
@@ -158,7 +172,10 @@ class StudentImportController extends Controller
                 ]);
             });
         } catch (\Throwable $e) {
-            return [...$base, 'status' => 'error', 'message' => 'Could not create this account: '.$e->getMessage()];
+            // The database error stays in the log; it can name tables and the server.
+            Log::error('Student import row failed', ['row' => $rowNumber, 'school_id' => $schoolId, 'error' => $e->getMessage()]);
+
+            return [...$base, 'status' => 'error', 'message' => 'Could not save this row. Check its values and try again.'];
         }
 
         return [...$base, 'status' => 'created', 'message' => 'Account created.'];
@@ -187,6 +204,20 @@ class StudentImportController extends Controller
             'semester' => trim((string) ($row['semester'] ?? '')) ?: null,
             'enrollment_status' => 'enrolled',
         ]);
+    }
+
+    /** @return string|null|false first/second/summer, null when empty, false when unreadable */
+    private function parseSemester(string $value): string|null|false
+    {
+        $value = strtolower(trim($value));
+
+        return match (true) {
+            $value === '' => null,
+            (bool) preg_match('/^(1|1st|first)(\s*(sem|semester))?$/', $value) => 'first',
+            (bool) preg_match('/^(2|2nd|second)(\s*(sem|semester))?$/', $value) => 'second',
+            (bool) preg_match('/^(summer|midyear|mid-year)(\s*(term|class|classes))?$/', $value) => 'summer',
+            default => false,
+        };
     }
 
     private function parseDate(string $value): ?Carbon

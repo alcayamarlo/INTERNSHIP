@@ -2,52 +2,8 @@
 
 @section('title', 'My OJT')
 
-@push('styles')
-<style>
-    .ojt-tabs {
-        position: sticky;
-        top: var(--sb-topbar-height, 64px);
-        z-index: 1020;
-        margin: -8px -4px 20px;
-        padding: 10px 4px;
-        overflow-x: auto;
-        white-space: nowrap;
-        background: var(--sb-canvas, var(--sb-surface));
-        border-bottom: 1px solid var(--sb-border);
-    }
-    /* All three tabs share one size, padding, font, radius, and icon placement. */
-    .ojt-tabs .ojt-tab {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 14px;
-        border-radius: 999px;
-        font-size: 14px;
-        font-weight: 600;
-        line-height: 1.4;
-        background: var(--sb-surface, #fff);
-        border: 1px solid var(--sb-border, #dee2e6);
-        color: var(--sb-text, #212529);
-        transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .1s ease;
-    }
-    .ojt-tabs .ojt-tab:hover { border-color: var(--sb-brand-content, #8f1a27); color: var(--sb-brand-content, #8f1a27); }
-    .ojt-tabs .ojt-tab:active { transform: scale(.97); }
-    .ojt-tabs .ojt-tab:focus-visible { outline: 2px solid var(--sb-brand-content, #8f1a27); outline-offset: 2px; }
-    .ojt-tabs .ojt-tab[aria-selected="true"] {
-        background: var(--sb-brand-content, #8f1a27);
-        border-color: var(--sb-brand-content, #8f1a27);
-        color: #fff;
-    }
-    .ojt-tabs .ojt-tab[aria-selected="true"]:hover { filter: brightness(1.08); }
-    .ojt-panel[hidden], .ojt-tabs [hidden] { display: none !important; }
-    .ojt-panel { animation: ojt-fade .18s ease; }
-    @keyframes ojt-fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-    @media (prefers-reduced-motion: reduce) { .ojt-panel { animation: none; } .ojt-tabs .ojt-tab { transition: none; } }
-</style>
-@endpush
-
 @section('content')
-<x-page-header title="My OJT" subtitle="Log your daily time, submit weekly journals and track your progress toward completion." />
+<x-page-header title="My OJT" subtitle="Log your daily time, submit weekly reports and track your progress toward completion." />
 @if(! $placement)
     <div class="card">
         <div class="card-body">
@@ -61,9 +17,14 @@
         $tabs = [
             'progress' => ['Progress', 'bi-speedometer2'],
             'time-record' => ['Time Record', 'bi-clock-history'],
-            'weekly-journal' => ['Weekly Journal', 'bi-journal-text'],
+            'weekly-journal' => ['Weekly Report', 'bi-journal-text'],
+            'monthly-evaluation' => ['Monthly Evaluation', 'bi-clipboard-data'],
         ];
         $activeTab = array_key_exists((string) request('tab'), $tabs) ? request('tab') : 'progress';
+        // A failed monthly evaluation submit reopens that tab.
+        if (! request('tab') && old('appraisal_id')) {
+            $activeTab = 'monthly-evaluation';
+        }
         $canLog = $placement->isActive() && ! $placement->start_date->isFuture();
     @endphp
 
@@ -80,10 +41,10 @@
         </form>
     @endif
 
-    <div class="ojt-tabs d-flex align-items-center justify-content-between gap-2">
-        <div class="d-flex gap-2" role="tablist" aria-label="OJT sections" data-ojt-tabs>
+    <div class="sb-tabbar">
+        <div class="sb-section-tabs" role="tablist" aria-label="OJT sections" data-ojt-tabs>
             @foreach($tabs as $key => [$label, $icon])
-                <button type="button" role="tab" id="ojt-tab-{{ $key }}" class="ojt-tab" data-tab="{{ $key }}"
+                <button type="button" role="tab" id="ojt-tab-{{ $key }}" class="sb-section-tab" data-tab="{{ $key }}"
                         aria-controls="ojt-panel-{{ $key }}" aria-selected="{{ $key === $activeTab ? 'true' : 'false' }}"
                         tabindex="{{ $key === $activeTab ? '0' : '-1' }}">
                     <i class="bi {{ $icon }}" aria-hidden="true"></i> {{ $label }}
@@ -94,19 +55,21 @@
         {{-- Action for the open tab, on the right of the tab bar. Progress has none. --}}
         @if($canLog)
             <button type="button" class="btn btn-primary btn-sm flex-shrink-0" data-ojt-action="time-record" data-bs-toggle="modal" data-bs-target="#dailyEntryModal" @if($activeTab !== 'time-record') hidden @endif><i class="bi bi-plus-lg" aria-hidden="true"></i> Add daily entry</button>
-            <button type="button" class="btn btn-primary btn-sm flex-shrink-0" data-ojt-action="weekly-journal" data-bs-toggle="modal" data-bs-target="#weeklyJournalModal" @if($activeTab !== 'weekly-journal') hidden @endif><i class="bi bi-plus-lg" aria-hidden="true"></i> Add weekly journal</button>
+            <button type="button" class="btn btn-primary btn-sm flex-shrink-0" data-ojt-action="weekly-journal" data-bs-toggle="modal" data-bs-target="#weeklyJournalModal" @if($activeTab !== 'weekly-journal') hidden @endif><i class="bi bi-plus-lg" aria-hidden="true"></i> Add weekly report</button>
         @endif
     </div>
 
     {{-- PROGRESS --}}
-    <section id="ojt-panel-progress" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-progress" @if($activeTab !== 'progress') hidden @endif>
+    <section id="ojt-panel-progress" class="sb-tab-panel" role="tabpanel" aria-labelledby="ojt-tab-progress" @if($activeTab !== 'progress') hidden @endif>
+        @include('ojt.partials.deadlines', ['placement' => $placement, 'actor' => 'student'])
         @include('ojt.partials.progress', ['placement' => $placement])
+        @include('ojt.partials.document-details', ['placement' => $placement])
     </section>
 
     {{-- TIME RECORD --}}
-    <section id="ojt-panel-time-record" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-time-record" @if($activeTab !== 'time-record') hidden @endif>
+    <section id="ojt-panel-time-record" class="sb-tab-panel" role="tabpanel" aria-labelledby="ojt-tab-time-record" @if($activeTab !== 'time-record') hidden @endif>
         @if($placement->isActive() && $placement->start_date->isFuture())
-            <div class="alert alert-info">
+            <div class="sb-callout mt-0 mb-4">
                 <i class="bi bi-calendar-event" aria-hidden="true"></i>
                 Your OJT starts on {{ $placement->start_date->format('F d, Y') }}. You can log time and submit journals from that date.
             </div>
@@ -115,14 +78,19 @@
     </section>
 
     {{-- WEEKLY JOURNAL --}}
-    <section id="ojt-panel-weekly-journal" class="ojt-panel" role="tabpanel" aria-labelledby="ojt-tab-weekly-journal" @if($activeTab !== 'weekly-journal') hidden @endif>
+    <section id="ojt-panel-weekly-journal" class="sb-tab-panel" role="tabpanel" aria-labelledby="ojt-tab-weekly-journal" @if($activeTab !== 'weekly-journal') hidden @endif>
         @if($placement->isActive() && $placement->start_date->isFuture())
-            <div class="alert alert-info">
+            <div class="sb-callout mt-0 mb-4">
                 <i class="bi bi-calendar-event" aria-hidden="true"></i>
                 Your OJT starts on {{ $placement->start_date->format('F d, Y') }}. You can log time and submit journals from that date.
             </div>
         @endif
         @include('ojt.partials.journals', ['placement' => $placement, 'mode' => 'student'])
+    </section>
+
+    {{-- MONTHLY EVALUATION --}}
+    <section id="ojt-panel-monthly-evaluation" class="sb-tab-panel" role="tabpanel" aria-labelledby="ojt-tab-monthly-evaluation" @if($activeTab !== 'monthly-evaluation') hidden @endif>
+        @include('ojt.partials.appraisals', ['placement' => $placement, 'mode' => 'student'])
     </section>
 
     @push('scripts')
@@ -213,36 +181,37 @@
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2 class="modal-title h5" id="weeklyJournalModalLabel">Add weekly journal</h2>
+                    <h2 class="modal-title h5" id="weeklyJournalModalLabel">Add weekly activity narrative report</h2>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="weeklyJournalForm" method="POST" action="{{ route('student.ojt.journals.store', $placement) }}">
                             @csrf
 <input type="hidden" name="_modal" value="weekly">
+                            @include('ojt.partials.report-header-fields', ['placement' => $placement])
                             <div class="row g-2">
                                 <div class="col-md-5">
-                                    <label class="form-label" for="week_start">Any day in the week</label>
+                                    <label class="form-label" for="week_start">Any day in the week <span class="sb-req" aria-hidden="true">*</span></label>
                                     <input type="date" id="week_start" name="week_start" value="{{ old('week_start', now()->toDateString()) }}" max="{{ now()->toDateString() }}" class="form-control @error('week_start') is-invalid @enderror" required>
                                     @error('week_start')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
-                                <div class="col-md-7">
-                                    <label class="form-label" for="title">Title</label>
-                                    <input id="title" name="title" value="{{ old('title') }}" maxlength="255" class="form-control @error('title') is-invalid @enderror" required>
-                                    @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                <div class="col-md-7 d-flex align-items-end">
+                                    <p class="small text-muted mb-1">The daily activity table (dates, activities, hours) is filled in from your time records for that week. Write at least 20 characters in each section below.</p>
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label" for="accomplishments">Accomplishments</label>
-                                    <textarea id="accomplishments" name="accomplishments" rows="2" class="form-control @error('accomplishments') is-invalid @enderror" required>{{ old('accomplishments') }}</textarea>
-                                    @error('accomplishments')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                    <label class="form-label" for="challenges">Difficulties encountered <span class="sb-req" aria-hidden="true">*</span></label>
+                                    <textarea id="challenges" name="challenges" rows="3" minlength="20" maxlength="5000" class="form-control @error('challenges') is-invalid @enderror" required>{{ old('challenges') }}</textarea>
+                                    @error('challenges')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="form-label" for="learnings">Learnings</label>
-                                    <textarea id="learnings" name="learnings" rows="2" class="form-control">{{ old('learnings') }}</textarea>
+                                <div class="col-12">
+                                    <label class="form-label" for="actions_taken">Actions taken <span class="sb-req" aria-hidden="true">*</span></label>
+                                    <textarea id="actions_taken" name="actions_taken" rows="3" minlength="20" maxlength="5000" class="form-control @error('actions_taken') is-invalid @enderror" required>{{ old('actions_taken') }}</textarea>
+                                    @error('actions_taken')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="form-label" for="challenges">Challenges</label>
-                                    <textarea id="challenges" name="challenges" rows="2" class="form-control">{{ old('challenges') }}</textarea>
+                                <div class="col-12">
+                                    <label class="form-label" for="learnings">Learning insights <span class="sb-req" aria-hidden="true">*</span></label>
+                                    <textarea id="learnings" name="learnings" rows="3" minlength="20" maxlength="5000" class="form-control @error('learnings') is-invalid @enderror" required>{{ old('learnings') }}</textarea>
+                                    @error('learnings')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                             </div>
                             
@@ -250,7 +219,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary" form="weeklyJournalForm">Submit journal</button>
+                    <button type="submit" class="btn btn-primary" form="weeklyJournalForm">Submit report</button>
                 </div>
             </div>
         </div>
@@ -258,6 +227,7 @@
 
     @push('scripts')
         <script src="{{ asset('js/sb-modals.js') }}?v={{ @filemtime(public_path('js/sb-modals.js')) }}"></script>
+        <script src="{{ asset('js/ojt-report-header.js') }}?v={{ @filemtime(public_path('js/ojt-report-header.js')) }}"></script>
     @endpush
     @endif
 @endif
