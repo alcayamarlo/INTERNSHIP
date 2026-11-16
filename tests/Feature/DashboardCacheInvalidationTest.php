@@ -34,7 +34,6 @@ it('invalidates dashboard caches when an application is created or updated', fun
         'employer_id' => $employer->id,
         'title' => 'Cache Test Internship',
         'description' => 'A test internship.',
-        'work_setup' => 'hybrid',
         'status' => 'open',
     ]);
 
@@ -115,7 +114,6 @@ it('invalidates competency score and recommendation caches when evidence changes
         'employer_id' => $employer->id,
         'title' => 'Evidence Cache Internship',
         'description' => 'A test internship.',
-        'work_setup' => 'hybrid',
         'status' => 'open',
     ]);
 

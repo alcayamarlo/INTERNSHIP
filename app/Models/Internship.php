@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\WorkSetup;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -21,7 +20,6 @@ class Internship extends Model
         'slots',
         'duration',
         'allowance',
-        'work_setup',
         'location',
         'status',
         'expires_at',
@@ -35,7 +33,6 @@ class Internship extends Model
     protected function casts(): array
     {
         return [
-            'work_setup' => WorkSetup::class,
             'allowance' => 'decimal:2',
             'expires_at' => 'datetime',
             'alerts_sent_at' => 'datetime',

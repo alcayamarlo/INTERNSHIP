@@ -32,7 +32,6 @@ function makeResumeAccessScenario(ApplicationStatus $status = ApplicationStatus:
         'employer_id' => $employer->id,
         'title' => 'Resume Access Internship',
         'description' => 'Review resume access.',
-        'work_setup' => 'hybrid',
         'status' => 'open',
     ]);
     $application = InternshipApplication::create([

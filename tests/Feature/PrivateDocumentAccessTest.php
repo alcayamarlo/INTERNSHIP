@@ -257,7 +257,6 @@ it('allows an employer to preview an applicant project but not download it', fun
         'employer_id' => $employer->id,
         'title' => 'Software Intern',
         'description' => 'Build software.',
-        'work_setup' => 'hybrid',
         'status' => 'open',
     ]);
     $application = InternshipApplication::create([
@@ -315,7 +314,6 @@ it('lets an applied-to employer view certificates and shared documents but never
         'employer_id' => $employer->id,
         'title' => 'Intern',
         'description' => 'Internship.',
-        'work_setup' => 'hybrid',
         'status' => 'open',
     ]);
     $application = InternshipApplication::create([

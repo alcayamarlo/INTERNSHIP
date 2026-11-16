@@ -48,7 +48,6 @@ it('weights evidence by proficiency level regardless of verification status and 
         'title' => 'Web Developer Intern',
         'description' => 'Build modern web applications.',
         'duration' => '3 months',
-        'work_setup' => 'hybrid',
         'location' => 'Makati City',
         'status' => 'open',
     ]);
@@ -132,7 +131,6 @@ it('stores student feedback for recommended internships', function () {
         'title' => 'Web Developer Intern',
         'description' => 'Build modern web applications.',
         'duration' => '3 months',
-        'work_setup' => 'hybrid',
         'location' => 'Makati City',
         'status' => 'open',
     ]);
@@ -175,7 +173,6 @@ it('applies recommendation feedback only to its internship', function () {
         'employer_id' => $employer->id,
         'title' => $title,
         'description' => 'Test opportunity.',
-        'work_setup' => 'hybrid',
         'status' => 'open',
     ]));
 

@@ -37,7 +37,7 @@ function flowInternship(): Internship
         'contact_person' => 'Fiona Flow',
     ]);
 
-    return Internship::create(['employer_id' => $employer->id, 'title' => 'Flow Intern', 'description' => 'Flow work.', 'work_setup' => 'remote', 'status' => 'open']);
+    return Internship::create(['employer_id' => $employer->id, 'title' => 'Flow Intern', 'description' => 'Flow work.', 'status' => 'open']);
 }
 
 it('tells a student who is not eligible yet before they press Apply', function () {

@@ -45,7 +45,6 @@ function bioDataInternship(Employer $employer, array $attributes = []): Internsh
         'employer_id' => $employer->id,
         'title' => 'Web Intern',
         'description' => 'Build things.',
-        'work_setup' => 'remote',
         'status' => 'open',
         ...$attributes,
     ]);

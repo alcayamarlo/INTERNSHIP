@@ -7,7 +7,6 @@ use App\Enums\CompetencyCategory;
 use App\Enums\ProficiencyLevel;
 use App\Enums\PortfolioType;
 use App\Enums\UserRole;
-use App\Enums\WorkSetup;
 use App\Models\Certificate;
 use App\Models\Competency;
 use App\Models\Coordinator;
@@ -179,7 +178,6 @@ class DatabaseSeeder extends Seeder
             'qualifications' => 'BS IT or related field, knowledge of PHP and Laravel.',
             'duration' => '3 months',
             'allowance' => 8000,
-            'work_setup' => WorkSetup::Hybrid,
             'location' => 'Makati City',
             'status' => 'open',
         ]);
@@ -202,7 +200,6 @@ class DatabaseSeeder extends Seeder
             'description' => 'Support our design team in creating user-friendly interfaces.',
             'duration' => '2 months',
             'allowance' => 6000,
-            'work_setup' => WorkSetup::Remote,
             'location' => 'Remote',
             'status' => 'open',
         ]);

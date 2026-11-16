@@ -54,7 +54,6 @@ function inviteEmployer(string $company = 'Acme Corp'): array
         'employer_id' => $employer->id,
         'title' => 'Web Intern at '.$company,
         'description' => 'Build things.',
-        'work_setup' => 'remote',
         'status' => 'open',
     ]);
 
@@ -156,8 +155,8 @@ it('rejects duplicate, already-applied, closed, and expired-internship invitatio
     sendInvite($employerUser, $applied, $internship)->assertUnprocessable()
         ->assertJsonValidationErrors(['internship_id' => 'This student already applied to that internship.']);
 
-    $closed = Internship::create(['employer_id' => $employer->id, 'title' => 'Closed', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'closed']);
-    $expired = Internship::create(['employer_id' => $employer->id, 'title' => 'Expired', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open', 'expires_at' => now()->subDay()]);
+    $closed = Internship::create(['employer_id' => $employer->id, 'title' => 'Closed', 'description' => 'x', 'status' => 'closed']);
+    $expired = Internship::create(['employer_id' => $employer->id, 'title' => 'Expired', 'description' => 'x', 'status' => 'open', 'expires_at' => now()->subDay()]);
     foreach ([$closed, $expired] as $notOpen) {
         sendInvite($employerUser, inviteStudent(), $notOpen)->assertUnprocessable()->assertJsonValidationErrors('internship_id');
     }
@@ -260,7 +259,7 @@ it('expires old invitations and those for closed internships, reminds before exp
     $old = inviteStudent();
     $closedFor = inviteStudent();
     $soon = inviteStudent();
-    $closedInternship = Internship::create(['employer_id' => $employer->id, 'title' => 'Soon closed', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open']);
+    $closedInternship = Internship::create(['employer_id' => $employer->id, 'title' => 'Soon closed', 'description' => 'x', 'status' => 'open']);
 
     $service = app(InvitationService::class);
     $oldInvite = $service->invite($employerUser, $old, $internship, null);

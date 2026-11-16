@@ -253,7 +253,7 @@ it('serves the 2x2 only to the student, their coordinator, and companies they ap
     $employerUser = User::factory()->create(['role' => UserRole::Employer]);
     $employer = Employer::create(['user_id' => $employerUser->id, 'company_name' => 'Acme', 'contact_person' => 'HR']);
     $this->actingAs($employerUser)->get($url)->assertForbidden();
-    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Intern', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open']);
+    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Intern', 'description' => 'x', 'status' => 'open']);
     InternshipApplication::create(['internship_id' => $internship->id, 'student_id' => $student->id, 'status' => ApplicationStatus::Applied, 'match_percentage' => 0, 'applied_at' => now()]);
     $this->get($url)->assertOk();
 
@@ -337,7 +337,7 @@ it('applies the same photo rule to the company version of the resume', function 
     expect(resumeHasPhoto($hidden))->toBe($withIdPhoto);
 
     // After applying, the company gets the stored file: the same rule.
-    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Intern', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open']);
+    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Intern', 'description' => 'x', 'status' => 'open']);
     InternshipApplication::create(['internship_id' => $internship->id, 'student_id' => $student->id, 'resume_id' => $resume->id, 'status' => ApplicationStatus::Applied, 'match_percentage' => 0, 'applied_at' => now()]);
     $this->actingAs($employerUser)
         ->get(route('employer.applicants.resume.preview', InternshipApplication::sole()))

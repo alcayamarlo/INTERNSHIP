@@ -33,7 +33,7 @@ it('broadcasts a MessageSent event to the recipient when a message is stored', f
     $student = Student::create(['user_id' => $receiver->id]);
     // Employer–student messaging opens once an application is Reviewed.
     $employer = \App\Models\Employer::create(['user_id' => $sender->id, 'company_name' => 'Broadcast Co', 'contact_person' => 'HR']);
-    $internship = \App\Models\Internship::create(['employer_id' => $employer->id, 'title' => 'Broadcast Intern', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open']);
+    $internship = \App\Models\Internship::create(['employer_id' => $employer->id, 'title' => 'Broadcast Intern', 'description' => 'x', 'status' => 'open']);
     \App\Models\InternshipApplication::create(['internship_id' => $internship->id, 'student_id' => $student->id, 'status' => \App\Enums\ApplicationStatus::Reviewed, 'match_percentage' => 0, 'applied_at' => now()]);
 
     $this->actingAs($sender)

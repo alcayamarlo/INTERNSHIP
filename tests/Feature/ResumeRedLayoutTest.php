@@ -161,7 +161,7 @@ it('hides contact details from a company the student has not applied to, and sho
         ->and($before->getContent())->toStartWith('%PDF')
         ->and($before->getContent())->not->toBe(Storage::disk('private')->get($resume->file_path));
 
-    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Web Intern', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open']);
+    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Web Intern', 'description' => 'x', 'status' => 'open']);
     InternshipApplication::create(['internship_id' => $internship->id, 'student_id' => $student->id, 'resume_id' => $resume->id, 'status' => ApplicationStatus::Applied, 'match_percentage' => 0, 'applied_at' => now()]);
 
     // After applying, the company gets the stored file, which includes contact details.

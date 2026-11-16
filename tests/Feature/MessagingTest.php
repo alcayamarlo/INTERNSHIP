@@ -18,7 +18,7 @@ function openMessaging(User $employerUser, User $studentUser, ApplicationStatus 
 {
     $employer = $employerUser->employer ?? Employer::create(['user_id' => $employerUser->id, 'company_name' => 'Messaging Co', 'contact_person' => 'HR']);
     $student = $studentUser->student ?? Student::create(['user_id' => $studentUser->id]);
-    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Messaging Internship', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open']);
+    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Messaging Internship', 'description' => 'x', 'status' => 'open']);
     InternshipApplication::create(['internship_id' => $internship->id, 'student_id' => $student->id, 'status' => $status, 'match_percentage' => 0, 'applied_at' => now()]);
     $employerUser->unsetRelation('employer');
     $studentUser->unsetRelation('student');

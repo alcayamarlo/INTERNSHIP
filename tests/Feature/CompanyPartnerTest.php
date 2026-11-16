@@ -46,7 +46,7 @@ function partnerStudent(array $attributes = []): Student
 
 it('lets an unverified company manage its profile but not post, browse, or invite', function () {
     [$user, $employer] = partnerCompany(verified: false);
-    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Old post', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open']);
+    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Old post', 'description' => 'x', 'status' => 'open']);
     $student = partnerStudent();
     $this->actingAs($user);
 
@@ -106,8 +106,8 @@ it('marks companies that already existed as verified when migrating', function (
 it('shows the Verified company badge to students only for verified companies', function () {
     [, $verified] = partnerCompany(verified: true);
     [, $pending] = partnerCompany(verified: false);
-    $good = Internship::create(['employer_id' => $verified->id, 'title' => 'Verified post', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open']);
-    $unverifiedPost = Internship::create(['employer_id' => $pending->id, 'title' => 'Pending post', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open']);
+    $good = Internship::create(['employer_id' => $verified->id, 'title' => 'Verified post', 'description' => 'x', 'status' => 'open']);
+    $unverifiedPost = Internship::create(['employer_id' => $pending->id, 'title' => 'Pending post', 'description' => 'x', 'status' => 'open']);
     $student = partnerStudent();
 
     $this->actingAs($student->user)->get(route('student.internships.show', $good))->assertOk()->assertSee('Verified company');
@@ -151,7 +151,7 @@ it('shows the intern\'s OJT coordinator with a way to message them', function ()
     Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
     [$user, $employer] = partnerCompany(verified: true);
     $student = partnerStudent(['institution_id' => $institution->id]);
-    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Intern', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open']);
+    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Intern', 'description' => 'x', 'status' => 'open']);
     $application = InternshipApplication::create(['internship_id' => $internship->id, 'student_id' => $student->id, 'status' => ApplicationStatus::Accepted, 'match_percentage' => 0, 'applied_at' => now()]);
     $placement = app(\App\Services\PlacementService::class)->openForApplication($application);
 

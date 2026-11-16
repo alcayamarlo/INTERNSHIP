@@ -26,7 +26,7 @@ function adminCompany(): array
 {
     $user = User::factory()->create(['role' => UserRole::Employer]);
     $employer = Employer::create(['user_id' => $user->id, 'company_name' => 'Shady Corp', 'contact_person' => 'HR', 'verified_at' => now()]);
-    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Too Good To Be True', 'description' => 'Pay a fee to apply', 'work_setup' => 'remote', 'status' => 'open']);
+    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Too Good To Be True', 'description' => 'Pay a fee to apply', 'status' => 'open']);
 
     return [$user, $employer, $internship];
 }

@@ -40,7 +40,7 @@ function workflow(array $studentAttributes = []): array
     ]);
     $employerUser = User::factory()->create(['role' => UserRole::Employer]);
     $employer = Employer::create(['user_id' => $employerUser->id, 'company_name' => 'Acme Corp', 'contact_person' => 'Grace HR', 'verified_at' => now()]);
-    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Web Intern', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open']);
+    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Web Intern', 'description' => 'x', 'status' => 'open']);
 
     return compact('institution', 'coordinatorUser', 'coordinator', 'program', 'studentUser', 'student', 'employerUser', 'employer', 'internship');
 }

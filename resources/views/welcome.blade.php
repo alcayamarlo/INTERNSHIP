@@ -19,7 +19,7 @@
     $heroList = collect($openInternships ?? []);
     $heroCount = $heroList->count();
     $heroFeat = $heroList->first();
-    $heroFeatSetup = $heroFeat ? ($heroFeat->work_setup?->value === 'onsite' ? 'On-site' : ($heroFeat->work_setup?->label() ?? '')) : '';
+    $heroFeatSetup = ''; // Postings no longer have a work setup.
     $heroFeatLoc = $heroFeat ? trim((string) $heroFeat->location) : '';
     if ($heroFeatLoc !== '' && \Illuminate\Support\Str::lower($heroFeatLoc) === \Illuminate\Support\Str::lower($heroFeatSetup)) { $heroFeatLoc = ''; }
     $heroFeatMeta = $heroFeat ? collect([$heroFeatLoc, $heroFeatSetup, trim((string) $heroFeat->duration)])->filter()->implode(' · ') : '';

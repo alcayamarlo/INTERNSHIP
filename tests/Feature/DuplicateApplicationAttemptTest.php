@@ -29,7 +29,6 @@ it('rejects duplicate applications for the same internship and student', functio
         'employer_id' => $employer->id,
         'title' => 'Duplicate Test Internship',
         'description' => 'A duplicate application test.',
-        'work_setup' => 'remote',
         'status' => 'open',
     ]);
 
@@ -65,7 +64,6 @@ it('submits internship applications asynchronously', function () {
         'employer_id' => $employer->id,
         'title' => 'Async Test Internship',
         'description' => 'An asynchronous application test.',
-        'work_setup' => 'remote',
         'status' => 'open',
     ]);
 

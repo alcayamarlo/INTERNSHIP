@@ -28,7 +28,6 @@ it('rolls back an internship update and requirement replacement when creating a 
         'employer_id' => $employer->id,
         'title' => 'Original title',
         'description' => 'Original description',
-        'work_setup' => 'onsite',
         'status' => 'open',
     ]);
     $originalRequirement = InternshipRequirement::create([

@@ -152,7 +152,7 @@ it('uses the criteria hours for new placements', function () {
     $student = criteriaStudent($program);
     $employerUser = User::factory()->create(['role' => UserRole::Employer]);
     $employer = Employer::create(['user_id' => $employerUser->id, 'company_name' => 'Acme', 'contact_person' => 'HR', 'verified_at' => now()]);
-    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Intern', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open']);
+    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Intern', 'description' => 'x', 'status' => 'open']);
     $application = InternshipApplication::create(['internship_id' => $internship->id, 'student_id' => $student->id, 'status' => ApplicationStatus::Accepted, 'match_percentage' => 0, 'applied_at' => now()]);
 
     expect(app(PlacementService::class)->openForApplication($application)->required_hours)->toBe(520);

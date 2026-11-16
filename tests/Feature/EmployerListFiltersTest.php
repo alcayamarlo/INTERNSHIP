@@ -22,7 +22,7 @@ function filterEmployer(string $company = 'Filter Co'): Employer
 
 function filterInternship(Employer $employer, string $title): Internship
 {
-    return Internship::create(['employer_id' => $employer->id, 'title' => $title, 'description' => 'Work.', 'work_setup' => 'onsite', 'status' => 'open']);
+    return Internship::create(['employer_id' => $employer->id, 'title' => $title, 'description' => 'Work.', 'status' => 'open']);
 }
 
 function filterStudent(string $name, string $program): Student

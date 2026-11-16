@@ -303,7 +303,6 @@ it('blocks internship applications while the configured eligibility requirements
         'employer_id' => $employer->id,
         'title' => 'Eligibility Test Internship',
         'description' => 'An internship eligibility test.',
-        'work_setup' => 'remote',
         'status' => 'open',
     ]);
 

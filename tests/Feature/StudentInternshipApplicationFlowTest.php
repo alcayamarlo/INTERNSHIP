@@ -32,7 +32,6 @@ function studentApplicationFixture(array $internshipAttributes = []): array
         'employer_id' => $employer->id,
         'title' => 'Application Flow Internship',
         'description' => 'A test internship.',
-        'work_setup' => 'remote',
         'status' => 'open',
         ...$internshipAttributes,
     ]);
@@ -189,7 +188,7 @@ it('renders the application details for every status with its stepper, next step
 it('orders My Applications by status priority and supports tabs, sorting and upcoming interviews', function () {
     $fixture = studentApplicationFixture();
     $make = function (string $title, ApplicationStatus $status, int $match, int $daysAgo, ?\Carbon\Carbon $interviewAt = null) use ($fixture) {
-        $internship = Internship::create(['employer_id' => $fixture['employer']->id, 'title' => $title, 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open']);
+        $internship = Internship::create(['employer_id' => $fixture['employer']->id, 'title' => $title, 'description' => 'x', 'status' => 'open']);
 
         return InternshipApplication::create([
             'internship_id' => $internship->id,

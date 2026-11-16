@@ -61,7 +61,6 @@ it('returns field errors to the dialog and saves a valid posting', function () {
         '_modal' => 'newInternship',
         'title' => 'Modal Intern',
         'description' => 'Build things.',
-        'work_setup' => 'onsite',
         'status' => 'open',
         'requirement_names' => [''],
         'requirement_levels' => ['beginner'],
@@ -100,7 +99,6 @@ it('keeps the allowance field when editing an existing posting', function () {
         'employer_id' => $user->employer->id,
         'title' => 'Paid Intern',
         'description' => 'x',
-        'work_setup' => 'onsite',
         'status' => 'open',
         'allowance' => 5000,
     ]);
@@ -124,7 +122,6 @@ function postingFor(User $user, array $attributes = []): Internship
         'employer_id' => $user->employer->id,
         'title' => 'Posting '.\Illuminate\Support\Str::random(4),
         'description' => 'x',
-        'work_setup' => 'hybrid',
         'status' => 'open',
         ...$attributes,
     ]);

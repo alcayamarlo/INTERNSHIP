@@ -62,7 +62,6 @@ function postingPayload(array $overrides = []): array
     return array_merge([
         'title' => 'Laravel Intern',
         'description' => 'Build things.',
-        'work_setup' => 'onsite',
         'status' => 'open',
         'requirement_names' => ['Laravel Framework'],
         'requirement_levels' => [ProficiencyLevel::Beginner->value],

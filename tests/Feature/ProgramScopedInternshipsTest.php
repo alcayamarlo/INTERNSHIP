@@ -114,7 +114,6 @@ it('lets employers choose which programs an internship is open to', function () 
     $this->actingAs($f['employerUser'])->post(route('employer.internships.store'), [
         'title' => 'Guest Relations Intern',
         'description' => 'Hospitality role.',
-        'work_setup' => 'onsite',
         'status' => 'open',
         'program_ids' => [$f['hm']->id],
     ])->assertRedirect(route('employer.internships.index'));

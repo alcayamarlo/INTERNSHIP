@@ -59,7 +59,7 @@ it('hides a moderated posting from students who did not apply, but not from appl
     [$otherUser] = scanStudent();
     $employerUser = User::factory()->create(['role' => UserRole::Employer]);
     $employer = Employer::create(['user_id' => $employerUser->id, 'company_name' => 'Hidden Co', 'verified_at' => now()]);
-    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Reported Role', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open', 'hidden_at' => now(), 'hidden_reason' => 'Scam or fake opportunity']);
+    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Reported Role', 'description' => 'x', 'status' => 'open', 'hidden_at' => now(), 'hidden_reason' => 'Scam or fake opportunity']);
     InternshipApplication::create(['internship_id' => $internship->id, 'student_id' => $applicant->id, 'status' => \App\Enums\ApplicationStatus::Applied, 'match_percentage' => 50]);
 
     $this->actingAs($otherUser)->get(route('student.internships.show', $internship))->assertNotFound();

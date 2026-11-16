@@ -230,7 +230,7 @@ it('keeps the match score based only on title and earned level', function () {
     $student = certificateStudent();
     $employerUser = User::factory()->create(['role' => UserRole::Employer]);
     $employer = Employer::create(['user_id' => $employerUser->id, 'company_name' => 'Match Co', 'contact_person' => 'HR']);
-    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'IT Intern', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open']);
+    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'IT Intern', 'description' => 'x', 'status' => 'open']);
     InternshipRequirement::create(['internship_id' => $internship->id, 'requirement_name' => 'Networking', 'required_level' => ProficiencyLevel::Intermediate]);
     $legacy = StudentCompetency::create([
         'student_id' => $student->id,
@@ -311,7 +311,7 @@ it('shows certificates with their skills on the employer applicant page', functi
     $this->actingAs($student->user)->postJson(route('student.competencies.store'), certificatePayload())->assertCreated();
     $employerUser = User::factory()->create(['role' => UserRole::Employer]);
     $employer = Employer::create(['user_id' => $employerUser->id, 'company_name' => 'View Co', 'contact_person' => 'HR']);
-    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Intern', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open']);
+    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Intern', 'description' => 'x', 'status' => 'open']);
     $application = InternshipApplication::create(['internship_id' => $internship->id, 'student_id' => $student->id, 'status' => 'applied', 'match_percentage' => 10, 'applied_at' => now()]);
 
     $this->actingAs($employerUser)

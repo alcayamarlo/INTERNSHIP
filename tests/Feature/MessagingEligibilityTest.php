@@ -41,7 +41,7 @@ function chatSetup(): array
 
     $employerUser = User::factory()->create(['role' => UserRole::Employer]);
     $employer = Employer::create(['user_id' => $employerUser->id, 'company_name' => 'Acme Corp', 'contact_person' => 'HR']);
-    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Web Intern', 'description' => 'x', 'work_setup' => 'remote', 'status' => 'open']);
+    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Web Intern', 'description' => 'x', 'status' => 'open']);
 
     return compact('studentUser', 'student', 'coordinatorUser', 'employerUser', 'employer', 'internship', 'institution');
 }

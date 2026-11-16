@@ -50,7 +50,6 @@ it('returns summary analytics for applications, verification, and recommendation
         'title' => 'Web Developer Intern',
         'description' => 'Build modern web applications.',
         'duration' => '3 months',
-        'work_setup' => 'hybrid',
         'location' => 'Makati City',
         'status' => 'open',
     ]);
@@ -60,7 +59,6 @@ it('returns summary analytics for applications, verification, and recommendation
         'title' => 'Data Analyst Intern',
         'description' => 'Analyze platform data and reporting outcomes.',
         'duration' => '3 months',
-        'work_setup' => 'remote',
         'location' => 'Quezon City',
         'status' => 'open',
     ]);

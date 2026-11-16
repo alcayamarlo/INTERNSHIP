@@ -22,8 +22,8 @@ function feedbackFixture(): array
     $employerUser = User::factory()->create(['role' => UserRole::Employer, 'email' => 'private.hr@employer.test']);
     $employer = Employer::create(['user_id' => $employerUser->id, 'company_name' => 'Public Facing Co', 'contact_person' => 'Secret Person']);
 
-    $open = Internship::create(['employer_id' => $employer->id, 'title' => 'Open Web Intern', 'description' => 'Build web things.', 'work_setup' => 'remote', 'status' => 'open', 'location' => 'Cebu City']);
-    $closed = Internship::create(['employer_id' => $employer->id, 'title' => 'Closed Intern Role', 'description' => 'Gone.', 'work_setup' => 'remote', 'status' => 'closed']);
+    $open = Internship::create(['employer_id' => $employer->id, 'title' => 'Open Web Intern', 'description' => 'Build web things.', 'status' => 'open', 'location' => 'Cebu City']);
+    $closed = Internship::create(['employer_id' => $employer->id, 'title' => 'Closed Intern Role', 'description' => 'Gone.', 'status' => 'closed']);
 
     return compact('studentUser', 'student', 'employerUser', 'employer', 'open', 'closed');
 }

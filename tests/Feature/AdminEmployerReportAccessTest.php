@@ -31,7 +31,6 @@ function internshipFormData(array $overrides = []): array
         'requirements' => 'Attention to detail.',
         'duration' => 'Three months',
         'allowance' => '5000',
-        'work_setup' => 'hybrid',
         'location' => 'Cebu',
         'status' => 'open',
         'requirement_names' => ['Testing'],
@@ -111,7 +110,6 @@ it('allows employers to create, update, and delete only their own opportunities'
         'employer_id' => Employer::where('user_id', $otherUser->id)->value('id'),
         'title' => 'Other Opportunity',
         'description' => 'Owned by another employer.',
-        'work_setup' => 'remote',
         'status' => 'open',
     ]);
 

@@ -62,7 +62,6 @@ function resumeApplication(Student $student, Resume $resume): InternshipApplicat
         'employer_id' => $employer->id,
         'title' => 'Web Intern',
         'description' => 'Build things.',
-        'work_setup' => 'remote',
         'status' => 'open',
     ]);
 
