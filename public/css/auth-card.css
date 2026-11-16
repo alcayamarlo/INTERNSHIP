@@ -4,14 +4,14 @@
 .lm-root svg { flex-shrink: 0; }
 .lm-root svg:not([width]) { width: 20px; height: 20px; }
 
-/* The root never captures events itself, so the page behind keeps scrolling over the blur. */
+/* The root never captures events itself, so the page behind keeps scrolling under the dimmed backdrop. */
 .lm-root { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 16px; pointer-events: none; visibility: hidden; }
 .lm-root.is-shown,
 .lm-root.is-open,
 .lm-root.is-closing { visibility: visible; }
-.lm-backdrop { position: absolute; inset: 0; pointer-events: auto; background: rgba(15, 15, 15, 0.38);
-    opacity: 0; -webkit-backdrop-filter: blur(0); backdrop-filter: blur(0);
-    transition: opacity .28s ease, -webkit-backdrop-filter .28s ease, backdrop-filter .28s ease; }
+.lm-backdrop { position: absolute; inset: 0; pointer-events: auto; background: rgba(10, 10, 11, 0.5);
+    opacity: 0;
+    transition: opacity var(--dur-base, 200ms) var(--ease-out, ease-out); }
 
 .lm-dialog { position: relative; pointer-events: auto; width: min(100%, 440px); max-height: calc(100dvh - 32px);
     overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
@@ -137,8 +137,8 @@
     .lm-back { margin-top: 10px; }}
 @media (prefers-reduced-motion: reduce) { .lm-strength-bars i { transition: none; } .lm-spin { animation-duration: 1.6s; }}
 
-/* ---------- open / close / switch animation (opacity + transform; backdrop blur) ---------- */
-.lm-root.is-open .lm-backdrop { opacity: 1; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+/* ---------- open / close / switch animation (opacity + transform; plain dimmed backdrop) ---------- */
+.lm-root.is-open .lm-backdrop { opacity: 1; }
 .lm-root.is-open .lm-dialog { opacity: 1; transform: translateY(0) scale(1); }
 .lm-root.is-closing .lm-backdrop { opacity: 0; transition-duration: .2s; }
 .lm-root.is-closing .lm-dialog { opacity: 0; transform: translateY(12px) scale(.98); transition-duration: .2s; transition-timing-function: ease-in; }
@@ -157,12 +157,9 @@
 .lm-root.is-switching .lm-title { animation: lm-dip .26s ease both; }
 
 /* Validation shake when the server reopens the modal with errors. */
-@keyframes lm-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
-.lm-dialog.is-shake { animation: lm-shake .3s ease; }
-
 /* Reduced motion: no slide, scale, stagger or shake; a plain 120ms fade only. */
 @media (prefers-reduced-motion: reduce) {
-    .lm-backdrop { transition: opacity .12s linear; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+    .lm-backdrop { transition: opacity .12s linear; }
     .lm-dialog,
 .lm-root.is-open .lm-dialog,
 .lm-root.is-closing .lm-dialog { transform: none; transition: opacity .12s linear; }
@@ -177,7 +174,6 @@
 
 /* ---------- polish ---------- */
 .lm-backdrop { background: color-mix(in srgb, var(--burgundy) 45%, transparent); }
-.lm-root.is-open .lm-backdrop { -webkit-backdrop-filter: blur(7px) saturate(1.1); backdrop-filter: blur(7px) saturate(1.1); }
 .lm-dialog { box-shadow: 0 30px 80px color-mix(in srgb, var(--burgundy) 45%, transparent), 0 2px 0 rgba(255,255,255,.4) inset; }
 
 /* Header hierarchy */
@@ -267,7 +263,7 @@
 .lm-checklist li::before { width: 12px; }
 
 /* ---------- Glass look (matches the landing page): frosted dialog, dark pill buttons, Cormorant titles ---------- */
-.lm-backdrop { background: rgba(38, 38, 38, 0.38); }
+.lm-backdrop { background: rgba(10, 10, 11, 0.5); }
 .lm-dialog { border: 1px solid rgba(255, 255, 255, .72); border-radius: 36px; background: rgba(255, 255, 255, .82); color: #201b19;
     -webkit-backdrop-filter: blur(20px) saturate(1.15); backdrop-filter: blur(20px) saturate(1.15);
     box-shadow: 0 12px 32px color-mix(in srgb, var(--burgundy) 12%, transparent), 0 30px 80px rgba(38, 38, 38, 0.28); font-family: 'Manrope', system-ui, 'Segoe UI', sans-serif; }

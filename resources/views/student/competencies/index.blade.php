@@ -387,8 +387,8 @@
             track.className = 'sb-level-track';
             const fill = document.createElement('span');
             fill.className = 'sb-level-fill';
-            fill.style.transitionDelay = `${index * levelStaggerMs}ms`;
-            fill.style.transform = 'scaleX(0)';
+            fill.style.setProperty('--sb-fill-delay', `${index * levelStaggerMs}ms`);
+            fill.style.setProperty('--sb-bar', Number(skill.proficiency_points || 0) >= level.points ? '1' : '0');
             track.append(fill);
             const score = document.createElement('span');
             score.className = 'sb-level-score sb-num';
@@ -449,7 +449,7 @@
             content.classList.remove('is-changing');
             content.querySelectorAll('.sb-level-fill').forEach((fill, index) => {
                 const level = levels[index];
-                fill.style.transform = `scaleX(${skill.proficiency_points >= level.points ? 1 : 0})`;
+                fill.style.setProperty('--sb-bar', Number(skill.proficiency_points || 0) >= level.points ? '1' : '0');
             });
         };
         if (reduceMotion) {

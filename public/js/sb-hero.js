@@ -132,7 +132,7 @@
             $$('[data-count]', hero).forEach(function (el) {
                 var to = parseInt(el.getAttribute('data-count'), 10);
                 if (!to || to < 1) return;
-                var t0 = null, dur = 1100;
+                var t0 = null, dur = 600;
                 el.textContent = '0';
                 var tick = function (t) {
                     if (t0 === null) t0 = t;
@@ -143,15 +143,17 @@
                 setTimeout(function () { requestAnimationFrame(tick); }, 350);
             });
 
-            var cards = $$('.sb-stack-card', hero), cur = 0;
+            var cards = $$('.sb-stack-card', hero);
             if (cards.length) {
                 cards[0].classList.add('is-live');
-                setInterval(function () {
-                    if (document.hidden) return;
-                    cards[cur].classList.remove('is-live');
-                    cur = (cur + 1) % cards.length;
-                    cards[cur].classList.add('is-live');
-                }, 2600);
+                // The highlighted card follows the pointer or keyboard focus; it never changes on its own.
+                cards.forEach(function (card) {
+                    ['mouseenter', 'focusin'].forEach(function (type) {
+                        card.addEventListener(type, function () {
+                            cards.forEach(function (other) { other.classList.toggle('is-live', other === card); });
+                        });
+                    });
+                });
             }
         }
     }
