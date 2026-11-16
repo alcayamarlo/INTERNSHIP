@@ -73,31 +73,15 @@ body.skillbridge-app .sb-card-link { color: var(--sb-brand-content); font-weight
 
 /* ---------- Stat cards: one chip colour, big extra-bold numbers ---------- */
 body.skillbridge-app .sb-stat { border-radius: 20px; box-shadow: var(--sb-shadow-sm); }
-body.skillbridge-app :is(.sb-stat-icon, .sb-stat-icon--success, .sb-stat-icon--warning, .sb-stat-icon--info, .sb-quick-action-icon) {
-    border-radius: 14px;
-    background: var(--sb-red-soft);
-    color: var(--sb-brand-content);
-}
 body.skillbridge-app .sb-stat-value { color: var(--sb-ink); font-weight: 800; }
-body.skillbridge-app .sb-stat-label, body.skillbridge-app .sb-stat-hint { color: var(--sb-muted); }
+body.skillbridge-app .sb-stat-label,
+body.skillbridge-app .sb-stat-hint { color: var(--sb-muted); }
 body.skillbridge-app .progress { background: var(--sb-red-soft); }
 body.skillbridge-app .progress-bar:not(.bg-success):not(.bg-warning):not(.bg-danger) { background: var(--sb-brand); }
 
 /* Stat grid: 3 columns on desktop, 2 on tablet, 1 on mobile. A lone last card spans the row. */
-body.skillbridge-app .sb-stat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-body.skillbridge-app .sb-stat-grid > :last-child:nth-child(3n + 1) { grid-column: 1 / -1; }
-@media (max-width: 991.98px) {
-    body.skillbridge-app .sb-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    body.skillbridge-app .sb-stat-grid > :last-child:nth-child(3n + 1) { grid-column: auto; }
-    body.skillbridge-app .sb-stat-grid > :last-child:nth-child(2n + 1) { grid-column: 1 / -1; }
-}
-@media (max-width: 575.98px) {
-    body.skillbridge-app .sb-stat-grid { grid-template-columns: minmax(0, 1fr); }
-    body.skillbridge-app .sb-stat-grid > :last-child:nth-child(n) { grid-column: auto; }
-}
 
 /* Section-card metrics (OJT Progress etc.): large numbers */
-body.skillbridge-app [data-dashboard-ojt] .fs-4 { color: var(--sb-ink); font-size: 1.9rem !important; font-weight: 800 !important; line-height: 1.1; }
 
 /* ---------- Empty states: icon in a light-red chip ---------- */
 body.skillbridge-app .sb-empty-icon { background: var(--sb-red-soft); color: var(--sb-brand-content); }
@@ -161,10 +145,10 @@ body.skillbridge-app .sb-search .input-group:focus-within {
     body.skillbridge-app .sb-search.is-open { flex: 1 0 100%; order: 5; width: auto; max-width: none; margin-left: 0; }
     body.skillbridge-app .sb-search.is-open .form-control { display: block; }
     body.skillbridge-app .sb-search.is-open .input-group-text { width: auto; border-radius: 11px 0 0 11px; }
-    body.skillbridge-app .sb-profile-info { display: none; }
-}
+    body.skillbridge-app .sb-profile-info { display: none; }}
 
 /* ---------- Motion ---------- */
 @media (prefers-reduced-motion: reduce) {
-    body.skillbridge-app *, body.skillbridge-app *::before, body.skillbridge-app *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
-}
+    body.skillbridge-app *,
+body.skillbridge-app *::before,
+body.skillbridge-app *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }}
