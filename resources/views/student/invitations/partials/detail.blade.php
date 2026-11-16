@@ -88,7 +88,12 @@
             · <span data-expires="{{ $invitation->expires_at->toIso8601String() }}">Expires {{ $expiresAt->format('M d, Y h:i A') }}
                 <span data-days-left>@if($leftText)({{ $leftText }})@endif</span></span>
         @elseif($display === InvitationStatus::Expired)
-            · <strong>Expired</strong> {{ $expiresAt->format('M d, Y h:i A') }}
+            {{-- A closed posting ends the invitation before its date, so that date is not shown as the expiry. --}}
+            @if($invitation->expires_at->isPast())
+                · <strong>Expired</strong> {{ $expiresAt->format('M d, Y h:i A') }}
+            @else
+                · <strong>Expired</strong>: the internship is no longer accepting applications
+            @endif
         @elseif($respondedAt)
             · {{ $display->label() }} {{ $respondedAt->format('M d, Y h:i A') }}
         @endif

@@ -378,3 +378,23 @@ it('shows a lapsed invitation as Expired with Accept disabled, and an empty tab 
         ->assertSee('No accepted invitations yet.')
         ->assertSee(route('student.internships.index'), false);
 });
+
+it('shows an invitation lapsed by a closed posting as Expired without its future date', function () {
+    [$employerUser, , $internship] = inviteEmployer();
+    $student = inviteStudent();
+    sendInvite($employerUser, $student, $internship)->assertCreated();
+    $invitation = InternshipInvitation::sole();
+    $futureDate = $invitation->expires_at->timezone('Asia/Manila')->format('M d, Y h:i A');
+    $internship->update(['status' => 'closed']);
+
+    $panel = invitationPanel($this->actingAs($student->user)->get(route('student.invitations.index'))->assertOk()->getContent());
+    expect($panel)->toContain('<strong>Expired</strong>: the internship is no longer accepting applications')
+        ->not->toContain('<strong>Expired</strong> '.$futureDate);
+
+    // Once the hourly job marks it expired, the company's list says the posting closed instead of the future date.
+    $invitation->update(['status' => InvitationStatus::Expired]);
+    $this->actingAs($employerUser)->get(route('employer.invitations.index'))
+        ->assertOk()
+        ->assertSee('Posting closed')
+        ->assertDontSee($futureDate);
+});

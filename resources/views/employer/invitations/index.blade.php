@@ -32,6 +32,8 @@
                         <td>
                             @if($invitation->responded_at)
                                 {{ $invitation->responded_at->timezone('Asia/Manila')->format('M d, Y h:i A') }}
+                            @elseif($invitation->status->value === 'expired' && $invitation->expires_at->isFuture())
+                                Posting closed
                             @else
                                 {{ $invitation->expires_at->timezone('Asia/Manila')->format('M d, Y h:i A') }}
                             @endif
