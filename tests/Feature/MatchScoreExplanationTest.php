@@ -76,3 +76,26 @@ it('invalidates the cached match details when a student updates their competenci
     $after = $service->calculateMatchWithDetails($fixture['student']->fresh(), $fixture['internship']);
     expect($after['details']['matched_count'])->toBe(3);
 });
+
+it('matches requirements against the skills learned in each certificate, word for word', function () {
+    $fixture = matchExplanationFixture();
+    $internship = Internship::create(['employer_id' => $fixture['internship']->employer_id, 'title' => 'Network Administrator', 'description' => 'x', 'status' => 'open']);
+    foreach (['Network Configuration' => ProficiencyLevel::Intermediate, 'Troubleshooting' => ProficiencyLevel::Intermediate,
+        'Communication Skill' => ProficiencyLevel::Intermediate, 'IP Knowledge' => ProficiencyLevel::Beginner] as $name => $level) {
+        InternshipRequirement::create(['internship_id' => $internship->id, 'requirement_name' => $name, 'required_level' => $level]);
+    }
+    // Neither certificate title names a requirement; the skills listed under them do.
+    $cisco = StudentCompetency::create(['student_id' => $fixture['student']->id, 'name' => 'Cisco Networking', 'category' => CompetencyCategory::Technical, 'proficiency_level' => ProficiencyLevel::Intermediate]);
+    foreach (['Networking Configuration', 'IP Addressing & Subnetting'] as $skill) {
+        $cisco->learnedSkills()->create(['name' => $skill]);
+    }
+    $css = StudentCompetency::create(['student_id' => $fixture['student']->id, 'name' => 'Computer System Servicing NC II', 'category' => CompetencyCategory::Technical, 'proficiency_level' => ProficiencyLevel::Intermediate]);
+    $css->learnedSkills()->create(['name' => 'Troubleshooting']);
+
+    $result = app(CompetencyMatchingService::class)->calculateMatchWithDetails($fixture['student'], $internship);
+
+    expect(collect($result['details']['matched_requirements'])->pluck('name')->sort()->values()->all())
+        ->toBe(['IP Knowledge', 'Network Configuration', 'Troubleshooting'])
+        ->and(collect($result['details']['missing_requirements'])->pluck('name')->all())->toBe(['Communication Skill'])
+        ->and($result['match_percentage'])->toBe(75);
+});

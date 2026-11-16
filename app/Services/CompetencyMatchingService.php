@@ -25,7 +25,7 @@ class CompetencyMatchingService
      */
     public function calculateMatchWithDetails(Student $student, Internship $internship): array
     {
-        $cacheKey = "match_details_{$student->id}_{$internship->id}";
+        $cacheKey = "match_details_v2_{$student->id}_{$internship->id}";
 
         return Cache::remember($cacheKey, 3600, function () use ($student, $internship) {
             return $this->buildRecommendationResult($student, $internship);
@@ -43,7 +43,7 @@ class CompetencyMatchingService
 
     public function getRecommendations(Student $student, int $limit = 10)
     {
-        $cacheKey = "recommendations_{$student->id}_{$limit}";
+        $cacheKey = "recommendations_v2_{$student->id}_{$limit}";
         $coordinator = $student->assignedCoordinator();
         // Read outside the cache so a posting the coordinator just marked unsuitable disappears at once.
         $flaggedIds = $coordinator
@@ -79,11 +79,11 @@ class CompetencyMatchingService
     public function invalidateCache(Student $student): void
     {
         foreach (self::RECOMMENDATION_LIMITS as $limit) {
-            Cache::forget("recommendations_{$student->id}_{$limit}");
+            Cache::forget("recommendations_v2_{$student->id}_{$limit}");
         }
 
         foreach (Internship::query()->pluck('id') as $internshipId) {
-            Cache::forget("match_details_{$student->id}_{$internshipId}");
+            Cache::forget("match_details_v2_{$student->id}_{$internshipId}");
         }
     }
 
@@ -104,7 +104,7 @@ class CompetencyMatchingService
             ];
         }
 
-        $studentCompetencies = $student->competencies()->get();
+        $studentCompetencies = $student->competencies()->with('learnedSkills')->get();
         $feedback = $this->getStudentFeedback($student, $internship->id);
         $matchedRequirements = [];
         $missingRequirements = [];
@@ -124,12 +124,7 @@ class CompetencyMatchingService
                 ? $requirement->required_level->label()
                 : ProficiencyLevel::from($requirement->required_level)->label();
 
-            $studentMatch = $studentCompetencies->first(function ($competency) use ($requirement) {
-                $name = strtolower($requirement->requirement_name);
-
-                return str_contains(strtolower($competency->name), $name)
-                    || ($requirement->competency_id && $competency->competency_id === $requirement->competency_id);
-            });
+            $studentMatch = $this->evidenceFor($studentCompetencies, $requirement);
 
             if (! $studentMatch) {
                 $missingRequirements[] = [
@@ -182,6 +177,63 @@ class CompetencyMatchingService
                     : 'No competency evidence currently matches the internship requirements.',
             ],
         ];
+    }
+
+    /**
+     * The certificate that is evidence for a requirement: one linked to the same competency, one
+     * whose title contains the requirement, or one whose title or "skills you learned" name it word
+     * for word (see terms()). When several qualify, the highest proficiency level counts.
+     */
+    private function evidenceFor(Collection $competencies, $requirement): ?object
+    {
+        $wanted = self::terms((string) $requirement->requirement_name);
+        $needle = strtolower(trim((string) $requirement->requirement_name));
+
+        return $competencies
+            ->filter(function ($competency) use ($requirement, $wanted, $needle) {
+                if ($requirement->competency_id && $competency->competency_id === $requirement->competency_id) {
+                    return true;
+                }
+                if ($needle !== '' && str_contains(strtolower((string) $competency->name), $needle)) {
+                    return true;
+                }
+                if ($wanted === []) {
+                    return false;
+                }
+
+                return collect([(string) $competency->name])
+                    ->merge($competency->learnedSkills->pluck('name'))
+                    ->contains(fn ($name) => array_diff($wanted, self::terms((string) $name)) === []);
+            })
+            ->sortByDesc(fn ($competency) => $competency->proficiency_level instanceof ProficiencyLevel
+                ? $competency->proficiency_level->score()
+                : (ProficiencyLevel::tryFrom((string) $competency->proficiency_level)?->score() ?? 0))
+            ->first();
+    }
+
+    /**
+     * The words that identify a skill name: lowercase stems without filler words, so
+     * "Networking Configuration" covers "Network Configuration" and "IP Knowledge" is met by
+     * "IP Addressing & Subnetting".
+     *
+     * @return list<string>
+     */
+    private static function terms(string $text): array
+    {
+        $filler = ['and', 'or', 'of', 'the', 'in', 'on', 'for', 'with', 'to', 'a', 'an', 'skill', 'knowledge', 'basic', 'fundamental'];
+        $words = preg_split('/[^a-z0-9+#]+/', strtolower($text), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $stems = array_map(function (string $word): string {
+            if (strlen($word) > 5 && str_ends_with($word, 'ing')) {
+                return substr($word, 0, -3);
+            }
+            if (strlen($word) > 3 && str_ends_with($word, 's') && ! str_ends_with($word, 'ss')) {
+                return substr($word, 0, -1);
+            }
+
+            return $word;
+        }, $words);
+
+        return array_values(array_unique(array_diff($stems, $filler)));
     }
 
     private function getStudentFeedback(Student $student, int $internshipId): Collection
