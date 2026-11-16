@@ -2,16 +2,12 @@
 
 @section('title', 'Complete your company account')
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/company-invitation.css') }}?v={{ @filemtime(public_path('css/company-invitation.css')) }}">
-@endpush
-
 @section('content')
-<div class="ci-wrap">
-    <div class="ci-card">
-        <p class="ci-eyebrow">Partner company invitation · {{ $invitation->reference }}</p>
-        <h1 class="ci-title">Complete your company account</h1>
-        <p class="ci-lead">
+<div class="sb-guest-wrap">
+    <div class="sb-guest-card">
+        <p class="sb-guest-eyebrow">Partner company invitation · {{ $invitation->reference }}</p>
+        <h1 class="sb-guest-title">Complete your company account</h1>
+        <p class="sb-guest-lead">
             {{ $invitation->invitedBy?->name ?? 'Your OJT coordinator' }} invited {{ $invitation->company_name }} to SkillBridge.
             Check the details, add what is missing, and set a password.
         </p>
@@ -23,7 +19,7 @@
         <form method="POST" action="{{ route('company-invitations.accept', $token) }}" novalidate>
             @csrf
 
-            <fieldset class="ci-section">
+            <fieldset class="sb-guest-section">
                 <legend>Company</legend>
                 <div class="mb-3">
                     <label class="form-label" for="ciCompany">Company name <span aria-hidden="true">*</span></label>
@@ -57,7 +53,7 @@
                 </div>
             </fieldset>
 
-            <fieldset class="ci-section">
+            <fieldset class="sb-guest-section">
                 <legend>Account</legend>
                 <div class="row g-3">
                     <div class="col-sm-6">
@@ -93,8 +89,8 @@
                 <small id="ciPasswordHint" class="form-text d-block mt-2">8 to 64 characters with an uppercase letter, a lowercase letter, a number, and a special character.</small>
             </fieldset>
 
-            <button type="submit" class="btn btn-primary ci-submit">Create company account</button>
-            <p class="ci-foot">This link works until {{ $invitation->expires_at->timezone('Asia/Manila')->format('M d, Y h:i A') }} (Philippine time).</p>
+            <button type="submit" class="btn btn-primary w-100">Create company account</button>
+            <p class="sb-guest-note">This link works until {{ $invitation->expires_at->timezone('Asia/Manila')->format('M d, Y h:i A') }} (Philippine time).</p>
         </form>
     </div>
 </div>

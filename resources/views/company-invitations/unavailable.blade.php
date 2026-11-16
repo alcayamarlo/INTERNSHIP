@@ -2,10 +2,6 @@
 
 @section('title', 'Invitation unavailable')
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/company-invitation.css') }}?v={{ @filemtime(public_path('css/company-invitation.css')) }}">
-@endpush
-
 @section('content')
 @php
     $coordinator = $invitation?->invitedBy;
@@ -15,12 +11,12 @@
         default => ['This invitation link is not valid', 'The link may be incomplete or replaced by a newer invitation. Check the most recent email, or ask your coordinator.'],
     };
 @endphp
-<div class="ci-wrap">
-    <div class="ci-card">
-        <h1 class="ci-title">{{ $heading }}</h1>
-        <p class="ci-lead">{{ $body }}</p>
+<div class="sb-guest-wrap">
+    <div class="sb-guest-card">
+        <h1 class="sb-guest-title">{{ $heading }}</h1>
+        <p class="sb-guest-lead">{{ $body }}</p>
         @if($coordinator)
-            <p class="ci-contact">
+            <p class="sb-guest-note mt-0 mb-3">
                 Coordinator: <strong>{{ $coordinator->name }}</strong><br>
                 <a href="mailto:{{ $coordinator->email }}">{{ $coordinator->email }}</a>
             </p>

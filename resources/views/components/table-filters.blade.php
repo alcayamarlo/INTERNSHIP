@@ -12,18 +12,15 @@
 @props(['action', 'filters', 'options', 'showing', 'total', 'target', 'label' => 'Filter list'])
 
 @php($v = $filters->values)
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('css/table-filters.css') }}?v={{ @filemtime(public_path('css/table-filters.css')) }}">
-@endpush
-
-<form method="GET" action="{{ $action }}" class="tf-bar" role="search" aria-label="{{ $label }}"
+<form method="GET" action="{{ $action }}" class="card sb-filterbar sb-live-filters" role="search" aria-label="{{ $label }}"
       data-table-filters data-target="{{ $target }}">
-    <div class="tf-field tf-field--search">
+  <div class="sb-filter-row">
+    <div class="sb-filter-field">
         <label class="form-label" for="tfName">Name</label>
         <input id="tfName" type="search" name="q" value="{{ $v['q'] }}" class="form-control" maxlength="100"
                placeholder="Search by name" autocomplete="off">
     </div>
-    <div class="tf-field">
+    <div class="sb-filter-field">
         <label class="form-label" for="tfInternship">Internship position</label>
         <select id="tfInternship" name="internship" class="form-select">
             <option value="">All positions</option>
@@ -32,7 +29,7 @@
             @endforeach
         </select>
     </div>
-    <div class="tf-field">
+    <div class="sb-filter-field">
         <label class="form-label" for="tfStatus">Status</label>
         <select id="tfStatus" name="status" class="form-select">
             <option value="">All statuses</option>
@@ -41,7 +38,7 @@
             @endforeach
         </select>
     </div>
-    <div class="tf-field">
+    <div class="sb-filter-field">
         <label class="form-label" for="tfProgram">Program</label>
         <select id="tfProgram" name="program" class="form-select">
             <option value="">All Programs</option>
@@ -50,12 +47,13 @@
             @endforeach
         </select>
     </div>
-    <div class="tf-actions">
+    <div class="sb-filter-actions">
         {{-- Hidden once the script loads, since results then update on their own. --}}
-        <button type="submit" class="btn btn-primary tf-apply">Filter</button>
+        <button type="submit" class="btn btn-primary sb-live-apply">Filter</button>
         <a href="{{ $action }}" class="btn btn-outline-secondary" data-tf-clear @if(! $filters->active()) aria-disabled="true" @endif>Clear Filters</a>
     </div>
-    <p class="tf-count" data-tf-count aria-live="polite">Showing {{ number_format($showing) }} of {{ number_format($total) }}</p>
+  </div>
+    <p class="sb-note mt-2" data-tf-count aria-live="polite">Showing {{ number_format($showing) }} of {{ number_format($total) }}</p>
 </form>
 
 @push('scripts')
