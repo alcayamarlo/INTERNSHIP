@@ -8,8 +8,6 @@
 .public-page button:focus-visible { outline: 3px solid color-mix(in srgb, var(--sb-brand) 60%, transparent); outline-offset: 3px; }
 
         /* ---- Announcement + navigation ---- */
-        
-        @keyframes public-dot-pulse { 50% { box-shadow: 0 0 0 5px rgba(255,255,255,.14); } }
         .public-nav { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--sb-border); background: color-mix(in srgb, var(--sb-surface) 92%, transparent); backdrop-filter: blur(16px); transition: box-shadow 200ms ease; }
         .public-nav.is-scrolled { box-shadow: 0 10px 30px color-mix(in srgb, var(--burgundy) 8%, transparent); }
         .public-nav-inner { min-height: 76px; padding-inline: var(--public-gutter); }
@@ -81,8 +79,6 @@
         
 
         /* ---- Hero floating cards ---- */
-        
-        @keyframes hero-float { 50% { transform: translateY(-9px); } }
 
         /* ---- Community stats (only rendered with real numbers) ---- */
         .public-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; max-width: 1000px; margin: 0 auto; }

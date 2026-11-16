@@ -205,10 +205,8 @@ html body.sb-glass.skillbridge-public .public-hero:has(.sb-hero-photo) { min-hei
 
 /* ================= More 3D motion (transform / translate / opacity only) ================= */
 @keyframes sb-rise { from { opacity: 0; transform: perspective(900px) rotateX(14deg) translateY(28px); } to { opacity: 1; transform: perspective(900px) rotateX(0) translateY(0); } }
-@keyframes sb-bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -4px; } }
-
 /* Hero: headline lines and cards rise in with a slight forward tilt */
-html body.sb-glass.skillbridge-public .public-hero h1 span { animation: sb-rise 700ms cubic-bezier(.2,.7,.2,1) backwards; }
+html body.sb-glass.skillbridge-public .public-hero h1 span { animation: sb-rise var(--dur-slow, 320ms) var(--ease-out, ease-out) backwards; }
 html body.sb-glass.skillbridge-public .public-hero h1 span:nth-child(2) { animation-delay: 90ms; }
 html body.sb-glass.skillbridge-public .public-hero h1 span:nth-child(3) { animation-delay: 180ms; }
 
@@ -1538,8 +1536,8 @@ html body.sb-glass.skillbridge-public .sb-about-photo::before { transform: trans
 html body.sb-glass.skillbridge-public .sb-about-photo img { transform: translateZ(0); backface-visibility: hidden; box-shadow: 0 28px 40px -12px rgba(11,13,18,.28); }
 html body.sb-glass.skillbridge-public .sb-about-photo figcaption { transform: translateZ(48px); box-shadow: 0 10px 18px rgba(11,13,18,.22); }
 /* entrance: swings in from the side and settles flat */
-html body.sb-glass.skillbridge-public .sb-about-photo.is-visible { animation: sb-photo-in 900ms cubic-bezier(.2, .7, .2, 1) both; }
-@keyframes sb-photo-in { from { opacity: 0; transform: rotateY(-24deg) rotateX(8deg) translateX(40px) scale(.96); } to { opacity: 1; transform: rotateX(var(--rx)) rotateY(var(--ry)); } }
+html body.sb-glass.skillbridge-public .sb-about-photo.is-visible { animation: sb-photo-in var(--dur-slow, 320ms) var(--ease-out, ease-out) both; }
+@keyframes sb-photo-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: rotateX(var(--rx)) rotateY(var(--ry)); } }
 /* the role list and values rise in order behind it */
 html body.sb-glass.skillbridge-public .sb-about-roles li { transition: transform 220ms ease, background-color 220ms ease; }
 @media (hover: hover) { html body.sb-glass.skillbridge-public .sb-about-roles li:hover { transform: translateX(6px); }}
@@ -1560,9 +1558,8 @@ html body.sb-glass.skillbridge-public .sb-about-roles li { position: relative; p
 html body.sb-glass.skillbridge-public .sb-about-roles li::before { content: ""; position: absolute; left: 0; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-radius: 50%; background: var(--burgundy); }
 html body.sb-glass.skillbridge-public .sb-about-photo { --px: 0px; transition: none; max-width: 600px; justify-self: end; width: 100%; }
 html body.sb-glass.skillbridge-public .sb-about-photo::before { transform: translate3d(calc(var(--px) * -1), 0, -40px); }
-html body.sb-glass.skillbridge-public .sb-about-photo img { aspect-ratio: 4 / 3; transform: translate3d(0, 0, 0); animation: sb-float 8s ease-in-out infinite; }
+html body.sb-glass.skillbridge-public .sb-about-photo img { aspect-ratio: 4 / 3; transform: translate3d(0, 0, 0); }
 html body.sb-glass.skillbridge-public .sb-about-photo figcaption { transform: translate3d(calc(var(--px) * .6), 0, 56px); }
-@keyframes sb-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6px; } }
 @media (max-width: 1080px) { html body.sb-glass.skillbridge-public .sb-about-grid { grid-template-columns: 1fr; } html body.sb-glass.skillbridge-public .sb-about-photo { justify-self: stretch; max-width: none; } html body.sb-glass.skillbridge-public .sb-about-photo img { animation: none; }}
 @media (prefers-reduced-motion: reduce) { html body.sb-glass.skillbridge-public .sb-about-photo img { animation: none; }}
 
@@ -1686,21 +1683,18 @@ html body.sb-glass.skillbridge-public .sb-features .public-section-heading p { j
 html body.sb-glass.skillbridge-public .public-hero { --sy: 0; }
 html body.sb-glass.skillbridge-public .sb-hero-photo { transform: translate3d(calc(var(--px) * -18px), calc(var(--py) * -12px + var(--sy) * 70px), 0) scale(calc(1.06 + var(--sy) * .06)); }
 html body.sb-glass.skillbridge-public .public-hero-content { transform: translate3d(calc(var(--px) * 8px), calc(var(--py) * 5px - var(--sy) * 30px), 40px); }
-html body.sb-glass.skillbridge-public .sb-stack-card { transition: transform 500ms cubic-bezier(.2,.7,.2,1), box-shadow 500ms ease, border-color 500ms ease, background-color 500ms ease; animation: sb-bob 6s ease-in-out infinite; animation-delay: calc(var(--i) * -1.6s); }
+html body.sb-glass.skillbridge-public .sb-stack-card { transition: transform 500ms cubic-bezier(.2,.7,.2,1), box-shadow 500ms ease, border-color 500ms ease, background-color 500ms ease; animation-delay: calc(var(--i) * -1.6s); }
 html body.sb-glass.skillbridge-public .sb-stack-card::before { content: ""; position: absolute; left: 0; top: 18px; bottom: 18px; width: 3px; border-radius: 2px; background: var(--burgundy); opacity: 0; transform: scaleY(.3); transition: opacity 400ms ease, transform 400ms ease; }
 html body.sb-glass.skillbridge-public .sb-stack-card.is-live { border-color: rgba(255,255,255,.95); background: rgba(255,255,255,.92); box-shadow: 0 34px 56px rgba(10, 10, 10, 0.4), 0 0 0 1px color-mix(in srgb, var(--burgundy) 35%, transparent); transform: rotateX(14deg) rotateY(-22deg) translateZ(calc(var(--i) * 50px + 46px)); }
 html body.sb-glass.skillbridge-public .sb-stack-card.is-live::before { opacity: 1; transform: scaleY(1); }
-@keyframes sb-bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -9px; } }
-@keyframes sb-bob-2 { 0%, 100% { translate: 0 0; } 50% { translate: 0 8px; } }
-@keyframes sb-ping { 0% { transform: scale(1); opacity: .7; } 80%, 100% { transform: scale(2.6); opacity: 0; } }
 html body.sb-glass.skillbridge-public .sb-chip { position: absolute; z-index: 4; display: flex; align-items: center; gap: 12px; padding: 12px 18px 12px 14px; border: 1px solid rgba(255,255,255,.7); border-radius: 999px; background: rgba(255,255,255,.88); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); box-shadow: 0 22px 36px rgba(10, 10, 10, 0.32); color: #0b0d12; white-space: nowrap; transform-style: preserve-3d; }
 html body.sb-glass.skillbridge-public .sb-chip span { font: 700 10px/1.2 'Manrope', system-ui, sans-serif; letter-spacing: .16em; text-transform: uppercase; color: var(--burgundy-text); }
 html body.sb-glass.skillbridge-public .sb-chip strong { font: 600 14px/1.2 'Manrope', system-ui, sans-serif; color: #0b0d12; }
-html body.sb-glass.skillbridge-public .sb-chip-live { top: -78px; left: 10px; transform: translateZ(110px) rotateY(-10deg); animation: sb-bob 5s ease-in-out -1s infinite; }
+html body.sb-glass.skillbridge-public .sb-chip-live { top: -78px; left: 10px; transform: translateZ(110px) rotateY(-10deg); }
 html body.sb-glass.skillbridge-public .sb-chip-live span { color: var(--burgundy-text); }
 html body.sb-glass.skillbridge-public .sb-pulse { position: relative; width: 10px; height: 10px; border-radius: 50%; background: var(--burgundy); flex: none; }
-html body.sb-glass.skillbridge-public .sb-pulse::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--burgundy); animation: sb-ping 1.8s ease-out infinite; }
-html body.sb-glass.skillbridge-public .sb-chip-ring { bottom: -92px; right: 8px; padding: 10px 20px 10px 10px; border-radius: 22px; transform: translateZ(130px) rotateY(-12deg); animation: sb-bob-2 6.5s ease-in-out infinite; }
+html body.sb-glass.skillbridge-public .sb-pulse::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--burgundy); }
+html body.sb-glass.skillbridge-public .sb-chip-ring { bottom: -92px; right: 8px; padding: 10px 20px 10px 10px; border-radius: 22px; transform: translateZ(130px) rotateY(-12deg); }
 html body.sb-glass.skillbridge-public .sb-chip-t { display: grid; gap: 4px; }
 html body.sb-glass.skillbridge-public .sb-ring { position: relative; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: conic-gradient(var(--burgundy) calc(var(--v) * 1%), rgba(11,13,18,.12) 0); }
 html body.sb-glass.skillbridge-public .sb-ring::before { content: ""; position: absolute; inset: 6px; border-radius: 50%; background: #fff; }

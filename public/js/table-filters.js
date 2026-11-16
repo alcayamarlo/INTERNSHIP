@@ -80,6 +80,7 @@
                 const adopted = document.adoptNode(fresh);
                 labelTables(adopted);
                 region()?.replaceWith(adopted);
+                if (document.documentElement.classList.contains('sb-anim')) adopted.classList.add('is-swapped');
                 window.history.replaceState(window.history.state, '', url);
                 syncCount();
             } catch (error) {

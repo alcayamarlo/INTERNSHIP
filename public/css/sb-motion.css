@@ -1,159 +1,105 @@
 /* =====================================================================
    Site-wide motion for every signed-in page (layouts/app.blade.php, all roles).
-   CSS only, subtle: 200-450ms, ease-out.
+   Formal and quiet: elements glide and settle, motion explains a change and never
+   makes anyone wait. Timings and easing come from the motion tokens in sb-tokens.css.
 
-   - Entry animations run only while <html> has .sb-intro. The layout adds it
-     before first paint on the first page of a visit and removes it ~2s after
-     load, so content swapped in later (live updates, AJAX lists) does not
-     replay the animation. Later pages crossfade instead (PAGE TO PAGE).
-   - Live updates: rows that changed glow briefly (LIVE CHANGES).
-   - Hover, press and focus effects are always on.
-   - prefers-reduced-motion: the layout never adds .sb-intro, and the block at
-     the end removes transitions and transforms.
+   - html.sb-anim is added before first paint by the layout when motion is allowed
+     (not with prefers-reduced-motion, not without JavaScript). Entrances and fills
+     only run under it, so without it every page and value shows at once.
+   - Fills (progress, score and level bars, rings, stepper lines) grow from empty to
+     their real value once, when first visible; public/js/sb-motion.js adds .is-filled.
+     html.sb-anim-done (set if that script never runs) shows every value at once.
+   - Hover, press and focus feedback is always on; reduced motion strips the movement.
+   - Print: no motion at all.
    ===================================================================== */
 
 /* ---------- Keyframes (defined once for the whole app) ---------- */
 @keyframes rise {
-    from { opacity: 0; transform: translateY(var(--rise-y, 14px)); }
+    from { opacity: 0; transform: translateY(var(--rise-y, var(--rise, 8px))); }
     to { opacity: 1; transform: none; }
 }
 
-@keyframes rowIn {
-    from { opacity: 0; transform: translateX(-12px); }
+@keyframes sb-enter {
+    from { opacity: 0; transform: translateY(var(--rise, 8px)); }
     to { opacity: 1; transform: none; }
 }
 
-@keyframes slideIn {
-    from { opacity: 0; transform: translateX(-16px); }
+@keyframes sb-drop {
+    from { opacity: 0; transform: translateY(-4px); }
     to { opacity: 1; transform: none; }
 }
 
-@keyframes drop {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: none; }
+@property --sb-ring {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0;
 }
 
 body.sb-app {
-    --sb-motion-ease: cubic-bezier(.22, .8, .3, 1);
-    --sb-lift-shadow: 0 8px 18px color-mix(in srgb, var(--sb-brand) 22%, transparent);
-    --sb-hover-shadow: 0 10px 26px color-mix(in srgb, var(--sb-brand) 10%, transparent);
+    --sb-lift-shadow: 0 10px 24px color-mix(in srgb, var(--burgundy) 10%, transparent);
 }
 
 /* =====================================================================
-   PAGE LOAD (html.sb-intro only)
+   PAGE LOAD: the content area fades and rises 8px on every page.
+   The sidebar and top bar stay still.
    ===================================================================== */
+@media screen {
+    html.sb-anim body.sb-app .sb-content {
+        animation: sb-enter var(--dur-slow) var(--ease-out) backwards;
+    }
 
-/* Sidebar: brand, then each group label and link, 40ms apart */
-html.sb-intro body.sb-app .sb-brand {
-    animation: slideIn .35s var(--sb-motion-ease) backwards;
+    /* Flash messages and alerts that appear later settle into place too. */
+    html.sb-anim body.sb-app .sb-content .alert {
+        animation: sb-enter var(--dur-base) var(--ease-out) backwards;
+    }
+
+    /* A tab panel that opens fades in (OJT records, applicant review, academic settings). */
+    html.sb-anim body.sb-app .sb-tab-panel:not([hidden]) {
+        animation: sb-enter var(--dur-base) var(--ease-out) backwards;
+    }
 }
-
-html.sb-intro body.sb-app .sb-nav > * {
-    animation: slideIn .35s var(--sb-motion-ease) backwards;
-}
-
-html.sb-intro body.sb-app .sb-nav > :nth-child(1) { animation-delay: 40ms; }
-html.sb-intro body.sb-app .sb-nav > :nth-child(2) { animation-delay: 80ms; }
-html.sb-intro body.sb-app .sb-nav > :nth-child(3) { animation-delay: 120ms; }
-html.sb-intro body.sb-app .sb-nav > :nth-child(4) { animation-delay: 160ms; }
-html.sb-intro body.sb-app .sb-nav > :nth-child(5) { animation-delay: 200ms; }
-html.sb-intro body.sb-app .sb-nav > :nth-child(6) { animation-delay: 240ms; }
-html.sb-intro body.sb-app .sb-nav > :nth-child(7) { animation-delay: 280ms; }
-html.sb-intro body.sb-app .sb-nav > :nth-child(8) { animation-delay: 320ms; }
-html.sb-intro body.sb-app .sb-nav > :nth-child(9) { animation-delay: 360ms; }
-html.sb-intro body.sb-app .sb-nav > :nth-child(10) { animation-delay: 400ms; }
-html.sb-intro body.sb-app .sb-nav > :nth-child(11) { animation-delay: 440ms; }
-html.sb-intro body.sb-app .sb-nav > :nth-child(12) { animation-delay: 480ms; }
-html.sb-intro body.sb-app .sb-nav > :nth-child(13) { animation-delay: 520ms; }
-html.sb-intro body.sb-app .sb-nav > :nth-child(14) { animation-delay: 560ms; }
-html.sb-intro body.sb-app .sb-nav > :nth-child(n + 15) { animation-delay: 600ms; }
-
-/* Top bar, page title and flash messages drop in from above */
-html.sb-intro body.sb-app .sb-topbar {
-    animation: drop .35s var(--sb-motion-ease) backwards;
-}
-
-html.sb-intro body.sb-app .sb-content .sb-page-header {
-    animation: drop .4s var(--sb-motion-ease) 60ms backwards;
-}
-
-html.sb-intro body.sb-app .sb-content > .alert {
-    animation: drop .35s var(--sb-motion-ease) 100ms backwards;
-}
-
-/* Cards and stat tiles rise in, staggered by their position in a row or grid.
-   Pages with their own choreography (admin dashboard, academic settings tabs) are skipped. */
-
-/* Table rows slide in from the left, 40ms apart (capped so long tables stay quick) */
-
-html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(1) { animation-delay: 200ms; }
-html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(2) { animation-delay: 240ms; }
-html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(3) { animation-delay: 280ms; }
-html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(4) { animation-delay: 320ms; }
-html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(5) { animation-delay: 360ms; }
-html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(6) { animation-delay: 400ms; }
-html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(7) { animation-delay: 440ms; }
-html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(8) { animation-delay: 480ms; }
-html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(9) { animation-delay: 520ms; }
-html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(10) { animation-delay: 560ms; }
-html.sb-intro body.sb-app .sb-content .table > tbody > tr:nth-child(n + 11) { animation-delay: 600ms; }
 
 /* =====================================================================
    HOVER, PRESS, FOCUS (always on)
    ===================================================================== */
 
-/* Sidebar links nudge right */
-body.sb-app .sb-nav-link {
-    transition: background-color 160ms ease-out, color 160ms ease-out, box-shadow 160ms ease-out, transform 200ms var(--sb-motion-ease);
+/* Sidebar links and tabs change colour smoothly. */
+body.sb-app :is(.sb-nav-link, .sb-section-tab, .sb-pill-tab, .sbx-tab) {
+    transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out),
+        border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
 }
 
-body.sb-app .sb-nav-link:hover {
-    transform: translateX(4px);
+/* Buttons, chips and small controls: fast colour changes and a 0.98 press. */
+body.sb-app :is(.btn, .sb-mini-btn, .sb-add-btn, .sb-choice-pill > span, .sb-choice-card, .sb-remove-chip-btn) {
+    transition: color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out),
+        border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
 }
 
-/* Buttons: smooth colour changes, primary lifts, every button presses in */
-body.sb-app .btn {
-    transition: color .2s ease-out, background-color .2s ease-out, border-color .2s ease-out, box-shadow .2s ease-out, transform .2s ease-out;
+body.sb-app :is(.btn, .sb-mini-btn, .sb-add-btn, .sb-section-tab, .sb-pill-tab, .sbx-tab, .sb-choice-pill, .sb-choice-card):active:not(:disabled):not(.disabled) {
+    transform: scale(.98);
 }
 
-body.sb-app .btn-primary:hover:not(:disabled):not(.disabled):not(.btn-group > .btn) {
+/* Table rows fade to their hover colour. */
+body.sb-app .sb-content .table > tbody > tr > * {
+    transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+/* Clickable cards lift 2px with a softer shadow. */
+body.sb-app :is(a.card, a.sb-stat, a.sb-kpi, a.sb-tile, .sb-entity) {
+    transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+
+body.sb-app :is(a.card, a.sb-stat, a.sb-kpi, a.sb-tile, .sb-entity):hover {
     transform: translateY(-2px);
     box-shadow: var(--sb-lift-shadow);
 }
 
-body.sb-app .btn:active:not(:disabled):not(.disabled) {
-    transform: scale(.97);
-}
-
-/* A "+" icon in a button turns a quarter on hover */
-body.sb-app .btn > :is(.bi-plus, .bi-plus-lg, .bi-plus-circle, .bi-plus-circle-fill, .bi-plus-square) {
-    display: inline-block;
-    transition: transform .3s var(--sb-motion-ease);
-}
-
-body.sb-app .btn:hover > :is(.bi-plus, .bi-plus-lg, .bi-plus-circle, .bi-plus-circle-fill, .bi-plus-square) {
-    transform: rotate(90deg);
-}
-
-/* Table rows fade to their (existing) pink hover colour */
-body.sb-app .sb-content .table > tbody > tr > * {
-    transition: background-color .2s ease-out;
-}
-
-/* Cards: soft shadow on hover */
-body.sb-app .sb-content .card {
-    transition: box-shadow .25s ease-out;
-}
-
-body.sb-app .sb-content .card:hover {
-    box-shadow: var(--sb-hover-shadow);
-}
-
-/* Inputs: red border and a 4px soft ring that fades in.
+/* Inputs: border and a 4px soft ring that fades in.
    Same selectors as skillbridge-dashboard.css (this file loads later), so the
    top-bar search keeps its own wrapper-only indicator. */
 body.skillbridge-app :is(.form-control, .form-select, .form-check-input) {
-    transition: color .2s ease-out, background-color .2s ease-out, border-color .2s ease-out, box-shadow .25s ease-out;
+    transition: color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out),
+        border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
 }
 
 body.skillbridge-app :is(input, select, textarea):focus,
@@ -166,24 +112,83 @@ body.skillbridge-app .form-select:focus {
 }
 
 /* =====================================================================
+   OVERLAYS: modals, drawer, dropdowns, toasts, native dialogs.
+   Enter with a fade and an 8px rise; exits run at about 70% of the entrance.
+   ===================================================================== */
+body.sb-app .fade {
+    transition: opacity var(--dur-base) var(--ease-out);
+}
+
+body.sb-app .modal.fade .modal-dialog {
+    transform: translateY(var(--rise));
+    transition: transform var(--dur-slow) var(--ease-out);
+}
+
+body.sb-app .modal.fade:not(.show) .modal-dialog {
+    transition-duration: var(--dur-exit);
+}
+
+body.sb-app .modal.show .modal-dialog {
+    transform: none;
+}
+
+body.sb-app .modal-backdrop.fade {
+    transition: opacity var(--dur-slow) var(--ease-out);
+}
+
+body.sb-app .offcanvas {
+    transition: transform var(--dur-slow) var(--ease-out), visibility var(--dur-slow) var(--ease-out);
+}
+
+body.sb-app .offcanvas.hiding {
+    transition-duration: var(--dur-exit);
+}
+
+body.sb-app .dropdown-menu.show {
+    animation: sb-drop var(--dur-base) var(--ease-out);
+}
+
+body.sb-app .toast.fade {
+    transition: opacity var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
+}
+
+body.sb-app .toast.fade:not(.show) {
+    transform: translateY(var(--rise));
+}
+
+body.sb-app dialog[open] {
+    animation: sb-enter var(--dur-slow) var(--ease-out);
+}
+
+/* =====================================================================
    PAGE TO PAGE
-   Browsers with cross-document view transitions crossfade the content
-   between signed-in pages; others load pages as before. The sidebar and
-   top bar swap without fading so the frame stays still.
+   Browsers with cross-document view transitions crossfade only the content
+   area between signed-in pages; the sidebar, top bar and page background stay
+   still. Others load pages as before. When a view transition plays, the layout
+   adds html.sb-vt and the content entrance is skipped (the crossfade is enough).
    ===================================================================== */
 @media (prefers-reduced-motion: no-preference) {
     @view-transition {
         navigation: auto;
-    }}
+    }
+}
 
 body.sb-app .sb-sidebar { view-transition-name: sb-sidebar; }
 body.sb-app .sb-topbar { view-transition-name: sb-topbar; }
+body.sb-app .sb-content { view-transition-name: sb-content; }
 
-::view-transition-old(root),
-::view-transition-new(root) {
-    animation-duration: 180ms;
+html.sb-vt body.sb-app .sb-content {
+    animation: none;
 }
 
+::view-transition-old(sb-content),
+::view-transition-new(sb-content) {
+    animation-duration: var(--dur-base);
+    animation-timing-function: var(--ease-in-out);
+}
+
+html:not(.sb-theme-vt)::view-transition-old(root),
+html:not(.sb-theme-vt)::view-transition-new(root),
 ::view-transition-old(sb-sidebar),
 ::view-transition-new(sb-sidebar),
 ::view-transition-old(sb-topbar),
@@ -192,39 +197,130 @@ body.sb-app .sb-topbar { view-transition-name: sb-topbar; }
 }
 
 /* =====================================================================
-   PROGRESS (html.sb-fill only, every page load)
-   Hours, match and completion bars fill from empty to their value. Pages
-   with their own fill (internship match bar on the first page) keep theirs:
-   that rule is more specific.
+   THEME SWITCH: a 200ms crossfade of the whole page (skillbridge-ui.js adds
+   html.sb-theme-vt for it). Never on first load; instant without support.
    ===================================================================== */
-@keyframes sbFill {
-    from { width: 0; }
+html.sb-theme-vt body.sb-app :is(.sb-sidebar, .sb-topbar, .sb-content) {
+    view-transition-name: none;
 }
 
-html.sb-fill body.sb-app .progress > .progress-bar {
-    animation: sbFill .6s var(--sb-motion-ease) 120ms backwards;
+html.sb-theme-vt::view-transition-old(root),
+html.sb-theme-vt::view-transition-new(root) {
+    animation-duration: var(--dur-base);
+    animation-timing-function: var(--ease-in-out);
 }
 
 /* =====================================================================
-   NOTIFICATION BADGE
-   Set by resources/js/app.js when the unread count goes up.
+   COUNT-UP: numbers stay hidden until sb-motion.js counts them up from 0 to
+   their real value (or shows them as they are when they are not plain numbers).
+   ===================================================================== */
+@media screen {
+    body.sb-app :is(.sb-kpi-value, .sb-stat-value, .sb-tile-value, [data-count-up]) {
+        font-variant-numeric: tabular-nums;
+    }
+
+    html.sb-anim:not(.sb-anim-done) body.sb-app :is(.sb-kpi-value, .sb-stat-value, .sb-tile-value, [data-count-up]):not(.is-counted) {
+        opacity: 0;
+    }
+}
+
+/* =====================================================================
+   VALIDATION: error messages settle into place (fade and 4px drop) instead of
+   popping in. The space they take appears at once, so nothing below jumps twice.
+   ===================================================================== */
+@keyframes sb-reveal {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: none; }
+}
+
+@media screen {
+    html.sb-anim body.sb-app :is(.invalid-feedback, .sb-field-error, .sb-field-error-text, .sb-error-summary) {
+        animation: sb-reveal var(--dur-base) var(--ease-out);
+    }
+}
+
+/* =====================================================================
+   LIVE FILTERS: when table-filters.js swaps in new results, they fade in and
+   the first 8 rows or cards settle 40ms apart.
+   ===================================================================== */
+@media screen {
+    html.sb-anim body.sb-app [data-tf-results].is-swapped {
+        animation: sb-enter var(--dur-base) var(--ease-out);
+        --rise: 4px;
+    }
+
+    html.sb-anim body.sb-app [data-tf-results].is-swapped :is(tbody > tr, .sbx-list > *, .sb-card-grid > *):nth-child(-n + 8) {
+        animation: sb-enter var(--dur-base) var(--ease-out) backwards;
+    }
+
+    html.sb-anim body.sb-app [data-tf-results].is-swapped :is(tbody > tr, .sbx-list > *, .sb-card-grid > *):nth-child(2) { animation-delay: calc(var(--stagger) * 1); }
+    html.sb-anim body.sb-app [data-tf-results].is-swapped :is(tbody > tr, .sbx-list > *, .sb-card-grid > *):nth-child(3) { animation-delay: calc(var(--stagger) * 2); }
+    html.sb-anim body.sb-app [data-tf-results].is-swapped :is(tbody > tr, .sbx-list > *, .sb-card-grid > *):nth-child(4) { animation-delay: calc(var(--stagger) * 3); }
+    html.sb-anim body.sb-app [data-tf-results].is-swapped :is(tbody > tr, .sbx-list > *, .sb-card-grid > *):nth-child(5) { animation-delay: calc(var(--stagger) * 4); }
+    html.sb-anim body.sb-app [data-tf-results].is-swapped :is(tbody > tr, .sbx-list > *, .sb-card-grid > *):nth-child(6) { animation-delay: calc(var(--stagger) * 5); }
+    html.sb-anim body.sb-app [data-tf-results].is-swapped :is(tbody > tr, .sbx-list > *, .sb-card-grid > *):nth-child(7) { animation-delay: calc(var(--stagger) * 6); }
+    html.sb-anim body.sb-app [data-tf-results].is-swapped :is(tbody > tr, .sbx-list > *, .sb-card-grid > *):nth-child(8) { animation-delay: calc(var(--stagger) * 7); }
+}
+
+/* =====================================================================
+   FILLS: progress bars, score bars, level bars, rings and stepper lines grow
+   from empty to their real value once, when first visible (transform only).
+   ===================================================================== */
+body.sb-app :is(.progress-bar, .sb-score-track > span, .sb-level-fill) {
+    transform-origin: left center;
+}
+
+body.sb-app .sb-stepper::after {
+    transform-origin: left center;
+}
+
+@media screen {
+    html.sb-anim body.sb-app :is(.progress-bar, .sb-score-track > span, .sb-level-fill) {
+        transition: transform var(--dur-fill) var(--ease-out) var(--sb-fill-delay, 0ms);
+    }
+
+    html.sb-anim body.sb-app .sb-stepper::after {
+        transition: transform var(--dur-fill) var(--ease-out);
+    }
+
+    html.sb-anim body.sb-app .sb-ring {
+        transition: --sb-ring var(--dur-fill) var(--ease-out);
+    }
+
+    html.sb-anim body.sb-app .sb-ring-fill {
+        transition: stroke-dasharray var(--dur-fill) var(--ease-out);
+    }
+
+    html.sb-anim:not(.sb-anim-done) body.sb-app :is(.progress-bar, .sb-score-track > span, .sb-level-fill):not(.is-filled),
+    html.sb-anim:not(.sb-anim-done) body.sb-app .sb-stepper:not(.is-filled)::after {
+        transform: scaleX(0);
+    }
+
+    html.sb-anim:not(.sb-anim-done) body.sb-app .sb-ring:not(.is-filled) {
+        --sb-ring: 0;
+    }
+
+    html.sb-anim:not(.sb-anim-done) body.sb-app .sb-ring:not(.is-filled) .sb-ring-fill {
+        stroke-dasharray: 0 100;
+    }
+}
+
+/* =====================================================================
+   NOTIFICATION BADGE: set by resources/js/app.js when the unread count goes up.
+   Settles from 90% with a fade; no overshoot.
    ===================================================================== */
 @keyframes sbBadgePop {
-    0% { transform: scale(1); }
-    40% { transform: scale(1.35); }
-    100% { transform: scale(1); }
+    from { opacity: .4; transform: scale(.9); }
+    to { opacity: 1; transform: none; }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    body.sb-app .sb-badge-pop {
-        animation: sbBadgePop .36s cubic-bezier(.3, 1.6, .5, 1);
-    }}
+body.sb-app .sb-badge-pop {
+    animation: sbBadgePop var(--dur-base) var(--ease-out);
+}
 
 /* =====================================================================
-   LIVE CHANGES
-   Set by resources/js/live-diff.js on rows that changed in a live update.
-   Colour only, no movement, so it also plays with reduced motion. Amber,
-   not the brand red, so a change does not read as an error.
+   LIVE CHANGES: set by resources/js/live-diff.js on rows that changed in a live
+   update. Colour only, no movement, so it also plays with reduced motion.
    ===================================================================== */
 @keyframes sbLiveGlow {
     from {
@@ -237,39 +333,54 @@ html.sb-fill body.sb-app .progress > .progress-bar {
     }
 }
 
+@keyframes sbLiveGlowFill {
+    from { background-color: color-mix(in srgb, var(--burgundy) 24%, transparent); }
+    to { background-color: transparent; }
+}
+
 /* Table cells paint their own background, so the glow goes on the cells. */
 body.sb-app .sb-live-changed:not(tr),
 body.sb-app tr.sb-live-changed > * {
-    animation: sbLiveGlow 1.6s ease-out;
+    animation: sbLiveGlow var(--dur-fill) var(--ease-out);
 }
 
 body.sb-app tr.sb-live-changed > :not(:first-child) {
     animation-name: sbLiveGlowFill;
 }
 
-@keyframes sbLiveGlowFill {
-    from { background-color: color-mix(in srgb, var(--burgundy) 24%, transparent); }
-    to { background-color: transparent; }
+/* =====================================================================
+   REDUCED MOTION: no movement; state changes still happen, instantly.
+   ===================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    body.sb-app *,
+    body.sb-app *::before,
+    body.sb-app *::after {
+        animation-duration: 1ms !important;
+        animation-delay: 0ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 1ms !important;
+        transition-delay: 0ms !important;
+    }
+
+    body.sb-app :is(.btn, .sb-mini-btn, .sb-add-btn, .sb-section-tab, .sb-pill-tab, .sbx-tab, .sb-choice-pill, .sb-choice-card):active,
+    body.sb-app :is(a.card, a.sb-stat, a.sb-kpi, a.sb-tile, .sb-entity):hover {
+        transform: none !important;
+    }
+
+    body.sb-app .modal.fade .modal-dialog,
+    body.sb-app .toast.fade:not(.show) {
+        transform: none;
+    }
 }
 
 /* =====================================================================
-   REDUCED MOTION
+   PRINT: no motion.
    ===================================================================== */
-@media (prefers-reduced-motion: reduce) {
-    html.sb-intro body.sb-app *,
-html.sb-intro body.sb-app *::before,
-html.sb-intro body.sb-app *::after {
+@media print {
+    *,
+    *::before,
+    *::after {
         animation: none !important;
-    }
-
-    body.sb-app :is(.sb-nav-link, .btn, .btn > i, .card, .form-control, .form-select, .form-check-input),
-body.sb-app .sb-content .table > tbody > tr > * {
         transition: none !important;
     }
-
-    body.sb-app .sb-nav-link:hover,
-body.sb-app .btn:hover,
-body.sb-app .btn:active,
-body.sb-app .btn:hover > i {
-        transform: none !important;
-    }}
+}

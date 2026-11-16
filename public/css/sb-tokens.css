@@ -161,3 +161,34 @@ html body .border-success, html body .border-info { border-color: var(--line) !i
 html body .sb-seal { border-radius: 50%; background: #fff; object-fit: contain; aspect-ratio: 1; }
 html[data-theme="dark"] body .sb-seal { box-shadow: 0 0 0 2px #fff; }
 html body .lm-logo:has(> .sb-seal) { padding: 0; border-radius: 50%; overflow: hidden; }
+
+/* ---------- Motion tokens: one quiet, precise motion language (sb-motion.css) ----------
+   fast: hover, press, focus · base: chips, tabs, dropdowns, toasts · slow: modals, drawers,
+   content entrance · exit: about 70% of slow · fill: bars, rings and lines growing to their value.
+   The older variable names below point at these, so existing rules follow the same timing. */
+html:root:root:root:root,
+html:root:root:root:root body {
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --dur-fast: 120ms;
+    --dur-base: 200ms;
+    --dur-slow: 320ms;
+    --dur-exit: 220ms;
+    --dur-fill: 600ms;
+    --stagger: 40ms;
+    --rise: 8px;
+    --sb-motion-ease: var(--ease-out);
+    --sb-ease: var(--ease-out);
+    --sb-ease-out: var(--ease-out);
+    --sb-ease-in-out: var(--ease-in-out);
+    --sb-motion-fast: var(--dur-fast);
+    --sb-motion-base: var(--dur-base);
+    --sb-motion-slow: var(--dur-slow);
+    --sb-dur-fast: var(--dur-fast);
+    --sb-dur-base: var(--dur-base);
+    --sb-dur-detail: var(--dur-slow);
+    --sb-dur-crossfade: var(--dur-base);
+    --sb-dur-grid: var(--dur-slow);
+    --sb-dur-list-out: var(--dur-exit);
+    --sb-delay-level: var(--stagger);
+}

@@ -58,26 +58,18 @@
 
     @include('partials.theme-init')
 
-    {{-- Page-load animations (sb-motion.css) run only while <html> has these classes, so content swapped in later does not replay them.
-         .sb-intro (entrances): first page of a visit only; later pages use the quick crossfade in sb-motion.css.
-         .sb-fill (progress bars fill from empty): every page. --}}
+    {{-- Motion (sb-motion.css, js/sb-motion.js) runs only while <html> has .sb-anim: added here before first paint
+         unless the user prefers reduced motion. Without JavaScript nothing animates and every value shows at once.
+         If sb-motion.js never runs, .sb-anim-done shows every bar at its value after 3s. --}}
     <script>
         (function () {
             try {
                 if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
                 var root = document.documentElement;
-                var classes = ['sb-fill'];
-                try {
-                    if (!sessionStorage.getItem('sb-intro-played')) {
-                        sessionStorage.setItem('sb-intro-played', '1');
-                        classes.push('sb-intro');
-                    }
-                } catch (storageError) {}
-                classes.forEach(function (name) { root.classList.add(name); });
-                document.addEventListener('DOMContentLoaded', function () {
-                    setTimeout(function () { root.classList.remove('sb-fill'); }, 1600);
-                    setTimeout(function () { root.classList.remove('sb-intro'); }, 2200);
-                });
+                root.classList.add('sb-anim');
+                setTimeout(function () { if (!window.sbMotionReady) root.classList.add('sb-anim-done'); }, 3000);
+                // Arrived with a page-to-page crossfade: skip the content entrance (sb-motion.css, html.sb-vt).
+                window.addEventListener('pagereveal', function (event) { if (event.viewTransition) root.classList.add('sb-vt'); });
             } catch (error) {}
         })();
     </script>
@@ -107,6 +99,7 @@
     <link rel="stylesheet" href="{{ asset('css/sb-tokens.css') }}?v={{ @filemtime(public_path('css/sb-tokens.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-theme.css') }}?v={{ @filemtime(public_path('css/sb-theme.css')) }}">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}?v={{ @filemtime(public_path('js/skillbridge-ui.js')) }}"></script>
+    <script defer src="{{ asset('js/sb-motion.js') }}?v={{ @filemtime(public_path('js/sb-motion.js')) }}"></script>
     @vite('resources/js/app.js')
 
 </head>

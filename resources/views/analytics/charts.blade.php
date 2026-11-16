@@ -134,11 +134,28 @@
             };
         };
         const barStyle = isAdmin ? { borderRadius: 8, maxBarThickness: 40 } : {};
-        const barAnimation = reduceMotion ? false : { duration: 800, easing: 'easeOutQuart' };
+        // Draw-in once, when the chart is first visible, capped at 600ms. None with reduced motion, and none on
+        // the admin dashboard (its five charts dropped frames on a throttled CPU even when drawn one by one).
+        const noDrawIn = reduceMotion || isAdmin;
+        Chart.defaults.animation = noDrawIn ? false : { duration: 600, easing: 'easeOutQuart' };
+        const barAnimation = noDrawIn ? false : { duration: 600, easing: 'easeOutQuart' };
+        const draw = (canvas, config) => {
+            if (!canvas) return;
+            if (noDrawIn || !('IntersectionObserver' in window)) {
+                new Chart(canvas, config);
+                return;
+            }
+            const watcher = new IntersectionObserver((entries) => {
+                if (!entries.some((entry) => entry.isIntersecting)) return;
+                watcher.disconnect();
+                new Chart(canvas, config);
+            }, { threshold: 0.2 });
+            watcher.observe(canvas);
+        };
         // Progressive line: each point starts where the previous one ended, so the line draws left to right.
         const lineDrawIn = (pointCount) => {
-            if (reduceMotion) return false;
-            const step = 1100 / Math.max(pointCount, 1);
+            if (noDrawIn) return false;
+            const step = 600 / Math.max(pointCount, 1);
             const fromPreviousY = ctx => ctx.index === 0
                 ? ctx.chart.scales.y.getPixelForValue(0)
                 : ctx.chart.getDatasetMeta(ctx.datasetIndex).data[ctx.index - 1].getProps(['y'], true).y;
@@ -176,7 +193,7 @@
                 const donutLegendPosition = height => height < 230 ? 'right' : 'top';
                 const statusCanvas = document.getElementById('statusChart');
 
-                new Chart(document.getElementById('applicationsChart'), {
+                draw(document.getElementById('applicationsChart'), {
                     type: 'line',
                     data: {
                         labels: data.applications_per_month.map(i => i.month),
@@ -186,7 +203,7 @@
                         ? { responsive: true, maintainAspectRatio: false, animation: lineDrawIn(data.applications_per_month.length), interaction: { intersect: false, mode: 'index' }, scales: adminScales('y'), plugins: { legend: { display: false } } }
                         : { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
                 });
-                new Chart(document.getElementById('placementRateChart'), {
+                draw(document.getElementById('placementRateChart'), {
                     type: 'line',
                     data: {
                         labels: data.placement_rate_by_month.map(i => i.month),
@@ -196,14 +213,14 @@
                         ? { responsive: true, maintainAspectRatio: false, animation: lineDrawIn(data.placement_rate_by_month.length), interaction: { intersect: false, mode: 'index' }, scales: adminScales('y', { min: 0, max: 100 }), plugins: { legend: { display: false } } }
                         : { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } }, plugins: { legend: { display: false } } }
                 });
-                new Chart(statusCanvas, {
+                draw(statusCanvas, {
                     type: 'doughnut',
                     data: {
                         labels: data.placements.map(i => i.status),
                         datasets: [{ data: data.placements.map(i => i.total), backgroundColor: [red, chartColors.green, chartColors.amber, chartColors.danger, chartColors.blue, chartColors.purple] }]
                     },
                     options: isAdmin
-                        ? { responsive: true, maintainAspectRatio: false, cutout: '62%', ...(reduceMotion ? { animation: false } : {}), plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, boxHeight: 12, useBorderRadius: true, borderRadius: 3 } } } }
+                        ? { responsive: true, maintainAspectRatio: false, cutout: '62%', ...(noDrawIn ? { animation: false } : {}), plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, boxHeight: 12, useBorderRadius: true, borderRadius: 3 } } } }
                         : {
                             responsive: true,
                             maintainAspectRatio: false,
@@ -217,7 +234,7 @@
                             },
                         }
                 });
-                new Chart(document.getElementById('competencyChart'), {
+                draw(document.getElementById('competencyChart'), {
                     type: 'bar',
                     data: {
                         labels: data.competency_levels.map(i => i.proficiency_level),
@@ -227,7 +244,7 @@
                         ? { responsive: true, maintainAspectRatio: false, animation: barAnimation, scales: adminScales('y'), plugins: { legend: { display: false } } }
                         : { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
                 });
-                new Chart(document.getElementById('skillsChart'), {
+                draw(document.getElementById('skillsChart'), {
                     type: 'bar',
                     data: {
                         labels: data.top_skills.map(i => i.requirement_name),

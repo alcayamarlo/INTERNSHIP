@@ -1101,22 +1101,6 @@ a.sb-stat {
     font-size: 14px;
 }
 
-.sb-skeleton {
-    border-radius: var(--sb-radius-sm);
-    background: linear-gradient(90deg, var(--sb-surface-raised) 25%, var(--sb-border) 50%, var(--sb-surface-raised) 75%);
-    background-size: 200% 100%;
-    animation: sb-shimmer 1.4s linear infinite;
-}
-
-@keyframes sb-shimmer {
-    from {
-        background-position: 200% 0;
-    }
-
-    to {
-        background-position: -200% 0;
-    }
-}
 
 /* ---------- Buttons ---------- */
 
@@ -4672,7 +4656,7 @@ body.skillbridge-app .messenger-shell .messenger-row.outgoing .messenger-bubble 
 .msgr-msg .messenger-bubble { position: relative; }
 
 /* Jumped-to message flashes briefly */
-.messenger-row.is-flash .messenger-bubble { animation: msgrFlash 1.4s ease-out; }
+.messenger-row.is-flash .messenger-bubble { animation: msgrFlash var(--dur-fill, 600ms) var(--ease-out, ease-out); }
 @keyframes msgrFlash {
     0%, 35% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--sb-brand) 45%, transparent); }
     100% { box-shadow: 0 0 0 0 transparent; }
