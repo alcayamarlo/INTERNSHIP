@@ -11,8 +11,8 @@
     .ojt-head .school { text-align: center; font-family: Helvetica, Arial, sans-serif; }
     .ojt-head .school .name { font-size: 17px; font-weight: bold; letter-spacing: 0.3px; }
     .ojt-head .school .sub { font-size: 8.5px; margin-top: 2px; }
-    .ojt-rule-orange { border-top: 4px solid #5E010B; margin-top: 7px; }
-    .ojt-rule-red { border-top: 1px solid #5E010B; margin-top: 2px; }
+    .ojt-rule-orange { border-top: 4px solid #E8751A; margin-top: 7px; }
+    .ojt-rule-red { border-top: 1px solid #c8102e; margin-top: 2px; }
 </style>
 <table class="ojt-head">
     <tr>
