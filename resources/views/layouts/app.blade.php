@@ -68,6 +68,8 @@
                 var root = document.documentElement;
                 root.classList.add('sb-anim');
                 setTimeout(function () { if (!window.sbMotionReady) root.classList.add('sb-anim-done'); }, 3000);
+                // Arrived with a page-to-page crossfade: skip the content entrance (sb-motion.css, html.sb-vt).
+                window.addEventListener('pagereveal', function (event) { if (event.viewTransition) root.classList.add('sb-vt'); });
             } catch (error) {}
         })();
     </script>

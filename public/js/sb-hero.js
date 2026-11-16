@@ -103,31 +103,11 @@
         Object.keys(links).forEach(function (id) { var el = document.getElementById(id); if (el) spy.observe(el); });
     }
 
-    // ---- Depth: the hero photo, headline and the card stack move at different speeds with the pointer (fine pointers only) ----
+    // ---- Live hero: count-up numbers and the highlighted card on the card stack (no parallax) ----
     var hero = $('.public-hero');
-    if (hero && window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        var raf = 0, nx = 0, ny = 0;
-        var paint = function () { raf = 0; hero.style.setProperty('--px', nx.toFixed(3)); hero.style.setProperty('--py', ny.toFixed(3)); };
-        hero.addEventListener('pointermove', function (e) {
-            var r = hero.getBoundingClientRect();
-            nx = ((e.clientX - r.left) / r.width - .5) * 2; ny = ((e.clientY - r.top) / r.height - .5) * 2;
-            if (!raf) raf = requestAnimationFrame(paint);
-        });
-        hero.addEventListener('pointerleave', function () { nx = 0; ny = 0; if (!raf) raf = requestAnimationFrame(paint); });
-    }
-
-    // ---- Live hero: scroll depth, count-up numbers and a rotating "live feed" highlight on the card stack ----
     if (hero) {
         var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (!still) {
-            var sRaf = 0;
-            var onScroll = function () {
-                sRaf = 0;
-                var h = hero.offsetHeight || 1, y = Math.min(Math.max(window.scrollY / h, 0), 1);
-                hero.style.setProperty('--sy', y.toFixed(3));
-            };
-            window.addEventListener('scroll', function () { if (!sRaf) sRaf = requestAnimationFrame(onScroll); }, { passive: true });
-            onScroll();
 
             $$('[data-count]', hero).forEach(function (el) {
                 var to = parseInt(el.getAttribute('data-count'), 10);
