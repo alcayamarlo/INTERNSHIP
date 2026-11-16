@@ -19,10 +19,8 @@
     $heroList = collect($openInternships ?? []);
     $heroCount = $heroList->count();
     $heroFeat = $heroList->first();
-    $heroFeatSetup = ''; // Postings no longer have a work setup.
     $heroFeatLoc = $heroFeat ? trim((string) $heroFeat->location) : '';
-    if ($heroFeatLoc !== '' && \Illuminate\Support\Str::lower($heroFeatLoc) === \Illuminate\Support\Str::lower($heroFeatSetup)) { $heroFeatLoc = ''; }
-    $heroFeatMeta = $heroFeat ? collect([$heroFeatLoc, $heroFeatSetup, trim((string) $heroFeat->duration)])->filter()->implode(' · ') : '';
+    $heroFeatMeta = $heroFeat ? collect([$heroFeatLoc, trim((string) $heroFeat->duration)])->filter()->implode(' · ') : '';
     $heroFeatCompany = $heroFeat ? (string) $heroFeat->employer?->company_name : '';
     $heroFeatLetter = $heroFeat ? \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($heroFeatCompany !== '' ? $heroFeatCompany : $heroFeat->title, 0, 1)) : '';
 

@@ -36,7 +36,7 @@
             @endif
 
             @if($internship->qualifications)
-                <h2>General requirements</h2>
+                <h2>Qualifications</h2>
                 <p>{!! nl2br(e($internship->qualifications)) !!}</p>
             @endif
 
