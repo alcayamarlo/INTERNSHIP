@@ -127,8 +127,6 @@
         (bool) $currentUser?->isRole(UserRole::Student) => [
             'Overview' => [
                 ['student.dashboard', 'student.dashboard', 'bi-grid-1x2', 'Dashboard'],
-                // Completing the profile is the first step for every student, so it is one click away.
-                ['student.profile.edit', 'student.profile.*', 'bi-person-badge', 'My Profile'],
             ],
             'Career' => [
                 ['student.competencies.index', 'student.competencies.*', 'bi-award', 'My Certificates'],
@@ -143,8 +141,6 @@
         (bool) $currentUser?->isRole(UserRole::Employer) => [
             'Overview' => [
                 ['employer.dashboard', 'employer.dashboard', 'bi-grid-1x2', 'Dashboard'],
-                // The job title saved here is printed on the evaluation forms.
-                ['employer.profile.edit', 'employer.profile.*', 'bi-building', 'Company Profile'],
             ],
             'Hiring' => [
                 ['employer.internships.index', 'employer.internships.*', 'bi-briefcase', 'Internships'],

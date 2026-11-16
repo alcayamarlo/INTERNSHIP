@@ -181,6 +181,14 @@ html.sb-vt body.sb-app .sb-content {
     animation: none;
 }
 
+/* A view-transition-name makes .sb-content the containing block and a stacking context for its
+   fixed children, which traps every modal inside the content area (clipped under the top bar and
+   dimmed by the backdrop). While a modal is open the name is dropped so the modal centres on the
+   whole screen above the backdrop. */
+body.sb-app.modal-open .sb-content {
+    view-transition-name: none;
+}
+
 ::view-transition-old(sb-content),
 ::view-transition-new(sb-content) {
     animation-duration: var(--dur-base);
