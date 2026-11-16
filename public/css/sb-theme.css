@@ -1215,6 +1215,12 @@ html body.sb-app .sb-step-bar span { height: 4px; border-radius: var(--r-pill); 
 html body.sb-app .sb-step-bar span.is-done { background: var(--burgundy); }
 html body.sb-app .sb-wizard-step { margin: 0; padding: 0; border: 0; }
 html body.sb-app .sb-wizard-step[hidden] { display: none; }
+/* The form sits between .modal-content and .modal-body, so it must be the flex column that lets the body
+   scroll while the header stays at the top and the Back / Next footer stays visible at the bottom. */
+html body.sb-app #certificateWizard .modal-content { max-height: 100%; overflow: hidden; }
+html body.sb-app #certificateWizard #certificateWizardForm { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+html body.sb-app #certificateWizard .modal-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+html body.sb-app #certificateWizard .modal-footer { flex: none; }
 html body.sb-app .sb-wizard-title { float: none; width: auto; margin-bottom: 16px; font-size: 17px; font-weight: 600; color: var(--text); }
 html body.sb-app .sb-field-block { margin-bottom: 18px; }
 html body.sb-app .sb-field-error-text { margin-top: 4px; font-size: 13px; color: var(--burgundy-text); }

@@ -192,3 +192,12 @@ html:root:root:root:root body {
     --sb-dur-list-out: var(--dur-exit);
     --sb-delay-level: var(--stagger);
 }
+
+/* About section (landing page). Scoped names so the global --black / --bg / --line tokens stay as they are. */
+:root {
+    --red-900: #7A0013;
+    --about-bg: #F8F6F7;
+    --about-ink: #16161A;
+    --about-black: #111111;
+    --about-rule: #E6E1E3;
+}

@@ -146,7 +146,7 @@
                     <ul class="sb-feat-grid is-students" aria-label="Features for students">
                             <li class="sb-card"><span class="sb-ic-wrap"><svg class="sb-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7Z"/></svg></span><h3>Competency tracking</h3><p>Review skill categories and document your experience for coordinator review.</p></li>
                             <li class="sb-card"><span class="sb-ic-wrap"><svg class="sb-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5"/></svg></span><h3>Internship profile</h3><p>Keep your academic details, goals, resume, and portfolio evidence together.</p></li>
-                            <li class="sb-card"><span class="sb-ic-wrap"><svg class="sb-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg></span><h3>Browse and filter internships</h3><p>See what is open right now and narrow it down by course.</p></li>
+                            <li class="sb-card"><span class="sb-ic-wrap"><svg class="sb-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg></span><h3>Browse internships</h3><p>See what is open right now and narrow it down by course.</p></li>
                             <li class="sb-card"><span class="sb-ic-wrap"><svg class="sb-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12.5 9.5 17 19 7"/><circle cx="12" cy="12" r="9.5"/></svg></span><h3>Application status</h3><p>Submit applications and follow their updates from your student workspace.</p></li>
                     </ul>
                 </div>
@@ -156,24 +156,44 @@
                 </div>
             </section>
 
-            <section class="public-section sb-about" id="about" aria-labelledby="about-h">
-                <div class="sb-about-grid">
-                    <div class="sb-about-copy reveal">
-                        <div class="public-section-heading sb-about-head">
-                            <div class="eyebrow">About SkillBridge</div>
-                            <h2 id="about-h">Built by St. Cecilia's College, for St. Cecilia's students.</h2>
+            <section class="public-section sb-about about" id="about" aria-labelledby="about-h">
+                <div class="about__band">
+                    <div class="about__inner">
+                        <div class="about__text reveal">
+                            <p class="about__eyebrow">About SkillBridge</p>
+                            <h2 class="about__title" id="about-h"><span>Built by St.</span> <span>Cecilia's College,</span> <em>for St. Cecilia's students.</em></h2>
+                            <p class="about__lead">The Student Development and Internship Placement workspace of St. Cecilia's College.</p>
+                            <p class="about__support">Everyone works from the same records, so nothing has to be re-entered or chased by message.</p>
                         </div>
-                        <p class="sb-about-lead">SkillBridge is the Student Development and Internship Placement workspace of St. Cecilia's College. It brings the key steps of internship preparation into one role-aware platform.</p>
-                        <ul class="sb-about-roles">
-                            <li><strong>Students</strong><span>Manage your profile, competencies, and portfolio.</span></li>
-                            <li><strong>Coordinators</strong><span>Review student profiles and evidence.</span></li>
-                            <li><strong>Employers</strong><span>Manage your internship postings.</span></li>
-                        </ul>
+                        <figure class="about__photo sb-about-photo reveal">
+                            <img src="{{ asset('images/landing/scc-aerial.webp') }}" alt="Aerial view of the St. Cecilia's College building in Cebu" width="1522" height="705" loading="lazy" decoding="async">
+                            <span class="about__loc"><i aria-hidden="true"></i>St. Cecilia's College, Cebu</span>
+                        </figure>
                     </div>
-                    <figure class="sb-about-photo reveal">
-                        <img src="{{ asset('images/landing/scc-aerial.webp') }}" alt="Aerial view of the St. Cecilia's College building in Cebu" width="1522" height="705" loading="lazy" decoding="async">
-                        <figcaption><i aria-hidden="true"></i>St. Cecilia's College, Cebu</figcaption>
-                    </figure>
+                </div>
+                <div class="about__panel reveal">
+                    <ul class="about__roles" aria-label="What SkillBridge covers">
+                        <li>
+                            <span class="about__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21c.8-4 4-6 8-6s7.2 2 8 6"/></svg></span>
+                            <strong class="about__role">Profile and portfolio</strong>
+                            <span class="about__desc">Students build a profile in one place.</span>
+                        </li>
+                        <li>
+                            <span class="about__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="9" r="6"/><path d="m8.5 14 -1.5 8 5-3 5 3-1.5-8"/><circle cx="12" cy="9" r="2"/></svg></span>
+                            <strong class="about__role">Certificates and skills</strong>
+                            <span class="about__desc">Record the certificates and skills you have earned.</span>
+                        </li>
+                        <li>
+                            <span class="about__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7Z"/><path d="M14 2v5h5"/><path d="M9 13h6M9 17h6"/></svg></span>
+                            <strong class="about__role">Internship applications</strong>
+                            <span class="about__desc">Employers post internships and respond to applications.</span>
+                        </li>
+                        <li>
+                            <span class="about__icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg></span>
+                            <strong class="about__role">OJT monitoring</strong>
+                            <span class="about__desc">Follow each student through on-the-job training.</span>
+                        </li>
+                    </ul>
                 </div>
                 <ul class="sb-values">
                         <li class="sb-card reveal"><span class="sb-ic-wrap"><svg class="sb-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 20V6.5L12 3l8 3.5V20"/><path d="M9 20v-6h6v6M9 9h.01M15 9h.01"/></svg></span><h3>Prepare</h3><p>Build your profile and develop your competencies.</p></li>
