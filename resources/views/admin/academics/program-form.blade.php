@@ -8,7 +8,7 @@
 
 <div class="card">
     <div class="card-body">
-        <form method="POST" action="{{ $program->exists ? route('admin.academics.programs.update', $program) : route('admin.academics.programs.store') }}">
+        <form method="POST" action="{{ $program->exists ? route($academicsRoute.'programs.update', $program) : route($academicsRoute.'programs.store') }}">
             @csrf
             @if($program->exists) @method('PUT') @endif
 
@@ -53,7 +53,7 @@
                 </div>
             </div>
             <button type="submit" class="btn btn-primary mt-4">Save program</button>
-            <a href="{{ route('admin.academics.index') }}" class="btn btn-outline-secondary mt-4">Cancel</a>
+            <a href="{{ route($academicsRoute.'index') }}" class="btn btn-outline-secondary mt-4">Cancel</a>
         </form>
     </div>
 </div>

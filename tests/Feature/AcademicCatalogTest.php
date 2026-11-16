@@ -816,3 +816,43 @@ it('lets an administrator view and correct a nonmatching student ID', function (
         ->assertDontSee('ID needs correction');
 });
 
+
+it('gives coordinators Academic Settings from their own sidebar, and keeps students out', function () {
+    $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
+    $coordinator = Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => Institution::create(['name' => 'SCC'])->id]);
+    $payload = AcademicSetting::current()->only([
+        'required_ojt_hours', 'student_id_pattern', 'current_term_override', 'academic_year_start_month',
+        'first_semester_start_month', 'first_semester_start_day', 'first_semester_end_month', 'first_semester_end_day',
+        'second_semester_start_month', 'second_semester_start_day', 'second_semester_end_month', 'second_semester_end_day',
+        'summer_start_month', 'summer_start_day', 'summer_end_month', 'summer_end_day',
+    ]);
+    $payload['student_id_pattern'] = '^SCC-\d{2}-\d{8}$';
+    $payload['required_ojt_hours'] = 450;
+
+    $this->actingAs($coordinatorUser)
+        ->get(route('coordinator.dashboard'))
+        ->assertSee(route('coordinator.academics.index'), false);
+
+    $this->get(route('coordinator.academics.index'))
+        ->assertOk()
+        ->assertSee(route('coordinator.academics.settings.update'), false)
+        ->assertSee(route('coordinator.academics.programs.create'), false)
+        ->assertDontSee(route('admin.academics.index'), false);
+
+    $this->post(route('coordinator.academics.settings.update'), $payload)
+        ->assertRedirect(route('coordinator.academics.index'))
+        ->assertSessionHasNoErrors();
+    expect(AcademicSetting::current()->required_ojt_hours)->toBe(450);
+
+    $this->post(route('coordinator.academics.programs.store'), [
+        'name' => 'BS Computer Science', 'code' => 'BSCS', 'required_internship_hours' => 486, 'coordinator_id' => $coordinator->id,
+    ])->assertRedirect(route('coordinator.academics.index'));
+    expect(Program::where('code', 'BSCS')->exists())->toBeTrue();
+
+    // The admin URLs stay admin-only.
+    $this->get(route('admin.academics.index'))->assertForbidden();
+
+    $student = User::factory()->create(['role' => UserRole::Student]);
+    $this->actingAs($student)->get(route('coordinator.academics.index'))->assertForbidden();
+    $this->post(route('coordinator.academics.settings.update'), $payload)->assertForbidden();
+});

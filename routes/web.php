@@ -1,10 +1,8 @@
 <?php
 
-use App\Http\Controllers\Admin\AcademicCatalogController;
 use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncementController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
-use App\Http\Controllers\Admin\DeploymentRequirementController;
 use App\Http\Controllers\Admin\HealthController;
 use App\Http\Controllers\Admin\ModerationController;
 use App\Http\Controllers\Admin\PlacementController as AdminPlacementController;
@@ -368,29 +366,19 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics.index');
             Route::get('/statistics/export/{format}', [StatisticsController::class, 'export'])->whereIn('format', ['pdf', 'xlsx'])->name('statistics.export');
             Route::post('/statistics/reports', [StatisticsController::class, 'generateReport'])->name('statistics.reports.generate');
+            // Academic Settings, the same pages the admin has (routes/academics.php).
+            require __DIR__.'/academics.php';
         });
 
         Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
             Route::get('/profile', [AdminProfileController::class, 'edit'])->name('profile.edit');
             Route::post('/profile-picture', [AdminProfileController::class, 'updatePicture'])->name('profile.update-picture');
-            Route::get('/academics', [AcademicCatalogController::class, 'index'])->name('academics.index');
+            // Academic Settings, shared with coordinators (routes/academics.php).
+            require __DIR__.'/academics.php';
             Route::get('/criteria', [EligibilityCriteriaController::class, 'index'])->name('criteria.index');
             Route::get('/criteria/{program}', [EligibilityCriteriaController::class, 'show'])->name('criteria.show');
             Route::post('/criteria/{program}', [EligibilityCriteriaController::class, 'store'])->name('criteria.store');
-            Route::get('/academics/settings', fn () => redirect()->route('admin.academics.index'))
-                ->name('academics.settings');
-            Route::post('/academics/settings', [AcademicCatalogController::class, 'updateSettings'])->name('academics.settings.update');
-            Route::post('/academics/deployment-requirements', [DeploymentRequirementController::class, 'store'])
-                ->name('academics.deployment-requirements.store');
-            Route::patch('/academics/deployment-requirements/{deploymentRequirement}', [DeploymentRequirementController::class, 'update'])
-                ->name('academics.deployment-requirements.update');
-            Route::delete('/academics/deployment-requirements/{deploymentRequirement}', [DeploymentRequirementController::class, 'destroy'])
-                ->name('academics.deployment-requirements.destroy');
-            Route::get('/academics/programs/create', [AcademicCatalogController::class, 'create'])->name('academics.programs.create');
-            Route::post('/academics/programs', [AcademicCatalogController::class, 'store'])->name('academics.programs.store');
-            Route::get('/academics/programs/{program}/edit', [AcademicCatalogController::class, 'edit'])->name('academics.programs.edit');
-            Route::put('/academics/programs/{program}', [AcademicCatalogController::class, 'update'])->name('academics.programs.update');
             Route::get('/students/{student}/files', [PortfolioFileController::class, 'studentFiles'])
                 ->name('students.files');
             Route::put('/students/{student}/student-id', [PortfolioFileController::class, 'updateStudentId'])

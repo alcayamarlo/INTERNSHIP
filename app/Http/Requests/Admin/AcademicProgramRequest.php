@@ -10,7 +10,8 @@ class AcademicProgramRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->user()?->isRole(UserRole::Admin) ?? false;
+        // Coordinators manage Academic Settings too.
+        return auth()->user()?->isRole(UserRole::Admin, UserRole::Coordinator) ?? false;
     }
 
     public function rules(): array

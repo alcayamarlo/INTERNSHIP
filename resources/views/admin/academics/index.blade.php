@@ -23,7 +23,7 @@
 <div>
 <div class="sb-dash">
 <x-page-header title="Academic settings" subtitle="Manage school programs, majors, internship hours, and academic calendar defaults.">
-    <a href="{{ route('admin.academics.programs.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add program</a>
+    <a href="{{ route($academicsRoute.'programs.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add program</a>
 </x-page-header>
 
 @if($errors->any())
@@ -73,7 +73,7 @@
                             </td>
                             <td>{{ $program->coordinator?->user?->name ?? 'Not assigned' }}</td>
                             <td>{{ $program->students_count }}</td>
-                            <td><a class="btn btn-sm btn-outline-primary" href="{{ route('admin.academics.programs.edit', $program) }}">Edit</a></td>
+                            <td><a class="btn btn-sm btn-outline-primary" href="{{ route($academicsRoute.'programs.edit', $program) }}">Edit</a></td>
                         </tr>
                     @empty
                         <tr><td colspan="6"><x-empty-state icon="bi-mortarboard" title="No programs configured" message="Add a program so students can register against it." /></td></tr>
@@ -105,7 +105,7 @@
                                     @php($requirementFormId = 'deployment-requirement-'.$requirement->id)
                                     @php($sourceLocked = $requirement->portfolios()->exists() || $requirement->code === 'resume')
                                     <td>
-                                        <form id="{{ $requirementFormId }}" method="POST" action="{{ route('admin.academics.deployment-requirements.update', $requirement) }}#requirements" class="m-0">
+                                        <form id="{{ $requirementFormId }}" method="POST" action="{{ route($academicsRoute.'deployment-requirements.update', $requirement) }}#requirements" class="m-0">
                                             @csrf
                                             @method('PATCH')
                                             <input class="form-control" name="name" value="{{ $requirement->name }}" maxlength="255" aria-label="Document name" title="{{ $requirement->name }}" required>
@@ -136,7 +136,7 @@
                                     <td class="text-nowrap text-end">
                                         <button class="btn btn-sm btn-outline-primary" type="submit" form="{{ $requirementFormId }}">Save</button>
                                         @if(!$requirement->portfolios()->exists())
-                                            <form method="POST" action="{{ route('admin.academics.deployment-requirements.destroy', $requirement) }}#requirements" class="d-inline" data-confirm="Delete this requirement?" data-confirm-title="Delete requirement">
+                                            <form method="POST" action="{{ route($academicsRoute.'deployment-requirements.destroy', $requirement) }}#requirements" class="d-inline" data-confirm="Delete this requirement?" data-confirm-title="Delete requirement">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
@@ -158,7 +158,7 @@
         <section class="card">
             <div class="card-header"><h2><i class="bi bi-plus-circle" aria-hidden="true"></i> Add requirement</h2></div>
             <div class="card-body">
-                <form method="POST" action="{{ route('admin.academics.deployment-requirements.store') }}#requirements" class="d-grid gap-3">
+                <form method="POST" action="{{ route($academicsRoute.'deployment-requirements.store') }}#requirements" class="d-grid gap-3">
                     @csrf
                     <div>
                         <label class="form-label" for="new_requirement_name">Document name <span class="text-danger" aria-hidden="true">*</span></label>
@@ -183,7 +183,7 @@
      CALENDAR AND STUDENT ID (one form, two cards)
 ========================================================== --}}
 <div class="sb-tab-panel" role="tabpanel" id="aa-panel-calendar" aria-labelledby="aa-tab-calendar" tabindex="0" @if($defaultTab !== 'calendar') hidden @endif>
-    <form method="POST" action="{{ route('admin.academics.settings.update') }}#calendar">
+    <form method="POST" action="{{ route($academicsRoute.'settings.update') }}#calendar">
         @csrf
         <div class="sb-form sb-form--even">
 

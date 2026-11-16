@@ -22,6 +22,7 @@ class AcademicCatalogController extends Controller
         $calendar = app(AcademicCalendar::class);
 
         return view('admin.academics.index', [
+            'academicsRoute' => $this->routePrefix(),
             'programs' => Program::with(['coordinator.user', 'majors'])->withCount(['students', 'majors'])->orderBy('code')->get(),
             'deploymentRequirements' => DeploymentRequirement::query()->orderBy('sort_order')->orderBy('id')->get(),
             'settings' => AcademicSetting::current(),
@@ -46,7 +47,7 @@ class AcademicCatalogController extends Controller
             return $program;
         });
 
-        return redirect()->route('admin.academics.index')->with('success', 'Program created.');
+        return redirect()->route($this->routePrefix().'index')->with('success', 'Program created.');
     }
 
     public function edit(Program $program)
@@ -62,7 +63,7 @@ class AcademicCatalogController extends Controller
             $program->students()->update(['program' => $program->display_name]);
         });
 
-        return redirect()->route('admin.academics.index')->with('success', 'Program updated.');
+        return redirect()->route($this->routePrefix().'index')->with('success', 'Program updated.');
     }
 
     public function updateSettings(AcademicSettingsRequest $request)
@@ -74,12 +75,19 @@ class AcademicCatalogController extends Controller
         $settings->require_major_subjects_passed = $request->boolean('require_major_subjects_passed');
         $settings->save();
 
-        return redirect()->route('admin.academics.index')->with('success', 'Academic settings saved.');
+        return redirect()->route($this->routePrefix().'index')->with('success', 'Academic settings saved.');
+    }
+
+    /** Admins use admin.academics.*, coordinators coordinator.academics.* (the same pages). */
+    private function routePrefix(): string
+    {
+        return request()->routeIs('coordinator.*') ? 'coordinator.academics.' : 'admin.academics.';
     }
 
     private function programForm(Program $program)
     {
         return view('admin.academics.program-form', [
+            'academicsRoute' => $this->routePrefix(),
             'program' => $program->load('majors'),
             'coordinators' => Coordinator::with('user')->orderBy('id')->get(),
         ]);

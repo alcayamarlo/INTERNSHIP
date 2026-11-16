@@ -159,6 +159,7 @@
             'Manage' => [
                 ['coordinator.students.index', 'coordinator.students.*', 'bi-mortarboard', 'Students'],
                 ['coordinator.criteria.index', 'coordinator.criteria.*', 'bi-list-check', 'Eligibility Criteria'],
+                ['coordinator.academics.index', 'coordinator.academics.*', 'bi-mortarboard', 'Academic settings'],
                 ['coordinator.applications.index', 'coordinator.applications.*', 'bi-kanban', 'Applications'],
                 ['coordinator.companies.index', 'coordinator.companies.*', 'bi-buildings', 'Partner Companies'],
                 ['coordinator.reviews.index', 'coordinator.reviews.*', 'bi-journal-check', 'Report Reviews'],
