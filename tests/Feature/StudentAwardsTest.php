@@ -47,7 +47,7 @@ it('groups awards as College, Senior High, Junior High, then Elementary', functi
     expect($labels)->toBe(['College', 'Senior High School', 'Junior High School', 'Elementary']);
 
     $html = awardResumeHtml($student);
-    $positions = array_map(fn (string $text) => strpos($html, $text), ['<div class="bar">Honors / awards</div>', "Dean&#039;s Lister", 'With High Honors', 'Science Quiz Champion', 'Best in Math']);
+    $positions = array_map(fn (string $text) => strpos($html, $text), ['<div class="sec">Honors and awards</div>', "Dean&#039;s Lister", 'With High Honors', 'Science Quiz Champion', 'Best in Math']);
     expect($positions)->each->not->toBeFalse()
         ->and($positions)->toBe(collect($positions)->sort()->values()->all());
 });
@@ -70,17 +70,17 @@ it('shows event, year, and detail on a smaller line under the award', function (
     addAward($student, AwardLevel::College, "Dean's Lister", '2023-2024', ['event' => "St. Cecilia's College", 'detail' => 'GWA: 1.45']);
 
     expect(awardResumeHtml($student))
-        ->toContain('<p class="entry-meta">St. Cecilia&#039;s College · 2023-2024 · GWA: 1.45</p>');
+        ->toContain('(St. Cecilia&#039;s College · 2023-2024 · GWA: 1.45)');
 });
 
 it('hides levels with no awards and the whole section when there are none', function () {
     $student = awardStudent();
-    expect(awardResumeHtml($student))->not->toContain('<div class="bar">Honors / awards</div>');
+    expect(awardResumeHtml($student))->not->toContain('<div class="sec">Honors and awards</div>');
 
     addAward($student, AwardLevel::College, "Dean's Lister", '2024');
     $html = awardResumeHtml($student);
 
-    expect($html)->toContain('<div class="bar">Honors / awards</div>')
+    expect($html)->toContain('<div class="sec">Honors and awards</div>')
         ->toContain('>College<')
         ->not->toContain('Senior High School')
         ->not->toContain('Junior High School')

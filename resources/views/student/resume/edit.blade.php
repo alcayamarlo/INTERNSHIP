@@ -35,6 +35,7 @@
 <div class="sb-editor">
     <form id="resumeEditorForm" class="sb-editor-form" novalidate data-resume-editor data-no-loading="true"
           data-preview-url="{{ route('student.resume.preview', $resume) }}"
+          data-pages-url="{{ route('student.resume.pages', $resume) }}"
           data-update-url="{{ route('student.resume.update', $resume) }}"
           data-copy-url="{{ route('student.resume.copy', $resume) }}"
           data-pdf-url="{{ route('student.resume.pdf', $resume) }}">
@@ -67,37 +68,30 @@
                         <input type="tel" class="form-control" data-field="contact.mobile" value="{{ $editor['contact']['mobile'] }}" maxlength="40" autocomplete="tel">
                     </label>
                     <label class="sb-field">
-                        <span>City address</span>
-                        <input type="text" class="form-control" data-field="contact.city_address" value="{{ $editor['contact']['city_address'] }}" maxlength="300">
-                    </label>
-                    <label class="sb-field">
-                        <span>Provincial address</span>
-                        <input type="text" class="form-control" data-field="contact.provincial_address" value="{{ $editor['contact']['provincial_address'] }}" maxlength="300">
+                        <span>City</span>
+                        <input type="text" class="form-control" data-field="contact.city" value="{{ $editor['contact']['city'] }}" maxlength="120" placeholder="e.g. Cebu City, Cebu" autocomplete="address-level2">
                     </label>
                 </div>
 
-                <h3 class="sb-form-subhead">Personal details</h3>
-                <p class="sb-form-intro">Shown under "Personal data", e.g. Birthday, Sex, Civil status.</p>
-                <div class="sb-list-edit sb-list-edit--rows" data-list="personal" data-empty-text="No personal details.">
-                    @foreach($editor['personal'] as $row)
-                        @include('student.resume.partials.editor-row', ['row' => $row, 'labelPlaceholder' => 'e.g. Birthday', 'valuePlaceholder' => 'e.g. March 4, 2004'])
-                    @endforeach
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="reShowPhoto" data-field="show_photo" @checked($editor['show_photo'])>
+                    <label class="form-check-label" for="reShowPhoto">Show my 2x2 photo on the resume</label>
                 </div>
-                <button type="button" class="sb-add-btn" data-add="row-personal"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add detail</button>
+                <p class="sb-form-intro mt-2 mb-0"><i class="bi bi-shield-lock" aria-hidden="true"></i> Your resume leaves out personal details such as birth date, civil status, religion and home address. Employers do not need them, and they stay private on your profile.</p>
             </div>
         </section>
 
         {{-- Career summary --}}
         <section class="card sb-editor-section" aria-labelledby="reTitleSummary">
-            <div class="card-header"><h2 id="reTitleSummary"><i class="bi bi-chat-square-text" aria-hidden="true"></i> Career summary</h2></div>
+            <div class="card-header"><h2 id="reTitleSummary"><i class="bi bi-chat-square-text" aria-hidden="true"></i> Career objective</h2></div>
             <div class="card-body">
                 <label class="sb-field">
-                    <span class="visually-hidden">Career summary</span>
-                    <textarea class="form-control" data-field="summary" rows="4" maxlength="2000" placeholder="Two or three sentences about your goals and strengths.">{{ $editor['summary'] }}</textarea>
+                    <span class="visually-hidden">Career objective</span>
+                    <textarea class="form-control" data-field="summary" rows="4" maxlength="1200" placeholder="Two or three sentences about your goals and strengths.">{{ $editor['summary'] }}</textarea>
                 </label>
                 <div class="form-check mt-2">
                     <input class="form-check-input" type="checkbox" id="reUpdateProfile" data-field="update_profile_summary">
-                    <label class="form-check-label" for="reUpdateProfile">Also update my profile's career summary with this text</label>
+                    <label class="form-check-label" for="reUpdateProfile">Also update my profile's career objective with this text</label>
                 </div>
             </div>
         </section>
@@ -119,12 +113,21 @@
         <section class="card sb-editor-section" aria-labelledby="reTitleSkills">
             <div class="card-header"><h2 id="reTitleSkills"><i class="bi bi-stars" aria-hidden="true"></i> Skills</h2></div>
             <div class="card-body">
-                <div class="sb-list-edit sb-list-edit--values" data-list="skills" data-empty-text="No skills yet.">
-                    @foreach($editor['skills'] as $skill)
+                <h3 class="sb-form-subhead">Technical skills</h3>
+                <div class="sb-list-edit sb-list-edit--values" data-list="skills_technical" data-empty-text="No technical skills yet.">
+                    @foreach($editor['skills_technical'] as $skill)
                         @include('student.resume.partials.editor-value', ['value' => $skill])
                     @endforeach
                 </div>
-                <button type="button" class="sb-add-btn" data-add="value-skills"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add skill</button>
+                <button type="button" class="sb-add-btn" data-add="value-skills"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add technical skill</button>
+
+                <h3 class="sb-form-subhead mt-3">Soft skills</h3>
+                <div class="sb-list-edit sb-list-edit--values" data-list="skills_soft" data-empty-text="No soft skills yet.">
+                    @foreach($editor['skills_soft'] as $skill)
+                        @include('student.resume.partials.editor-value', ['value' => $skill])
+                    @endforeach
+                </div>
+                <button type="button" class="sb-add-btn" data-add="value-skills"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add soft skill</button>
             </div>
         </section>
 
@@ -161,6 +164,8 @@
         {{-- Actions stay in reach while scrolling the form. --}}
         <div class="sb-sticky-actions" data-editor-actions>
             <span class="sb-save-status" data-save-status role="status" aria-live="polite">No unsaved changes</span>
+            {{-- Updated about 3 seconds after the last change: 1 page is ideal, 2 pages is the most that can be saved. --}}
+            <span class="sb-save-status" data-page-status role="status" aria-live="polite">Checking page count…</span>
             <div class="sb-sticky-actions-buttons">
                 <button type="submit" form="resumeCancelForm" class="btn btn-link sb-link-muted">Cancel</button>
                 <button type="submit" class="btn btn-outline-primary" name="intent" value="pdf"><i class="bi bi-download" aria-hidden="true"></i> Download PDF</button>
@@ -181,7 +186,6 @@
       data-confirm-title="Discard your changes?" data-confirm-label="Discard"></form>
 
 {{-- Blank items for the Add buttons. --}}
-<template data-template="row-personal">@include('student.resume.partials.editor-row', ['row' => null, 'labelPlaceholder' => 'e.g. Birthday', 'valuePlaceholder' => 'e.g. March 4, 2004'])</template>
 <template data-template="row-education">@include('student.resume.partials.editor-row', ['row' => null, 'labelPlaceholder' => 'e.g. High school / SHS', 'valuePlaceholder' => 'e.g. Cebu City NHS (2022)'])</template>
 <template data-template="value-skills">@include('student.resume.partials.editor-value', ['value' => ''])</template>
 <template data-template="award">@include('student.resume.partials.editor-award', ['award' => null])</template>

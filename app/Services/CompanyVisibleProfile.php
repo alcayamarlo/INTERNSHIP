@@ -14,6 +14,7 @@ use App\Models\StudentAward;
 use App\Models\User;
 use App\Support\PublicFileUrl;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 /**
  * The only view of a student that company-facing pages may use (RA 10173).
@@ -173,35 +174,45 @@ class CompanyVisibleProfile
      * follows the same "Show to companies" toggles and never includes ID numbers. Empty rows are dropped.
      * Sidebar: photo/initials, contact, education, skills. Main column: everything else.
      */
+    /**
+     * How many of each list a generated resume holds, newest or most relevant first. A resume is a
+     * short document (one page, two at most), so a long profile is trimmed here; the student can
+     * change what is on it in the Resume Editor.
+     */
+    public const RESUME_LIMITS = ['certificates' => 8, 'projects' => 5, 'experiences' => 5, 'awards' => 8, 'references' => 3, 'skills' => 24];
+
+    /** Long free text on a resume is cut to this many characters. */
+    public const RESUME_TEXT_LIMIT = 350;
+
+    /**
+     * The resume content (version 4): the student's own contact details, education, skills, projects, OJT and
+     * experience, certifications, awards and references. It never carries personal or sensitive data (birth
+     * date, sex, civil status, religion, height and weight, parents, full addresses, emergency contacts).
+     */
     public function resume(Student $student): array
-    {
-        $student->loadMissing(['user', 'institution', 'studentSkills.skill', 'experiences', 'competencies.learnedSkills', 'certificates', 'characterReferences']);
+    {        $student->loadMissing(['user', 'institution', 'studentSkills.skill', 'experiences', 'competencies.learnedSkills', 'certificates', 'characterReferences']);
         $user = $student->user;
         $hours = $student->internshipHours();
         $rows = fn (array $values): array => array_filter($values, 'filled');
         $name = $user?->name ?? trim($student->first_name.' '.$student->last_name);
 
         return [
-            'version' => 3,
+            'version' => 4,
             'name' => $name,
             'initials' => self::initials($name),
             // The resume photo is only ever the private 2x2 picture, never the profile picture.
             'id_photo_path' => $student->id_photo_path,
+            // The student can leave the photo off in the Resume Editor.
+            'show_photo' => true,
             'course' => $student->program,
             'school' => $student->institution?->name,
-            'summary' => $student->about_me,
+            'summary' => filled($student->about_me) ? Str::limit(trim($student->about_me), 600) : null,
             'generated_at' => now('Asia/Manila')->toIso8601String(),
+            // Only what a first contact needs: no street address, no zip code.
             'contact' => $rows([
                 'Mobile' => $user?->phone,
                 'Email' => $user?->email,
-                'City address' => collect([$student->address, $student->city, $student->province, $student->zip_code])->filter()->implode(', '),
-                'Provincial address' => $student->provincial_address,
-            ]),
-            'personal' => $rows([
-                ...$this->personalRows($student),
-                'Emergency contact' => $student->emergency_contact_name,
-                'Relationship' => $student->emergency_contact_name ? $student->emergency_contact_relationship : null,
-                'Emergency phone' => $student->emergency_contact_name ? $student->emergency_contact_phone : null,
+                'City' => collect([$student->city, $student->province])->filter()->implode(', '),
             ]),
             'education' => $rows([
                 'College' => $student->department,
@@ -213,8 +224,8 @@ class CompanyVisibleProfile
                 'Senior high school' => $this->school($student->senior_high_school, $student->senior_high_year_graduated),
                 'Internship hours' => $hours['required'] ? $hours['rendered'].' / '.$hours['required'] : ($hours['rendered'] ?: null),
             ]),
-            'awards' => $this->awards($student),
-            'skills' => $student->studentSkills->sortBy('id')->map(fn ($studentSkill) => $studentSkill->skill?->name)->filter()->values()->all(),
+            'awards' => $this->limitAwards($this->awards($student), self::RESUME_LIMITS['awards']),
+            'skills' => $this->resumeSkills($student),
             // My Certificates entries first, then older Documents-tab certificates that have no details yet.
             'certificates' => $student->competencies->sortBy('name')->map(fn ($certificate) => [
                 'title' => $certificate->name,
@@ -233,23 +244,23 @@ class CompanyVisibleProfile
                     'Date received' => $certificate->issue_date?->format('M Y'),
                 ]),
                 'skills' => [],
-            ]))->filter(fn (array $certificate) => filled($certificate['title']))->values()->all(),
+            ]))->filter(fn (array $certificate) => filled($certificate['title']))->take(self::RESUME_LIMITS['certificates'])->values()->all(),
             'projects' => $student->portfolios()->projects()->latest()->get()->map(fn (Portfolio $project) => [
                 'title' => $project->title,
                 'rows' => $rows([
                     'Tools used' => $project->tools_used,
                     'Link' => $project->project_url,
                 ]),
-                'description' => $project->description,
-            ])->filter(fn (array $project) => filled($project['title']))->values()->all(),
+                'description' => $this->shortText($project->description),
+            ])->filter(fn (array $project) => filled($project['title']))->take(self::RESUME_LIMITS['projects'])->values()->all(),
             'experiences' => $student->experiences->sortByDesc('start_date')->map(fn ($experience) => [
                 'title' => $experience->position,
                 'rows' => $rows([
                     'Organization' => $experience->organization,
                     'Period' => $experience->periodLabel(),
                 ]),
-                'description' => $experience->description,
-            ])->values()->all(),
+                'description' => $this->shortText($experience->description),
+            ])->take(self::RESUME_LIMITS['experiences'])->values()->all(),
             'references' => $student->characterReferences->sortBy('id')->map(fn ($reference) => [
                 'title' => $reference->name,
                 'rows' => $rows([
@@ -257,8 +268,40 @@ class CompanyVisibleProfile
                     'Company / school' => $reference->organization,
                     'Contact number' => $reference->contact_number,
                 ]),
-            ])->values()->all(),
+            ])->take(self::RESUME_LIMITS['references'])->values()->all(),
         ];
+    }
+
+    /** Technical and Soft skills, in the order the student added them, up to the limit. */
+    private function resumeSkills(Student $student): array
+    {
+        $skills = $student->studentSkills->sortBy('id')->map(fn ($studentSkill) => $studentSkill->skill)->filter()->take(self::RESUME_LIMITS['skills'])->values();
+
+        return [
+            'technical' => $skills->reject(fn ($skill) => $skill->type === \App\Enums\SkillType::Soft)->pluck('name')->values()->all(),
+            'soft' => $skills->filter(fn ($skill) => $skill->type === \App\Enums\SkillType::Soft)->pluck('name')->values()->all(),
+        ];
+    }
+
+    private function shortText(?string $text): ?string
+    {
+        return filled($text) ? Str::limit(trim(preg_replace('/\s+/u', ' ', $text)), self::RESUME_TEXT_LIMIT) : null;
+    }
+
+    /** Keeps the first $limit awards, across the groups, dropping empty groups. */
+    private function limitAwards(array $groups, int $limit): array
+    {
+        $left = $limit;
+        $kept = [];
+        foreach ($groups as $group) {
+            $awards = array_slice($group['awards'] ?? [], 0, max(0, $left));
+            $left -= count($awards);
+            if ($awards !== []) {
+                $kept[] = [...$group, 'awards' => $awards];
+            }
+        }
+
+        return $kept;
     }
 
     /**

@@ -21,6 +21,7 @@
     const previewError = preview?.querySelector('[data-preview-error]');
     const previewErrorText = preview?.querySelector('[data-preview-error-text]');
     const saveStatus = form.querySelector('[data-save-status]');
+    const pageStatus = form.querySelector('[data-page-status]');
     const errorSummary = form.querySelector('[data-error-summary]');
     const actionButtons = [...form.querySelectorAll('[data-editor-actions] button[type="submit"][name="intent"]')];
     const cancelForm = document.querySelector('[data-cancel-form]');
@@ -29,6 +30,8 @@
     const PAGE_WIDTH = 794; // A4 width (210mm) at 96 dpi
     const PAGE_HEIGHT = 1123; // A4 height (297mm)
     const PREVIEW_DELAY = 450;
+    // The page counter renders the PDF on the server, so it waits for a pause in typing.
+    const PAGES_DELAY = 3000;
 
     let dirty = false;
     let leaving = false;
@@ -299,9 +302,64 @@
         });
     };
 
+    // ---------------------------------------------------------------- page counter
+
+    let pagesTimer = null;
+    let pagesRequest = null;
+
+    const setPageStatus = (text, tone = '') => {
+        if (!pageStatus) return;
+        pageStatus.textContent = text;
+        pageStatus.dataset.tone = tone;
+    };
+
+    const refreshPages = async () => {
+        if (!pageStatus || !form.dataset.pagesUrl) return;
+        pagesRequest?.abort();
+        pagesRequest = new AbortController();
+        setPageStatus('Checking page count…', 'busy');
+
+        try {
+            const response = await fetch(form.dataset.pagesUrl, {
+                method: 'POST',
+                headers: requestHeaders(),
+                body: JSON.stringify(readForm()),
+                signal: pagesRequest.signal,
+            });
+
+            if (response.status === 422) {
+                setPageStatus('Fix the highlighted fields to check the page count.', 'error');
+                return;
+            }
+            if (response.status === 429) {
+                // Rate limited: try again after a longer pause.
+                setPageStatus('Checking again shortly…', 'busy');
+                window.clearTimeout(pagesTimer);
+                pagesTimer = window.setTimeout(refreshPages, 15000);
+                return;
+            }
+            if (!response.ok) throw new Error('page count unavailable');
+
+            const result = await response.json();
+            if (result.pages <= 1) setPageStatus('Fits on 1 page ✓', 'ok');
+            else if (result.fits) setPageStatus(`${result.pages} pages`, 'ok');
+            else setPageStatus(`${result.pages} pages: too long, ${result.limit} pages at most. Shorten it before saving.`, 'error');
+        } catch (error) {
+            if (error.name === 'AbortError') return;
+            setPageStatus('Page count unavailable', 'error');
+        }
+    };
+
+    const schedulePages = () => {
+        window.clearTimeout(pagesTimer);
+        setPageStatus('Checking page count…', 'busy');
+        pagesTimer = window.setTimeout(refreshPages, PAGES_DELAY);
+    };
+
     const changed = () => {
         markDirty();
         schedulePreview();
+        schedulePages();
     };
 
     form.addEventListener('click', (event) => {
@@ -462,6 +520,7 @@
     updateEmptyStates();
     readForm(); // assigns data-path to every field
     fitPreview();
+    refreshPages();
 
     const params = new URLSearchParams(window.location.search);
     if (params.has('copied')) {

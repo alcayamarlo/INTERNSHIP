@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class ResumeController extends Controller
 {
@@ -46,7 +47,12 @@ class ResumeController extends Controller
 
     public function generate()
     {
-        BuildResume::dispatchSync(Auth::user()->student->id);
+        try {
+            BuildResume::dispatchSync(Auth::user()->student->id);
+        } catch (ValidationException $exception) {
+            // The profile has more than two pages of resume: say so, instead of a blank error page.
+            return redirect()->route('student.resume.index')->with('error', $exception->errors()['resume'][0] ?? 'The resume could not be generated.');
+        }
 
         return redirect()->route('student.resume.index')->with(
             'success',
@@ -64,10 +70,13 @@ class ResumeController extends Controller
                 ->with('error', 'This resume uses an older format. Generate a new resume to edit it.');
         }
 
+        // A version 3 resume (with a "Personal data" section) opens as version 4: the personal data is left out.
+        $content = $this->resumeContent->upgrade($resume->content, $resume->student);
+
         return view('student.resume.edit', [
             'resume' => $resume,
-            'editor' => $this->resumeContent->toEditor($resume->content),
-            'previewHtml' => $this->resumeBuilder->previewHtml($resume->content),
+            'editor' => $this->resumeContent->toEditor($content),
+            'previewHtml' => $this->resumeBuilder->previewHtml($content),
             'maxResumes' => ResumeBuilderService::MAX_GENERATED_RESUMES,
             'resumeCount' => Resume::where('student_id', $resume->student_id)->count(),
         ]);
@@ -83,6 +92,18 @@ class ResumeController extends Controller
             'Content-Type' => 'text/html; charset=UTF-8',
             'Cache-Control' => 'private, no-store',
         ]);
+    }
+
+    /**
+     * How many pages the unsaved edits take (the editor asks about 3 seconds after the last change).
+     * Rate limited, because answering means rendering the PDF.
+     */
+    public function pages(Request $request, Resume $resume): JsonResponse
+    {
+        $this->authorize('update', $resume);
+        $content = $this->editedContent($request, $resume, forPreview: true);
+
+        return response()->json($this->resumeBuilder->pageCount($content, $resume->student));
     }
 
     /** Save changes: this resume only. The profile is untouched unless the student opts in for the summary. */
@@ -149,7 +170,7 @@ class ResumeController extends Controller
         $data = $this->resumeContent->clean($request->all());
         Validator::make($data, $this->resumeContent->rules($forPreview), $this->resumeContent->messages())->validate();
 
-        $base = $resume->content;
+        $base = $this->resumeContent->upgrade($resume->content, $resume->student);
         if ($generatedNow) {
             $base['generated_at'] = now('Asia/Manila')->toIso8601String();
         }

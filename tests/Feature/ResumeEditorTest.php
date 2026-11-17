@@ -62,9 +62,12 @@ it('opens the editor with the form, the live preview, and all four actions', fun
         ->assertSee('value="Ana Cruz"', false)
         ->assertSee('value="ana@example.com"', false)
         ->assertSee('data-preview-frame', false)
-        ->assertSeeInOrder(['Personal info', 'Career summary', 'Education', 'Skills', 'Work experience', 'Projects', 'Certifications', 'Character references'])
+        ->assertSeeInOrder(['Personal info', 'Career objective', 'Education', 'Skills', 'Work experience', 'Projects', 'Certifications', 'Character references'])
+        ->assertSee('Technical skills')->assertSee('Soft skills')->assertSee('Show my 2x2 photo on the resume')
+        ->assertSee('data-page-status', false)->assertSee('data-pages-url="'.route('student.resume.pages', $resume).'"', false)
+        ->assertDontSee('Personal details')->assertDontSee('Provincial address')->assertDontSee('Birthday')
         ->assertSeeInOrder(['Cancel', 'Download PDF', 'Save as new resume', 'Save changes'])
-        ->assertSee("Also update my profile's career summary", false);
+        ->assertSee("Also update my profile's career objective", false);
 });
 
 it('renders the live preview from unsaved edits without storing anything', function () {
@@ -90,7 +93,9 @@ it('saves edits to that resume only, re-renders its PDF, and leaves the profile 
         ->putJson(route('student.resume.update', $resume), editorPayload($resume, [
             'name' => 'Ana B. Cruz',
             'summary' => 'Edited summary for this resume.',
-            'skills' => ['Customer service', '  ', 'Excel'],
+            'skills_technical' => ['Excel', '  '],
+            'skills_soft' => ['Customer service'],
+            'show_photo' => false,
             'experiences' => [
                 ['title' => 'IT Support Assistant', 'rows' => [['label' => 'Organization', 'value' => 'City Hall']], 'skills' => [], 'description' => 'Fixed printers.'],
                 ['title' => '', 'rows' => [], 'skills' => [], 'description' => ''], // blank: dropped
@@ -104,7 +109,9 @@ it('saves edits to that resume only, re-renders its PDF, and leaves the profile 
     expect($resume->content['name'])->toBe('Ana B. Cruz')
         ->and($resume->content['initials'])->toBe('AC')
         ->and($resume->content['summary'])->toBe('Edited summary for this resume.')
-        ->and($resume->content['skills'])->toBe(['Customer service', 'Excel'])
+        ->and($resume->content['skills'])->toBe(['technical' => ['Excel'], 'soft' => ['Customer service']])
+        ->and($resume->content['show_photo'])->toBeFalse()
+        ->and($resume->content['version'])->toBe(4)
         ->and($resume->content['experiences'])->toHaveCount(1)
         ->and($resume->content['experiences'][0]['rows'])->toBe(['Organization' => 'City Hall'])
         ->and($resume->content['id_photo_path'])->toBeNull()
@@ -141,16 +148,16 @@ it('requires a name and contact email, complete rows, and entry titles', functio
         ->putJson(route('student.resume.update', $resume), editorPayload($resume, [
             'name' => ' ',
             'contact' => ['email' => 'not-an-email'],
-            'personal' => [['label' => 'Birthday', 'value' => ''], ['label' => 'Sex', 'value' => 'Female'], ['label' => 'sex', 'value' => 'F']],
+            'education' => [['label' => 'College', 'value' => ''], ['label' => 'Course', 'value' => 'BSIT'], ['label' => 'course', 'value' => 'IT']],
             'projects' => [['title' => '', 'rows' => [['label' => 'Tools used', 'value' => 'Laravel']], 'skills' => [], 'description' => '']],
-            'summary' => str_repeat('a', 2001),
+            'summary' => str_repeat('a', 1201),
         ]))
         ->assertStatus(422)
         ->assertJsonValidationErrors([
             'name' => 'Enter your name.',
             'contact.email' => 'Enter a valid email address.',
-            'personal.0.value' => 'Add a value, or clear this row.',
-            'personal' => 'Each label in this list must be different.',
+            'education.0.value' => 'Add a value, or clear this row.',
+            'education' => 'Each label in this list must be different.',
             'projects.0.title' => 'Add a title, or remove this entry.',
             'summary',
         ]);

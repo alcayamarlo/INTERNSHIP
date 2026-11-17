@@ -199,15 +199,15 @@ it('hides empty sections and rows, and shows filled ones in order', function () 
 
     $html = renderResumeHtml($student);
 
-    expect($html)->toContain('<div class="bar">Personal data</div>')
-        ->toContain('Filipino')
-        ->toContain("Applicant's signature")
-        ->toContain('I hereby certify that the above information is true and correct to the best of my knowledge.')
-        ->not->toContain('<div class="side-heading">Skills</div>')
-        ->not->toContain('<div class="bar">Certificates</div>')
-        ->not->toContain('<div class="bar">Projects</div>')
-        ->not->toContain('<div class="bar">Experience</div>')
-        ->not->toContain('<div class="bar">Character reference</div>')
+    // No personal data section at all, and no empty sections.
+    expect($html)->not->toContain('Personal data')
+        ->not->toContain('Filipino')
+        ->not->toContain('Female')
+        ->not->toContain('<div class="sec">Skills</div>')
+        ->not->toContain('<div class="sec">Certifications</div>')
+        ->not->toContain('<div class="sec">Projects</div>')
+        ->not->toContain('<div class="sec">OJT and experience</div>')
+        ->not->toContain('<div class="sec">Character references</div>')
         ->not->toContain('Place of birth')
         ->not->toContain('Provincial address');
 
@@ -218,13 +218,13 @@ it('hides empty sections and rows, and shows filled ones in order', function () 
     CharacterReference::create(['student_id' => $student->id, 'name' => 'Dr. Reyes', 'position' => 'Dean', 'organization' => 'SCC', 'contact_number' => '09170000001']);
 
     expect(renderResumeHtml($student))
-        ->toContain('<li>Python</li>')
-        ->toContain('<li>Public Speaking</li>')
-        ->toContain('<div class="bar">Character reference</div>')
+        ->toContain('<div class="sec">Skills</div>')
+        ->toContain('<strong>Technical:</strong> Python, Public Speaking')
+        ->toContain('<div class="sec">Character references</div>')
         ->toContain('Dr. Reyes');
 });
 
-it('respects the show-to-companies toggles and never includes ID numbers', function () {
+it('never includes personal or sensitive data on the resume, whatever the "Show to companies" toggles say, nor ID numbers', function () {
     $student = resumeStudent([
         'civil_status' => 'Single', 'show_civil_status' => false,
         'religion' => 'Catholic', 'show_religion' => true,
@@ -235,14 +235,12 @@ it('respects the show-to-companies toggles and never includes ID numbers', funct
     $content = app(CompanyVisibleProfile::class)->resume($student);
     $html = renderResumeHtml($student);
 
-    expect($content['personal'])->not->toHaveKey('Civil status')
-        ->not->toHaveKey('Height')
-        ->toHaveKey('Religion')
-        ->toHaveKey('Weight')
+    // Even what the student chose to show companies on the profile stays off the resume (RA 10173).
+    expect($content)->not->toHaveKey('personal')
         ->and($html)->not->toContain('Single')
         ->not->toContain('5 ft 3 in')
-        ->toContain('Catholic')
-        ->toContain('55 kg')
+        ->not->toContain('Catholic')
+        ->not->toContain('55 kg')
         ->not->toMatch('/\b(SSS|TIN|NBI|Passport)\b/');
 });
 
@@ -261,7 +259,7 @@ it('lists certificates with their details and includes older certificates withou
     Certificate::create(['student_id' => $student->id, 'title' => 'Old AWS Certificate', 'issuer' => 'Amazon', 'file_path' => 'certificates/b.pdf']);
 
     expect(renderResumeHtml($student))
-        ->toContain('<div class="bar">Certificates</div>')
+        ->toContain('<div class="sec">Certifications</div>')
         ->toContain('Cybersecurity Awareness')
         ->toContain('Seminar')
         ->toContain('DICT')
@@ -272,7 +270,7 @@ it('lists certificates with their details and includes older certificates withou
         ->toContain('Amazon');
 });
 
-it('generates an A4 PDF with the same layout employers download', function () {
+it('generates an A4 PDF of the current version that employers download', function () {
     $student = resumeStudent(['gender' => 'Female']);
     // Smallest valid JPEG, so the photo box gets an image without needing GD.
     Storage::disk('public')->put('profiles/students/photo.jpg', base64_decode('/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA='));
@@ -280,7 +278,7 @@ it('generates an A4 PDF with the same layout employers download', function () {
 
     $resume = app(ResumeBuilderService::class)->build($student);
 
-    expect($resume->content['version'])->toBe(3)
+    expect($resume->content['version'])->toBe(4)
         ->and($resume->content['name'])->toBe('Ana Cruz')
         ->and(Storage::disk('private')->get($resume->file_path))->toStartWith('%PDF');
 });

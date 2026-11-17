@@ -19,8 +19,10 @@ use App\Models\StudentCompetency;
 use App\Models\User;
 use App\Services\CompanyVisibleProfile;
 use App\Services\ResumeBuilderService;
+use App\Services\ResumeContent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 uses(RefreshDatabase::class);
 
@@ -59,13 +61,21 @@ function pdfFillColours(string $pdf): array
     return array_values(array_unique($colours));
 }
 
-it('renders every section for a student with full data', function () {
+/** A resume with `$entries` projects of `$words` words each: grows the document to test the page fitting. */
+function bigResumeContent(Student $student, int $entries, int $words): array
+{
+    $content = app(CompanyVisibleProfile::class)->resume($student->fresh());
+    $text = trim(str_repeat('Built and tested a feature with the team. ', (int) ceil($words / 8)));
+    $content['projects'] = collect(range(1, $entries))->map(fn ($i) => ['title' => "Project number {$i}", 'rows' => ['Tools used' => 'Laravel, MySQL'], 'description' => $text])->all();
+
+    return $content;
+}
+
+it('renders every section in one column for a student with full data', function () {
     $student = redResumeStudent([
         'program' => 'BS Information Technology', 'department' => 'College of Computer Studies', 'year_level' => '4th Year',
-        'about_me' => 'Build reliable web apps.', 'gender' => 'Male', 'citizenship' => 'Filipino',
-        'address' => '45 Osmeña Blvd', 'city' => 'Cebu City', 'provincial_address' => 'Barili, Cebu',
+        'about_me' => 'Build reliable web apps.', 'city' => 'Cebu City', 'province' => 'Cebu',
         'elementary_school' => 'Cebu Central School', 'elementary_year_graduated' => '2014-2015',
-        'emergency_contact_name' => 'Maria Peña', 'emergency_contact_relationship' => 'Mother', 'emergency_contact_phone' => '09170000000',
     ]);
     $tag = SkillTag::firstOrCreate(['name_normalized' => 'python'], ['name' => 'Python']);
     $student->studentSkills()->create(['skill_tag_id' => $tag->id]);
@@ -74,33 +84,20 @@ it('renders every section for a student with full data', function () {
         'skill_type' => SkillType::Technical, 'proficiency_level' => ProficiencyLevel::Intermediate, 'issuing_organization' => 'DICT',
     ])->learnedSkills()->create(['name' => 'Spot phishing emails']);
     $student->awards()->create(['level' => AwardLevel::College, 'title' => "Dean's Lister", 'year' => '2024']);
-    Portfolio::create(['student_id' => $student->id, 'title' => 'Inventory System', 'type' => 'project', 'category' => 'project', 'tools_used' => 'Laravel', 'project_url' => 'https://example.test/inventory']);
+    Portfolio::create(['student_id' => $student->id, 'title' => 'Inventory System', 'type' => 'project', 'category' => 'project', 'tools_used' => 'Laravel', 'description' => 'Tracks stock.']);
     $student->experiences()->create(['organization' => 'Computer Shop', 'position' => 'IT Assistant', 'start_date' => '2025-06-01', 'end_date' => '2025-08-01']);
     CharacterReference::create(['student_id' => $student->id, 'name' => 'Dr. Reyes', 'position' => 'Dean', 'organization' => 'SCC', 'contact_number' => '09170000001']);
 
     $html = redResumeHtml($student);
 
-    expect($html)
-        ->toContain('<h1 class="name">Niño Peña</h1>')
-        ->toContain('Build reliable web apps.')
-        ->toContain('<div class="side-heading">Contact</div>')
-        ->toContain('nino@example.test')
-        ->toContain('Barili, Cebu')
-        ->toContain('<div class="side-heading">Education</div>')
-        ->toContain('Cebu Central School (2014-2015)')
-        ->toContain('<div class="side-heading">Skills</div>')
-        ->toContain('<div class="bar">Personal data</div>')
-        ->toContain('Maria Peña')
-        ->toContain('<div class="bar">Certificates</div>')
-        ->toContain('<li>Spot phishing emails</li>')
-        ->toContain('<div class="bar">Honors / awards</div>')
-        ->toContain('<div class="bar">Projects</div>')
-        ->toContain('https:/&#8203;/&#8203;example.test/&#8203;inventory')
-        ->toContain('<div class="bar">Experience</div>')
-        ->toContain('<div class="bar">Character reference</div>')
-        ->toContain("Applicant's signature")
-        ->toContain('(Philippine time)')
-        ->toContain('print-color-adjust: exact');
+    // The standard order: objective, education, skills, projects, OJT and experience, certifications, awards, references.
+    $order = ['<h1 class="name">Niño Peña</h1>', '09171234567  |  nino@example.test  |  Cebu City, Cebu', 'Career objective', 'Education', 'Cebu Central School (2014-2015)',
+        '<div class="sec">Skills</div>', '<strong>Technical:</strong> Python', '<div class="sec">Projects</div>', 'Inventory System', '<div class="sec">OJT and experience</div>', 'IT Assistant',
+        '<div class="sec">Certifications</div>', 'Spot phishing emails', '<div class="sec">Honors and awards</div>', "Dean&#039;s Lister", '<div class="sec">Character references</div>', 'Dr. Reyes'];
+    $positions = array_map(fn (string $text) => strpos($html, $text), $order);
+    expect($positions)->each->not->toBeFalse()->and($positions)->toBe(collect($positions)->sort()->values()->all());
+    // One column: no sidebar, no signature block.
+    expect($html)->not->toContain('side-heading')->not->toContain("Applicant's signature");
 
     $resume = app(ResumeBuilderService::class)->build($student->fresh());
     expect(Storage::disk('private')->get($resume->file_path))->toStartWith('%PDF');
@@ -113,48 +110,47 @@ it('renders a student with almost no data without empty sections, rows, or place
     $html = redResumeHtml($student);
 
     expect($html)->toContain('<h1 class="name">Niño Peña</h1>')
-        ->toContain('<span class="photo-initials">NP</span>')
-        ->toContain('<div class="side-heading">Contact</div>')
-        ->not->toContain('Mobile')
-        ->not->toContain('<div class="side-heading">Education</div>')
-        ->not->toContain('<div class="side-heading">Skills</div>')
-        ->not->toContain('<div class="bar">')
+        ->toContain('nino@example.test')
+        ->not->toContain('09171234567')
+        ->not->toContain('<div class="sec">')
+        ->not->toContain('<img')
         ->not->toContain('null')
         ->not->toContain('N/A');
     expect(app(ResumeBuilderService::class)->build($student->fresh())->file_path)->not->toBeNull();
 });
 
-it('shows sensitive details only when "Show to companies" is on, and never ID numbers', function () {
+it('leaves out personal and sensitive data, however much is on the profile', function () {
     $student = redResumeStudent([
-        'civil_status' => 'Single', 'show_civil_status' => false,
-        'religion' => 'Catholic', 'show_religion' => true,
-        'height_feet' => 5, 'height_inches' => 3, 'show_height' => false,
-        'weight_kg' => 55, 'show_weight' => true,
+        'gender' => 'Male', 'citizenship' => 'Filipino', 'civil_status' => 'Single', 'show_civil_status' => true,
+        'religion' => 'Catholic', 'show_religion' => true, 'height_feet' => 5, 'height_inches' => 3, 'show_height' => true,
+        'weight_kg' => 55, 'show_weight' => true, 'date_of_birth' => '2003-03-04', 'place_of_birth' => 'Talisay City',
+        'address' => '45 Osmeña Blvd', 'city' => 'Cebu City', 'province' => 'Cebu', 'zip_code' => '6000', 'provincial_address' => 'Barili, Cebu',
+        'emergency_contact_name' => 'Maria Peña', 'emergency_contact_relationship' => 'Mother', 'emergency_contact_phone' => '09170000000',
+        'father_name' => 'Jose Peña', 'mother_name' => 'Maria Peña',
     ]);
 
-    expect(redResumeHtml($student))
-        ->not->toContain('Single')
-        ->not->toContain('5 ft 3 in')
-        ->toContain('Catholic')
-        ->toContain('55 kg')
-        ->not->toMatch('/\b(SSS|TIN|NBI|Passport)\b/');
+    $content = app(CompanyVisibleProfile::class)->resume($student->fresh());
+    $html = redResumeHtml($student);
+
+    expect($content)->not->toHaveKey('personal')->and($content['version'])->toBe(4)
+        ->and($content['contact'])->toBe(['Mobile' => '09171234567', 'Email' => 'nino@example.test', 'City' => 'Cebu City, Cebu']);
+    foreach (['Single', 'Catholic', '5 ft 3 in', '55 kg', 'March 4, 2003', '2003', 'Talisay', 'Osmeña Blvd', '6000', 'Barili', 'Maria Peña', 'Jose Peña', 'Mother', 'Filipino', 'Male', 'Personal data', 'Emergency'] as $private) {
+        expect($html)->not->toContain($private);
+    }
+    expect(json_encode($content))->not->toContain('Single')->not->toContain('Talisay')->not->toContain('Osmeña');
 });
 
 it('hides contact details from a company the student has not applied to, and shows them after applying', function () {
-    $student = redResumeStudent(['address' => '45 Osmeña Blvd']);
+    $student = redResumeStudent(['city' => 'Cebu City']);
     $resume = app(ResumeBuilderService::class)->build($student);
     $employerUser = User::factory()->create(['role' => UserRole::Employer]);
     $employer = Employer::create(['user_id' => $employerUser->id, 'company_name' => 'Acme', 'contact_person' => 'HR']);
     $service = app(ResumeBuilderService::class);
-    $render = new ReflectionMethod($service, 'render');
     $withoutContact = new ReflectionMethod($service, 'withoutContact');
 
     // What the company would get before applying: rendered on the fly, without contact details.
     $hiddenHtml = view('student.resume.pdf', ['content' => $withoutContact->invoke($service, $resume->content), 'photo' => null])->render();
-    expect($hiddenHtml)->not->toContain('nino@example.test')
-        ->not->toContain('09171234567')
-        ->not->toContain('Osmeña Blvd')
-        ->not->toContain('<div class="side-heading">Contact</div>');
+    expect($hiddenHtml)->not->toContain('nino@example.test')->not->toContain('09171234567')->not->toContain('Cebu City');
 
     $before = $service->pdfResponse($resume, $employerUser, download: false);
     expect(app(CompanyVisibleProfile::class)->hasApplied($student, $employerUser))->toBeFalse()
@@ -180,31 +176,154 @@ it('still renders older certificates and the old honors paragraph', function () 
 
     expect($html)->toContain('Old AWS Certificate')
         ->toContain('Amazon')
-        ->toContain('<p class="award-line">Dean&#039;s Lister, 2024</p>')
-        ->toContain('<p class="award-line">Best Thesis &lt;b&gt;2025&lt;/b&gt;</p>')
+        ->toContain('Dean&#039;s Lister, 2024')
+        ->toContain('Best Thesis &lt;b&gt;2025&lt;/b&gt;')
         ->not->toContain('<b>2025</b>');
 });
 
-it('uses the burgundy sidebar and header colour in the exported PDF', function () {
-    $student = redResumeStudent(['gender' => 'Male']);
+it('uses the burgundy accent in the exported PDF', function () {
+    $student = redResumeStudent(['about_me' => 'Build reliable web apps.']);
     $resume = app(ResumeBuilderService::class)->build($student);
 
-    $colours = pdfFillColours(Storage::disk('private')->get($resume->file_path));
-
-    // #5E010B sidebar, photo box and header bars.
-    expect($colours)->toContain('0.369 0.004 0.043');
+    // #5E010B on the name and the section rules.
+    expect(pdfFillColours(Storage::disk('private')->get($resume->file_path)))->toContain('0.369 0.004 0.043');
 });
 
 it('keeps older resumes on the layout they were generated with', function () {
     $student = redResumeStudent();
-    $resume = Resume::create([
-        'student_id' => $student->id,
-        'file_path' => 'resumes/old.pdf',
-        'content' => ['version' => 2, 'name' => 'Niño Peña', 'personal' => ['Gender' => 'Male']],
-        'generated_at' => now(),
-    ]);
+    $service = app(ResumeBuilderService::class);
 
-    // The file is missing, so it is re-rendered from the stored snapshot with the bio-data layout.
-    $disk = app(ResumeBuilderService::class)->diskFor($resume);
-    expect(Storage::disk($disk)->get('resumes/old.pdf'))->toStartWith('%PDF');
+    foreach ([
+        'resumes/old2.pdf' => ['version' => 2, 'name' => 'Niño Peña', 'personal' => ['Gender' => 'Male']],
+        'resumes/old3.pdf' => ['version' => 3, 'name' => 'Niño Peña', 'contact' => ['Email' => 'nino@example.test'], 'personal' => ['Gender' => 'Male'], 'skills' => ['PHP']],
+    ] as $path => $content) {
+        $resume = Resume::create(['student_id' => $student->id, 'file_path' => $path, 'content' => $content, 'generated_at' => now()]);
+
+        // The file is missing, so it is re-rendered from the stored snapshot with the layout it was made with.
+        expect(Storage::disk($service->diskFor($resume))->get($path))->toStartWith('%PDF');
+    }
+});
+
+// ---------------------------------------------------------------------------
+// One page, two at most
+// ---------------------------------------------------------------------------
+
+it('fits a normal resume on one page, uses more room for a long one, and refuses one over two pages', function () {
+    $student = redResumeStudent(['about_me' => 'Build reliable web apps.', 'city' => 'Cebu City']);
+    $service = app(ResumeBuilderService::class);
+
+    expect($service->layout(app(CompanyVisibleProfile::class)->resume($student), $student)['pages'])->toBe(1);
+
+    // Long enough for the normal spacing to run over a page: the tighter spacing is tried before a second page is used.
+    $medium = bigResumeContent($student, entries: 5, words: 60);
+    $mediumLayout = $service->layout($medium, $student);
+    expect($mediumLayout['pages'])->toBeLessThanOrEqual(2);
+
+    $long = bigResumeContent($student, entries: 8, words: 120);
+    $longLayout = $service->layout($long, $student);
+    expect($longLayout['pages'])->toBe(2)->and($longLayout['pdf'])->toStartWith('%PDF');
+
+    // More than two pages: refused, with a message the editor shows.
+    $tooLong = bigResumeContent($student, entries: 30, words: 140);
+    expect($service->layout($tooLong, $student)['pages'])->toBeGreaterThan(2);
+    try {
+        $service->store($student, $tooLong);
+        $this->fail('A resume over two pages should be refused.');
+    } catch (ValidationException $exception) {
+        expect($exception->errors()['resume'][0])->toContain('pages')->toContain('at most 2 pages');
+    }
+    expect(Resume::count())->toBe(0);
+});
+
+it('reports the page count of unsaved edits for the editor, rate limited', function () {
+    $student = redResumeStudent(['about_me' => 'Build reliable web apps.']);
+    $resume = app(ResumeBuilderService::class)->build($student);
+    $this->actingAs($student->user);
+    $payload = app(ResumeContent::class)->toEditor($resume->content);
+
+    $this->postJson(route('student.resume.pages', $resume), $payload)->assertOk()->assertJson(['pages' => 1, 'limit' => 2, 'fits' => true]);
+
+    // Someone else's resume, and a form with errors (the editor keeps its last answer).
+    $this->postJson(route('student.resume.pages', $resume), [...$payload, 'name' => str_repeat('a', 130)])->assertStatus(422);
+    $stranger = User::factory()->create(['role' => UserRole::Student]);
+    Student::create(['user_id' => $stranger->id]);
+    $this->actingAs($stranger)->postJson(route('student.resume.pages', $resume), $payload)->assertForbidden();
+
+    // At most 20 answers a minute: rendering a PDF is the expensive part.
+    $this->actingAs($student->user);
+    foreach (range(1, 25) as $i) {
+        $status = $this->postJson(route('student.resume.pages', $resume), [...$payload, 'summary' => "Objective {$i}"])->getStatusCode();
+    }
+    expect($status)->toBe(429);
+});
+
+it('shows the 2x2 photo only while the student keeps it on', function () {
+    $student = redResumeStudent();
+    // Smallest valid JPEG.
+    Storage::disk('private')->put('photos/2x2.jpg', base64_decode('/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA='));
+    $student->update(['id_photo_path' => 'photos/2x2.jpg']);
+    $service = app(ResumeBuilderService::class);
+    $content = app(CompanyVisibleProfile::class)->resume($student->fresh());
+
+    expect($content['show_photo'])->toBeTrue();
+    $withPhoto = $service->layout($content, $student->fresh());
+    $without = $service->layout([...$content, 'show_photo' => false], $student->fresh());
+
+    expect(substr_count($withPhoto['pdf'], '/Subtype /Image'))->toBeGreaterThanOrEqual(1)
+        ->and(substr_count($without['pdf'], '/Subtype /Image'))->toBe(0)
+        ->and($service->previewHtml([...$content, 'show_photo' => false]))->not->toContain('<img');
+});
+
+// ---------------------------------------------------------------------------
+// Older resumes
+// ---------------------------------------------------------------------------
+
+it('opens an older resume with personal data in the editor as version 4, without the personal data', function () {
+    $student = redResumeStudent(['city' => 'Cebu City', 'province' => 'Cebu']);
+    $tag = SkillTag::firstOrCreate(['name_normalized' => 'python'], ['name' => 'Python']);
+    $v3 = Resume::create([
+        'student_id' => $student->id, 'file_path' => 'resumes/v3.pdf', 'generated_at' => now(),
+        'content' => [
+            'version' => 3, 'name' => 'Niño Peña', 'initials' => 'NP', 'summary' => 'My own words.', 'generated_at' => now()->toIso8601String(),
+            'contact' => ['Mobile' => '09171234567', 'Email' => 'nino@example.test', 'City address' => '45 Osmeña Blvd, Cebu City', 'Provincial address' => 'Barili, Cebu'],
+            'personal' => ['Birthday' => 'March 4, 2003', 'Civil status' => 'Single', 'Emergency contact' => 'Maria Peña'],
+            'education' => ['Course' => 'BSIT'], 'skills' => ['Python', 'Teamwork'], 'awards' => [], 'certificates' => [], 'projects' => [], 'experiences' => [], 'references' => [],
+        ],
+    ]);
+    $this->actingAs($student->user);
+
+    $page = $this->get(route('student.resume.edit', $v3))->assertOk();
+    $page->assertSee('value="Niño Peña"', false)->assertSee('My own words.')->assertSee('value="Python"', false)
+        ->assertDontSee('Birthday')->assertDontSee('Civil status')->assertDontSee('Maria Peña')->assertDontSee('Osmeña')->assertDontSee('Barili');
+
+    $payload = app(ResumeContent::class)->toEditor(app(ResumeContent::class)->upgrade($v3->content, $student));
+    $this->putJson(route('student.resume.update', $v3), $payload)->assertOk();
+
+    $saved = $v3->fresh()->content;
+    expect($saved['version'])->toBe(4)->and($saved)->not->toHaveKey('personal')
+        ->and($saved['contact'])->toBe(['Mobile' => '09171234567', 'Email' => 'nino@example.test', 'City' => 'Cebu City, Cebu'])
+        ->and($saved['skills']['technical'])->toContain('Python');
+});
+
+it('rebuilds saved resumes without personal data with resumes:rebuild, and says which are too long', function () {
+    $student = redResumeStudent(['about_me' => 'From the profile.', 'city' => 'Cebu City']);
+    $v3 = Resume::create([
+        'student_id' => $student->id, 'file_path' => 'resumes/v3.pdf', 'generated_at' => now(),
+        'content' => ['version' => 3, 'name' => 'Niño Peña', 'contact' => ['Email' => 'nino@example.test'], 'personal' => ['Birthday' => 'March 4, 2003'], 'skills' => ['PHP']],
+    ]);
+    $v2 = Resume::create(['student_id' => $student->id, 'file_path' => 'resumes/v2.pdf', 'generated_at' => now(), 'content' => ['version' => 2, 'name' => 'Old', 'personal' => ['Gender' => 'Male']]]);
+    $current = app(ResumeBuilderService::class)->build($student->fresh());
+
+    // A dry run changes nothing.
+    $this->artisan('resumes:rebuild', ['--dry-run' => true])->expectsOutputToContain('Would update 2 resume(s) (1 rebuilt from the profile). 1 already current.')->assertSuccessful();
+    expect($v3->fresh()->content['version'])->toBe(3);
+
+    $this->artisan('resumes:rebuild')->expectsOutputToContain('Updated 2 resume(s) (1 rebuilt from the profile). 1 already current.')->assertSuccessful();
+    expect($v3->fresh()->content)->not->toHaveKey('personal')->and($v3->fresh()->content['version'])->toBe(4)
+        ->and($v2->fresh()->content['version'])->toBe(4)->and($v2->fresh()->content['summary'])->toBe('From the profile.')
+        ->and($current->fresh()->content['version'])->toBe(4)
+        ->and(Storage::disk('private')->get($v3->fresh()->file_path))->toStartWith('%PDF');
+
+    // Running it again finds nothing to do.
+    $this->artisan('resumes:rebuild')->expectsOutputToContain('Updated 0 resume(s)')->assertSuccessful();
 });

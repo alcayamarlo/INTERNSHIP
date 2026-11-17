@@ -560,18 +560,16 @@ it('puts skills on the resume as their own section, separate from certificates',
 
     $content = app(\App\Services\ResumeBuilderService::class)->build($student)->content;
 
-    expect($content['skills'])->toBe(['Singing'])
+    expect($content['skills'])->toBe(['technical' => ['Singing'], 'soft' => []])
         ->and(collect($content['certificates'])->pluck('title')->all())->toBe(['Database Design']);
 
     $html = view('student.resume.pdf', ['content' => $content, 'photo' => null])->render();
-    // Skills sit in the sidebar; certificates have their own section in the main column.
-    $skillsAt = strpos($html, '<div class="side-heading">Skills</div>');
-    $mainAt = strpos($html, '<div class="main">');
-    $certificatesAt = strpos($html, '<div class="bar">Certificates</div>');
+    // Skills are their own section, before the certifications.
+    $skillsAt = strpos($html, '<div class="sec">Skills</div>');
+    $certificatesAt = strpos($html, '<div class="sec">Certifications</div>');
     expect($skillsAt)->not->toBeFalse()
-        ->and($mainAt)->toBeGreaterThan($skillsAt)
-        ->and(strpos($html, '<li>Singing</li>'))->toBeGreaterThan($skillsAt)->toBeLessThan($mainAt)
-        ->and($certificatesAt)->toBeGreaterThan($mainAt)
+        ->and(strpos($html, 'Singing'))->toBeGreaterThan($skillsAt)->toBeLessThan($certificatesAt)
+        ->and($certificatesAt)->toBeGreaterThan($skillsAt)
         ->and(strpos($html, 'Database Design'))->toBeGreaterThan($certificatesAt);
 });
 

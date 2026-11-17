@@ -289,7 +289,8 @@ it('never puts the profile picture on the resume: a profile picture alone gives 
     expect($content)->not->toHaveKey('photo_path')
         ->and(json_encode($content))->not->toContain($student->fresh()->profile_picture)
         ->and(resumePhotoOf($student))->toBeNull()
-        ->and(view('student.resume.pdf', ['content' => $content, 'photo' => null])->render())->toContain('<span class="photo-initials">AC</span>');
+        // Without a 2x2 there is no photo box at all (no placeholder).
+        ->and(view('student.resume.pdf', ['content' => $content, 'photo' => null])->render())->not->toContain('<img');
 
     $resume = app(ResumeBuilderService::class)->build($student->fresh());
     expect(resumeHasPhoto(Storage::disk('private')->get($resume->file_path)))->toBeFalse();
@@ -383,5 +384,5 @@ it('shows initials instead of a broken image when the photo file is missing', fu
 /** The resume always prints the OJT seal (one image), so a photo means a second image in the PDF. */
 function resumeHasPhoto(string $pdf): bool
 {
-    return substr_count($pdf, '/Subtype /Image') > 1;
+    return substr_count($pdf, '/Subtype /Image') >= 1;
 }

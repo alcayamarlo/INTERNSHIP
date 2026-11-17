@@ -237,6 +237,8 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             // Resume Editor: edits are stored per resume (its content JSON), never on the profile.
             Route::get('/resume/{resume}/edit', [ResumeController::class, 'edit'])->whereNumber('resume')->name('resume.edit');
             Route::post('/resume/{resume}/preview', [ResumeController::class, 'preview'])->whereNumber('resume')->middleware('throttle:120,1')->name('resume.preview');
+            // Page counter: answering means rendering the PDF, so it is rate limited (the editor asks 3 seconds after the last change).
+            Route::post('/resume/{resume}/pages', [ResumeController::class, 'pages'])->whereNumber('resume')->middleware('throttle:20,1')->name('resume.pages');
             Route::put('/resume/{resume}', [ResumeController::class, 'update'])->whereNumber('resume')->name('resume.update');
             Route::post('/resume/{resume}/copy', [ResumeController::class, 'storeCopy'])->whereNumber('resume')->name('resume.copy');
             Route::post('/resume/{resume}/pdf', [ResumeController::class, 'pdf'])->whereNumber('resume')->middleware('throttle:30,1')->name('resume.pdf');
