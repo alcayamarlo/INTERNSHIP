@@ -9,16 +9,17 @@
     $recordName = $placement->student?->user?->name ?? 'Student';
 @endphp
 <div class="sb-dash ojt-record">
+<a href="{{ route('coordinator.placements.index') }}" class="btn btn-outline-secondary btn-sm" style="justify-self:start;width:fit-content"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to placements</a>
 <x-profile-header :name="$recordName" :avatar="$recordAvatar" eyebrow="OJT record">
     <x-slot:badge><x-status-badge :status="$placement->statusKey()" :label="$placement->statusLabel()" /></x-slot:badge>
     <span class="sb-pheader__strong">{{ $placement->internship?->title ?? 'Internship' }}</span>
     <span><i class="bi bi-building" aria-hidden="true"></i>{{ $placement->employer?->company_name ?? '—' }}</span>
     <span><i class="bi bi-calendar-event" aria-hidden="true"></i>{{ $placement->start_date?->format('M d, Y') }} – {{ $placement->end_date?->format('M d, Y') ?? 'ongoing' }}</span>
     <x-slot:actions>
+        @include('ojt.partials.record-ring', ['placement' => $placement])
         @if($placement->isCleared())
             <a href="{{ route('ojt.certificate', $placement) }}" class="btn btn-primary"><i class="bi bi-award" aria-hidden="true"></i> Certificate of completion</a>
         @endif
-        <a href="{{ route('coordinator.placements.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back</a>
         @if($placement->student)
             <a href="{{ route('coordinator.students.show', $placement->student) }}" class="btn btn-outline-primary"><i class="bi bi-person" aria-hidden="true"></i> Student profile</a>
         @endif

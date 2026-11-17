@@ -3,6 +3,7 @@
 @section('title', 'Announcements')
 
 @section('content')
+<link rel="stylesheet" href="{{ asset('css/sb-announcements-admin.css') }}?v={{ @filemtime(public_path('css/sb-announcements-admin.css')) }}">
 <div class="sb-dash">
 <x-page-header title="Announcements" subtitle="Publish system-wide announcements">
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAnnouncement">
@@ -10,46 +11,50 @@
     </button>
 </x-page-header>
 
+@php
+    $annTotal = $announcements instanceof \Illuminate\Contracts\Pagination\Paginator ? $announcements->total() : $announcements->count();
+    $annAll = $announcements->filter(fn ($a) => ! $a->target_role)->count();
+    $annRole = $announcements->count() - $annAll;
+@endphp
+<div class="ann-stats">
+    <div class="ann-stat"><span class="ann-stat__icon"><i class="bi bi-megaphone" aria-hidden="true"></i></span><div><span class="ann-stat__label">Total</span><span class="ann-stat__value">{{ $annTotal }}</span></div></div>
+    <div class="ann-stat"><span class="ann-stat__icon"><i class="bi bi-people" aria-hidden="true"></i></span><div><span class="ann-stat__label">For all users</span><span class="ann-stat__value">{{ $annAll }}</span></div></div>
+    <div class="ann-stat"><span class="ann-stat__icon"><i class="bi bi-bullseye" aria-hidden="true"></i></span><div><span class="ann-stat__label">Role-targeted</span><span class="ann-stat__value">{{ $annRole }}</span></div></div>
+</div>
+
 <div class="card">
 
     @if($announcements->count())
-        <div class="table-responsive">
-            <table class="table table-hover mb-0 sb-table-stack">
-                <thead>
-                    <tr>
-                        <th scope="col">Title</th>
-                        <th scope="col">Target</th>
-                        <th scope="col">Author</th>
-                        <th scope="col">Published</th>
-                        <th scope="col"><span class="visually-hidden">Actions</span></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($announcements as $announcement)
-                        <tr>
-                            <td class="sb-stack-block text-break">
-                                <span class="sb-row-title">{{ $announcement->title }}</span>
-                                <div class="sb-row-sub">{{ Str::limit($announcement->content, 80) }}</div>
-                            </td>
-                            <td data-label="Target"><span class="sb-tag sb-tag--brand">{{ $announcement->target_role ? ucfirst($announcement->target_role) : 'All Users' }}</span></td>
-                            <td data-label="Author">{{ $announcement->author?->name ?? '—' }}</td>
-                            <td data-label="Published" class="text-nowrap">{{ $announcement->published_at?->format('M d, Y') ?? $announcement->created_at->format('M d, Y') }}</td>
-                            <td class="text-end sb-stack-block text-nowrap">
-                                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editAnnouncement{{ $announcement->id }}" title="Edit announcement" aria-label="Edit announcement {{ $announcement->title }}">
-                                    <i class="bi bi-pencil" aria-hidden="true"></i>
-                                </button>
-                                <form action="{{ route('admin.announcements.destroy', $announcement) }}" method="POST" class="d-inline" data-confirm="Delete this announcement? It will no longer be shown to users." data-confirm-title="Delete announcement">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete announcement" aria-label="Delete announcement {{ $announcement->title }}">
-                                        <i class="bi bi-trash" aria-hidden="true"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+        <ul class="ann-list">
+            @foreach($announcements as $announcement)
+                @php $target = $announcement->target_role ? ucfirst($announcement->target_role) : 'All Users'; @endphp
+                <li class="ann-item">
+                    <span class="ann-item__icon" aria-hidden="true"><i class="bi bi-megaphone"></i></span>
+                    <div class="ann-item__main">
+                        <div class="ann-item__top">
+                            <h2 class="ann-item__title">{{ $announcement->title }}</h2>
+                            <span class="sb-tag sb-tag--brand">{{ $target }}</span>
+                        </div>
+                        <p class="ann-item__excerpt">{{ Str::limit($announcement->content, 140) }}</p>
+                        <div class="ann-item__meta">
+                            <span><i class="bi bi-person" aria-hidden="true"></i> {{ $announcement->author?->name ?? '—' }}</span>
+                            <span><i class="bi bi-calendar-event" aria-hidden="true"></i> {{ $announcement->published_at?->format('M d, Y') ?? $announcement->created_at->format('M d, Y') }}</span>
+                        </div>
+                    </div>
+                    <div class="ann-item__actions">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editAnnouncement{{ $announcement->id }}" title="Edit announcement" aria-label="Edit announcement {{ $announcement->title }}">
+                            <i class="bi bi-pencil" aria-hidden="true"></i>
+                        </button>
+                        <form action="{{ route('admin.announcements.destroy', $announcement) }}" method="POST" class="d-inline" data-confirm="Delete this announcement? It will no longer be shown to users." data-confirm-title="Delete announcement">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete announcement" aria-label="Delete announcement {{ $announcement->title }}">
+                                <i class="bi bi-trash" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                    </div>
+                </li>
+            @endforeach
+        </ul>
     @else
         <x-empty-state icon="bi-megaphone" title="No announcements yet" message="Publish an announcement to reach every user or a single role.">
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAnnouncement">New announcement</button>

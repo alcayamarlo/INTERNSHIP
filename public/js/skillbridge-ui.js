@@ -72,8 +72,8 @@
             }
         };
         syncSidebar();
-        // Same rule as the first-paint script in layouts/app: rail from 640px to 1023px, the saved choice
-        // from 1024px, and the drawer below 640px (the rail class is not used there).
+        // Same rule as the first-paint script in layouts/app: drawer below 1024px (no rail class), icon rail from
+        // 1024px to 1279px unless the user expanded it, and the saved choice from 1280px.
         const applySidebarWidth = () => {
             const width = window.innerWidth;
             let saved = null;
@@ -82,7 +82,7 @@
             } catch {
                 saved = null;
             }
-            const rail = (width >= 640 && width < 1024) || (width >= 1024 && saved === 'collapsed');
+            const rail = (width >= 1024 && width < 1280 && saved !== 'expanded') || (width >= 1280 && saved === 'collapsed');
             if (rail !== rootElement.classList.contains('sb-collapsed')) {
                 rootElement.classList.toggle('sb-collapsed', rail);
                 syncSidebar();

@@ -6,12 +6,13 @@
 @php
     $bytes = fn (int $value) => \App\Http\Controllers\Admin\HealthController::bytes($value);
 @endphp
-<div class="sb-dash">
+<link rel="stylesheet" href="{{ asset('css/sb-health-admin.css') }}?v={{ @filemtime(public_path('css/sb-health-admin.css')) }}">
+<div class="sb-dash health-page">
 <x-page-header title="Usage and health" subtitle="How the platform is being used, and whether its parts are running." />
 
 <section class="sb-dash" aria-labelledby="usageHeading">
     <div class="sb-section-head"><h2 id="usageHeading">Usage</h2></div>
-    <div class="sb-grid sb-grid--3">
+    <div class="hp-stats">
         <x-dashboard-stat-card title="Active (7 days)" :value="$usage['active_7']" icon="bi-person-check" tone="success" />
         <x-dashboard-stat-card title="Active (30 days)" :value="$usage['active_30']" icon="bi-people" tone="info" />
         <x-dashboard-stat-card title="New accounts (30 days)" :value="$usage['new_accounts_30']" icon="bi-person-plus" tone="info" />
@@ -61,7 +62,7 @@
             ['Recent errors', count($health['errors']) === 0, count($health['errors']) ? count($health['errors']).' recent error'.(count($health['errors']) === 1 ? '' : 's').' in the log' : 'None in the latest log entries'],
         ];
     @endphp
-    <div class="sb-kpis">
+    <div class="sb-kpis hp-checks">
         @foreach($checks as [$label, $ok, $detail])
             <div class="card sb-kpi" data-health-check="{{ \Illuminate\Support\Str::slug($label) }}">
                 <i class="bi {{ $ok ? 'bi-check-circle' : 'bi-exclamation-triangle' }}" aria-hidden="true"></i>

@@ -773,7 +773,7 @@ html body.sb-glass.skillbridge-public .sb-detail-grid { margin-top: 0; }
 html body.sb-glass.skillbridge-public .sb-detail-main > .public-page-title { margin-bottom: 4px; }
 html body.sb-glass.skillbridge-public .sb-detail-main .public-detail-body { margin-top: 24px; }
 html body.sb-glass.skillbridge-public .sb-detail-side { top: 88px; z-index: 5; margin-top: 40px; }
-@media (min-width: 992px) { html body.sb-glass.skillbridge-public .sb-detail-main { min-height: calc(100vh - 60px); }}
+@media (min-width: 992px) { html body.sb-glass.skillbridge-public .sb-detail-main { min-height: calc(100vh - 60px); min-height: calc(100dvh - 60px); }}
 @media (max-width: 991.98px) { html body.sb-glass.skillbridge-public .sb-detail-side { margin-top: 0; }}
 
 /* Sticky needs the page itself to be the scroller: "overflow-x: hidden" on the body can turn the body into a scroll container, which makes sticky elements scroll away. "clip" hides the overflow without creating one. */
@@ -809,8 +809,8 @@ html body.sb-glass.skillbridge-public .sb-detail-side .public-apply-note { text-
 /* "At a glance" stays exactly where it first appears (it does not slide up while scrolling): its sticky offset equals its starting offset,
    reduced on short screens so the whole card (about 440px) always fits in view. */
 @media (min-width: 992px) {
-    html body.sb-glass.skillbridge-public .sb-detail-side { top: clamp(88px, calc(100vh - 470px), 300px); }}
-@media (min-width: 992px) { html body.sb-glass.skillbridge-public .sb-detail-main { min-height: calc(100vh + 240px); }}
+    html body.sb-glass.skillbridge-public .sb-detail-side { top: clamp(88px, calc(100vh - 470px), 300px); top: clamp(88px, calc(100dvh - 470px), 300px); }}
+@media (min-width: 992px) { html body.sb-glass.skillbridge-public .sb-detail-main { min-height: calc(100vh + 240px); min-height: calc(100dvh + 240px); }}
 
 /* ===== Landing page 3D (CSS transforms only; no WebGL, no canvas). Pointer depth is driven by --px / --py set in sb-hero.js. ===== */
 html body.sb-glass.skillbridge-public .public-hero { --px: 0; --py: 0; perspective: 1400px; }

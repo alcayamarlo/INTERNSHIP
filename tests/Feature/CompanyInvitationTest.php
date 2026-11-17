@@ -92,7 +92,7 @@ it('lets a coordinator invite a company, storing only a hash of the emailed toke
         ->assertSee($invitation->reference)->assertSee('Applus Velosi Philippines Inc.')->assertSee('Sent');
 });
 
-it('prefills the company form from the link and creates a verified, signed-in employer on accept', function () {
+it('prefills the company form from the link and creates a verified employer on accept without signing them in', function () {
     $coordinator = invitingCoordinator();
     $token = inviteCompany($coordinator);
     auth()->logout();
@@ -105,7 +105,9 @@ it('prefills the company form from the link and creates a verified, signed-in em
     expect(CompanyInvitation::sole()->opened_at)->not->toBeNull();
 
     $this->post(route('company-invitations.accept', $token), companyForm())
-        ->assertRedirect(route('employer.dashboard'));
+        ->assertRedirect(route('home'))
+        ->assertSessionHas('company_account_ready')
+        ->assertSessionHas('signin_email', 'hr@applus.test');
 
     $user = User::where('email', 'hr@applus.test')->sole();
     $employer = Employer::where('user_id', $user->id)->sole();
@@ -118,7 +120,10 @@ it('prefills the company form from the link and creates a verified, signed-in em
         ->and($employer->industry)->toBe('Information Technology')
         ->and($invitation->status)->toBe(CompanyInvitationStatus::Accepted)
         ->and($invitation->employer_id)->toBe($employer->id);
-    $this->assertAuthenticatedAs($user);
+    // No automatic login: the company signs in from the landing page with the password it just set.
+    $this->assertGuest();
+    $this->post(route('login'), ['login' => 'hr@applus.test', 'password' => 'Secret#2026'])
+        ->assertRedirect(route('employer.dashboard'));
     $this->get(route('employer.dashboard'))->assertOk();
 
     expect(AppNotification::where('user_id', $coordinator->id)->where('type', 'company_invitation')->exists())->toBeTrue();
@@ -135,7 +140,7 @@ it('refuses a used, tampered, or expired link', function () {
         ->assertNotFound()->assertSee('This invitation link is not valid');
 
     // Used: accepted once, then opened and submitted again.
-    $this->post(route('company-invitations.accept', $token), companyForm())->assertRedirect(route('employer.dashboard'));
+    $this->post(route('company-invitations.accept', $token), companyForm())->assertRedirect(route('home'));
     auth()->logout();
     $this->get(route('company-invitations.show', $token))->assertStatus(410)->assertSee('already used');
     $this->post(route('company-invitations.accept', $token), companyForm(['contact_person' => 'Someone Else']))
@@ -168,7 +173,7 @@ it('invalidates the old link when an invitation is resent', function () {
     $this->get(route('company-invitations.show', $oldToken))->assertNotFound();
     $this->post(route('company-invitations.accept', $oldToken), companyForm())->assertRedirect(route('company-invitations.show', $oldToken));
     $this->get(route('company-invitations.show', $newToken))->assertOk();
-    $this->post(route('company-invitations.accept', $newToken), companyForm())->assertRedirect(route('employer.dashboard'));
+    $this->post(route('company-invitations.accept', $newToken), companyForm())->assertRedirect(route('home'));
 });
 
 it('lets an expired invitation be resent with a fresh expiry', function () {
@@ -227,7 +232,7 @@ it('falls back to an admin when the inviting coordinator is no longer active', f
     $coordinator->update(['is_active' => false]);
     auth()->logout();
 
-    $this->post(route('company-invitations.accept', $token), companyForm())->assertRedirect(route('employer.dashboard'));
+    $this->post(route('company-invitations.accept', $token), companyForm())->assertRedirect(route('home'));
 
     expect(Employer::sole()->verified_by_user_id)->toBe($admin->id)
         ->and(AppNotification::where('user_id', $admin->id)->where('type', 'company_invitation')->exists())->toBeTrue()
@@ -310,5 +315,30 @@ it('keeps expiry and submission dates fixed when other columns of the row change
 
     $this->get(route('company-invitations.show', $token))->assertOk();
     expect(CompanyInvitation::sole()->expires_at->toDateTimeString())->toBe($expiresAt);
-    $this->post(route('company-invitations.accept', $token), companyForm())->assertRedirect(route('employer.dashboard'));
+    $this->post(route('company-invitations.accept', $token), companyForm())->assertRedirect(route('home'));
+});
+
+it('keeps the form and shows errors when the company details are invalid', function () {
+    $token = inviteCompany(invitingCoordinator());
+    auth()->logout();
+
+    $this->from(route('company-invitations.show', $token))
+        ->post(route('company-invitations.accept', $token), companyForm(['company_name' => '']))
+        ->assertRedirect(route('company-invitations.show', $token))
+        ->assertSessionHasErrors('company_name')
+        ->assertSessionMissing('company_account_ready');
+    expect(CompanyInvitation::sole()->status)->toBe(CompanyInvitationStatus::Sent);
+});
+
+it('shows the success banner on the landing page once, with the email for the sign in prefill', function () {
+    $token = inviteCompany(invitingCoordinator());
+    auth()->logout();
+    $this->post(route('company-invitations.accept', $token), companyForm())->assertRedirect(route('home'));
+
+    $this->get(route('home'))->assertOk()
+        ->assertSee('data-lf-banner', false)
+        ->assertSee('data-email="hr@applus.test"', false);
+
+    // The flash is one-time: a refresh shows no banner.
+    $this->get(route('home'))->assertOk()->assertDontSee('data-lf-banner', false);
 });

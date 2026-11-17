@@ -61,7 +61,7 @@
         <div class="card-header"><h2><i class="bi bi-mortarboard" aria-hidden="true"></i> Programs</h2></div>
         <div class="table-responsive">
             <table class="table table-hover align-middle">
-                <thead><tr><th scope="col">Program</th><th scope="col">Majors</th><th scope="col">Required hours</th><th scope="col">Assigned coordinator</th><th scope="col">Students</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+                <thead><tr><th scope="col">Program</th><th scope="col">Majors</th><th scope="col" class="text-nowrap">Required hours</th><th scope="col">Assigned coordinator</th><th scope="col">Students</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
                 <tbody>
                     @forelse($programs as $program)
                         <tr>
@@ -75,7 +75,7 @@
                             </td>
                             <td>{{ $program->coordinator?->user?->name ?? 'No coordinator assigned' }}</td>
                             <td>{{ $program->students_count }}</td>
-                            <td><a class="btn btn-sm btn-outline-primary" href="{{ route($academicsRoute.'programs.edit', $program) }}">Edit</a></td>
+                            <td class="text-end text-nowrap" style="width:1%"><a class="btn btn-sm btn-outline-primary text-nowrap" href="{{ route($academicsRoute.'programs.edit', $program) }}"><i class="bi bi-pencil" aria-hidden="true"></i> Edit</a></td>
                         </tr>
                     @empty
                         <tr><td colspan="6"><x-empty-state icon="bi-mortarboard" title="No programs configured" message="Add a program so students can register against it." /></td></tr>

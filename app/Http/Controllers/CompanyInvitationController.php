@@ -7,12 +7,11 @@ use App\Models\CompanyInvitation;
 use App\Rules\StrongPassword;
 use App\Services\CompanyInvitationService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 /**
  * Guest pages a company reaches from its invitation email: review the prefilled details, add the
- * rest, set a password, and the account is created and signed in.
+ * rest, set a password, and the account is created. They then sign in from the landing page.
  */
 class CompanyInvitationController extends Controller
 {
@@ -62,11 +61,10 @@ class CompanyInvitationController extends Controller
             throw $exception;
         }
 
-        Auth::login($user);
-        $request->session()->regenerate();
-
-        return redirect()->route('employer.dashboard')
-            ->with('success', 'Welcome to SkillBridge. Your company account is ready.');
+        // The company signs in itself from the landing page with the password it just chose.
+        return redirect()->route('home')
+            ->with('company_account_ready', 'Your company account is ready. Sign in to continue.')
+            ->with('signin_email', $user->email);
     }
 
     private function unavailable(?CompanyInvitation $invitation, string $reason, int $status)
