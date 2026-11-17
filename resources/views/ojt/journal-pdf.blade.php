@@ -29,6 +29,7 @@
     .certify td { vertical-align: bottom; padding: 0; }
     .sign-line { border-bottom: 1px solid #000; height: 18px; }
     .sign-name { text-align: center; padding-top: 2px; font-weight: bold; height: 14px; }
+    .sign-title { text-align: center; font-size: 9px; }
     .date-line { border-bottom: 1px solid #000; padding-left: 3px; height: 14px; }
 </style>
 </head>
@@ -103,7 +104,7 @@
     </tr>
     <tr>
         <td></td>
-        <td><div class="sign-name">{{ $certifiedBy }}</div></td>
+        <td><div class="sign-name">{{ $certifiedBy }}</div>@if($certifiedBy && filled($header['supervisor_title'] ?? null))<div class="sign-title">{{ $header['supervisor_title'] }}</div>@endif</td>
         <td colspan="3"></td>
     </tr>
 </table>

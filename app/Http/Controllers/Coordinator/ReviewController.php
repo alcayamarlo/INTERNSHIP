@@ -128,7 +128,7 @@ class ReviewController extends Controller
         $evaluation->update($this->reviewAttributes($validated));
         $this->activityLog->log(Auth::user(), 'evaluation_'.$validated['decision'], ['evaluation_id' => $evaluation->id]);
 
-        if ($validated['decision'] === self::RETURNED && $employerUser = $evaluation->placement->employer?->user) {
+        if ($validated['decision'] === self::RETURNED && $employerUser = $evaluation->placement->supervisingUser()) {
             $this->notifications->send($employerUser, 'ojt_update', 'Evaluation returned',
                 'The coordinator returned the evaluation for '.($evaluation->placement->student?->user?->name ?? 'your intern').': '.$validated['comment'],
                 ['placement_id' => $evaluation->placement_id, 'section' => \App\Services\NotificationTarget::FINAL_EVALUATION]);

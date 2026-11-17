@@ -28,6 +28,11 @@
         'period_of_evaluation' => ['Period of Evaluation', $week['period_of_evaluation']],
         'inclusive_dates' => ['Inclusive Dates', $week['inclusive_dates']],
     ];
+    // A supervisor assigned by the company decides the name printed on the forms: it is shown, not editable.
+    if ($placement->activeSupervisor()) {
+        $locked['supervisor_name'] = "Supervisor's Name";
+        unset($editable['supervisor_name']);
+    }
     $savedDefaults = (array) old('save_default', []);
     // Weekend days with a time record: the page uses them, with the OJT dates, to show Inclusive Dates.
     $loggedWeekend = $placement->attendanceLogs()->where('status', '!=', \App\Models\AttendanceLog::STATUS_REJECTED)->pluck('work_date')

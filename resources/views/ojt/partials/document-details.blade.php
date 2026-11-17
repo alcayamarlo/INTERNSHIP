@@ -48,12 +48,18 @@
                 </div>
                 <div class="col-md-5">
                     <label class="form-label" for="ojtSupervisorName">Supervisor's name</label>
+                    @if($placement->activeSupervisor())
+                        {{-- Set by the company: the supervisor they assigned to you. --}}
+                        <input id="ojtSupervisorName" class="form-control" value="{{ $values['supervisor_name'] }}" readonly aria-describedby="ojtSupervisorLock">
+                        <small id="ojtSupervisorLock" class="form-text"><i class="bi bi-lock" aria-hidden="true"></i> Set by your company.</small>
+                    @else
                     <input id="ojtSupervisorName" name="supervisor_name" maxlength="80" list="ojtSupervisorList" value="{{ old('supervisor_name', $placement->supervisor_name ?: $values['supervisor_name']) }}"
                            class="form-control @error('supervisor_name') is-invalid @enderror" placeholder="e.g. Maria L. Santos">
                     <datalist id="ojtSupervisorList">
                         @foreach($supervisors as $name)<option value="{{ $name }}"></option>@endforeach
                     </datalist>
                     @error('supervisor_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    @endif
                 </div>
                 <div class="col-md-2"><button type="submit" class="btn btn-outline-primary w-100">Save</button></div>
                 <p class="form-text col-12 mb-0">Used on reports you submit from now on. Reports already submitted keep the details they were submitted with.</p>

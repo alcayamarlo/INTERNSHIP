@@ -47,7 +47,7 @@ class OjtDocumentData
     ];
 
     /** The trainee details frozen on a document when it is submitted or approved. */
-    public const SNAPSHOT_FIELDS = ['full_name', 'student_id', 'course', 'year_level', 'contact_number', 'address', 'company', 'supervisor_name', 'designation'];
+    public const SNAPSHOT_FIELDS = ['full_name', 'student_id', 'course', 'year_level', 'contact_number', 'address', 'company', 'supervisor_name', 'supervisor_title', 'designation'];
 
     /** Fields the student fixes on the profile page; the others are OJT details. */
     public const PROFILE_FIELDS = ['full_name', 'student_id', 'course', 'year_level', 'contact_number'];
@@ -112,14 +112,33 @@ class OjtDocumentData
         };
     }
 
-    /** The supervisor printed on this OJT's forms: set on the OJT, else the company's contact person or account name. */
+    /**
+     * The supervisor printed on this OJT's forms: the assigned supervisor's account name; if that supervisor was
+     * deactivated, the company's contact person (HR covers); with none assigned, the name set on the OJT, else
+     * the company's contact person or account name.
+     */
     public function defaultSupervisor(Placement $placement): string
     {
         $placement->loadMissing('employer.user');
 
+        if ($assigned = $placement->activeSupervisor()) {
+            return trim($assigned->name);
+        }
+        if ($placement->supervisor_user_id) {
+            return trim((string) ($placement->employer?->contact_person ?: $placement->employer?->user?->name));
+        }
+
         return trim((string) ($placement->supervisor_name
             ?: $placement->employer?->contact_person
             ?: $placement->employer?->user?->name));
+    }
+
+    /** The job title printed under the supervisor's name: the assigned supervisor's, else the HR account's. */
+    public function supervisorTitle(Placement $placement): string
+    {
+        $placement->loadMissing('employer');
+
+        return trim((string) ($placement->activeSupervisor()?->supervisor?->position ?: $placement->employer?->position));
     }
 
     /** @return list<string> Supervisor names on record for this OJT, for the "Supervisor's Name" dropdown. */
@@ -127,7 +146,7 @@ class OjtDocumentData
     {
         $placement->loadMissing('employer.user');
 
-        return collect([$placement->supervisor_name, $placement->employer?->contact_person, $placement->employer?->user?->name])
+        return collect([$this->defaultSupervisor($placement), $placement->supervisor_name, $placement->employer?->contact_person, $placement->employer?->user?->name])
             ->map(fn ($name) => trim((string) $name))
             ->filter()
             ->unique()
@@ -166,6 +185,7 @@ class OjtDocumentData
             'address' => collect([$student?->address, $student?->city, $student?->province])->map(fn ($part) => trim((string) $part))->filter()->implode(', '),
             'company' => trim((string) $placement->employer?->company_name),
             'supervisor_name' => $this->defaultSupervisor($placement),
+            'supervisor_title' => $this->supervisorTitle($placement),
             'designation' => trim((string) $placement->department),
             'ojt_start_date' => $placement->start_date?->format('F j, Y') ?? '',
             'ojt_end_date' => $placement->end_date?->format('F j, Y') ?? '',

@@ -124,7 +124,7 @@ class EvaluationProgress
 
         $recipient = match ($stage) {
             self::WAITING_STUDENT => $placement->student?->user,
-            self::WAITING_SUPERVISOR => $placement->employer?->user,
+            self::WAITING_SUPERVISOR => $placement->supervisingUser(),
             default => null,
         };
         if (! $recipient || ! Cache::add("evaluation-remind:{$type}:{$id}", true, now()->addDay())) {

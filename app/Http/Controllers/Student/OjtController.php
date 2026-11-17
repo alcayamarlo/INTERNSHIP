@@ -123,6 +123,10 @@ class OjtController extends Controller
         $edits = collect((array) $request->input('header', []))
             ->only(OjtDocumentData::EDITABLE_FIELDS)
             ->map(fn ($value) => is_string($value) ? trim((string) preg_replace('/\s+/u', ' ', $value)) : $value);
+        // The supervisor the company assigned decides the printed name; the student cannot change it.
+        if ($placement->activeSupervisor()) {
+            $edits->forget('supervisor_name');
+        }
         if ($edits->has('supervisor_name')) {
             $edits['supervisor_name'] = OjtDocumentData::normalizeName($edits['supervisor_name']);
         }
@@ -229,7 +233,11 @@ class OjtController extends Controller
     public function updateDetails(Request $request, Placement $placement)
     {
         $this->authorize('log', $placement);
-        if ($request->filled('supervisor_name')) {
+        // With an assigned supervisor the name is theirs, set by the company: only the designation is saved.
+        $nameLocked = $placement->activeSupervisor() !== null;
+        if ($nameLocked) {
+            $request->request->remove('supervisor_name');
+        } elseif ($request->filled('supervisor_name')) {
             $request->merge(['supervisor_name' => OjtDocumentData::normalizeName((string) $request->input('supervisor_name'))]);
         }
         $validated = $request->validate([
@@ -240,9 +248,13 @@ class OjtController extends Controller
             'department.in' => 'Choose a designation from the list.',
             'supervisor_name.regex' => "The supervisor's name may only contain letters, spaces, periods and hyphens.",
         ]);
-        $validated['supervisor_name'] = filled($validated['supervisor_name'] ?? null) ? $validated['supervisor_name'] : null;
+        if ($nameLocked) {
+            unset($validated['supervisor_name']);
+        } else {
+            $validated['supervisor_name'] = filled($validated['supervisor_name'] ?? null) ? $validated['supervisor_name'] : null;
+        }
 
-        foreach (['department', 'supervisor_name'] as $field) {
+        foreach ($nameLocked ? ['department'] : ['department', 'supervisor_name'] as $field) {
             $this->documents->logPlacementChange(Auth::user(), $placement, $field, $placement->{$field}, $validated[$field]);
         }
         $placement->update($validated);
@@ -280,7 +292,8 @@ class OjtController extends Controller
     {
         $placement->loadMissing('employer.user');
 
-        if ($employerUser = $placement->employer?->user) {
+        // The assigned supervisor, or the company's HR account when there is none.
+        if ($employerUser = $placement->supervisingUser()) {
             $this->notificationService->send($employerUser, 'ojt_update', $title, $message, array_filter(['placement_id' => $placement->id, 'section' => $section]));
         }
     }

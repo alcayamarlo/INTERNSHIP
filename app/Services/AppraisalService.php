@@ -355,7 +355,7 @@ class AppraisalService
     private function notifySupervisor(Appraisal $appraisal, string $title, string $message): void
     {
         $appraisal->loadMissing('placement.employer.user');
-        if ($user = $appraisal->placement?->employer?->user) {
+        if ($user = $appraisal->placement?->supervisingUser()) {
             $this->notifications->send($user, 'ojt_update', $title, $message, ['placement_id' => $appraisal->placement_id, 'appraisal_id' => $appraisal->id]);
         }
     }

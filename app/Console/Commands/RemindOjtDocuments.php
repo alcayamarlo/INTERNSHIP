@@ -38,7 +38,7 @@ class RemindOjtDocuments extends Command
             foreach ($deadlines->pendingFor($placement, $today) as $item) {
                 $recipient = match ($item['actor']) {
                     'student' => $placement->student?->user,
-                    'supervisor' => $placement->employer?->user,
+                    'supervisor' => $placement->supervisingUser(),
                     default => null, // coordinators see the badges; they are not reminded here
                 };
                 $stage = $this->stage($item, $today);

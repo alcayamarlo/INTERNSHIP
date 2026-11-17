@@ -125,7 +125,8 @@ class PlacementController extends Controller
         DB::table('ojt_reminders')->where('placement_id', $placement->id)->where('kind', OjtDeadlineService::FINAL_EVALUATION)->delete();
 
         $placement->loadMissing('employer.user', 'student.user');
-        if ($employerUser = $placement->employer?->user) {
+        // The supervisor assigned to this intern, or the company's HR account when there is none.
+        if ($employerUser = $placement->supervisingUser()) {
             $this->notificationService->send(
                 $employerUser,
                 'ojt_update',

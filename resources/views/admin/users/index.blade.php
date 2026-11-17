@@ -85,6 +85,8 @@
                             <td data-label="Department">
                                 @if($user->role === \App\Enums\UserRole::Coordinator)
                                     {{ $user->coordinator?->departmentName() ?? 'No department assigned' }}
+                                @elseif($user->role === \App\Enums\UserRole::Supervisor)
+                                    {{ $user->supervisor?->employer?->company_name ?? 'No company' }}@if($user->supervisor?->position)<small class="sb-row-sub">{{ $user->supervisor->position }}</small>@endif
                                 @else
                                     <span class="text-muted">&mdash;</span>
                                 @endif
@@ -252,7 +254,7 @@
                                     @foreach($assignableRoles as $role)
                                         <option value="{{ $role->value }}" {{ $user->role === $role ? 'selected' : '' }}>{{ $role->label() }}</option>
                                     @endforeach
-                                    @if($user->role === \App\Enums\UserRole::Admin)
+                                    @if(in_array($user->role, [\App\Enums\UserRole::Admin, \App\Enums\UserRole::Supervisor], true))
                                         <option value="{{ $user->role->value }}" selected>{{ $user->role->label() }}</option>
                                     @endif
                                 </select>

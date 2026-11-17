@@ -28,6 +28,7 @@
     .certify td { vertical-align: bottom; padding: 0; }
     .sign-line { border-bottom: 1px solid #111827; text-align: center; height: 18px; width: 220px; }
     .sign-name { text-align: center; font-size: 9px; padding-top: 2px; }
+    .sign-title { text-align: center; font-size: 8px; }
 </style>
 </head>
 <body>
@@ -110,7 +111,7 @@
 <table class="certify">
     <tr>
         <td style="width: 140px;">Certified True and Correct&nbsp;&nbsp;:</td>
-        <td style="width: 230px;"><div class="sign-line"></div><div class="sign-name">{{ $appraisal->supervisor_submitted_at ? ($supervisorName ?: $appraisal->supervisor?->name) : '' }}</div></td>
+        <td style="width: 230px;"><div class="sign-line"></div><div class="sign-name">{{ $appraisal->supervisor_submitted_at ? ($supervisorName ?: $appraisal->supervisor?->name) : '' }}</div>@if($appraisal->supervisor_submitted_at && filled($info['supervisor_title'] ?? null))<div class="sign-title">{{ $info['supervisor_title'] }}</div>@endif</td>
         <td style="width: 40px;"></td>
         <td>Date&nbsp;&nbsp;: {{ $appraisal->supervisor_submitted_at?->timezone('Asia/Manila')->format('F j, Y') }}</td>
     </tr>
