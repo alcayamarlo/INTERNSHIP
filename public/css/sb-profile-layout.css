@@ -1,4 +1,4 @@
-/* Employer > Company Profile. Scoped to .cp-page. Colors come from the theme tokens, with light defaults. */
+/* Profile pages (Company, Coordinator, Admin): summary card + grouped form cards + sticky save bar. Scoped to .cp-page; tokens only. */
 html body.sb-app .cp-page {
     --cp-red: var(--ds-red); --cp-red-hover: var(--ds-red-hover); --cp-ink: var(--ds-ink); --cp-muted: var(--ds-muted); --cp-label: var(--ds-label);
     --cp-hair: var(--ds-hair); --cp-border: var(--ds-input-border); --cp-tint: var(--ds-red-tint); --cp-surface: var(--ds-surface); --cp-soft: var(--ds-bg); --cp-error: var(--ds-error); --cp-placeholder: var(--ds-placeholder);
@@ -77,3 +77,13 @@ html body.sb-app .cp-page .form-control:focus-visible, html body.sb-app .cp-page
     html body.sb-app .cp-savebar__hint { flex: 1 1 100%; margin: 0; }
     html body.sb-app .cp-discard, html body.sb-app .cp-save { flex: 1 1 0; }
 }
+
+/* People photos are round (company logos stay a rounded square) */
+html body.sb-app .cp-logo--round { width: 112px; height: 112px; border-radius: 50%; }
+html body.sb-app .cp-logo--round span { font-size: 38px; }
+html body.sb-app .cp-role { margin: 4px 0 0; font-size: 14px; color: var(--cp-muted); overflow-wrap: anywhere; }
+html body.sb-app .cp-remove { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 44px; margin-top: 10px; border-radius: 999px; background: var(--cp-surface); border: 1.5px solid var(--cp-border); color: var(--cp-red-text); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+html body.sb-app .cp-remove:hover { background: var(--cp-tint); }
+html body.sb-app .cp-actions-inline { margin: 0; }
+html body.sb-app .cp-card--single { max-width: 720px; }
+html body.sb-app .cp-card__footer { display: flex; justify-content: flex-end; padding: 16px 24px 20px; border-top: 1px solid var(--cp-hair); }

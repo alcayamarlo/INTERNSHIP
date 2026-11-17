@@ -3,7 +3,7 @@
 @section('title', 'Edit Company Profile')
 
 @section('content')
-<link rel="stylesheet" href="{{ asset('css/employer-company-profile.css') }}?v={{ @filemtime(public_path('css/employer-company-profile.css')) }}">
+<link rel="stylesheet" href="{{ asset('css/sb-profile-layout.css') }}?v={{ @filemtime(public_path('css/sb-profile-layout.css')) }}">
 @php
     $employerLogoUrl = \App\Support\Avatar::url($employer->logo);
     $employerInitials = collect(preg_split('/\s+/', trim($employer->company_name)))
@@ -206,32 +206,5 @@
     });
 })();
 </script>
-<script>
-(() => {
-    // Unsaved-changes bar: show the hint after any edit; Discard restores the last saved values (no request is sent).
-    const form = document.getElementById('employerProfileForm');
-    const hint = document.querySelector('[data-cp-unsaved]');
-    const discard = document.querySelector('[data-cp-discard]');
-    if (!form || !hint) return;
-    const setDirty = (on) => { hint.hidden = !on; };
-    form.addEventListener('input', () => setDirty(true));
-    form.addEventListener('change', () => setDirty(true));
-    discard?.addEventListener('click', () => {
-        form.reset();
-        setDirty(false);
-        form.querySelectorAll('.is-invalid').forEach((el) => el.classList.remove('is-invalid'));
-    });
-
-    // The shared ajax handler writes the result into [data-ajax-feedback]. On success the new values count as saved.
-    const feedback = form.querySelector('[data-ajax-feedback]');
-    if (feedback) {
-        new MutationObserver(() => {
-            if (!feedback.classList.contains('text-success') || feedback.textContent.trim() === '') return;
-            form.querySelectorAll('input:not([type="hidden"]):not([type="file"]), textarea').forEach((el) => { el.defaultValue = el.value; });
-            form.querySelectorAll('select').forEach((select) => { [...select.options].forEach((o) => { o.defaultSelected = o.selected; }); });
-            setDirty(false);
-        }).observe(feedback, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['class'] });
-    }
-})();
-</script>
+<script src="{{ asset('js/sb-profile-form.js') }}?v={{ @filemtime(public_path('js/sb-profile-form.js')) }}"></script>
 @endpush
