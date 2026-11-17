@@ -333,7 +333,12 @@
             <a class="public-button public-button-primary" href="{{ route('login') }}">Sign in</a>
         </div>
     </div>
-    @include('partials.auth-modal')
+    {{-- Invitation pages render this landing page with their own popup instead of the sign in modal. --}}
+    @if(isset($inviteModal))
+        @include($inviteModal)
+    @else
+        @include('partials.auth-modal')
+    @endif
     <script>
         (function () {
             var nav = document.querySelector('.public-nav');

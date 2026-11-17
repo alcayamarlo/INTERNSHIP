@@ -1,6 +1,8 @@
 /* Company invitation: three steps in one form. Server validation stays the source of truth. */
 (function () {
     'use strict';
+    // The popup sits over the landing page: stop the page behind it from scrolling.
+    if (document.querySelector('[data-inv-overlay]')) document.documentElement.style.overflow = 'hidden';
     var form = document.querySelector('[data-inv-form]');
     if (!form) return;
 
