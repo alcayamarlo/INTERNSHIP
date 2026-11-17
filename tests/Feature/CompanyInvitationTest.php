@@ -329,3 +329,16 @@ it('keeps the form and shows errors when the company details are invalid', funct
         ->assertSessionMissing('company_account_ready');
     expect(CompanyInvitation::sole()->status)->toBe(CompanyInvitationStatus::Sent);
 });
+
+it('shows the success banner on the landing page once, with the email for the sign in prefill', function () {
+    $token = inviteCompany(invitingCoordinator());
+    auth()->logout();
+    $this->post(route('company-invitations.accept', $token), companyForm())->assertRedirect(route('home'));
+
+    $this->get(route('home'))->assertOk()
+        ->assertSee('data-lf-banner', false)
+        ->assertSee('data-email="hr@applus.test"', false);
+
+    // The flash is one-time: a refresh shows no banner.
+    $this->get(route('home'))->assertOk()->assertDontSee('data-lf-banner', false);
+});

@@ -1,0 +1,10 @@
+/* Success banner shown on the landing page after a company account is created. */
+.lf-banner { position: fixed; top: 16px; left: 50%; z-index: 1100; display: flex; align-items: center; gap: 12px; width: min(560px, calc(100% - 32px)); padding: 14px 14px 14px 16px; background: #fff; border: 1px solid #E6E1E3; border-radius: 16px; box-shadow: 0 12px 32px rgba(17, 17, 17, .18); color: #1a1517; opacity: 0; transform: translate(-50%, -12px); transition: opacity .2s ease, transform .2s ease; }
+.lf-banner.is-in { opacity: 1; transform: translate(-50%, 0); }
+.lf-banner.is-out { opacity: 0; transform: translate(-50%, -12px); pointer-events: none; }
+.lf-icon { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 50%; background: #e7f4ec; color: #1F7A4D; }
+.lf-banner p { flex: 1 1 auto; margin: 0; font-size: 14px; font-weight: 500; line-height: 1.45; }
+.lf-close { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border: 0; border-radius: 10px; background: transparent; color: #5f5a5c; cursor: pointer; }
+.lf-close:hover { background: #f1eef0; color: #1a1517; }
+.lf-close:focus-visible { outline: 3px solid rgba(122, 0, 19, .45); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .lf-banner { transition: none; } }

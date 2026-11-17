@@ -55,6 +55,17 @@
     <script defer src="{{ asset('js/sb-hero.js') }}?v={{ @filemtime(public_path('js/sb-hero.js')) }}"></script>
 </head>
 <body class="skillbridge-public sb-glass">
+    @if(session('company_account_ready'))
+        {{-- One-time flash from a finished company invitation: banner now, Sign in modal opened by the script. --}}
+        <link rel="stylesheet" href="{{ asset('css/sb-landing-flash.css') }}?v={{ @filemtime(public_path('css/sb-landing-flash.css')) }}">
+        <div class="lf-banner" data-lf-banner role="status" aria-live="polite"
+             data-email="{{ session('signin_email') }}" data-login-url="{{ route('login') }}">
+            <span class="lf-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="m8 12.5 2.8 2.8L16.2 9.6"/></svg></span>
+            <p>Your company account is ready. Sign in with your email and the password you just created.</p>
+            <button type="button" class="lf-close" data-lf-close aria-label="Dismiss message"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+        </div>
+        <script defer src="{{ asset('js/sb-landing-flash.js') }}?v={{ @filemtime(public_path('js/sb-landing-flash.js')) }}"></script>
+    @endif
     <div class="public-page">
         <nav class="sb-sticky-nav" data-sticky-nav aria-label="Sections">
             <a class="sb-sticky-brand" href="#top" aria-label="SkillBridge, back to the top"><span class="public-brand-mark" aria-hidden="true"><img class="sb-seal" src="{{ asset('images/brand/stcc-logo.png') }}?v=1" alt="St. Cecilia's College-Cebu logo" width="36" height="36"></span><strong>SkillBridge</strong></a>
