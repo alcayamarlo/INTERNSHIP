@@ -106,6 +106,24 @@ class Appraisal extends Model
         return $this->belongsTo(User::class, 'adviser_user_id');
     }
 
+    /**
+     * Filter by whose turn it is (same order as stage()): waiting_student (the rating, or the comment
+     * after the supervisor), waiting_supervisor, waiting_coordinator, complete, or overdue.
+     */
+    public function scopeInStage(\Illuminate\Database\Eloquent\Builder $query, ?string $status): \Illuminate\Database\Eloquent\Builder
+    {
+        return match ($status) {
+            'waiting_student' => $query->where(fn ($q) => $q->whereNull('self_submitted_at')
+                ->orWhere(fn ($comment) => $comment->whereNotNull('supervisor_submitted_at')->whereNull('student_comment_submitted_at'))),
+            'waiting_supervisor' => $query->whereNotNull('self_submitted_at')->whereNull('supervisor_submitted_at'),
+            'waiting_coordinator' => $query->whereNotNull('self_submitted_at')->whereNotNull('supervisor_submitted_at')
+                ->whereNotNull('student_comment_submitted_at')->whereNull('adviser_submitted_at'),
+            'complete' => $query->whereNotNull('adviser_submitted_at'),
+            'overdue' => $query->whereNull('adviser_submitted_at')->whereDate('due_on', '<', now('Asia/Manila')->toDateString()),
+            default => $query,
+        };
+    }
+
     public function stage(): string
     {
         return match (true) {

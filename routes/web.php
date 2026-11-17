@@ -358,6 +358,7 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             Route::delete('/internships/{internship}/flag', [CompanyController::class, 'unflag'])->name('internships.unflag');
             // Second review of weekly reports and evaluations after the supervisor.
             Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews.index');
+            Route::post('/reviews/evaluations/remind', [ReviewController::class, 'remind'])->middleware('throttle:30,1')->name('reviews.evaluations.remind');
             Route::post('/reviews/journals/{journalEntry}', [ReviewController::class, 'reviewJournal'])->name('reviews.journals');
             Route::post('/reviews/journals/{journalEntry}/reopen', [ReviewController::class, 'reopenJournal'])->name('reviews.journals.reopen');
             Route::post('/reviews/evaluations/{evaluation}', [ReviewController::class, 'reviewEvaluation'])->name('reviews.evaluations');

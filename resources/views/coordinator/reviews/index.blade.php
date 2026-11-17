@@ -41,6 +41,10 @@
         @if($items->hasPages())<div class="card-footer">{{ $items->links() }}</div>@endif
     </div>
 @else
+    @if($tab === 'evaluations')
+        @include('coordinator.reviews.partials.evaluation-progress')
+        @if($items->total() > 0)<h2 class="h5 mb-3" id="final-reviews">Final evaluations waiting for your review</h2>@endif
+    @endif
     @forelse($items as $item)
         @php
             $isReport = $tab === 'reports';
@@ -91,7 +95,12 @@
             </footer>
         </article>
     @empty
-        <div class="card"><x-empty-state icon="bi-check2-circle" title="Nothing waiting for your review." /></div>
+        {{-- On the evaluations tab the progress list above is the main content, so the empty note stays small. --}}
+        @if($tab === 'evaluations')
+            <p class="text-muted small mb-0">Nothing waiting for your review.</p>
+        @else
+            <div class="card"><x-empty-state icon="bi-check2-circle" title="Nothing waiting for your review." /></div>
+        @endif
     @endforelse
     @if($items->hasPages())<div class="sb-pages">{{ $items->links() }}</div>@endif
 @endif
