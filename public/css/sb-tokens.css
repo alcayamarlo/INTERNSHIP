@@ -238,7 +238,11 @@ html:root:root:root:root {
     /* control and icon sizes */
     --ds-control-h: 46px; --ds-hit-min: 44px; --ds-icon: 18px; --ds-icon-nav: 20px;
     /* type scale (the app font is unchanged) */
-    --ds-fs-title: 36px; --ds-fs-section: 18px; --ds-fs-body: 15px; --ds-fs-small: 13px; --ds-fs-label: 11px; --ds-ls-label: .1em;
+    --ds-fs-title: clamp(24px, 2vw + 16px, 36px); --ds-fs-section: clamp(16px, 1vw + 12px, 19px); --ds-fs-body: 15px; --ds-fs-small: 13px; --ds-fs-label: 11px; --ds-ls-label: .1em;
+    --ds-page-pad: clamp(16px, 3vw, 32px);
+    /* Breakpoints (min-width): 480 large phone, 640 small tablet, 768 tablet, 1024 laptop, 1280 desktop, 1536 wide.
+       CSS cannot use variables inside media queries, so queries use these literal values and no others. */
+    --bp-sm: 480px; --bp-md: 640px; --bp-lg: 768px; --bp-xl: 1024px; --bp-2xl: 1280px; --bp-3xl: 1536px;
     /* shell sizes (wired in the shell phase) */
     --ds-sidebar-w: 260px; --ds-topbar-h: 72px; --ds-content-max: 1440px;
 }

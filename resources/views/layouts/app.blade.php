@@ -8,10 +8,7 @@
 
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <meta
         name="csrf-token"
@@ -99,6 +96,7 @@
     <link rel="stylesheet" href="{{ asset('css/sb-tokens.css') }}?v={{ @filemtime(public_path('css/sb-tokens.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-theme.css') }}?v={{ @filemtime(public_path('css/sb-theme.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-modal.css') }}?v={{ @filemtime(public_path('css/sb-modal.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/sb-responsive-v2.css') }}?v={{ @filemtime(public_path('css/sb-responsive-v2.css')) }}">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}?v={{ @filemtime(public_path('js/skillbridge-ui.js')) }}"></script>
     <script defer src="{{ asset('js/sb-modal.js') }}?v={{ @filemtime(public_path('js/sb-modal.js')) }}"></script>
     <script defer src="{{ asset('js/sb-motion.js') }}?v={{ @filemtime(public_path('js/sb-motion.js')) }}"></script>

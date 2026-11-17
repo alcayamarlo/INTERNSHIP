@@ -526,7 +526,7 @@ body.skillbridge-app.sb-drawer-open {
     display: flex;
     flex-direction: column;
     min-width: 0;
-    min-height: 100vh;
+    min-height: 100vh; min-height: 100dvh;
     margin-left: var(--sb-nav-width);
 }
 
@@ -734,7 +734,7 @@ body.skillbridge-app .dropdown-header {
 
 .sb-notification-menu {
     width: min(380px, calc(100vw - 24px));
-    max-height: min(480px, calc(100vh - 96px));
+    max-height: min(480px, calc(100vh - 96px)); max-height: min(480px, calc(100dvh - 96px));
     overflow-x: hidden;
     overflow-y: auto;
 }
@@ -3239,13 +3239,13 @@ body.skillbridge-app .messenger-shell :is(.card, .message-panel) {
    ===================================================== */
 
 body.skillbridge-guest {
-    min-height: 100vh;
+    min-height: 100vh; min-height: 100dvh;
     color: var(--sb-ink);
     background: var(--sb-canvas);
 }
 
 body.skillbridge-guest .auth-shell {
-    min-height: 100vh;
+    min-height: 100vh; min-height: 100dvh;
     background: var(--sb-canvas);
 }
 
@@ -3281,7 +3281,7 @@ body.skillbridge-guest .auth-feature-icon {
 }
 
 body.skillbridge-guest .auth-right {
-    min-height: 100vh;
+    min-height: 100vh; min-height: 100dvh;
     color: var(--sb-ink);
     background: var(--sb-canvas);
 }

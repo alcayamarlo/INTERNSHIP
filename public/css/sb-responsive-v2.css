@@ -1,0 +1,50 @@
+/* =========================================================================================
+   Responsive layer v2 (signed-in app). Loaded last in layouts/app.blade.php.
+   Mobile-first: base rules are for the smallest screen; larger screens are added with min-width.
+   Breakpoints (the only ones to use): 480, 640, 768, 1024, 1280, 1536  (see --bp-* in sb-tokens.css).
+   Phase 1: foundation (media, wrapping, touch, motion). Shell and components are added in later phases.
+   ========================================================================================= */
+
+/* ---------- Media and boxes ---------- */
+html body.sb-app :is(img, video, canvas) { max-width: 100%; height: auto; }
+html body.sb-app :is(.sb-avatar-xl, .sb-initials, [data-avatar], .sb-pheader__avatar, .cp-logo, .avatar) img { width: 100%; height: 100%; object-fit: cover; }
+html body.sb-app :is(.sb-content, .sb-main) { min-width: 0; }
+html body.sb-app :is(.row, .sb-grid, .sb-stack, .sb-layout-2, .sb-split-table, .sb-form, .sb-person) > * { min-width: 0; }
+
+/* ---------- Fluid type and spacing ---------- */
+html body.sb-app .sb-page-header h1 { font-size: var(--ds-fs-title); line-height: 1.12; }
+html body.sb-app .sb-content { padding-inline: var(--ds-page-pad); }
+@media (min-width: 1536px) { html body.sb-app .sb-content { padding-inline: max(var(--ds-page-pad), calc((100% - 1440px) / 2)); } }
+
+/* ---------- Long text never forces horizontal scroll ---------- */
+html body.sb-app .sb-content :is(a, dd, dt, .sb-row-sub, .sb-note, .form-text, .invalid-feedback, .badge, .sb-tag, .sb-status) { overflow-wrap: anywhere; }
+html body.sb-app .sb-content :is(.sb-row-title, .sb-person-text > strong, td .fw-semibold, td > strong:first-child) { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+/* last resort only: clip stray overflow so the page itself never scrolls sideways */
+html body.sb-app { overflow-x: clip; }
+
+/* ---------- Forms: 16px fields on phones (stops iOS zoom on focus); the app size from tablet up ---------- */
+html body.sb-app :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]), select, textarea).form-control,
+html body.sb-app select.form-select { font-size: 16px; }
+@media (min-width: 768px) {
+    html body.sb-app :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]), select, textarea).form-control,
+    html body.sb-app select.form-select { font-size: var(--ds-fs-body); }
+}
+
+/* ---------- Touch devices: 44px hit targets, and a tap/focus equivalent for hover-only states ---------- */
+@media (pointer: coarse) {
+    html body.sb-app :is(.btn, .btn-sm, .sb-top-action, .sb-mobile-toggle, .sb-collapse-toggle, .sb-section-tab, .sb-utab, .student-profile-page .tab, .sb-nav-link, .sb-sidebar-close, .sb-modal__close, .sb-modal__eye, .btn-close, .sb-toggle, .lm-close, .pagination .page-link) { min-height: 44px; min-width: 44px; }
+    html body.sb-app .btn-sm { padding-inline: 14px; }
+    html body.sb-app :is(.form-check, .form-switch) { min-height: 44px; display: flex; align-items: center; gap: 10px; }
+    html body.sb-app .form-check-input { width: 22px; height: 22px; margin: 0; flex: none; }
+    html body.sb-app :is(.dropdown-item, .list-group-item-action) { min-height: 44px; display: flex; align-items: center; }
+    html body.sb-app :is(td, .sb-stack-block) :is(a.btn, button.btn, .btn-sm) { margin-block: 2px; }
+}
+@media (hover: none) {
+    /* Buttons that only appear on hover (row actions, card tools) stay visible on touch screens. */
+    html body.sb-app :is(.sb-row-actions, .sb-card-tools, .sb-hover-actions, .avatar-action) { opacity: 1; visibility: visible; }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+    html body.sb-app *, html body.sb-app *::before, html body.sb-app *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
