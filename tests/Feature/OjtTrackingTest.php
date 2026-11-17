@@ -749,6 +749,9 @@ it('saves the school final evaluation, maps it to the 1-5 scale, and completes t
     foreach ([$fixture['studentUser'], $fixture['employerUser'], $fixture['coordinatorUser']] as $allowed) {
         $this->actingAs($allowed)->get(route('ojt.evaluations.print', $placement))->assertOk()->assertHeader('content-type', 'application/pdf');
     }
+    // Short bond paper (Letter), one page.
+    expect(pdfPaper($this->actingAs($fixture['studentUser'])->get(route('ojt.evaluations.print', $placement))->getContent()))
+        ->toBe(['pages' => 1, 'width' => 8.5, 'height' => 11.0]);
     $this->actingAs(ojtFixture()['employerUser'])->get(route('ojt.evaluations.print', $placement))->assertForbidden();
 });
 

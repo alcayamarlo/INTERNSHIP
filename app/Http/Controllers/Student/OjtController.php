@@ -89,7 +89,7 @@ class OjtController extends Controller
         ]);
 
         $this->activityLog->log(Auth::user(), 'attendance_logged', ['attendance_log_id' => $log->id]);
-        $this->notifySupervisor($placement, 'New DTR entry', Auth::user()->name.' logged '.$hours.' hours for '.Carbon::parse($log->work_date)->format('M d, Y').'.');
+        $this->notifySupervisor($placement, 'New DTR entry', Auth::user()->name.' logged '.$hours.' hours for '.Carbon::parse($log->work_date)->format('M d, Y').'.', \App\Services\NotificationTarget::TIME_RECORD);
 
         return back()->with('success', 'Time logged. Your supervisor will review it.');
     }
@@ -217,7 +217,7 @@ class OjtController extends Controller
             'journal_entry_id' => $entry->id,
             'edited_fields' => array_keys($resolved['overrides']),
         ]);
-        $this->notifySupervisor($placement, 'New weekly report', Auth::user()->name.' submitted a weekly report for the week of '.$entry->weekLabel().'.');
+        $this->notifySupervisor($placement, 'New weekly report', Auth::user()->name.' submitted a weekly report for the week of '.$entry->weekLabel().'.', \App\Services\NotificationTarget::WEEKLY_REPORT);
 
         return back()->with('success', 'Weekly report submitted. Your supervisor certifies it next.');
     }
@@ -276,12 +276,12 @@ class OjtController extends Controller
         };
     }
 
-    private function notifySupervisor(Placement $placement, string $title, string $message): void
+    private function notifySupervisor(Placement $placement, string $title, string $message, ?string $section = null): void
     {
         $placement->loadMissing('employer.user');
 
         if ($employerUser = $placement->employer?->user) {
-            $this->notificationService->send($employerUser, 'ojt_update', $title, $message, ['placement_id' => $placement->id]);
+            $this->notificationService->send($employerUser, 'ojt_update', $title, $message, array_filter(['placement_id' => $placement->id, 'section' => $section]));
         }
     }
 }

@@ -52,7 +52,7 @@ class OjtFormPrintController extends Controller
             'info' => $info,
             'approvedHours' => $placement->approvedHours(),
             'header' => OjtFormHeader::data(),
-        ])->setPaper('a4', 'portrait');
+        ])->setPaper('letter', 'portrait'); // short bond paper, like the other school forms
 
         $name = str($info['full_name'] ?: 'student')->slug();
 

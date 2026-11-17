@@ -64,11 +64,11 @@ it('filters the log by type, action, user, and date, and exports CSV', function 
 
 it('flags repeated failed sign-ins from one IP', function () {
     foreach (range(1, 5) as $i) {
-        SystemLog::create(['action' => 'login_failed', 'ip_address' => '203.0.113.7']);
+        SystemLog::create(['action' => 'login_failed', 'ip_address' => \App\Support\IpHash::make('203.0.113.7')]);
     }
 
     $this->actingAs(adminUser())->get(route('admin.logs', ['type' => 'security']))
-        ->assertOk()->assertSee('Repeated failed sign-ins')->assertSee('203.0.113.7: 5 failures');
+        ->assertOk()->assertSee('Repeated failed sign-ins')->assertSee(\App\Support\IpHash::label(\App\Support\IpHash::make('203.0.113.7')).': 5 failures')->assertDontSee('203.0.113.7');
 });
 
 it('prunes log entries older than one year', function () {

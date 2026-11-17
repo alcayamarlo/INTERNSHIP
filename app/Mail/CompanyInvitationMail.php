@@ -18,19 +18,27 @@ class CompanyInvitationMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'You are invited to join SkillBridge as a partner company');
+        return new Envelope(subject: 'Invitation to partner with St. Cecilia\'s College – Cebu for the OJT Program');
     }
 
     public function content(): Content
     {
+        $coordinator = $this->invitation->invitedBy?->coordinator;
+
         return new Content(
             view: 'emails.company-invitation',
+            text: 'emails.company-invitation-text',
             with: [
                 'companyName' => $this->invitation->company_name,
                 'coordinatorName' => $this->invitation->invitedBy?->name ?? 'Your OJT coordinator',
                 'url' => $this->url,
                 'expiresAt' => $this->invitation->expires_at->timezone('Asia/Manila')->format('M d, Y h:i A'),
                 'reference' => $this->invitation->reference,
+                // Who to contact: the coordinator who sent the invitation.
+                'coordinatorDepartment' => $coordinator?->departmentName(),
+                'coordinatorEmail' => $this->invitation->invitedBy?->email,
+                'coordinatorPhone' => $this->invitation->invitedBy?->phone,
+                'coordinatorOffice' => $coordinator?->office_address,
             ],
         );
     }

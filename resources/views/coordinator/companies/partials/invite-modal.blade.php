@@ -17,8 +17,8 @@
             @error('company_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div>
-            <label class="form-label" for="ciAddress">Address</label>
-            <input id="ciAddress" name="address" class="form-control @error('address') is-invalid @enderror" maxlength="500" value="{{ old('address') }}">
+            <label class="form-label" for="ciAddress">Address <span class="text-danger" aria-hidden="true">*</span></label>
+            <input id="ciAddress" name="address" class="form-control @error('address') is-invalid @enderror" required maxlength="500" value="{{ old('address') }}">
             @error('address')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="sm-3">
@@ -27,8 +27,8 @@
             @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="sm-3">
-            <label class="form-label" for="ciPhone">Phone number</label>
-            <input id="ciPhone" name="phone" class="form-control @error('phone') is-invalid @enderror" maxlength="20" value="{{ old('phone') }}">
+            <label class="form-label" for="ciPhone">Phone number <span class="text-danger" aria-hidden="true">*</span></label>
+            <input id="ciPhone" name="phone" class="form-control @error('phone') is-invalid @enderror" required maxlength="20" value="{{ old('phone') }}">
             @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
     </div>

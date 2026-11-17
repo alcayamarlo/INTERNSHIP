@@ -197,7 +197,7 @@ it('rejects an email that already has an account or an open invitation', functio
         ->assertSessionHasErrors(['email' => CompanyInvitationService::EMAIL_TAKEN]);
 
     inviteCompany($coordinator, ['email' => 'open@company.test']);
-    $this->post(route('coordinator.companies.invitations.store'), ['company_name' => 'Again Co', 'email' => 'open@company.test'])
+    $this->post(route('coordinator.companies.invitations.store'), ['company_name' => 'Again Co', 'address' => 'Cebu City', 'phone' => '09171234567', 'email' => 'open@company.test'])
         ->assertSessionHasErrors(['email' => CompanyInvitationService::EMAIL_INVITED]);
     expect(CompanyInvitation::count())->toBe(1);
 });
@@ -323,9 +323,9 @@ it('keeps the form and shows errors when the company details are invalid', funct
     auth()->logout();
 
     $this->from(route('company-invitations.show', $token))
-        ->post(route('company-invitations.accept', $token), companyForm(['company_name' => '']))
+        ->post(route('company-invitations.accept', $token), companyForm(['industry' => '']))
         ->assertRedirect(route('company-invitations.show', $token))
-        ->assertSessionHasErrors('company_name')
+        ->assertSessionHasErrors('industry')
         ->assertSessionMissing('company_account_ready');
     expect(CompanyInvitation::sole()->status)->toBe(CompanyInvitationStatus::Sent);
 });

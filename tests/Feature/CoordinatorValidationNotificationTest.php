@@ -102,6 +102,5 @@ it('links other coordinator notifications about a student to the student record'
 
     $this->actingAs($coordinatorUser)
         ->get(route('notifications.show', $notice))
-        ->assertOk()
-        ->assertSee(route('coordinator.students.show', $student), false);
+        ->assertRedirect(route('coordinator.students.show', $student));
 });

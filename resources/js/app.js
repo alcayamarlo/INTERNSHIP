@@ -603,11 +603,13 @@ const showLiveToast = (title, body, href) => {
     toastEl.setAttribute('aria-atomic', 'true');
     toastEl.innerHTML = `
         <div class="toast-header">
-            <strong class="me-auto">${title}</strong>
+            <strong class="me-auto"></strong>
             <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
         <div class="toast-body"></div>
     `;
+    // Text only: titles can contain names typed by users.
+    toastEl.querySelector('.toast-header strong').textContent = title;
     const bodyEl = toastEl.querySelector('.toast-body');
     if (href) {
         const link = document.createElement('a');
@@ -654,20 +656,39 @@ if (window.Echo && currentUserId) {
             item.className = 'sb-notification-item is-unread';
             item.dataset.notificationItem = '';
             item.dataset.notificationId = payload.id;
+            // Same markup as a server-rendered row (layouts/app.blade.php); clicking it opens the related page.
             const link = document.createElement('a');
             link.className = 'notification-open-link';
             link.href = payload.show_url;
             link.dataset.notificationOpen = '';
             link.dataset.readUrl = payload.read_url;
+            const icon = document.createElement('span');
+            icon.className = 'sbn-icon';
+            icon.setAttribute('aria-hidden', 'true');
+            icon.innerHTML = '<i class="bi bi-bell"></i>';
+            const text = document.createElement('span');
+            text.className = 'sbn-text';
             const title = document.createElement('strong');
             title.textContent = payload.title;
             const body = document.createElement('span');
             body.textContent = payload.message;
             const time = document.createElement('time');
             time.textContent = 'just now';
-            link.append(title, body, time);
+            text.append(title, body, time);
+            link.append(icon, text);
             item.append(link);
             menu.insertBefore(item, menu.querySelector('.dropdown-header').nextSibling);
+            // Keep the panel to five rows, like the server-rendered list.
+            [...menu.querySelectorAll('[data-notification-item]')].slice(5).forEach((row) => row.remove());
+
+            // Header: "N new" pill and "Mark all as read".
+            const pill = menu.querySelector('[data-sbn-pill]');
+            if (pill) {
+                const current = Number.parseInt(pill.textContent, 10) || 0;
+                pill.textContent = `${current >= 9 ? '9+' : current + 1} new`;
+                pill.hidden = false;
+            }
+            menu.querySelector('[data-sbn-readall]')?.removeAttribute('hidden');
         }
 
         showLiveToast(payload.title, payload.message, payload.show_url);

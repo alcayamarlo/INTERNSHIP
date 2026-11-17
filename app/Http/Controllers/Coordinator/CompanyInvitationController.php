@@ -41,9 +41,9 @@ class CompanyInvitationController extends Controller
         $request->merge(['email' => CompanyInvitationService::normalizeEmail((string) $request->input('email'))]);
         $validated = $request->validate([
             'company_name' => ['required', 'string', 'max:255'],
-            'address' => ['nullable', 'string', 'max:500'],
+            'address' => ['required', 'string', 'max:500'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
-            'phone' => ['nullable', 'string', 'max:20'],
+            'phone' => ['required', 'string', 'max:20'],
         ], [
             'email.unique' => CompanyInvitationService::EMAIL_TAKEN,
         ]);

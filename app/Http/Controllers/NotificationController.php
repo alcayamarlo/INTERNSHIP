@@ -2,15 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\UserRole;
 use App\Models\Announcement;
 use App\Models\AppNotification;
-use App\Models\InternshipApplication;
-use App\Models\User;
 use App\Services\NotificationService;
+use App\Services\NotificationTarget;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 class NotificationController extends Controller
@@ -44,72 +41,22 @@ class NotificationController extends Controller
         ]);
     }
 
-    public function show(AppNotification $notification)
+    public function show(AppNotification $notification, NotificationTarget $targets)
     {
         $this->authorize('view', $notification);
         $notification->markAsRead();
 
-        $data = $notification->data ?? [];
-
-        // A "needs validation" alert opens the student's record straight away.
-        $student = is_numeric($data['student_id'] ?? null) ? \App\Models\Student::find($data['student_id']) : null;
-        $studentUrl = $student && Auth::user()->coordinator?->canAccessStudent($student)
-            ? route('coordinator.students.show', $student)
-            : null;
-        if ($studentUrl && $notification->type === NotificationService::TYPE_VALIDATION_NEEDED) {
-            return redirect()->to($studentUrl);
+        // Clicking a notification opens the page it is about (checked against what the viewer may see).
+        if ($url = $targets->urlFor($notification, Auth::user())) {
+            return redirect()->to($url);
         }
+
+        // Announcements, deleted items and pages the viewer cannot open: show the notification itself.
+        $data = $notification->data ?? [];
         $announcement = isset($data['announcement_id']) && is_numeric($data['announcement_id'])
             ? Announcement::find($data['announcement_id'])
             : null;
         $relatedUrl = null;
-
-        if (isset($data['application_id']) && is_numeric($data['application_id'])) {
-            $application = InternshipApplication::query()
-                ->with(['student', 'internship.employer'])
-                ->find($data['application_id']);
-
-            if ($application && Auth::user()->isRole(UserRole::Student)
-                && $application->student?->user_id === Auth::id()) {
-                $relatedUrl = route('student.applications.show', $application);
-            } elseif ($application && Auth::user()->isRole(UserRole::Employer)
-                && $application->internship?->employer?->user_id === Auth::id()) {
-                $relatedUrl = route('employer.applicants.show', $application);
-            }
-        }
-
-        if (! $relatedUrl && isset($data['invitation_id']) && is_numeric($data['invitation_id'])) {
-            $invitation = \App\Models\InternshipInvitation::find($data['invitation_id']);
-            if ($invitation && Gate::allows('view', $invitation)) {
-                $relatedUrl = Auth::user()->isRole(UserRole::Student)
-                    ? route('student.invitations.index')
-                    : route('employer.invitations.index');
-            }
-        }
-
-        // Job alerts and deadline reminders link to the posting.
-        if (! $relatedUrl && isset($data['internship_id']) && is_numeric($data['internship_id'])) {
-            $internship = \App\Models\Internship::find($data['internship_id']);
-            if ($internship && Auth::user()->isRole(UserRole::Student)) {
-                $relatedUrl = route('student.internships.show', $internship);
-            } elseif ($internship && Auth::user()->isRole(UserRole::Employer)
-                && $internship->employer?->user_id === Auth::id()) {
-                $relatedUrl = route('employer.internships.edit', $internship);
-            }
-        }
-
-        // Other coordinator notifications about a student (change requests, OJT updates) link to the record too.
-        $relatedUrl ??= $studentUrl;
-
-        if (! $relatedUrl) {
-            $contactId = $data['contact_id'] ?? $data['sender_id'] ?? null;
-            if (is_numeric($contactId)) {
-                $contact = User::find($contactId);
-                if ($contact && Gate::allows('message.send', $contact)) {
-                    $relatedUrl = route('messages.show', $contact);
-                }
-            }
-        }
 
         return view('notifications.show', compact('notification', 'announcement', 'relatedUrl'));
     }

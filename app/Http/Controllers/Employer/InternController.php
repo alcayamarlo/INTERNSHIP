@@ -144,7 +144,8 @@ class InternController extends Controller
         $this->notifyStudent(
             $placement,
             'DTR entry '.$validated['status'],
-            'Your time entry for '.$attendanceLog->work_date->format('M d, Y').' was '.$validated['status'].'.'
+            'Your time entry for '.$attendanceLog->work_date->format('M d, Y').' was '.$validated['status'].'.',
+            \App\Services\NotificationTarget::TIME_RECORD
         );
 
         $completed = $validated['status'] === AttendanceLog::STATUS_APPROVED
@@ -174,7 +175,7 @@ class InternController extends Controller
         }
 
         $this->activityLog->log(Auth::user(), 'attendance_bulk_approved', ['placement_id' => $placement->id, 'count' => $count]);
-        $this->notifyStudent($placement, 'DTR entries approved', $count.' pending time entries were approved.');
+        $this->notifyStudent($placement, 'DTR entries approved', $count.' pending time entries were approved.', \App\Services\NotificationTarget::TIME_RECORD);
         $completed = $this->placementService->completeIfEligible($placement, Auth::user());
 
         return back()->with('success', $count.' entries approved.'.($completed ? ' The OJT is now complete.' : ''));
@@ -196,7 +197,7 @@ class InternController extends Controller
         // "Certified true and correct": freezes that week's daily rows and locks the report.
         $this->weeklyReports->certify($journalEntry, Auth::user(), $validated['supervisor_comment'] ?? null);
 
-        $this->notifyStudent($placement, 'Weekly report certified', 'Your supervisor certified your '.$journalEntry->title.' ('.$journalEntry->inclusiveDates().') as true and correct.');
+        $this->notifyStudent($placement, 'Weekly report certified', 'Your supervisor certified your '.$journalEntry->title.' ('.$journalEntry->inclusiveDates().') as true and correct.', \App\Services\NotificationTarget::WEEKLY_REPORT);
 
         return back()->with('success', 'Report certified true and correct.');
     }
@@ -320,12 +321,12 @@ class InternController extends Controller
         return back()->with('success', $message);
     }
 
-    private function notifyStudent(Placement $placement, string $title, string $message): void
+    private function notifyStudent(Placement $placement, string $title, string $message, ?string $section = null): void
     {
         $placement->loadMissing('student.user');
 
         if ($studentUser = $placement->student?->user) {
-            $this->notificationService->send($studentUser, 'ojt_update', $title, $message, ['placement_id' => $placement->id]);
+            $this->notificationService->send($studentUser, 'ojt_update', $title, $message, array_filter(['placement_id' => $placement->id, 'section' => $section]));
         }
     }
 }

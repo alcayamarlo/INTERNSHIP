@@ -69,7 +69,7 @@ class ReviewController extends Controller
         if ($validated['decision'] === self::RETURNED && $studentUser = $journalEntry->placement->student?->user) {
             $this->notifications->send($studentUser, 'ojt_update', 'Weekly report returned',
                 "Your coordinator returned your report \"{$journalEntry->title}\": {$validated['comment']}",
-                ['placement_id' => $journalEntry->placement_id]);
+                ['placement_id' => $journalEntry->placement_id, 'section' => \App\Services\NotificationTarget::WEEKLY_REPORT]);
         }
 
         return back()->with('success', $validated['decision'] === self::RETURNED ? 'Report returned to the student.' : 'Report marked reviewed.');
@@ -102,7 +102,7 @@ class ReviewController extends Controller
         if ($validated['decision'] === self::RETURNED && $employerUser = $evaluation->placement->employer?->user) {
             $this->notifications->send($employerUser, 'ojt_update', 'Evaluation returned',
                 'The coordinator returned the evaluation for '.($evaluation->placement->student?->user?->name ?? 'your intern').': '.$validated['comment'],
-                ['placement_id' => $evaluation->placement_id]);
+                ['placement_id' => $evaluation->placement_id, 'section' => \App\Services\NotificationTarget::FINAL_EVALUATION]);
         }
 
         return back()->with('success', $validated['decision'] === self::RETURNED ? 'Evaluation returned to the company.' : 'Evaluation marked reviewed.');

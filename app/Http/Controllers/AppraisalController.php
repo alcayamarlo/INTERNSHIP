@@ -142,7 +142,7 @@ class AppraisalController extends Controller
             'placement' => $appraisal->placement,
             'info' => $info,
             'header' => OjtFormHeader::data(),
-        ])->setPaper('a4', 'portrait');
+        ])->setPaper('letter', 'portrait'); // short bond paper, like the other school forms
 
         $name = str($info['full_name'] ?: 'student')->slug();
 

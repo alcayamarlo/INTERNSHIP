@@ -4,35 +4,36 @@
 <meta charset="utf-8">
 <title>Performance Evaluation Report</title>
 <style>
-    @page { margin: 28px 40px 36px; }
-    body { font-family: DejaVu Sans, sans-serif; font-size: 10.5px; color: #111827; }
-    .titles { text-align: center; margin: 12px 0 8px; line-height: 1.35; }
+    @page { margin: 20px 38px 18px; } /* Letter (short bond) */
+    body { font-family: DejaVu Sans, sans-serif; font-size: 9.5px; color: #111827; }
+    .titles { text-align: center; margin: 6px 0 2px; line-height: 1.3; }
     .titles .college { font-size: 13px; font-weight: bold; }
     .titles .form { font-size: 12px; font-weight: bold; }
-    .titles .company { margin-top: 8px; font-size: 12px; font-weight: bold; text-transform: uppercase; text-decoration: underline; }
-    .part { font-weight: bold; text-transform: uppercase; margin: 10px 0 4px; }
+    .titles .company { margin-top: 5px; font-size: 12px; font-weight: bold; text-transform: uppercase; text-decoration: underline; }
+    .part { font-weight: bold; text-transform: uppercase; margin: 5px 0 2px; }
     .info { border-collapse: collapse; margin-left: 18px; }
-    .info td { padding: 1px 0; vertical-align: top; }
+    .info td { padding: 0.5px 0; vertical-align: top; }
     .info .label { width: 200px; }
     .info .value { text-transform: uppercase; font-weight: bold; }
     .sign { display: inline-block; border-bottom: 1px solid #111827; width: 220px; height: 14px; }
-    table.grid { width: 100%; border-collapse: collapse; margin-bottom: 8px; page-break-inside: avoid; }
-    table.grid th, table.grid td { border: 1px solid #111827; padding: 4px 6px; vertical-align: top; }
+    table.grid { width: 100%; border-collapse: collapse; margin-bottom: 3px; page-break-inside: avoid; }
+    table.grid th, table.grid td { border: 1px solid #111827; padding: 2px 5px; vertical-align: top; }
     table.grid th { font-size: 10px; text-transform: uppercase; }
     .group td { font-weight: bold; text-transform: uppercase; }
     .num { text-align: center; width: 80px; }
     .total td { font-weight: bold; }
-    .comments { text-align: justify; line-height: 1.45; white-space: pre-line; margin-left: 4px; }
-    .signoff { width: 100%; margin-top: 26px; border-collapse: collapse; page-break-inside: avoid; }
+    .comments { text-align: justify; line-height: 1.35; white-space: pre-line; margin-left: 4px; }
+    .signoff { width: 100%; margin-top: 8px; border-collapse: collapse; page-break-inside: avoid; }
     .signoff td { width: 50%; vertical-align: top; padding: 0 10px 0 0; }
-    .signoff .line { border-bottom: 1px solid #111827; height: 26px; margin-top: 4px; }
+    .signoff .line { border-bottom: 1px solid #111827; height: 16px; margin-top: 2px; }
     .signoff .who { font-weight: bold; padding-top: 2px; }
 </style>
 </head>
 <body>
 @php
     // $info: the trainee details frozen when the evaluation was submitted, or the current ones.
-    $supervisorName = $evaluation->evaluator?->name ?: $info['supervisor_name'];
+    // The supervisor assigned to this OJT; the account that submitted is only the fallback.
+    $supervisorName = $info['supervisor_name'] ?: $evaluation->evaluator?->name;
     $address = $info['address'] ?? '';
     $from = $placement->start_date;
     $to = $placement->end_date ?? $placement->completed_at;
@@ -78,7 +79,7 @@
             <tr class="group"><td colspan="3">{{ $groupLabel }}</td></tr>
             @foreach($factors as $key => $factor)
                 <tr>
-                    <td>{{ $loop->iteration }}. <strong>{{ $factor['label'] }}</strong>@if($column === 'work_scores') ({{ $factor['description'] }})@else<br>{{ $factor['description'] }}@endif</td>
+                    <td>{{ $loop->iteration }}. <strong>{{ $factor['label'] }}</strong>@if($column === 'work_scores') ({{ $factor['description'] }})@else {{ $factor['description'] }}@endif</td>
                     <td class="num">{{ $factor['points'] }}%</td>
                     <td class="num">{{ isset($evaluation->{$column}[$key]) ? $evaluation->{$column}[$key].'%' : '' }}</td>
                 </tr>
@@ -103,8 +104,9 @@
         <td>
             Certified True and Correct:
             <div class="line"></div>
-            <div class="who">{{ $evaluation->certified_by_name }}</div>
-            <div>{{ $evaluation->certified_by_position }}@if($evaluation->certified_by_name), {{ $info['company'] }}@endif</div>
+            {{-- Someone else certified it (typed by the supervisor): shown as entered. Otherwise the assigned supervisor. --}}
+            <div class="who">{{ $evaluation->certified_by_name ?: $supervisorName }}</div>
+            <div>{{ $evaluation->certified_by_name ? $evaluation->certified_by_position : $evaluation->supervisor_designation }}, {{ $info['company'] }}</div>
         </td>
     </tr>
 </table>

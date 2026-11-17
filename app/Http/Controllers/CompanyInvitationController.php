@@ -38,10 +38,12 @@ class CompanyInvitationController extends Controller
 
     public function store(Request $request, string $token)
     {
+        // Company name, address, email (and phone, when given) come from the invitation the
+        // coordinator filled in; the form cannot change them (CompanyInvitationService::accept).
+        $invitation = CompanyInvitation::findByToken($token);
         $validated = $request->validate([
-            'company_name' => ['required', 'string', 'max:255'],
-            'address' => ['required', 'string', 'max:500'],
-            'phone' => ['nullable', 'string', 'max:20'],
+            'address' => [$invitation && blank($invitation->address) ? 'required' : 'exclude', 'string', 'max:500'],
+            'phone' => [$invitation && blank($invitation->phone) ? 'nullable' : 'exclude', 'string', 'max:20'],
             'industry' => ['required', 'string', 'max:255'],
             'contact_person' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:2000'],

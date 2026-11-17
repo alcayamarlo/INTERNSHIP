@@ -86,3 +86,16 @@ function assignDepartment(\App\Models\Coordinator $coordinator, \App\Models\Stud
 
     return $program;
 }
+
+/**
+ * Paper size (in inches) and page count of a PDF, read from its page objects.
+ *
+ * @return array{pages: int, width: float, height: float}
+ */
+function pdfPaper(string $pdf): array
+{
+    preg_match_all('/\/Type\s*\/Page(?![a-z])/', $pdf, $pages);
+    preg_match('/\/MediaBox\s*\[\s*0(?:\.0+)?\s+0(?:\.0+)?\s+([\d.]+)\s+([\d.]+)\s*\]/', $pdf, $box);
+
+    return ['pages' => count($pages[0]), 'width' => round(((float) ($box[1] ?? 0)) / 72, 2), 'height' => round(((float) ($box[2] ?? 0)) / 72, 2)];
+}

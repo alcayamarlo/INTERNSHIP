@@ -99,7 +99,7 @@ class WeeklyReportService
             'rows' => $rows,
             'fontSize' => $fontSize,
             // The name under the signature line appears only once the supervisor certified in the system.
-            'certifiedBy' => $entry->isCertified() ? ($entry->reviewer?->name ?: $header['supervisor_name']) : '',
+            'certifiedBy' => $entry->isCertified() ? ($header['supervisor_name'] ?: $entry->reviewer?->name) : '',
             'certifiedOn' => $entry->isCertified() ? $entry->reviewed_at?->timezone('Asia/Manila')->format('F j, Y') : '',
         ];
     }
@@ -206,7 +206,7 @@ class WeeklyReportService
         if ($user = $entry->placement?->student?->user) {
             $this->notifications->send($user, 'ojt_update', 'Weekly report reopened',
                 'Your '.$entry->title.' certification was reopened. You can now delete and resubmit it if changes are needed.',
-                ['placement_id' => $entry->placement_id]);
+                ['placement_id' => $entry->placement_id, 'section' => NotificationTarget::WEEKLY_REPORT]);
         }
 
         return $entry;

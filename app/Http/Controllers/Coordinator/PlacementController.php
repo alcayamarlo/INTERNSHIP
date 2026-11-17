@@ -131,7 +131,7 @@ class PlacementController extends Controller
                 'ojt_update',
                 'Rating requested',
                 'Your coordinator requested the Final Performance Evaluation for '.($placement->student?->user?->name ?? 'this intern').'. Due '.$placement->rating_due_on->format('M d, Y').'.',
-                ['placement_id' => $placement->id]
+                ['placement_id' => $placement->id, 'section' => \App\Services\NotificationTarget::FINAL_EVALUATION]
             );
         }
 

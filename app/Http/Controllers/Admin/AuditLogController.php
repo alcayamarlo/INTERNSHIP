@@ -52,7 +52,7 @@ class AuditLogController extends Controller
                         $log->user?->email ?? '',
                         $log->action,
                         $log->isSecurityEvent() ? 'security' : 'audit',
-                        $log->ip_address ?? '',
+                        \App\Support\IpHash::label($log->ip_address),
                         $log->details ? json_encode($log->details) : '',
                     ]));
                 }
@@ -85,7 +85,13 @@ class AuditLogController extends Controller
         return SystemLog::query()
             ->when($filters['q'], fn (Builder $query, string $term) => $query->where(fn (Builder $match) => $match
                 ->whereHas('user', fn (Builder $users) => $users->where('name', 'like', '%'.$term.'%')->orWhere('email', 'like', '%'.$term.'%'))
-                ->orWhere('ip_address', 'like', '%'.$term.'%')
+                ->orWhere(function (Builder $ip) use ($term) {
+                    // IPs are stored hashed: a real address matches its hash, a short code matches the start.
+                    $search = \App\Support\IpHash::searchValue($term);
+                    $ip->when($search['hash'], fn (Builder $q, string $hash) => $q->orWhere('ip_address', $hash))
+                        ->when($search['prefix'], fn (Builder $q, string $prefix) => $q->orWhere('ip_address', 'like', $prefix.'%'))
+                        ->when(! $search['hash'] && ! $search['prefix'], fn (Builder $q) => $q->whereRaw('1 = 0'));
+                })
                 ->orWhere('details', 'like', '%'.$term.'%')))
             ->when($filters['action'], fn (Builder $query, string $action) => $query->where('action', $action))
             ->when($filters['type'] === 'security', fn (Builder $query) => $query->whereIn('action', SystemLog::SECURITY_ACTIONS))

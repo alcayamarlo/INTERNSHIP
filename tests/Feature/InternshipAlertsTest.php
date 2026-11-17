@@ -85,10 +85,9 @@ it('alerts only matching students in the posting programs when an internship is 
     expect($notification->data['internship_id'])->toBe($internship->id)
         ->and($notification->message)->toContain('100%');
 
-    // The notification links to the posting.
+    // Opening the notification goes straight to the posting.
     $this->actingAs($f['matching'])->get(route('notifications.show', $notification))
-        ->assertOk()
-        ->assertSee(route('student.internships.show', $internship), false);
+        ->assertRedirect(route('student.internships.show', $internship));
 });
 
 it('does not alert for closed postings, and alerts once when the posting is opened', function () {

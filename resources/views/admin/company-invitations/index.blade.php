@@ -40,7 +40,7 @@
 <div class="card">
     <div class="table-responsive">
         <table class="table table-hover mb-0 sb-table-stack">
-            <thead><tr><th>ID</th><th>Company</th><th>Email</th><th>Invited by</th><th>Status</th><th>Sent</th><th>Expires / accepted</th></tr></thead>
+            <thead><tr><th>ID</th><th>Company</th><th>Email</th><th>Invited by</th><th>Status</th><th>Sent</th><th>Expires / accepted</th><th class="text-end">Actions</th></tr></thead>
             <tbody>
                 @forelse($invitations as $invitation)
                     @php($current = $invitation->currentStatus())
@@ -52,14 +52,59 @@
                         <td data-label="Status"><x-status-badge :status="$current->value" :label="$current->label()" :tone="$current === \App\Enums\CompanyInvitationStatus::Sent ? 'warning' : null" /></td>
                         <td data-label="Sent" class="text-nowrap">{{ $invitation->created_at->timezone('Asia/Manila')->format('M d, Y h:i A') }}</td>
                         <td data-label="Expires / accepted" class="text-nowrap">{{ ($invitation->accepted_at ?? $invitation->expires_at)->timezone('Asia/Manila')->format('M d, Y h:i A') }}</td>
+                        <td data-label="Actions" class="text-end text-nowrap">
+                            @can('changeExpiry', $invitation)
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#aciExpiryModal"
+                                        data-action="{{ route('admin.company-invitations.expiry', $invitation) }}"
+                                        data-ref="{{ $invitation->reference }} · {{ $invitation->company_name }}"
+                                        data-current="{{ $invitation->expires_at->timezone('Asia/Manila')->format('Y-m-d\TH:i') }}">Change expiry</button>
+                            @endcan
+                        </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="sb-table-empty sb-stack-block text-center text-muted">No company invitations match.</td></tr>
+                    <tr><td colspan="8" class="sb-table-empty sb-stack-block text-center text-muted">No company invitations match.</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
     @if($invitations->hasPages())<div class="card-footer">{{ $invitations->links() }}</div>@endif
 </div>
+
+{{-- One shared pop-up for "Change expiry"; the button fills in the invitation and its form action. --}}
+<div class="modal fade" id="aciExpiryModal" tabindex="-1" aria-labelledby="aciExpiryTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="POST" action="#" class="modal-content" id="aciExpiryForm">
+            @csrf
+            @method('PUT')
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="aciExpiryTitle">Change expiry</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3" id="aciExpiryRef"></p>
+                <label class="form-label" for="aciExpiryAt">New expiry (Philippine time)</label>
+                <input id="aciExpiryAt" type="datetime-local" name="expires_at" class="form-control @error('expires_at') is-invalid @enderror" required>
+                @error('expires_at')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                <small class="form-text d-block mt-2">At most {{ config('company_invitations.max_extension_days') }} days from now. An expired link that was never used works again; the link in the email stays the same.</small>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save expiry</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    document.getElementById('aciExpiryModal')?.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        if (!button) return;
+        document.getElementById('aciExpiryForm').action = button.dataset.action;
+        document.getElementById('aciExpiryRef').textContent = button.dataset.ref;
+        document.getElementById('aciExpiryAt').value = button.dataset.current;
+    });
+    @if($errors->has('expires_at'))
+        document.addEventListener('DOMContentLoaded', function () { new bootstrap.Modal(document.getElementById('aciExpiryModal')).show(); });
+    @endif
+</script>
 </div>
 @endsection

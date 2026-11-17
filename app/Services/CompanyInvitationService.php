@@ -94,7 +94,10 @@ class CompanyInvitationService
     /**
      * Creates the verified employer account from an open invitation, in one transaction.
      *
-     * @param  array{company_name: string, address: string, phone?: ?string, industry: string, contact_person: string, description?: ?string, website?: ?string, password: string}  $data
+     * Company name, address, email and (when the coordinator gave one) phone always come from the
+     * invitation; values for them in $data are ignored, so the company cannot change them.
+     *
+     * @param  array{phone?: ?string, industry: string, contact_person: string, description?: ?string, website?: ?string, password: string}  $data
      */
     public function accept(string $token, array $data): User
     {
@@ -116,7 +119,7 @@ class CompanyInvitationService
                 'email' => $invitation->email,
                 'password' => $data['password'],
                 'role' => UserRole::Employer->value,
-                'phone' => filled($data['phone'] ?? null) ? trim($data['phone']) : null,
+                'phone' => $invitation->phone ?: (filled($data['phone'] ?? null) ? trim($data['phone']) : null),
                 'must_change_password' => false,
             ]);
             // The email is proven by the invitation link, so no verification code is needed.
@@ -124,9 +127,10 @@ class CompanyInvitationService
 
             $employer = Employer::create([
                 'user_id' => $user->id,
-                'company_name' => trim($data['company_name']),
+                'company_name' => $invitation->company_name,
                 'industry' => trim($data['industry']),
-                'address' => trim($data['address']),
+                // Older invitations may have no address; then the company typed it.
+                'address' => $invitation->address ?: trim((string) ($data['address'] ?? '')),
                 'contact_person' => trim($data['contact_person']),
                 'description' => filled($data['description'] ?? null) ? trim($data['description']) : null,
                 'website' => filled($data['website'] ?? null) ? trim($data['website']) : null,
@@ -159,6 +163,39 @@ class CompanyInvitationService
         }
 
         return $user;
+    }
+
+    /**
+     * An administrator moves one invitation's expiry date. The link itself does not change, so the
+     * company can keep using the email it already has. An expired invitation that was never used
+     * becomes usable again; an accepted one cannot be changed.
+     */
+    public function changeExpiry(CompanyInvitation $invitation, \Illuminate\Support\Carbon $expiresAt, User $actor): CompanyInvitation
+    {
+        if ($invitation->status === CompanyInvitationStatus::Accepted) {
+            throw ValidationException::withMessages(['expires_at' => 'This company already registered, so the expiry cannot be changed.']);
+        }
+        $limit = now()->addDays((int) config('company_invitations.max_extension_days', 30));
+        if (! $expiresAt->isFuture()) {
+            throw ValidationException::withMessages(['expires_at' => 'Choose a date and time in the future.']);
+        }
+        if ($expiresAt->greaterThan($limit)) {
+            throw ValidationException::withMessages(['expires_at' => 'The expiry can be at most '.config('company_invitations.max_extension_days', 30).' days from now.']);
+        }
+        if ($invitation->status === CompanyInvitationStatus::Expired) {
+            $this->ensureEmailUnused($invitation->email);
+        }
+
+        $previous = $invitation->expires_at;
+        $invitation->update(['expires_at' => $expiresAt, 'status' => CompanyInvitationStatus::Sent]);
+
+        $this->activityLog->log($actor, 'company_invitation_expiry_changed', [
+            'company_invitation_id' => $invitation->id,
+            'from' => $previous?->toIso8601String(),
+            'to' => $expiresAt->toIso8601String(),
+        ]);
+
+        return $invitation;
     }
 
     /** Marks sent invitations past their expiry as expired. Returns how many changed. */
@@ -201,7 +238,7 @@ class CompanyInvitationService
 
     private function newExpiry(): Carbon
     {
-        return now()->addDays(max(1, (int) config('company_invitations.expires_after_days', 14)));
+        return now()->addDays(max(1, (int) config('company_invitations.expires_after_days', 7)));
     }
 
     private function ensureEmailUnused(string $email): void

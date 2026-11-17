@@ -11,7 +11,7 @@
             <h1 class="inv-title" id="invTitle">Complete your company account</h1>
             <p class="inv-lead">
                 {{ $invitation->invitedBy?->name ?? 'Your OJT coordinator' }} invited {{ $invitation->company_name }} to SkillBridge.
-                Check the details, add what is missing, and set a password.
+                The details your coordinator entered are locked. Add the rest and set a password.
             </p>
 
             <ol class="inv-steps" data-inv-steps aria-label="Progress">
@@ -36,10 +36,12 @@
                     <legend><span class="inv-chip" aria-hidden="true"><i class="bi bi-building"></i></span> Company</legend>
                     <div class="inv-grid">
                         <div class="inv-f">
-                            <label class="form-label" for="ciCompany">Company name <span aria-hidden="true">*</span></label>
-                            <input id="ciCompany" name="company_name" class="form-control @error('company_name') is-invalid @enderror" required maxlength="255"
-                                   value="{{ old('company_name', $invitation->company_name) }}">
-                            @error('company_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            {{-- Locked: set by the coordinator (not submitted; the server uses the invitation's own value). --}}
+                            <label class="form-label" for="ciCompany">Company name</label>
+                            <div class="inv-lock">
+                                <i class="bi bi-lock-fill" aria-hidden="true"></i>
+                                <input id="ciCompany" class="form-control" value="{{ $invitation->company_name }}" readonly aria-describedby="ciLockedHint">
+                            </div>
                         </div>
                         <div class="inv-f">
                             <label class="form-label" for="ciIndustry">Industry <span aria-hidden="true">*</span></label>
@@ -48,9 +50,18 @@
                             @error('industry')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="inv-f">
-                            <label class="form-label" for="ciAddress">Address <span aria-hidden="true">*</span></label>
-                            <textarea id="ciAddress" name="address" rows="1" class="form-control @error('address') is-invalid @enderror" required maxlength="500">{{ old('address', $invitation->address) }}</textarea>
-                            @error('address')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            @if(filled($invitation->address))
+                                <label class="form-label" for="ciAddress">Address</label>
+                                <div class="inv-lock">
+                                    <i class="bi bi-lock-fill" aria-hidden="true"></i>
+                                    <input id="ciAddress" class="form-control" value="{{ $invitation->address }}" readonly aria-describedby="ciLockedHint">
+                                </div>
+                            @else
+                                {{-- Older invitations sent without an address: the company adds it. --}}
+                                <label class="form-label" for="ciAddress">Address <span aria-hidden="true">*</span></label>
+                                <textarea id="ciAddress" name="address" rows="1" class="form-control @error('address') is-invalid @enderror" required maxlength="500">{{ old('address') }}</textarea>
+                                @error('address')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            @endif
                         </div>
                         <div class="inv-f">
                             <label class="form-label" for="ciWebsite">Website</label>
@@ -64,6 +75,7 @@
                             @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                     </div>
+                    <small id="ciLockedHint" class="form-text"><i class="bi bi-lock-fill" aria-hidden="true"></i> Locked details were entered by your coordinator. Contact them if something needs to change.</small>
                 </fieldset>
 
                 {{-- ===== Step 2: Account ===== --}}
@@ -78,9 +90,17 @@
                         </div>
                         <div class="inv-f">
                             <label class="form-label" for="ciPhone">Phone</label>
-                            <input id="ciPhone" name="phone" class="form-control @error('phone') is-invalid @enderror" maxlength="20"
-                                   value="{{ old('phone', $invitation->phone) }}" autocomplete="tel">
-                            @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            @if(filled($invitation->phone))
+                                <div class="inv-lock">
+                                    <i class="bi bi-lock-fill" aria-hidden="true"></i>
+                                    <input id="ciPhone" class="form-control" value="{{ $invitation->phone }}" readonly aria-describedby="ciLockedHint">
+                                </div>
+                            @else
+                                {{-- Older invitations sent without a phone: the company adds it. --}}
+                                <input id="ciPhone" name="phone" class="form-control @error('phone') is-invalid @enderror" maxlength="20"
+                                       value="{{ old('phone') }}" autocomplete="tel">
+                                @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            @endif
                         </div>
                         <div class="inv-f inv-f--full">
                             <label class="form-label" for="ciEmail">Email (used to sign in)</label>
@@ -117,9 +137,9 @@
                         <div class="inv-review-group">
                             <div class="inv-review-head"><h2>Company</h2><button type="button" class="inv-edit" data-inv-goto="1"><i class="bi bi-pencil" aria-hidden="true"></i> Edit</button></div>
                             <dl>
-                                <div><dt>Company name</dt><dd data-sum="company_name"></dd></div>
+                                <div><dt>Company name</dt><dd>{{ $invitation->company_name }}</dd></div>
                                 <div><dt>Industry</dt><dd data-sum="industry"></dd></div>
-                                <div><dt>Address</dt><dd data-sum="address"></dd></div>
+                                <div><dt>Address</dt>@if(filled($invitation->address))<dd>{{ $invitation->address }}</dd>@else<dd data-sum="address"></dd>@endif</div>
                                 <div><dt>Website</dt><dd data-sum="website"></dd></div>
                                 <div class="inv-f--full"><dt>About</dt><dd data-sum="description"></dd></div>
                             </dl>
@@ -128,7 +148,7 @@
                             <div class="inv-review-head"><h2>Account</h2><button type="button" class="inv-edit" data-inv-goto="2"><i class="bi bi-pencil" aria-hidden="true"></i> Edit</button></div>
                             <dl>
                                 <div><dt>Contact person</dt><dd data-sum="contact_person"></dd></div>
-                                <div><dt>Phone</dt><dd data-sum="phone"></dd></div>
+                                <div><dt>Phone</dt>@if(filled($invitation->phone))<dd>{{ $invitation->phone }}</dd>@else<dd data-sum="phone"></dd>@endif</div>
                                 <div><dt>Sign-in email</dt><dd>{{ $invitation->email }}</dd></div>
                                 <div><dt>Password</dt><dd data-sum="password"></dd></div>
                             </dl>

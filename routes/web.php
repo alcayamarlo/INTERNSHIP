@@ -406,6 +406,7 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             Route::put('/announcements/{announcement}', [AdminAnnouncementController::class, 'update'])->name('announcements.update');
             Route::delete('/announcements/{announcement}', [AdminAnnouncementController::class, 'destroy'])->name('announcements.destroy');
             Route::get('/company-invitations', [App\Http\Controllers\Admin\CompanyInvitationController::class, 'index'])->name('company-invitations.index');
+            Route::put('/company-invitations/{companyInvitation}/expiry', [App\Http\Controllers\Admin\CompanyInvitationController::class, 'updateExpiry'])->name('company-invitations.expiry');
             Route::get('/placements', [AdminPlacementController::class, 'index'])->name('placements.index');
             Route::get('/placements/{placement}', [AdminPlacementController::class, 'show'])->name('placements.show');
             // Audit and security log (kept 1 year).

@@ -236,6 +236,9 @@ it('lets only the right people act on or print an evaluation', function () {
     foreach ([$f['studentUser'], $f['employerUser'], $f['coordinatorUser'], $admin] as $allowed) {
         $this->actingAs($allowed)->get(route('ojt.appraisals.print', $appraisal))->assertOk()->assertHeader('content-type', 'application/pdf');
     }
+    // Short bond paper (Letter), one page.
+    expect(pdfPaper($this->actingAs($f['studentUser'])->get(route('ojt.appraisals.print', $appraisal))->getContent()))
+        ->toBe(['pages' => 1, 'width' => 8.5, 'height' => 11.0]);
     foreach ([$other['studentUser'], $other['employerUser'], $other['coordinatorUser']] as $denied) {
         $this->actingAs($denied)->get(route('ojt.appraisals.print', $appraisal))->assertForbidden();
     }

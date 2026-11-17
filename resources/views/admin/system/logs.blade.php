@@ -52,7 +52,7 @@
         <strong><i class="bi bi-shield-exclamation" aria-hidden="true"></i> Repeated failed sign-ins in the last {{ \App\Models\SystemLog::REPEATED_FAILURE_HOURS }} hours</strong>
         <ul class="mb-0 mt-1">
             @foreach($repeatedFailures as $row)
-                <li>{{ $row->ip_address ?: 'Unknown IP' }}: {{ $row->failures }} failures, last at {{ \Illuminate\Support\Carbon::parse($row->last_attempt)->timezone('Asia/Manila')->format('M d, h:i A') }}</li>
+                <li>{{ \App\Support\IpHash::label($row->ip_address) }}: {{ $row->failures }} failures, last at {{ \Illuminate\Support\Carbon::parse($row->last_attempt)->timezone('Asia/Manila')->format('M d, h:i A') }}</li>
             @endforeach
         </ul>
     </div>
@@ -79,7 +79,7 @@
                             <td data-label="Action">
                                 <span class="sb-status {{ $log->isSecurityEvent() ? (in_array($log->action, ['login_failed', 'login_blocked', 'login_throttled', 'password_reset_failed'], true) ? 'sb-status--danger' : 'sb-status--warning') : 'sb-status--neutral' }}">{{ $log->action }}</span>
                             </td>
-                            <td data-label="IP address">{{ $log->ip_address ?? '—' }}</td>
+                            <td data-label="IP address">{{ \App\Support\IpHash::label($log->ip_address) }}</td>
                             <td data-label="Details" class="sb-stack-block">
                                 @if($log->details)
                                     <span class="text-muted small text-break">{{ \Illuminate\Support\Str::limit(json_encode($log->details, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), 120) }}</span>
