@@ -99,3 +99,33 @@ function pdfPaper(string $pdf): array
 
     return ['pages' => count($pages[0]), 'width' => round(((float) ($box[1] ?? 0)) / 72, 2), 'height' => round(((float) ($box[2] ?? 0)) / 72, 2)];
 }
+
+/** A company (HR account) with a placement and, optionally, supervisors; plus another company's HR account. */
+function svCompany(string $name = 'Applus Labs'): array
+{
+    $hrUser = \App\Models\User::factory()->create(['role' => \App\Enums\UserRole::Employer, 'name' => $name.' HR']);
+    $employer = \App\Models\Employer::create(['user_id' => $hrUser->id, 'company_name' => $name, 'contact_person' => $name.' HR', 'verified_at' => now()]);
+
+    return compact('hrUser', 'employer');
+}
+
+function svSupervisor(\App\Models\Employer $employer, string $name = 'Sam Supervisor'): \App\Models\User
+{
+    $user = \App\Models\User::factory()->create(['role' => \App\Enums\UserRole::Supervisor, 'name' => $name]);
+    \App\Models\Supervisor::create(['user_id' => $user->id, 'employer_id' => $employer->id, 'position' => 'Senior Engineer']);
+
+    return $user;
+}
+
+function svPlacement(\App\Models\Employer $employer, ?\App\Models\User $supervisor = null): \App\Models\Placement
+{
+    $institution = \App\Models\Institution::firstOrCreate(['name' => 'Supervisor College']);
+    $student = \App\Models\Student::create(['user_id' => \App\Models\User::factory()->create(['role' => \App\Enums\UserRole::Student])->id, 'institution_id' => $institution->id, 'program' => 'BSIT']);
+    $internship = \App\Models\Internship::create(['employer_id' => $employer->id, 'title' => 'Trainee', 'description' => 'x', 'status' => 'open']);
+    $application = \App\Models\InternshipApplication::create(['internship_id' => $internship->id, 'student_id' => $student->id, 'status' => \App\Enums\ApplicationStatus::Accepted, 'match_percentage' => 80]);
+
+    return \App\Models\Placement::create([
+        'application_id' => $application->id, 'student_id' => $student->id, 'employer_id' => $employer->id, 'internship_id' => $internship->id,
+        'start_date' => '2026-02-02', 'required_hours' => 500, 'status' => \App\Models\Placement::STATUS_ACTIVE, 'supervisor_user_id' => $supervisor?->id,
+    ]);
+}

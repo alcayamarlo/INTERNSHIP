@@ -94,6 +94,11 @@ Route::middleware('guest')->group(function () {
             ->where('token', '[A-Za-z0-9]+')->name('company-invitations.show');
         Route::post('/company-invitation/{token}', [CompanyInvitationController::class, 'store'])
             ->where('token', '[A-Za-z0-9]+')->name('company-invitations.accept');
+        // A supervisor sets their password from the emailed link.
+        Route::get('/supervisor-setup/{token}', [App\Http\Controllers\SupervisorSetupController::class, 'show'])
+            ->where('token', '[A-Za-z0-9]+')->name('supervisor.setup');
+        Route::post('/supervisor-setup/{token}', [App\Http\Controllers\SupervisorSetupController::class, 'store'])
+            ->where('token', '[A-Za-z0-9]+')->name('supervisor.setup.store');
     });
 });
 
@@ -281,6 +286,15 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             Route::get('/applicants', [ApplicantController::class, 'index'])->name('applicants.index');
             Route::get('/applicants/{application}', [ApplicantController::class, 'show'])->name('applicants.show');
             Route::put('/applicants/{application}/status', [ApplicantController::class, 'updateStatus'])->name('applicants.status');
+
+            // The company's supervisors: create, edit, deactivate, and assign interns to them.
+            Route::get('/supervisors', [App\Http\Controllers\Employer\SupervisorController::class, 'index'])->name('supervisors.index');
+            Route::post('/supervisors', [App\Http\Controllers\Employer\SupervisorController::class, 'store'])->middleware('throttle:company-invitation-send')->name('supervisors.store');
+            Route::put('/supervisors/{supervisor}', [App\Http\Controllers\Employer\SupervisorController::class, 'update'])->name('supervisors.update');
+            Route::patch('/supervisors/{supervisor}/status', [App\Http\Controllers\Employer\SupervisorController::class, 'status'])->name('supervisors.status');
+            Route::post('/supervisors/{supervisor}/resend', [App\Http\Controllers\Employer\SupervisorController::class, 'resend'])->middleware('throttle:company-invitation-send')->name('supervisors.resend');
+            Route::put('/interns/{placement}/supervisor', [App\Http\Controllers\Employer\SupervisorController::class, 'assign'])->name('interns.supervisor');
+            Route::post('/interns/supervisor/bulk', [App\Http\Controllers\Employer\SupervisorController::class, 'assignMany'])->name('interns.supervisor.bulk');
 
             // OJT supervision
             Route::get('/interns', [EmployerInternController::class, 'index'])->name('interns.index');

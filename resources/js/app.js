@@ -497,7 +497,7 @@ const liveRegionIsBusy = (region) => {
     if (document.querySelector('.modal.show, dialog[open]')) return true;
     const active = document.activeElement;
     if (active && region.contains(active) && active.matches('input, textarea, select, [contenteditable="true"]')) return true;
-    if (region.querySelector('[aria-busy="true"], form[data-busy="true"], [data-notification-select]:checked')) return true;
+    if (region.querySelector('[aria-busy="true"], form[data-busy="true"], [data-notification-select]:checked, [data-live-hold]:checked')) return true;
     // Typed or changed but not saved yet.
     const edited = [...region.querySelectorAll('input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]), textarea')]
         .some((field) => field.value !== field.defaultValue);

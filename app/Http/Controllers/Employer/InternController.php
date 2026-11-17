@@ -34,9 +34,17 @@ class InternController extends Controller
         abort_unless($employer, 403);
 
         $status = $request->query('status');
+        // "none": no supervisor, or one who was deactivated (HR covers those interns). Otherwise a supervisor's user id.
+        $supervisorFilter = $request->query('supervisor');
+        $noSupervisor = fn ($query) => $query->where(fn ($q) => $q->whereNull('supervisor_user_id')
+            ->orWhereHas('supervisorUser', fn ($user) => $user->where('is_active', false)));
+        $supervisors = $employer->supervisors()->with('user')->get()
+            ->sortBy(fn ($supervisor) => mb_strtolower((string) $supervisor->user?->name))->values();
 
         $placements = $employer->placements()
-            ->with(['student.user', 'internship', 'evaluation:id,placement_id,average_score'])
+            ->with(['student.user', 'internship', 'evaluation:id,placement_id,average_score', 'supervisorUser:id,name,is_active'])
+            ->when($supervisorFilter === 'none', $noSupervisor)
+            ->when(is_numeric($supervisorFilter), fn ($query) => $query->where('supervisor_user_id', (int) $supervisorFilter))
             ->withApprovedHours()
             ->withCount(['attendanceLogs as pending_logs_count' => fn ($query) => $query->where('status', AttendanceLog::STATUS_PENDING)])
             ->withCount(['journalEntries as unread_journals_count' => fn ($query) => $query->where('status', JournalEntry::STATUS_SUBMITTED)])
@@ -48,7 +56,9 @@ class InternController extends Controller
         $placements->getCollection()->each(fn (Placement $placement) => $placement
             ->setAttribute('company_profile', $placement->student ? $companyProfile->summary($placement->student) : null));
 
-        return view('employer.interns.index', compact('placements', 'status'));
+        $withoutSupervisor = $noSupervisor($employer->placements())->count();
+
+        return view('employer.interns.index', compact('placements', 'status', 'supervisors', 'supervisorFilter', 'withoutSupervisor'));
     }
 
     public function show(Placement $placement)

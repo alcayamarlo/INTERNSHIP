@@ -153,6 +153,7 @@
             ],
             'OJT' => [
                 ['employer.interns.index', 'employer.interns.*', 'bi-person-workspace', 'Interns'],
+                ['employer.supervisors.index', 'employer.supervisors.*', 'bi-person-gear', 'Supervisors'],
             ],
         ],
         (bool) $currentUser?->isRole(UserRole::Coordinator) => [

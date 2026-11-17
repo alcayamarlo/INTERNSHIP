@@ -15,36 +15,6 @@ use Illuminate\Support\Facades\Gate;
 
 uses(RefreshDatabase::class);
 
-/** A company (HR account) with a placement and, optionally, supervisors; plus another company's HR account. */
-function svCompany(string $name = 'Applus Labs'): array
-{
-    $hrUser = User::factory()->create(['role' => UserRole::Employer, 'name' => $name.' HR']);
-    $employer = Employer::create(['user_id' => $hrUser->id, 'company_name' => $name, 'contact_person' => $name.' HR', 'verified_at' => now()]);
-
-    return compact('hrUser', 'employer');
-}
-
-function svSupervisor(Employer $employer, string $name = 'Sam Supervisor'): User
-{
-    $user = User::factory()->create(['role' => UserRole::Supervisor, 'name' => $name]);
-    Supervisor::create(['user_id' => $user->id, 'employer_id' => $employer->id, 'position' => 'Senior Engineer']);
-
-    return $user;
-}
-
-function svPlacement(Employer $employer, ?User $supervisor = null): Placement
-{
-    $institution = Institution::firstOrCreate(['name' => 'Supervisor College']);
-    $student = Student::create(['user_id' => User::factory()->create(['role' => UserRole::Student])->id, 'institution_id' => $institution->id, 'program' => 'BSIT']);
-    $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Trainee', 'description' => 'x', 'status' => 'open']);
-    $application = InternshipApplication::create(['internship_id' => $internship->id, 'student_id' => $student->id, 'status' => ApplicationStatus::Accepted, 'match_percentage' => 80]);
-
-    return Placement::create([
-        'application_id' => $application->id, 'student_id' => $student->id, 'employer_id' => $employer->id, 'internship_id' => $internship->id,
-        'start_date' => '2026-02-02', 'required_hours' => 500, 'status' => Placement::STATUS_ACTIVE, 'supervisor_user_id' => $supervisor?->id,
-    ]);
-}
-
 it('has a supervisor role with its own labels and home page', function () {
     expect(UserRole::from('supervisor'))->toBe(UserRole::Supervisor)
         ->and(UserRole::Supervisor->label())->toBe('Supervisor')
