@@ -50,8 +50,10 @@ html body.sb-app .student-profile-page .privacy-consent-card form .mt-2 { margin
 @media (max-width: 639.98px) { html body.sb-app .student-profile-page .privacy-consent-card form { grid-template-columns: minmax(0, 1fr); } }
 
 /* ---- Underline tabs ---- */
-html body.sb-app .student-profile-page .tabs { position: sticky; top: var(--sb-topbar-height, 68px); z-index: 20; gap: 4px; height: 52px; margin: 0 0 var(--ds-sp-5); overflow-x: auto; background: var(--ds-surface); border-bottom: 1px solid var(--ds-hair); scrollbar-width: none; }
-html body.sb-app .student-profile-page .tabs::-webkit-scrollbar { display: none; }
+html body.sb-app .student-profile-page .tabs { position: sticky; top: var(--sb-topbar-height, 68px); z-index: 20; gap: 4px; height: auto; min-height: 52px; margin: 0 0 var(--ds-sp-5); overflow-x: auto; overflow-y: hidden; background: var(--ds-surface); border-bottom: 1px solid var(--ds-hair); scrollbar-width: thin; scrollbar-color: var(--ds-input-border) transparent; }
+html body.sb-app .student-profile-page .tabs::-webkit-scrollbar { height: 6px; }
+html body.sb-app .student-profile-page .tabs::-webkit-scrollbar-thumb { background: var(--ds-input-border); border-radius: 6px; }
+html body.sb-app .student-profile-page .tabs::-webkit-scrollbar-track { background: transparent; }
 html body.sb-app .student-profile-page .tab { height: 52px; min-height: 52px; padding: 0 16px; border: 0; border-bottom: 0; border-radius: 0; font-size: 15px; font-weight: 700; color: var(--ds-muted); }
 html body.sb-app .student-profile-page .tab::before { content: ""; position: absolute; inset: 6px 0; border-radius: 10px; background: transparent; z-index: -1; }
 html body.sb-app .student-profile-page .tab:hover::before { background: var(--ds-red-tint); }

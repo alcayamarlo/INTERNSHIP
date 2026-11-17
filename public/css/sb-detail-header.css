@@ -24,8 +24,10 @@ html body.sb-app .sb-pheader__actions .btn-outline-primary { border-color: var(-
 
 /* Underline tab bar */
 html body.sb-app .sb-utabs-bar { position: sticky; top: var(--sb-topbar-height, 68px); z-index: 20; margin: 0 0 20px; background: var(--ds-surface); border-bottom: 1px solid var(--ds-hair); }
-html body.sb-app .sb-utabs { display: flex; align-items: stretch; gap: 4px; height: 52px; overflow-x: auto; scrollbar-width: none; }
-html body.sb-app .sb-utabs::-webkit-scrollbar { display: none; }
+html body.sb-app .sb-utabs { display: flex; align-items: stretch; gap: 4px; min-height: 52px; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; scrollbar-color: var(--ds-input-border) transparent; }
+html body.sb-app .sb-utabs::-webkit-scrollbar { height: 6px; }
+html body.sb-app .sb-utabs::-webkit-scrollbar-thumb { background: var(--ds-input-border); border-radius: 6px; }
+html body.sb-app .sb-utabs::-webkit-scrollbar-track { background: transparent; }
 html body.sb-app .sb-utab { position: relative; flex: none; height: 52px; padding: 0 16px; border: 0; background: transparent; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ds-muted); cursor: pointer; white-space: nowrap; }
 html body.sb-app .sb-utab::before { content: ""; position: absolute; inset: 6px 0; border-radius: 10px; background: transparent; z-index: 0; }
 html body.sb-app .sb-utab > span { position: relative; z-index: 1; }
