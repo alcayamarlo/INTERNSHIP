@@ -1,19 +1,15 @@
 /* Employer > Company Profile. Scoped to .cp-page. Colors come from the theme tokens, with light defaults. */
 html body.sb-app .cp-page {
-    --cp-red: #7A0013; --cp-red-hover: #5C000F; --cp-ink: #16161A; --cp-muted: #4A4A52; --cp-label: #5B5B63;
-    --cp-hair: #E6E1E3; --cp-border: #D7D0D3; --cp-tint: #F6E7EA; --cp-surface: #fff; --cp-soft: #F8F6F7; --cp-error: #B42318; --cp-placeholder: #6B6B73;
-    --cp-red-text: #7A0013;
-}
-html[data-theme="dark"] body.sb-app .cp-page {
-    --cp-ink: #F4F4F5; --cp-muted: #B4B4BA; --cp-label: #A0A0A6; --cp-hair: #2A2A2F; --cp-border: #3A3A40; --cp-tint: #2A0F14;
-    --cp-surface: #141416; --cp-soft: #1B1B1E; --cp-placeholder: #8A8A92; --cp-red-text: #DA5C70; --cp-error: #F97066;
+    --cp-red: var(--ds-red); --cp-red-hover: var(--ds-red-hover); --cp-ink: var(--ds-ink); --cp-muted: var(--ds-muted); --cp-label: var(--ds-label);
+    --cp-hair: var(--ds-hair); --cp-border: var(--ds-input-border); --cp-tint: var(--ds-red-tint); --cp-surface: var(--ds-surface); --cp-soft: var(--ds-bg); --cp-error: var(--ds-error); --cp-placeholder: var(--ds-placeholder);
+    --cp-red-text: var(--ds-red-text);
 }
 
 /* Header: bigger title, badge aligned to the bottom of the title block */
 html body.sb-app .cp-page .sb-page-header { align-items: flex-end; }
 html body.sb-app .cp-page .sb-page-header h1 { font-size: 36px; line-height: 1.1; }
-html body.sb-app .cp-page .sb-page-actions .badge { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; background: #166534 !important; color: #fff !important; font-size: 14px; font-weight: 700; }
-html[data-theme="dark"] body.sb-app .cp-page .sb-page-actions .badge { background: #166534 !important; color: #fff !important; }
+html body.sb-app .cp-page .sb-page-actions .badge { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; background: var(--ds-verified) !important; color: #fff !important; font-size: 14px; font-weight: 700; }
+html[data-theme="dark"] body.sb-app .cp-page .sb-page-actions .badge { background: var(--ds-verified) !important; color: #fff !important; }
 
 /* Two columns */
 html body.sb-app .cp-grid { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 24px; align-items: start; }

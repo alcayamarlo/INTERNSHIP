@@ -62,13 +62,13 @@
                 @if($isReport)
                     {{-- Weekly narrative report sections; older reports only have accomplishments. --}}
                     @foreach(['accomplishments' => 'Accomplishments', 'challenges' => 'Difficulties encountered', 'actions_taken' => 'Actions taken', 'learnings' => 'Learning insights'] as $field => $label)
-                        @if(filled($item->{$field}))<div class="rv-row"><dt>{{ $label }}</dt><dd>{{ \Illuminate\Support\Str::limit($item->{$field}, 400) }}</dd></div>@endif
+                        @if(filled($item->{$field}))<div class="rv-row"><dt>{{ $label }}:</dt><dd>{{ \Illuminate\Support\Str::limit($item->{$field}, 400) }}</dd></div>@endif
                     @endforeach
-                    @if($item->supervisor_comment)<div class="rv-row"><dt>Supervisor</dt><dd>{{ $item->supervisor_comment }}</dd></div>@endif
+                    @if($item->supervisor_comment)<div class="rv-row"><dt>Supervisor:</dt><dd>{{ $item->supervisor_comment }}</dd></div>@endif
                 @else
-                    @if($item->strengths)<div class="rv-row"><dt>Strengths</dt><dd>{{ $item->strengths }}</dd></div>@endif
-                    @if($item->improvements)<div class="rv-row"><dt>To improve</dt><dd>{{ $item->improvements }}</dd></div>@endif
-                    @if($item->comments)<div class="rv-row"><dt>Comments</dt><dd>{{ $item->comments }}</dd></div>@endif
+                    @if($item->strengths)<div class="rv-row"><dt>Strengths:</dt><dd>{{ $item->strengths }}</dd></div>@endif
+                    @if($item->improvements)<div class="rv-row"><dt>To improve:</dt><dd>{{ $item->improvements }}</dd></div>@endif
+                    @if($item->comments)<div class="rv-row"><dt>Comments:</dt><dd>{{ $item->comments }}</dd></div>@endif
                 @endif
             </dl>
             @php($reviewUrl = $isReport ? route('coordinator.reviews.journals', $item) : route('coordinator.reviews.evaluations', $item))

@@ -1,8 +1,8 @@
 /* Employer applicant review page. Scoped to .ap-page so other pages keep their look. */
 html body.sb-app .ap-page {
-    --ap-red: #7A0013; --ap-bg: #F8F6F7; --ap-ink: #16161A; --ap-muted: #4A4A52; --ap-label: #5B5B63;
-    --ap-hair: #E6E1E3; --ap-border: #D7D0D3; --ap-tint: #F6E7EA;
-    --ap-surface: #fff; --ap-soft: #FBF3F4; --ap-chip: #F3F0F1; --ap-red-text: #7A0013;
+    --ap-red: var(--ds-red); --ap-red-text: var(--ds-red-text); --ap-bg: var(--ds-bg); --ap-ink: var(--ds-ink); --ap-muted: var(--ds-muted); --ap-label: var(--ds-label);
+    --ap-hair: var(--ds-hair); --ap-border: var(--ds-input-border); --ap-tint: var(--ds-red-tint);
+    --ap-surface: var(--ds-surface); --ap-soft: var(--ds-red-tint); --ap-chip: var(--ds-surface-soft);
     max-width: 1160px; margin: 0 auto; padding: 24px 32px; color: var(--ap-ink); box-sizing: border-box;
     display: block;
 }
@@ -146,7 +146,9 @@ html body.sb-app .ap-page :is(a, button, select, input, textarea):focus-visible 
 /* ---------- Modal (native <dialog>) ---------- */
 html.applicant-modal-open, html.applicant-modal-open body { overflow: hidden; }
 .applicant-modal {
-    --ap-red: #7A0013; --ap-ink: #16161A; --ap-muted: #4A4A52; --ap-label: #5B5B63; --ap-hair: #E6E1E3; --ap-border: #D7D0D3;
+    --ap-red: var(--ds-red); --ap-red-text: var(--ds-red-text); --ap-bg: var(--ds-bg); --ap-ink: var(--ds-ink); --ap-muted: var(--ds-muted); --ap-label: var(--ds-label);
+    --ap-hair: var(--ds-hair); --ap-border: var(--ds-input-border); --ap-tint: var(--ds-red-tint);
+    --ap-surface: var(--ds-surface); --ap-soft: var(--ds-red-tint); --ap-chip: var(--ds-surface-soft);
     width: min(920px, 92vw); max-width: none; max-height: 86vh; max-height: 86dvh; padding: 0; margin: auto; border: 0; border-radius: 24px;
     background: var(--ap-surface); color: var(--ap-ink); box-shadow: 0 24px 64px rgba(0, 0, 0, .28); overflow: hidden;
 }
@@ -224,12 +226,6 @@ html body.sb-app .ap-statusbar .form-control::placeholder { color: var(--ap-labe
 html body.sb-app .ap-page :is(a, button, select, input, textarea):focus-visible, .applicant-modal :is(button, a, [tabindex]):focus-visible { outline-color: var(--ap-ink); }
 
 /* ---------- Dark theme ---------- */
-html[data-theme="dark"] body.sb-app .ap-page,
-html[data-theme="dark"] .applicant-modal {
-    --ap-bg: #0A0A0B; --ap-ink: #F4F4F5; --ap-muted: #B4B4BA; --ap-label: #A0A0A6;
-    --ap-hair: #2A2A2F; --ap-border: #3A3A40; --ap-tint: #2A0F14;
-    --ap-surface: #141416; --ap-soft: #1B1B1E; --ap-chip: #232327; --ap-red-text: #DA5C70;
-}
 html[data-theme="dark"] body.sb-app .ap-page .ap-avatar, html[data-theme="dark"] .applicant-modal__avatar { background: #000; color: #fff; border-color: var(--ap-surface); }
 html[data-theme="dark"] body.sb-app .ap-btn:hover, html[data-theme="dark"] body.sb-app .ap-top .btn:hover { background: var(--ap-soft); color: var(--ap-ink); }
 html[data-theme="dark"] body.sb-app .sb-main:has(.ap-page) > .sb-content { background: #0A0A0B; }
