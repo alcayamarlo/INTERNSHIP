@@ -106,3 +106,12 @@ html body.sb-glass.skillbridge-public .inv-review dd { margin: 2px 0 0; font-siz
     html body.sb-glass.skillbridge-public .inv-bar span, html body.sb-glass.skillbridge-public .inv-dot, html body.sb-glass.skillbridge-public .inv-strength span { transition: none; }
     html body.sb-glass.skillbridge-public .inv-spin { animation-duration: 1.6s; }
 }
+
+/* ---------- Unavailable / used / expired states ---------- */
+html body.sb-glass.skillbridge-public .inv-card--state { max-width: 560px; text-align: center; }
+html body.sb-glass.skillbridge-public .inv-state-icon { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 20px; background: #f6e8ec; color: #7A0013; font-size: 28px; }
+html body.sb-glass.skillbridge-public .inv-contact { margin: 0 0 18px; padding: 12px 14px; border: 1px solid #E6E1E3; border-radius: 14px; background: #fff; font-size: 14px; color: #5f5a5c; }
+html body.sb-glass.skillbridge-public .inv-contact a { color: #7A0013; font-weight: 600; }
+html body.sb-glass.skillbridge-public .inv-actions--center { justify-content: center; margin-left: 0; }
+html body.sb-glass.skillbridge-public a.inv-btn { text-decoration: none; }
+@media (max-width: 639.98px) { html body.sb-glass.skillbridge-public .inv-actions--center .inv-btn { width: 100%; } }
