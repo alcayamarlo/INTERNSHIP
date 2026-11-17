@@ -280,10 +280,11 @@
                 </form>
             </div>
         </div>
-    @include('admin.users.partials.create-user-modal')
 </div>
 @endforeach
 @endif
+
+@include('admin.users.partials.create-user-modal')
 
 @endsection
 
