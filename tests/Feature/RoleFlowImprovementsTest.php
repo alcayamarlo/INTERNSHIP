@@ -79,11 +79,12 @@ it('warns on the resume page when the profile is incomplete and links back to in
 it("shows the coordinator's own school on the dashboard", function () {
     $institution = Institution::create(['name' => 'Northfield Polytechnic']);
     $user = User::factory()->create(['role' => UserRole::Coordinator]);
-    Coordinator::create(['user_id' => $user->id, 'institution_id' => $institution->id]);
+    assignDepartment(Coordinator::create(['user_id' => $user->id, 'institution_id' => $institution->id]));
 
     $this->actingAs($user)->get(route('coordinator.dashboard'))
         ->assertOk()
-        ->assertSee('Manage students and track placements at Northfield Polytechnic.')
+        ->assertSee('Coordinator – Department')
+        ->assertSee('Northfield Polytechnic')
         ->assertDontSee('Cecilia’s College-Cebu, Inc.', false);
 });
 
@@ -112,9 +113,10 @@ it('labels a new application Pending for the company, matching the filter, and A
 it('lets the coordinator request the final evaluation only once the OJT is validated and ongoing', function () {
     $institution = Institution::create(['name' => 'Request University']);
     $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
-    Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
+    $coordinator = Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
     $internship = flowInternship();
     [, $student] = flowStudent(['institution_id' => $institution->id]);
+    assignDepartment($coordinator, $student);
     $application = InternshipApplication::create([
         'student_id' => $student->id, 'internship_id' => $internship->id, 'status' => ApplicationStatus::Accepted, 'applied_at' => now(),
     ]);
@@ -146,9 +148,10 @@ it('lets the coordinator request the final evaluation only once the OJT is valid
 it('shows the weekly report sections, not the old accomplishments field, on Report Reviews', function () {
     $institution = Institution::create(['name' => 'Review University']);
     $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
-    Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
+    $coordinator = Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
     $internship = flowInternship();
     [, $student] = flowStudent(['institution_id' => $institution->id]);
+    assignDepartment($coordinator, $student);
     $application = InternshipApplication::create([
         'student_id' => $student->id, 'internship_id' => $internship->id, 'status' => ApplicationStatus::Accepted, 'applied_at' => now(),
     ]);

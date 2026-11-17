@@ -107,7 +107,7 @@ class EligibilityCriteriaController extends Controller
         $user = Auth::user();
 
         return Program::query()
-            ->when(! $user->isRole(UserRole::Admin), fn ($query) => $query->where('coordinator_id', $user->coordinator?->id ?? 0))
+            ->when(! $user->isRole(UserRole::Admin), fn ($query) => $query->whereKey($user->coordinator?->program_id ?? 0))
             ->orderBy('code')
             ->get();
     }
@@ -117,7 +117,7 @@ class EligibilityCriteriaController extends Controller
         $user = Auth::user();
         abort_unless(
             $user->isRole(UserRole::Admin)
-                || ($user->coordinator && (int) $program->coordinator_id === (int) $user->coordinator->id),
+                || ($user->coordinator && (int) $program->id === (int) $user->coordinator->program_id),
             403,
             'You can only manage criteria for programs assigned to you.'
         );

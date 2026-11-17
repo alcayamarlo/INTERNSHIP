@@ -148,9 +148,10 @@ it('keeps a private shortlist the company can filter by', function () {
 it('shows the intern\'s OJT coordinator with a way to message them', function () {
     $institution = Institution::create(['name' => 'St. Cecilia\'s College-Cebu']);
     $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator, 'name' => 'Prof. Santos']);
-    Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
+    $coordinator = Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
     [$user, $employer] = partnerCompany(verified: true);
     $student = partnerStudent(['institution_id' => $institution->id]);
+    assignDepartment($coordinator, $student);
     $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Intern', 'description' => 'x', 'status' => 'open']);
     $application = InternshipApplication::create(['internship_id' => $internship->id, 'student_id' => $student->id, 'status' => ApplicationStatus::Accepted, 'match_percentage' => 0, 'applied_at' => now()]);
     $placement = app(\App\Services\PlacementService::class)->openForApplication($application);

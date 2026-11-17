@@ -25,7 +25,8 @@ function criteriaCoordinator(): array
     $institution = Institution::create(['name' => 'SCC']);
     $user = User::factory()->create(['role' => UserRole::Coordinator]);
     $coordinator = Coordinator::create(['user_id' => $user->id, 'institution_id' => $institution->id]);
-    $program = Program::create(['name' => 'BS Information Technology', 'code' => 'BSIT', 'coordinator_id' => $coordinator->id, 'required_internship_hours' => 486]);
+    $program = Program::create(['name' => 'BS Information Technology', 'code' => 'BSIT', 'required_internship_hours' => 486]);
+    $coordinator->update(['program_id' => $program->id]);
 
     return [$user, $coordinator, $program, $institution];
 }

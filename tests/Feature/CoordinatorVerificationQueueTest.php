@@ -35,6 +35,7 @@ function verificationQueueFixture(): array
         'department' => 'Computing',
         'year_level' => '3rd Year',
     ]);
+    assignDepartment($coordinator, $student);
     $competency = StudentCompetency::create([
         'student_id' => $student->id,
         'name' => 'JavaScript',

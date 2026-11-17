@@ -70,9 +70,9 @@
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label" for="coordDepartment">Department <span class="text-danger" aria-hidden="true">*</span></label>
-                            <input type="text" class="form-control @error('department') is-invalid @enderror" id="coordDepartment" name="department" value="{{ old('department', $coordinator->department) }}" required>
-                            @error('department')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            <label class="form-label" for="coordDepartment">Department</label>
+                            <input type="text" class="form-control" id="coordDepartment" value="{{ $coordinator->departmentName() ?? 'No department assigned' }}" disabled>
+                            <div class="form-text">Assigned by an administrator. You cannot change it.</div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label" for="coordPosition">Position <span class="text-danger" aria-hidden="true">*</span></label>

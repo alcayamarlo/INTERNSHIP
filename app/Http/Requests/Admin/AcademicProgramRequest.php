@@ -23,7 +23,6 @@ class AcademicProgramRequest extends FormRequest
             'code' => ['required', 'string', 'max:20', 'alpha_num', Rule::unique('programs', 'code')->ignore($program?->id)],
             'required_internship_hours' => ['required', 'integer', 'min:1', 'max:10000'],
             'required_hours_confirmed' => ['nullable', 'boolean'],
-            'coordinator_id' => ['nullable', 'exists:coordinators,id'],
             'majors' => ['nullable', 'string', 'max:5000'],
         ];
     }

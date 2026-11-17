@@ -246,7 +246,6 @@ it('lets admins manage programs and prevents removing a major assigned to a stud
             'code' => 'BSBA',
             'required_internship_hours' => 600,
             'required_hours_confirmed' => '1',
-            'coordinator_id' => $coordinator->id,
             'majors' => "Marketing Management\nFinancial Management",
         ])
         ->assertRedirect(route('admin.academics.index'));
@@ -264,7 +263,6 @@ it('lets admins manage programs and prevents removing a major assigned to a stud
         'name' => $program->name,
         'code' => $program->code,
         'required_internship_hours' => 600,
-        'coordinator_id' => $coordinator->id,
         'majors' => 'Financial Management',
     ])->assertSessionHasErrors('majors');
 
@@ -278,7 +276,7 @@ it('saves school academic fields against the selected program and major', functi
     $major = $program->majors()->firstOrFail();
     $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
     $coordinator = Coordinator::create(['user_id' => $coordinatorUser->id]);
-    $program->update(['coordinator_id' => $coordinator->id]);
+    $coordinator->update(['program_id' => $program->id]);
     $user = User::factory()->create(['role' => UserRole::Student]);
     $student = Student::create(['user_id' => $user->id]);
 
@@ -820,6 +818,8 @@ it('lets an administrator view and correct a nonmatching student ID', function (
 it('gives coordinators Academic Settings from their own sidebar, and keeps students out', function () {
     $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
     $coordinator = Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => Institution::create(['name' => 'SCC'])->id]);
+    $ownProgram = assignDepartment($coordinator);
+    $otherProgram = Program::create(['name' => 'BS Computer Science', 'code' => 'BSCS', 'required_internship_hours' => 486]);
     $payload = AcademicSetting::current()->only([
         'required_ojt_hours', 'student_id_pattern', 'current_term_override', 'academic_year_start_month',
         'first_semester_start_month', 'first_semester_start_day', 'first_semester_end_month', 'first_semester_end_day',
@@ -836,7 +836,9 @@ it('gives coordinators Academic Settings from their own sidebar, and keeps stude
     $this->get(route('coordinator.academics.index'))
         ->assertOk()
         ->assertSee(route('coordinator.academics.settings.update'), false)
-        ->assertSee(route('coordinator.academics.programs.create'), false)
+        ->assertSee(route('coordinator.academics.programs.edit', $ownProgram), false)
+        ->assertDontSee(route('coordinator.academics.programs.edit', $otherProgram), false)
+        ->assertDontSee(route('coordinator.academics.programs.create'), false)
         ->assertDontSee(route('admin.academics.index'), false);
 
     $this->post(route('coordinator.academics.settings.update'), $payload)
@@ -844,10 +846,17 @@ it('gives coordinators Academic Settings from their own sidebar, and keeps stude
         ->assertSessionHasNoErrors();
     expect(AcademicSetting::current()->required_ojt_hours)->toBe(450);
 
-    $this->post(route('coordinator.academics.programs.store'), [
-        'name' => 'BS Computer Science', 'code' => 'BSCS', 'required_internship_hours' => 486, 'coordinator_id' => $coordinator->id,
+    $this->get(route('coordinator.academics.programs.edit', $ownProgram))->assertOk()->assertDontSee('name="coordinator_id"', false);
+    $this->put(route('coordinator.academics.programs.update', $ownProgram), [
+        'name' => $ownProgram->name, 'code' => $ownProgram->code, 'required_internship_hours' => 500,
     ])->assertRedirect(route('coordinator.academics.index'));
-    expect(Program::where('code', 'BSCS')->exists())->toBeTrue();
+    expect($ownProgram->fresh()->required_internship_hours)->toBe(500);
+
+    // Another department, or adding one, is admin-only.
+    $this->get(route('coordinator.academics.programs.edit', $otherProgram))->assertForbidden();
+    $this->put(route('coordinator.academics.programs.update', $otherProgram), ['name' => 'X', 'code' => 'BSCS', 'required_internship_hours' => 1])->assertForbidden();
+    $this->get(route('coordinator.academics.programs.create'))->assertForbidden();
+    $this->post(route('coordinator.academics.programs.store'), ['name' => 'New', 'code' => 'NEW', 'required_internship_hours' => 486])->assertForbidden();
 
     // The admin URLs stay admin-only.
     $this->get(route('admin.academics.index'))->assertForbidden();

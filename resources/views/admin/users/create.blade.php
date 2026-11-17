@@ -58,6 +58,20 @@
                 @error('institution_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
 
+            <div class="col-md-6" id="department-field" hidden>
+                <label for="program_id" class="form-label">Department <span class="text-danger" aria-hidden="true">*</span></label>
+                <select id="program_id" name="program_id" class="form-select @error('program_id') is-invalid @enderror">
+                    <option value="">Select department</option>
+                    @foreach($departments as $department)
+                        <option value="{{ $department->id }}" @selected((string) old('program_id') === (string) $department->id)>{{ $department->display_name }}</option>
+                    @endforeach
+                </select>
+                <small class="form-text text-muted">
+                    {{ $departments->isEmpty() ? 'Every department already has a coordinator.' : 'Only departments without a coordinator are listed. The coordinator cannot change it later.' }}
+                </small>
+                @error('program_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+
             <div class="col-md-6" id="student-id-field">
                 <label for="student_id_number" class="form-label">Student ID Number</label>
                 <input id="student_id_number" name="student_id_number" type="text" value="{{ old('student_id_number') }}" placeholder="SCC-21-00013240" class="form-control @error('student_id_number') is-invalid @enderror">
@@ -98,6 +112,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const company = document.getElementById('company_name');
     const institution = document.getElementById('institution_id');
     const studentId = document.getElementById('student_id_number');
+    const departmentField = document.getElementById('department-field');
+    const department = document.getElementById('program_id');
 
     function updateFields() {
         const isEmployer = role.value === 'employer';
@@ -109,6 +125,8 @@ document.addEventListener('DOMContentLoaded', function () {
         company.required = isEmployer;
         institution.required = needsInstitution;
         studentId.required = isStudent;
+        departmentField.hidden = role.value !== 'coordinator';
+        department.required = role.value === 'coordinator';
     }
 
     role.addEventListener('change', updateFields);

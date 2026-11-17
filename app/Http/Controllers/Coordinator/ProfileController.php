@@ -65,7 +65,6 @@ class ProfileController extends Controller
                 ]);
 
                 $coordinator->update([
-                    'department' => $validated['department'],
                     'office_address' => $validated['office_address'] ?? null,
                     'profile_picture' => $newPicture ?? $coordinator->profile_picture,
                 ]);

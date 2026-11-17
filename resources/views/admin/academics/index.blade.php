@@ -23,7 +23,9 @@
 <div>
 <div class="sb-dash">
 <x-page-header title="Academic settings" subtitle="Manage school programs, majors, internship hours, and academic calendar defaults.">
-    <a href="{{ route($academicsRoute.'programs.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add program</a>
+    @if($canManagePrograms)
+        <a href="{{ route($academicsRoute.'programs.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add program</a>
+    @endif
 </x-page-header>
 
 @if($errors->any())
@@ -71,7 +73,7 @@
                                     <span class="badge bg-warning">To be confirmed</span>
                                 @endunless
                             </td>
-                            <td>{{ $program->coordinator?->user?->name ?? 'Not assigned' }}</td>
+                            <td>{{ $program->coordinator?->user?->name ?? 'No coordinator assigned' }}</td>
                             <td>{{ $program->students_count }}</td>
                             <td><a class="btn btn-sm btn-outline-primary" href="{{ route($academicsRoute.'programs.edit', $program) }}">Edit</a></td>
                         </tr>

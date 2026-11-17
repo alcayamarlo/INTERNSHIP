@@ -578,8 +578,9 @@ it('puts skills on the resume as their own section, separate from certificates',
 it('shows skills and competencies as separate sections to coordinators and employers', function () {
     $institution = \App\Models\Institution::create(['name' => 'Separate Sections College']);
     $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
-    \App\Models\Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
+    $coordinator = \App\Models\Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
     $student = bioDataStudent(['institution_id' => $institution->id]);
+    assignDepartment($coordinator, $student);
     \App\Models\StudentCompetency::create([
         'student_id' => $student->id,
         'name' => 'Network Setup',

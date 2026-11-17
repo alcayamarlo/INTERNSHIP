@@ -23,11 +23,10 @@ function createCoordinatorForVerification(Institution $institution): User
         'role' => UserRole::Coordinator,
     ]);
 
-    Coordinator::create([
+    assignDepartment(Coordinator::create([
         'user_id' => $user->id,
         'institution_id' => $institution->id,
-        'department' => 'Internship Office',
-    ]);
+    ]));
 
     return $user;
 }
@@ -42,6 +41,8 @@ function createStudentForVerification(Institution $institution): Student
         'user_id' => $user->id,
         'institution_id' => $institution->id,
         'program' => 'BS Computer Science',
+        // Coordinators see only their own department: join the school's first coordinator's.
+        'program_id' => Coordinator::where('institution_id', $institution->id)->orderBy('id')->value('program_id'),
     ]);
 }
 

@@ -36,14 +36,9 @@
                     </div>
                 </div>
                 <div class="col-12">
-                    <label class="form-label" for="coordinator_id">Assigned coordinator</label>
-                    <select id="coordinator_id" name="coordinator_id" class="form-select @error('coordinator_id') is-invalid @enderror">
-                        <option value="">Not assigned</option>
-                        @foreach($coordinators as $coordinator)
-                            <option value="{{ $coordinator->id }}" @selected((string) old('coordinator_id', $program->coordinator_id) === (string) $coordinator->id)>{{ $coordinator->user?->name ?? 'Coordinator '.$coordinator->id }}</option>
-                        @endforeach
-                    </select>
-                    @error('coordinator_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <span class="form-label d-block">Assigned coordinator</span>
+                    <p class="mb-1" data-assigned-coordinator>{{ $program->coordinator?->user?->name ?? 'No coordinator assigned' }}</p>
+                    <div class="form-text">Each department has one coordinator. An admin assigns it from Users when creating or editing the coordinator's account.</div>
                 </div>
                 <div class="col-12">
                     <label class="form-label" for="majors">Majors</label>

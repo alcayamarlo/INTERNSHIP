@@ -61,6 +61,7 @@
                         <th scope="col">Name</th>
                         <th scope="col">Email</th>
                         <th scope="col">Role</th>
+                        <th scope="col">Department</th>
                         <th scope="col">Status</th>
                         <th scope="col"><span class="visually-hidden">Actions</span></th>
                     </tr>
@@ -81,6 +82,13 @@
                             </td>
                             <td data-label="Email">{{ $user->email }}</td>
                             <td data-label="Role"><span class="sb-tag sb-tag--brand">{{ $user->role->label() }}</span></td>
+                            <td data-label="Department">
+                                @if($user->role === \App\Enums\UserRole::Coordinator)
+                                    {{ $user->coordinator?->departmentName() ?? 'No department assigned' }}
+                                @else
+                                    <span class="text-muted">&mdash;</span>
+                                @endif
+                            </td>
                             <td data-label="Status" class="sb-stack-block">
                                 @if($user->archived_at)
                                     <x-status-badge status="inactive" label="Archived" />
@@ -257,6 +265,17 @@
                                 </select>
                             </div>
                         </div>
+                        @php($currentDepartmentId = $user->coordinator?->program_id)
+                        <div class="mb-3" data-department-field @unless($user->role === \App\Enums\UserRole::Coordinator) hidden @endunless>
+                            <label class="form-label" for="editDepartment{{ $user->id }}">Department <span class="text-danger" aria-hidden="true">*</span></label>
+                            <select id="editDepartment{{ $user->id }}" class="form-select" name="program_id">
+                                <option value="">Select department</option>
+                                @foreach($departments->filter(fn ($department) => ! $department->coordinator || (int) $department->id === (int) $currentDepartmentId) as $department)
+                                    <option value="{{ $department->id }}" @selected((int) $currentDepartmentId === (int) $department->id)>{{ $department->display_name }}</option>
+                                @endforeach
+                            </select>
+                            <small class="form-text text-muted">Only free departments are listed. The coordinator cannot change this.</small>
+                        </div>
                         <div class="mb-3" data-student-id-field @unless($user->role === \App\Enums\UserRole::Student) hidden @endunless>
                             <label class="form-label" for="editStudentId{{ $user->id }}">Student ID Number</label>
                             <input id="editStudentId{{ $user->id }}" type="text" class="form-control" name="student_id_number" value="{{ $user->student->student_id_number ?? '' }}" placeholder="SCC-21-00013240">
@@ -295,6 +314,8 @@ document.addEventListener('DOMContentLoaded', function () {
         var studentIdInput = studentIdField ? studentIdField.querySelector('input[name="student_id_number"]') : null;
         var emailInput = modal.querySelector('input[name="email"]');
         var emailRequiredMark = modal.querySelector('[data-email-required-mark]');
+        var departmentField = modal.querySelector('[data-department-field]');
+        var departmentSelect = departmentField ? departmentField.querySelector('select[name="program_id"]') : null;
         if (!roleSelect) return;
 
         function update() {
@@ -303,6 +324,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if (studentIdInput) studentIdInput.required = isStudent;
             if (emailInput) emailInput.required = !isStudent;
             if (emailRequiredMark) emailRequiredMark.hidden = isStudent;
+            if (departmentField) departmentField.hidden = roleSelect.value !== 'coordinator';
+            if (departmentSelect) departmentSelect.required = roleSelect.value === 'coordinator';
         }
 
         roleSelect.addEventListener('change', update);

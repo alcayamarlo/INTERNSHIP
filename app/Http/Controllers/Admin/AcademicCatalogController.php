@@ -6,12 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AcademicProgramRequest;
 use App\Http\Requests\Admin\AcademicSettingsRequest;
 use App\Models\AcademicSetting;
-use App\Models\Coordinator;
 use App\Models\DeploymentRequirement;
 use App\Models\Major;
 use App\Models\Program;
 use App\Services\AcademicCalendar;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -23,7 +23,11 @@ class AcademicCatalogController extends Controller
 
         return view('admin.academics.index', [
             'academicsRoute' => $this->routePrefix(),
-            'programs' => Program::with(['coordinator.user', 'majors'])->withCount(['students', 'majors'])->orderBy('code')->get(),
+            'programs' => Program::with(['coordinator.user', 'majors'])->withCount(['students', 'majors'])
+                // A coordinator sees only their own department.
+                ->when($this->isCoordinator(), fn ($query) => $query->whereKey(Auth::user()->coordinator?->program_id ?? 0))
+                ->orderBy('code')->get(),
+            'canManagePrograms' => ! $this->isCoordinator(),
             'deploymentRequirements' => DeploymentRequirement::query()->orderBy('sort_order')->orderBy('id')->get(),
             'settings' => AcademicSetting::current(),
             'monthOptions' => collect(range(1, 12))
@@ -35,11 +39,15 @@ class AcademicCatalogController extends Controller
 
     public function create()
     {
+        abort_if($this->isCoordinator(), 403);
+
         return $this->programForm(new Program);
     }
 
     public function store(AcademicProgramRequest $request)
     {
+        abort_if($this->isCoordinator(), 403);
+
         $program = DB::transaction(function () use ($request): Program {
             $program = Program::create($this->programAttributes($request));
             $this->syncMajors($program, $request->input('majors'));
@@ -52,11 +60,15 @@ class AcademicCatalogController extends Controller
 
     public function edit(Program $program)
     {
+        $this->authorizeProgram($program);
+
         return $this->programForm($program);
     }
 
     public function update(AcademicProgramRequest $request, Program $program)
     {
+        $this->authorizeProgram($program);
+
         DB::transaction(function () use ($request, $program): void {
             $program->update($this->programAttributes($request));
             $this->syncMajors($program, $request->input('majors'));
@@ -78,6 +90,17 @@ class AcademicCatalogController extends Controller
         return redirect()->route($this->routePrefix().'index')->with('success', 'Academic settings saved.');
     }
 
+    private function isCoordinator(): bool
+    {
+        return request()->routeIs('coordinator.*');
+    }
+
+    /** Admins edit any department; a coordinator only their own. Only admins add departments. */
+    private function authorizeProgram(Program $program): void
+    {
+        abort_if($this->isCoordinator() && (int) $program->id !== (int) Auth::user()->coordinator?->program_id, 403);
+    }
+
     /** Admins use admin.academics.*, coordinators coordinator.academics.* (the same pages). */
     private function routePrefix(): string
     {
@@ -88,8 +111,7 @@ class AcademicCatalogController extends Controller
     {
         return view('admin.academics.program-form', [
             'academicsRoute' => $this->routePrefix(),
-            'program' => $program->load('majors'),
-            'coordinators' => Coordinator::with('user')->orderBy('id')->get(),
+            'program' => $program->load(['majors', 'coordinator.user']),
         ]);
     }
 
@@ -100,7 +122,6 @@ class AcademicCatalogController extends Controller
                 'name',
                 'code',
                 'required_internship_hours',
-                'coordinator_id',
             ]),
             'required_hours_confirmed' => $request->boolean('required_hours_confirmed'),
         ];

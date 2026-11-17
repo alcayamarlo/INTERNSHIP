@@ -9,10 +9,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Coordinator extends Model
 {
+    public const DEPARTMENT_TAKEN = 'This department already has a coordinator.';
+
     protected $fillable = [
         'user_id',
         'institution_id',
-        'department',
+        // The one department (program) this coordinator handles. Only an admin sets it.
+        'program_id',
         'office_address',
         'profile_picture',
     ];
@@ -27,35 +30,43 @@ class Coordinator extends Model
         return $this->belongsTo(Institution::class);
     }
 
+    /** The coordinator's department (a program such as BSIT). */
+    public function program(): BelongsTo
+    {
+        return $this->belongsTo(Program::class);
+    }
+
+    /** "BS Information Technology (BSIT)", or null until an admin assigns a department. */
+    public function departmentName(): ?string
+    {
+        return $this->program?->display_name;
+    }
+
     public function verificationActivities(): HasMany
     {
         return $this->hasMany(VerificationActivity::class);
     }
 
+    /**
+     * Every student this coordinator may see: same school and the coordinator's own department only.
+     * A coordinator without a department sees no students.
+     */
     public function scopedStudentsQuery(): Builder
     {
-        if ($this->institution_id === null) {
+        if ($this->institution_id === null || $this->program_id === null) {
             return Student::query()->whereRaw('0 = 1');
         }
 
         return Student::query()
             ->where('institution_id', $this->institution_id)
-            ->where(function (Builder $query): void {
-                $query->whereDoesntHave('academicProgram')
-                    ->orWhereHas('academicProgram', fn (Builder $programQuery) => $programQuery
-                        ->whereNull('coordinator_id')
-                        ->orWhere('coordinator_id', $this->id));
-            });
+            ->where('program_id', $this->program_id);
     }
 
     public function canAccessStudent(Student $student): bool
     {
-        if ($this->institution_id === null || (int) $student->institution_id !== (int) $this->institution_id) {
-            return false;
-        }
-
-        $assignedCoordinatorId = $student->academicProgram?->coordinator_id;
-
-        return $assignedCoordinatorId === null || (int) $assignedCoordinatorId === (int) $this->id;
+        return $this->institution_id !== null
+            && $this->program_id !== null
+            && (int) $student->institution_id === (int) $this->institution_id
+            && (int) $student->program_id === (int) $this->program_id;
     }
 }

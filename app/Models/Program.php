@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Program extends Model
 {
@@ -13,7 +13,6 @@ class Program extends Model
         'code',
         'required_internship_hours',
         'required_hours_confirmed',
-        'coordinator_id',
     ];
 
     protected function casts(): array
@@ -26,9 +25,10 @@ class Program extends Model
         return $this->hasMany(Major::class);
     }
 
-    public function coordinator(): BelongsTo
+    /** The department's one coordinator (coordinators.program_id is unique). */
+    public function coordinator(): HasOne
     {
-        return $this->belongsTo(Coordinator::class);
+        return $this->hasOne(Coordinator::class);
     }
 
     public function students(): HasMany

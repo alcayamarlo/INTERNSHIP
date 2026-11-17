@@ -126,6 +126,7 @@ it('lets coordinators review documents, notifies students, and counts approved r
     ]);
     [$studentUser, $student] = deploymentRequirementStudent($institution);
     $coordinator = deploymentRequirementCoordinator($institution);
+    assignDepartment($coordinator->coordinator, $student);
     $requirement = DeploymentRequirement::query()->where('code', 'certificate-of-registration')->firstOrFail();
     $document = $student->deploymentDocuments()->create([
         'title' => $requirement->name,

@@ -28,7 +28,7 @@ function mePlacement(string $start = '2026-02-02', ?string $end = null, string $
     $studentUser = User::factory()->create(['role' => UserRole::Student, 'name' => 'Joshua Trainee']);
     $student = Student::create(['user_id' => $studentUser->id, 'institution_id' => $institution->id, 'program' => 'BSIT']);
     $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
-    Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
+    assignDepartment(Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]), $student);
     $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Software Developer Trainee', 'description' => 'Build.', 'status' => 'open']);
     $application = InternshipApplication::create(['internship_id' => $internship->id, 'student_id' => $student->id, 'status' => ApplicationStatus::Accepted, 'match_percentage' => 80]);
     $placement = Placement::create([
@@ -203,6 +203,10 @@ it('bulk-requests a month for every active placement the coordinator manages, sk
     $pending = mePlacement('2026-02-02', null, Placement::STATUS_PENDING_VALIDATION, $institution);
     $elsewhere = mePlacement('2026-02-02'); // another institution
     meRequest($b, '2026-02'); // already requested
+    // The same coordinator handles a, b, late and pending: put those students in a's department.
+    foreach ([$b, $late, $pending] as $other) {
+        $other['placement']->student->update(['program_id' => $a['placement']->student->program_id]);
+    }
 
     $this->actingAs($a['coordinatorUser'])
         ->post(route('coordinator.appraisals.bulk'), ['period_month' => '2026-02', 'due_on' => now()->addWeek()->toDateString()])

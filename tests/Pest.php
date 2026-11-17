@@ -67,3 +67,22 @@ function bioDataDefaults(): array
         'high_school_year_graduated' => '2020-2021',
     ];
 }
+
+/**
+ * Makes the coordinator the one coordinator of a department (program) and puts the students in it,
+ * so the coordinator can see them (coordinators only see their own department).
+ */
+function assignDepartment(\App\Models\Coordinator $coordinator, \App\Models\Student ...$students): \App\Models\Program
+{
+    $program = $coordinator->program ?? \App\Models\Program::create([
+        'name' => 'Department '.$coordinator->id,
+        'code' => 'DEPT'.$coordinator->id,
+        'required_internship_hours' => 486,
+    ]);
+    $coordinator->update(['program_id' => $program->id]);
+    foreach ($students as $student) {
+        $student->update(['program_id' => $program->id]);
+    }
+
+    return $program;
+}

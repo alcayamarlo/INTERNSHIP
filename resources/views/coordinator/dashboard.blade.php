@@ -10,7 +10,7 @@
 
 <x-page-header
     title="Coordinator Dashboard"
-    :subtitle="'Manage students and track placements at '.($coordinator->institution?->name ?? 'your school').'.'"
+    :subtitle="'Coordinator – '.($coordinator->departmentName() ?? 'No department assigned yet').($coordinator->institution ? ' · '.$coordinator->institution->name : '')"
     eyebrow="Coordinator workspace"
 >
     <span class="sb-tag"><i class="bi bi-calendar3" aria-hidden="true"></i> {{ now()->format('M d, Y') }}</span>
@@ -18,6 +18,10 @@
         <i class="bi bi-shield-check" aria-hidden="true"></i> Review verification queue
     </a>
 </x-page-header>
+
+@unless($coordinator->program_id)
+    <div class="alert alert-warning" role="status" data-no-department>You don't have a department yet, so no students are shown. Ask an administrator to assign your department.</div>
+@endunless
 
 {{-- Row 1: stat cards --}}
 <div class="sb-grid sb-grid--4">
@@ -193,7 +197,7 @@
                 <dt>Institution</dt>
                 <dd>{{ auth()->user()->coordinator->institution->name ?? 'N/A' }}</dd>
                 <dt>Department</dt>
-                <dd>{{ auth()->user()->coordinator->department ?? 'N/A' }}</dd>
+                <dd>{{ $coordinator->departmentName() ?? 'No department assigned' }}</dd>
                 <dt>Contact</dt>
                 <dd>{{ auth()->user()->email }}</dd>
             </dl>

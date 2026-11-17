@@ -62,7 +62,7 @@ class DatabaseSeeder extends Seeder
         Coordinator::create([
             'user_id' => $coordinatorUser->id,
             'institution_id' => $institution->id,
-            'department' => 'Internship Office',
+            'program_id' => \App\Models\Program::where('code', 'BSIT')->value('id'),
         ]);
 
         $employerUser = User::create([

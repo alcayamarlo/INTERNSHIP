@@ -31,7 +31,8 @@ function workflow(array $studentAttributes = []): array
     $institution = Institution::create(['name' => 'SCC']);
     $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
     $coordinator = Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
-    $program = Program::create(['name' => 'BS Information Technology', 'code' => 'BSIT', 'coordinator_id' => $coordinator->id, 'required_internship_hours' => 486]);
+    $program = Program::create(['name' => 'BS Information Technology', 'code' => 'BSIT', 'required_internship_hours' => 486]);
+    $coordinator->update(['program_id' => $program->id]);
     $studentUser = User::factory()->create(['role' => UserRole::Student, 'name' => 'Ana Cruz']);
     $student = Student::create([
         'user_id' => $studentUser->id, 'institution_id' => $institution->id, 'program_id' => $program->id, 'program' => 'BSIT',

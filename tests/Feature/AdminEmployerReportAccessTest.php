@@ -58,15 +58,19 @@ it('allows an admin to create, update, and archive users', function () {
     $this->put(route('admin.users.update', $managedUser), adminAccessUserData($managedUser, [
         'name' => 'Updated Managed User',
         'role' => UserRole::Coordinator->value,
+        'program_id' => \App\Models\Program::create(['name' => 'BS Information Technology', 'code' => 'BSIT', 'required_internship_hours' => 486])->id,
     ]))->assertRedirect();
 
     $managedUser->refresh();
     expect($managedUser->name)->toBe('Updated Managed User')
         ->and($managedUser->role)->toBe(UserRole::Coordinator)
-        ->and($managedUser->coordinator)->toBeInstanceOf(Coordinator::class);
+        ->and($managedUser->coordinator)->toBeInstanceOf(Coordinator::class)
+        ->and($managedUser->coordinator->program_id)->not->toBeNull();
 
     $this->delete(route('admin.users.destroy', $managedUser))->assertRedirect();
-    expect($managedUser->fresh()->archived_at)->not->toBeNull();
+    expect($managedUser->fresh()->archived_at)->not->toBeNull()
+        // Deleting (archiving) a coordinator frees the department.
+        ->and($managedUser->coordinator->fresh()->program_id)->toBeNull();
     $this->assertDatabaseHas('users', ['id' => $managedUser->id]);
 
     $this->post(route('admin.users.restore', $managedUser))->assertRedirect();

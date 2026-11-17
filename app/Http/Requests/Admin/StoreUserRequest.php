@@ -28,6 +28,14 @@ class StoreUserRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:20'],
             'institution_id' => ['required_if:role,coordinator,student', 'nullable', \Illuminate\Validation\Rule::exists('institutions', 'id')->whereNotNull('verified_at')],
             'company_name' => ['required_if:role,employer', 'nullable', 'string', 'max:255'],
+            // Coordinators only: one department each, and one coordinator per department.
+            'program_id' => [
+                'exclude_unless:role,coordinator',
+                'required',
+                'integer',
+                'exists:programs,id',
+                Rule::unique('coordinators', 'program_id'),
+            ],
             'student_id_number' => [
                 'required_if:role,student',
                 'nullable',
@@ -40,6 +48,14 @@ class StoreUserRequest extends FormRequest
                     }
                 },
             ],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'program_id.required' => 'Choose the department this coordinator will handle.',
+            'program_id.unique' => \App\Models\Coordinator::DEPARTMENT_TAKEN,
         ];
     }
 }

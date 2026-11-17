@@ -26,6 +26,7 @@ it('marks admin-created accounts verified and lets admins verify stuck accounts'
         'password_confirmation' => 'Password#2026x',
         'role' => UserRole::Coordinator->value,
         'institution_id' => $institution->id,
+        'program_id' => \App\Models\Program::create(['name' => 'BS Information Technology', 'code' => 'BSIT', 'required_internship_hours' => 486])->id,
     ])->assertSessionHasNoErrors();
 
     expect(User::where('email', 'new.coordinator@example.test')->first()->hasVerifiedEmail())->toBeTrue();

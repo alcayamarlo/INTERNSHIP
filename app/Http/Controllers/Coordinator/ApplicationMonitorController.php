@@ -96,7 +96,7 @@ class ApplicationMonitorController extends Controller
             'unplacedTotal' => $unplacedTotal,
             'eligibleIds' => $eligibleIds,
             'filters' => $filters,
-            'programs' => Program::query()->where('coordinator_id', $coordinator->id)->orderBy('code')->get(),
+            'programs' => Program::query()->whereKey($coordinator->program_id ?? 0)->get(),
             'pendingValidation' => Placement::query()->whereIn('student_id', $studentIds)->where('status', Placement::STATUS_PENDING_VALIDATION)->count(),
         ]);
     }

@@ -38,7 +38,7 @@ function remPlacement(string $status = Placement::STATUS_ACTIVE, string $start =
     $studentUser = User::factory()->create(['role' => UserRole::Student]);
     $student = Student::create(['user_id' => $studentUser->id, 'institution_id' => $institution->id, 'program' => 'BSIT']);
     $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
-    Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
+    assignDepartment(Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]), $student);
     $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Dev Intern', 'description' => 'x', 'status' => 'open']);
     $application = InternshipApplication::create(['internship_id' => $internship->id, 'student_id' => $student->id, 'status' => ApplicationStatus::Accepted, 'match_percentage' => 70]);
     $placement = Placement::create(['application_id' => $application->id, 'student_id' => $student->id, 'employer_id' => $employer->id,

@@ -16,7 +16,6 @@ class CoordinatorProfileRequest extends FormRequest
     {
         return [
             // Institution Information
-            'department' => ['required', 'string', 'max:100'],
             'position' => ['required', 'string', 'max:100'],
             'office_address' => ['required', 'string', 'max:255'],
 
@@ -33,7 +32,6 @@ class CoordinatorProfileRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'department.required' => 'Department is required.',
             'position.required' => 'Position is required.',
             'name.required' => 'Full name is required.',
             'email.unique' => 'This email is already in use.',

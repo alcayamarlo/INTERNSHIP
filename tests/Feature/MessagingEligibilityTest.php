@@ -37,7 +37,7 @@ function chatSetup(): array
         'privacy_consent_at' => now(),
     ]);
     $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
-    Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
+    assignDepartment(Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]), $student);
 
     $employerUser = User::factory()->create(['role' => UserRole::Employer]);
     $employer = Employer::create(['user_id' => $employerUser->id, 'company_name' => 'Acme Corp', 'contact_person' => 'HR']);

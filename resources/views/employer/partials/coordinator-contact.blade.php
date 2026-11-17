@@ -5,7 +5,7 @@
     <div class="card-body">
         @if($coordinator?->user)
             <p class="mb-1"><strong>{{ $coordinator->user->name }}</strong></p>
-            <p class="small text-muted mb-3">{{ collect([$coordinator->department, $coordinator->institution?->name])->filter()->implode(' · ') ?: 'OJT coordinator' }}</p>
+            <p class="small text-muted mb-3">{{ collect([$coordinator->departmentName(), $coordinator->institution?->name])->filter()->implode(' · ') ?: 'OJT coordinator' }}</p>
             @can('message.send', $coordinator->user)
                 <a href="{{ route('messages.show', $coordinator->user) }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-chat-dots" aria-hidden="true"></i> Message coordinator</a>
             @endcan

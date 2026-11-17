@@ -9,12 +9,14 @@ use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Models\Coordinator;
 use App\Models\Employer;
 use App\Models\Institution;
+use App\Models\Program;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\ActivityLogService;
 use App\Support\StudentIdFormat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -26,7 +28,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $view = in_array($request->query('view'), ['archived', 'suspended'], true) ? $request->query('view') : 'active';
-        $query = User::with(['student', 'employer'])
+        $query = User::with(['student', 'employer', 'coordinator.program'])
             ->when($view === 'archived', fn ($query) => $query->whereNotNull('archived_at'))
             ->when($view === 'active', fn ($query) => $query->whereNull('archived_at'))
             ->when($view === 'suspended', fn ($query) => $query->whereNull('archived_at')->whereNotNull('suspended_at')->where(fn ($active) => $active->whereNull('suspended_until')->orWhere('suspended_until', '>', now())));
@@ -48,6 +50,8 @@ class UserController extends Controller
             'roles' => UserRole::all(),
             'assignableRoles' => UserRole::assignable(),
             'studentIdPattern' => StudentIdFormat::pattern(),
+            // For the edit modal: a coordinator may keep their department or move to a free one.
+            'departments' => Program::with('coordinator')->orderBy('code')->get(),
         ]);
     }
 
@@ -56,6 +60,8 @@ class UserController extends Controller
         return view('admin.users.create', [
             'institutions' => Institution::query()->whereNotNull('verified_at')->orderBy('name')->get(),
             'roles' => UserRole::assignable(),
+            // Only departments that still need a coordinator.
+            'departments' => Program::query()->whereDoesntHave('coordinator')->orderBy('code')->get(),
         ]);
     }
 
@@ -63,7 +69,7 @@ class UserController extends Controller
     {
         $validated = $request->validated();
 
-        $user = DB::transaction(function () use ($validated) {
+        $user = $this->guardDepartment(fn () => DB::transaction(function () use ($validated) {
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
@@ -85,6 +91,7 @@ class UserController extends Controller
                 Coordinator::create([
                     'user_id' => $user->id,
                     'institution_id' => $validated['institution_id'],
+                    'program_id' => $validated['program_id'],
                 ]);
             } else {
                 $student = Student::create([
@@ -99,7 +106,7 @@ class UserController extends Controller
             $this->activityLog->log(Auth::user(), 'admin_create_user', ['user_id' => $user->id]);
 
             return $user;
-        });
+        }));
 
         return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
     }
@@ -119,7 +126,7 @@ class UserController extends Controller
             ]);
         }
 
-        DB::transaction(function () use ($user, $validated, $newRole, $actor) {
+        $this->guardDepartment(fn () => DB::transaction(function () use ($user, $validated, $newRole, $actor) {
             $user = User::query()->lockForUpdate()->findOrFail($user->id);
             $previousRole = $user->role;
             $removingAdminAccess = $previousRole === UserRole::Admin
@@ -140,7 +147,7 @@ class UserController extends Controller
                 }
             }
 
-            $user->fill(collect($validated)->except(['password', 'student_id_number'])->all());
+            $user->fill(collect($validated)->except(['password', 'student_id_number', 'program_id'])->all());
 
             if (! empty($validated['password'])) {
                 $user->password = Hash::make($validated['password']);
@@ -150,6 +157,17 @@ class UserController extends Controller
 
             if ($previousRole !== $newRole) {
                 $this->ensureRoleProfile($user, $newRole);
+            }
+
+            if ($newRole === UserRole::Coordinator) {
+                $coordinator = $user->coordinator()->firstOrCreate([]);
+                if ((int) $coordinator->program_id !== (int) $validated['program_id']) {
+                    $coordinator->update(['program_id' => $validated['program_id']]);
+                    $this->activityLog->log($actor, 'coordinator_department_assigned', ['user_id' => $user->id, 'program_id' => (int) $validated['program_id']]);
+                }
+            } elseif ($previousRole === UserRole::Coordinator && $user->coordinator?->program_id) {
+                // No longer a coordinator: the department is free for someone else.
+                $user->coordinator->update(['program_id' => null]);
             }
 
             if ($newRole === UserRole::Student && ! empty($validated['student_id_number'])) {
@@ -174,7 +192,7 @@ class UserController extends Controller
             if (! empty($validated['password'])) {
                 $this->activityLog->log($actor, 'admin_password_set', ['user_id' => $user->id]);
             }
-        });
+        }));
 
         return back()->with('success', 'User updated successfully.');
     }
@@ -242,6 +260,10 @@ class UserController extends Controller
             }
 
             $user->update(['archived_at' => now()]);
+            // Deleting (archiving) a coordinator frees their department for another coordinator.
+            if ($user->coordinator?->program_id) {
+                $user->coordinator->update(['program_id' => null]);
+            }
             $this->activityLog->log($actor, 'admin_archive_user', ['user_id' => $user->id]);
         });
 
@@ -326,6 +348,23 @@ class UserController extends Controller
         });
 
         return back()->with('success', 'Archived user permanently deleted.');
+    }
+
+    /**
+     * The UNIQUE key on coordinators.program_id is the last line of defence: if two admins give the
+     * same department to two coordinators at the same moment, the second save fails here.
+     */
+    private function guardDepartment(\Closure $save): mixed
+    {
+        try {
+            return $save();
+        } catch (UniqueConstraintViolationException $exception) {
+            if (! str_contains($exception->getMessage(), 'program_id')) {
+                throw $exception;
+            }
+
+            throw ValidationException::withMessages(['program_id' => Coordinator::DEPARTMENT_TAKEN]);
+        }
     }
 
     private function ensureRoleProfile(User $user, UserRole $role): void

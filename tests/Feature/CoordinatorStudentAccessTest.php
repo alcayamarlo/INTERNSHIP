@@ -23,11 +23,10 @@ function createCoordinatorForInstitution(Institution $institution): User
         'role' => UserRole::Coordinator,
     ]);
 
-    Coordinator::create([
+    assignDepartment(Coordinator::create([
         'user_id' => $user->id,
         'institution_id' => $institution->id,
-        'department' => 'Internship Office',
-    ]);
+    ]));
 
     return $user;
 }
@@ -42,6 +41,8 @@ function createStudentForInstitution(Institution $institution): Student
         'user_id' => $user->id,
         'institution_id' => $institution->id,
         'program' => 'BS Computer Science',
+        // Coordinators see only their own department: join the school's first coordinator's.
+        'program_id' => Coordinator::where('institution_id', $institution->id)->orderBy('id')->value('program_id'),
     ]);
 }
 
@@ -80,19 +81,20 @@ it('limits assigned-program students to their coordinator while retaining unassi
         'name' => 'Computer Science',
         'code' => 'BSCS',
         'required_internship_hours' => 486,
-        'coordinator_id' => $firstCoordinator->coordinator->id,
     ]);
+    $firstCoordinator->coordinator->update(['program_id' => $firstProgram->id]);
     $secondProgram = Program::create([
         'name' => 'Information Technology',
         'code' => 'BSIT',
         'required_internship_hours' => 486,
-        'coordinator_id' => $secondCoordinator->coordinator->id,
     ]);
+    $secondCoordinator->coordinator->update(['program_id' => $secondProgram->id]);
     $firstStudent = createStudentForInstitution($institution);
     $firstStudent->update(['program_id' => $firstProgram->id]);
     $secondStudent = createStudentForInstitution($institution);
     $secondStudent->update(['program_id' => $secondProgram->id]);
     $unassignedStudent = createStudentForInstitution($institution);
+    $unassignedStudent->update(['program_id' => null]);
     $submission = Portfolio::create([
         'student_id' => $secondStudent->id,
         'title' => 'Other coordinator evidence',
@@ -104,9 +106,10 @@ it('limits assigned-program students to their coordinator while retaining unassi
     $this->actingAs($firstCoordinator)
         ->getJson(route('coordinator.students.index'))
         ->assertOk()
-        ->assertJsonCount(2, 'students')
+        ->assertJsonCount(1, 'students')
         ->assertJsonFragment(['id' => $firstStudent->id])
-        ->assertJsonFragment(['id' => $unassignedStudent->id])
+        // A student with no department is seen by no coordinator (only the admin).
+        ->assertJsonMissing(['id' => $unassignedStudent->id])
         ->assertJsonMissing(['id' => $secondStudent->id]);
 
     $this->get(route('coordinator.students.show', $secondStudent))

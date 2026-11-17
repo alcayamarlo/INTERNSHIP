@@ -244,7 +244,7 @@ it('serves the 2x2 only to the student, their coordinator, and companies they ap
     expect($student->fresh()->id_photo_path)->not->toBeNull();
 
     $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
-    Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
+    assignDepartment(Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]), $student);
     $this->actingAs($coordinatorUser)->get($url)->assertOk();
     $outsider = User::factory()->create(['role' => UserRole::Coordinator]);
     Coordinator::create(['user_id' => $outsider->id, 'institution_id' => Institution::create(['name' => 'Other'])->id]);

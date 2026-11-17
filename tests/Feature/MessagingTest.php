@@ -32,6 +32,7 @@ function assignCoordinator(User $coordinatorUser, User $studentUser): void
     $coordinator->update(['institution_id' => $institution->id]);
     $student = $studentUser->student ?? Student::create(['user_id' => $studentUser->id]);
     $student->update(['institution_id' => $institution->id]);
+    assignDepartment($coordinator, $student);
     $coordinatorUser->unsetRelation('coordinator');
     $studentUser->unsetRelation('student');
 }

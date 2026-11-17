@@ -247,19 +247,19 @@ class Student extends Model
     }
 
     /**
-     * The OJT coordinator responsible for this student: the program's coordinator, or else a coordinator
-     * of the student's school (the same rule as Coordinator::canAccessStudent).
+     * The OJT coordinator of the student's department (program) at the student's school, or null when
+     * the department has no coordinator (the same rule as Coordinator::canAccessStudent).
      */
     public function assignedCoordinator(): ?Coordinator
     {
-        $programCoordinatorId = $this->academicProgram?->coordinator_id;
-        if ($programCoordinatorId) {
-            return Coordinator::with('user')->find($programCoordinatorId);
+        if (! $this->program_id || ! $this->institution_id) {
+            return null;
         }
 
-        return $this->institution_id
-            ? Coordinator::with('user')->where('institution_id', $this->institution_id)->orderBy('id')->first()
-            : null;
+        return Coordinator::with('user')
+            ->where('program_id', $this->program_id)
+            ->where('institution_id', $this->institution_id)
+            ->first();
     }
 
     public function profileVerifier(): BelongsTo

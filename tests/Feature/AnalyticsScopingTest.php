@@ -23,6 +23,7 @@ function analyticsScopeFixture(string $institutionName): array
     $employer = Employer::create(['user_id' => $employerUser->id, 'company_name' => $institutionName.' Co', 'contact_person' => 'Employer']);
     $studentUser = User::factory()->create(['role' => UserRole::Student]);
     $student = Student::create(['user_id' => $studentUser->id, 'institution_id' => $institution->id]);
+    assignDepartment($coordinator, $student);
     $internship = Internship::create(['employer_id' => $employer->id, 'title' => $institutionName.' Intern', 'description' => 'Test.', 'status' => 'open']);
     InternshipApplication::create([
         'internship_id' => $internship->id,

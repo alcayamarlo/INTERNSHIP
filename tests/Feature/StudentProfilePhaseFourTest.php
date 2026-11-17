@@ -47,14 +47,19 @@ function phaseFourCoordinator(Institution $institution): array
 
 function phaseFourProgram(Coordinator $coordinator, array $attributes = []): Program
 {
-    return Program::create([
+    $program = Program::create([
         'name' => 'Computer Science',
         'code' => 'BSCS',
         'required_internship_hours' => 120,
         'required_hours_confirmed' => true,
-        'coordinator_id' => $coordinator->id,
         ...$attributes,
     ]);
+    // A coordinator handles one department: the first program created for them.
+    if (! $coordinator->fresh()->program_id) {
+        $coordinator->update(['program_id' => $program->id]);
+    }
+
+    return $program;
 }
 
 it('shows required and coordinator-rendered internship hours on the student profile', function () {

@@ -45,7 +45,7 @@ function ojtFixture(ApplicationStatus $status = ApplicationStatus::Interview): a
     $student = Student::create(['user_id' => $studentUser->id, 'institution_id' => $institution->id, 'program' => 'BS Information Technology', 'student_id_number' => sprintf('SCC-21-%08d', random_int(1, 99999999))]);
 
     $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
-    Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
+    assignDepartment(Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]), $student);
 
     $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Web Dev Intern', 'description' => 'Build things.', 'status' => 'open']);
     $application = InternshipApplication::create([
@@ -279,8 +279,8 @@ it('denies a coordinator from requesting or viewing a rating for a student assig
         'name' => 'Computer Science',
         'code' => 'BSCS',
         'required_internship_hours' => 486,
-        'coordinator_id' => $otherCoordinator->id,
     ]);
+    $otherCoordinator->update(['program_id' => $program->id]);
     $fixture['student']->update(['program_id' => $program->id]);
 
     // Same institution, but the student's program is assigned to a different coordinator.

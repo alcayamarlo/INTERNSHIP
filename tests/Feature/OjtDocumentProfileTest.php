@@ -46,7 +46,7 @@ function docFixture(array $placement = [], array $student = []): array
         ...$student,
     ]);
     $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
-    Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
+    assignDepartment(Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]), $studentModel);
     $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Software Developer Trainee', 'description' => 'Build.', 'status' => 'open']);
     $application = InternshipApplication::create(['internship_id' => $internship->id, 'student_id' => $studentModel->id, 'status' => ApplicationStatus::Accepted, 'match_percentage' => 80]);
     $placementModel = Placement::create([

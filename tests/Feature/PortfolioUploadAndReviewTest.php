@@ -42,11 +42,10 @@ it('stores a real portfolio file and allows a coordinator to review it', functio
         'email' => 'coordinator@example.com',
     ]);
 
-    Coordinator::create([
+    assignDepartment(Coordinator::create([
         'user_id' => $coordinatorUser->id,
         'institution_id' => $institution->id,
-        'department' => 'Internship Office',
-    ]);
+    ]), $student);
 
     $file = UploadedFile::fake()->create('project.pdf', 200, 'application/pdf');
 
