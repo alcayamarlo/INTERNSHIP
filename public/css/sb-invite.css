@@ -157,3 +157,28 @@ html body.sb-glass.skillbridge-public .inv-chip .bi { font-size: 16px; }
 html body.sb-glass.skillbridge-public .inv-dot .bi { font-size: 14px; line-height: 1; }
 html body.sb-glass.skillbridge-public .inv-btn--primary .bi { font-size: 16px; }
 html body.sb-glass.skillbridge-public .inv-section { padding: 16px 18px 18px; }
+
+/* ---------- Fit: tighter card and icon spacing fixes ---------- */
+html body.sb-glass.skillbridge-public .inv-card .inv-lock .form-control { padding-left: 42px; }
+html body.sb-glass.skillbridge-public .inv-card .inv-pw .form-control { padding-right: 46px; }
+html body.sb-glass.skillbridge-public .inv-lock > .bi { left: 15px; font-size: 14px; }
+html body.sb-glass.skillbridge-public .inv-card { padding: 18px 24px 16px; max-height: calc(100svh - 24px); }
+html body.sb-glass.skillbridge-public .inv-page { padding: 12px; }
+html body.sb-glass.skillbridge-public .inv-eyebrow { font-size: 11px; margin-bottom: 2px; }
+html body.sb-glass.skillbridge-public .inv-title { font-size: clamp(1.3rem, 2.2vw, 1.65rem); margin-bottom: 2px; }
+html body.sb-glass.skillbridge-public .inv-lead { margin-bottom: 8px; font-size: 13.5px; line-height: 1.45; }
+html body.sb-glass.skillbridge-public .inv-steps { margin-bottom: 6px; }
+html body.sb-glass.skillbridge-public .inv-dot { width: 26px; height: 26px; }
+html body.sb-glass.skillbridge-public .inv-bar { margin-bottom: 10px; }
+html body.sb-glass.skillbridge-public .inv-section { padding: 12px 16px 14px; }
+html body.sb-glass.skillbridge-public .inv-section legend { margin-bottom: 8px; font-size: 14.5px; }
+html body.sb-glass.skillbridge-public .inv-chip { width: 28px; height: 28px; border-radius: 9px; }
+html body.sb-glass.skillbridge-public .inv-grid { gap: 8px 12px; }
+html body.sb-glass.skillbridge-public .inv-card .form-label { margin-bottom: 3px; }
+html body.sb-glass.skillbridge-public .inv-card .form-control { min-height: 40px; }
+html body.sb-glass.skillbridge-public .inv-card textarea.form-control[rows="1"] { height: 40px; min-height: 40px; }
+html body.sb-glass.skillbridge-public .inv-card .form-text { margin-top: 3px; font-size: 12px; line-height: 1.35; }
+html body.sb-glass.skillbridge-public .inv-strength { margin-top: 6px; }
+html body.sb-glass.skillbridge-public .inv-foot { margin-top: 8px; padding-top: 10px; }
+html body.sb-glass.skillbridge-public .inv-btn { min-height: 42px; padding: 0 22px; }
+html body.sb-glass.skillbridge-public .inv-review dl { gap: 8px 16px; }
