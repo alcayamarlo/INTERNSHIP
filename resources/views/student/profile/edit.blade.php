@@ -33,6 +33,7 @@
     data-error-fields="{{ json_encode($errors->keys()) }}"
     data-tab-error-fields="{{ json_encode($tabErrorFields) }}"
     data-flash-success="{{ session('success') }}">
+    <div class="sp-grid">
     <header class="profile-header">
         <div class="identity">
             <div class="avatar-wrap">
@@ -89,6 +90,8 @@
         </div>
     </header>
 
+    <div class="sp-main">
+
     @unless($hasPrivacyConsent)
         <section class="privacy-consent-card" id="privacyConsentCard" aria-labelledby="privacyConsentHeading">
             <h2 class="panel-heading" id="privacyConsentHeading"><i class="bi bi-shield-lock" aria-hidden="true"></i> Your privacy</h2>
@@ -125,6 +128,8 @@
     @include('student.profile.tabs.portfolio')
     @include('student.profile.tabs.references')
     @include('student.profile.tabs.documents')
+    </div>{{-- /.sp-main --}}
+    </div>{{-- /.sp-grid --}}
 
     @if($profileVerified)
         <dialog class="file-preview-modal" id="studentChangeRequestModal" aria-labelledby="studentChangeRequestTitle" @if($errors->has('requested_value') || $errors->has('field')) open @endif>
