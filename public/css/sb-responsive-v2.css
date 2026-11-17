@@ -48,3 +48,60 @@ html body.sb-app select.form-select { font-size: 16px; }
 @media (prefers-reduced-motion: reduce) {
     html body.sb-app *, html body.sb-app *::before, html body.sb-app *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+/* =========================================================================================
+   PHASE 2: APP SHELL (all roles)
+   < 1024  off-canvas drawer (min(86vw, 300px)), opened by .sb-mobile-toggle, closes on backdrop / Esc / link tap
+   1024-1279  icon rail (76px) with tooltips; the toggle expands it
+   >= 1280  full sidebar (260px); the saved choice can collapse it
+   ========================================================================================= */
+html body.sb-app { --sb-sidebar-width: var(--ds-sidebar-w); --sb-topbar-height: 64px; --sb-nav-width: 0px; }
+@media (min-width: 1024px) {
+    html body.sb-app { --sb-topbar-height: var(--ds-topbar-h); --sb-nav-width: var(--sb-sidebar-width); }
+    html.sb-collapsed body.sb-app { --sb-nav-width: var(--sb-sidebar-rail, 76px); }
+}
+
+/* Sidebar: drawer first, then the docked sidebar from 1024px */
+html body.sb-app .sb-sidebar { width: min(86vw, 300px) !important; transform: translateX(-100%); visibility: hidden; transition: transform 200ms var(--sb-ease, ease), visibility 0s linear 200ms; box-shadow: var(--shadow-pop); padding-left: env(safe-area-inset-left); }
+html body.sb-app .sb-sidebar.show { transform: none; visibility: visible; transition-delay: 0s; }
+html body.sb-app :is(.sb-sidebar-close, .sb-mobile-toggle) { display: inline-grid !important; }
+html body.sb-app .sb-collapse-toggle { display: none !important; }
+html body.sb-app.sb-drawer-open, html:has(body.sb-drawer-open) { overflow: hidden; }
+@media (min-width: 1024px) {
+    html body.sb-app .sb-sidebar { width: var(--sb-nav-width) !important; transform: none; visibility: visible; box-shadow: none; padding-left: 0; }
+    html body.sb-app :is(.sb-sidebar-close, .sb-mobile-toggle) { display: none !important; }
+    html body.sb-app .sb-collapse-toggle { display: inline-grid !important; }
+}
+
+/* Top bar */
+html body.sb-app .sb-topbar { height: var(--sb-topbar-height); min-height: var(--sb-topbar-height); flex-wrap: nowrap; gap: 10px; padding-block: 0; padding-left: max(var(--ds-page-pad), env(safe-area-inset-left)); padding-right: max(var(--ds-page-pad), env(safe-area-inset-right)); }
+html body.sb-app .sb-topbar-title { min-width: 0; flex: 1 1 auto; }
+html body.sb-app .sb-top-actions { flex: none; }
+html body.sb-app .sb-search-toggle { display: inline-grid; place-items: center; flex: none; width: 40px; height: 40px; margin-left: auto; border: 1px solid var(--line); border-radius: var(--r-pill); background: var(--surface); color: var(--text); }
+html body.sb-app .sb-search-toggle:hover { background: var(--surface-alt); color: var(--burgundy-text); }
+html body.sb-app .sb-search { display: none; }
+html body.sb-app .sb-topbar.is-search-open .sb-search { display: block; position: absolute; top: 100%; left: 0; right: 0; z-index: 50; max-width: none; margin: 0; padding: 10px var(--ds-page-pad); background: var(--surface); border-bottom: 1px solid var(--line); box-shadow: var(--ds-sh-card); }
+@media (min-width: 768px) {
+    html body.sb-app .sb-search-toggle { display: none; }
+    html body.sb-app .sb-search, html body.sb-app .sb-topbar.is-search-open .sb-search { display: block; position: static; flex: 1 1 auto; max-width: 420px; margin: 0 0 0 auto; padding: 0; background: transparent; border: 0; box-shadow: none; }
+}
+
+/* Content area (safe-area aware) and the page header */
+html body.sb-app .sb-content { padding-block: clamp(16px, 2vw, 28px) 40px; padding-left: max(var(--ds-page-pad), env(safe-area-inset-left)); padding-right: max(var(--ds-page-pad), env(safe-area-inset-right)); }
+html body.sb-app .sb-page-header { flex-direction: column; align-items: stretch; gap: 12px; margin-bottom: 20px; }
+html body.sb-app .sb-page-actions { width: 100%; }
+html body.sb-app .sb-page-actions > .btn { flex: 1 1 100%; justify-content: center; }
+@media (min-width: 640px) {
+    html body.sb-app .sb-page-header { flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 16px 24px; margin-bottom: 24px; }
+    html body.sb-app .sb-page-actions { width: auto; }
+    html body.sb-app .sb-page-actions > .btn { flex: 0 0 auto; }
+}
+
+/* Short screens (phone landscape): smaller top bar, nothing sticky that eats the height, modals use the full height */
+@media (max-height: 500px) {
+    html body.sb-app { --sb-topbar-height: 56px; }
+    html body.sb-app :is(.sb-utabs-bar, .student-profile-page .tabs, .ojt-intern-record .sb-tabbar, .apc-card, .cp-summary, .student-profile-page .profile-header, .cp-savebar) { position: static; }
+    html body.sb-app dialog.sb-modal { inset: 0; width: 100vw; max-width: none; height: 100dvh; max-height: none; border-radius: 0; }
+    html body.sb-app .modal-dialog { margin: 0; min-height: 100dvh; max-width: none; }
+    html body.sb-app .modal-content { min-height: 100dvh; border-radius: 0; }
+}

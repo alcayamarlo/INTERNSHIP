@@ -8,7 +8,7 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
     <meta
         name="csrf-token"
@@ -71,13 +71,13 @@
         })();
     </script>
 
-    {{-- Sidebar width before first paint (no layout jump): icon rail from 640px to 1023px, the saved
-         choice from 1024px (full by default), and a drawer below 640px. skillbridge-ui.js repeats this on resize. --}}
+    {{-- Sidebar width before first paint (no layout jump): drawer below 1024px, icon rail from 1024px to 1279px
+         (unless the user expanded it), the saved choice from 1280px (full by default). skillbridge-ui.js repeats this on resize. --}}
     <script>
         try {
             var sbWidth = window.innerWidth;
             var sbSidebar = localStorage.getItem('skillbridge-sidebar');
-            if ((sbWidth >= 640 && sbWidth < 1024) || (sbWidth >= 1024 && sbSidebar === 'collapsed')) {
+            if ((sbWidth >= 1024 && sbWidth < 1280 && sbSidebar !== 'expanded') || (sbWidth >= 1280 && sbSidebar === 'collapsed')) {
                 document.documentElement.classList.add('sb-collapsed');
             }
         } catch (error) {}
@@ -357,9 +357,13 @@
             <span>{{ $userRole?->label() ?? 'User' }} workspace</span>
         </div>
 
-        {{-- SEARCH --}}
+        {{-- SEARCH: below 768px it collapses to this icon and opens as a full-width bar under the top bar --}}
 
-        <form action="{{ route('search') }}" method="GET" class="sb-search" role="search">
+        <button type="button" class="sb-search-toggle" data-search-toggle aria-label="Search" aria-expanded="false" aria-controls="sbSearchBar">
+            <i class="bi bi-search" aria-hidden="true"></i>
+        </button>
+
+        <form action="{{ route('search') }}" method="GET" class="sb-search" id="sbSearchBar" role="search">
 
             <div class="input-group">
 
@@ -852,7 +856,7 @@
                             function () {
 
                                 if (
-                                    window.innerWidth < 640
+                                    window.innerWidth < 1024
                                 ) {
 
                                     closeSidebar();
@@ -908,7 +912,7 @@
                 function () {
 
                     if (
-                        window.innerWidth >= 640
+                        window.innerWidth >= 1024
                     ) {
 
                         closeSidebar();
@@ -1211,6 +1215,25 @@
             if (form.classList.contains('is-open')) form.querySelector('input').focus();
         });
     })();
+</script>
+
+<script>
+(function () {
+    var toggle = document.querySelector('[data-search-toggle]');
+    var bar = document.querySelector('.sb-topbar');
+    if (!toggle || !bar) return;
+    var input = bar.querySelector('.sb-search input[type="search"], .sb-search input[name="q"]');
+    function set(open) {
+        bar.classList.toggle('is-search-open', open);
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open && input) input.focus();
+    }
+    toggle.addEventListener('click', function () { set(!bar.classList.contains('is-search-open')); });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && bar.classList.contains('is-search-open')) { set(false); toggle.focus(); }
+    });
+    window.addEventListener('resize', function () { if (window.innerWidth >= 768) set(false); });
+})();
 </script>
 
 @stack('scripts')
