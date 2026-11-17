@@ -9,7 +9,7 @@ use App\Services\ResumeContent;
 use Illuminate\Console\Command;
 
 /**
- * Re-renders saved resumes in the current format (the Appendix H layout), so employers stop receiving copies that carry
+ * Re-renders saved resumes in the current format (the burgundy sidebar layout), so employers stop receiving copies that carry
  * personal data (birth date, civil status, religion, home address, ...).
  *
  * A version 3 or 4 resume keeps what the student wrote (and loses any personal data). A version 1 or 2 resume

@@ -71,7 +71,7 @@ function bigResumeContent(Student $student, int $entries, int $words): array
     return $content;
 }
 
-it('renders every section in the Appendix H layout for a student with full data', function () {
+it('renders every section in the burgundy sidebar layout for a student with full data', function () {
     $student = redResumeStudent([
         'program' => 'BS Information Technology', 'department' => 'College of Computer Studies', 'year_level' => '4th Year',
         'about_me' => 'Build reliable web apps.', 'city' => 'Cebu City', 'province' => 'Cebu',
@@ -90,17 +90,21 @@ it('renders every section in the Appendix H layout for a student with full data'
 
     $html = redResumeHtml($student);
 
-    // The standard order: objective, education, skills, projects, OJT and experience, certifications, awards, references.
-    // Left column (photo, About Me, Contact Me, Skills), then the right column (name, title, Education, ...).
-    $order = ['class="initials">NP<', '<div class="pill">About Me</div>', 'Build reliable web apps.', '<div class="pill">Contact Me</div>', '09171234567', 'nino@example.test', 'Cebu City, Cebu',
-        '<div class="pill">Skills</div>', '<li>Python</li>', '<h1 class="surname">Peña</h1>', '<p class="given">Niño</p>', '<p class="title">BS Information Technology Student</p>',
-        '<div class="pill">Education</div>', '<p class="edu-level">College</p>', '<p class="edu-level">Elementary</p>', '<p class="edu-years">2014-2015</p>', '<p class="edu-school">Cebu Central School</p>',
-        '<div class="pill">Projects</div>', 'Inventory System', '<div class="pill">OJT and Experience</div>', 'IT Assistant',
-        '<div class="pill">Certifications</div>', 'Spot phishing emails', '<div class="pill">Honors and Awards</div>', "Dean&#039;s Lister", '<div class="pill">Character References</div>', 'Dr. Reyes'];
+    // Left column (photo, contact, education, skills), then the right column (name, seal, about me, experience,
+    // projects, certifications, awards, references), as in the template.
+    $order = ['<div class="band">', '<div class="photo"><img src="data:image/svg+xml;base64,', '<div class="side-heading">Contact</div>',
+        '<span class="side-label">Mobile</span><span class="side-value">09171234567</span>', 'nino@example.test',
+        '<span class="side-label">City address</span><span class="side-value">Cebu City, Cebu</span>',
+        '<div class="side-heading">Education</div>', '<span class="side-label">College</span><span class="side-value">College of Computer Studies</span>', 'Cebu Central School (2014-2015)',
+        '<div class="side-heading">Skills</div>', '<li>Python</li>',
+        '<h1 class="name">Niño Peña</h1>', '<td class="logo"><img src="data:image/jpeg;base64,', '<p class="headline">BS Information Technology</p>',
+        '<div class="sec">About Me</div>', 'Build reliable web apps.', '<div class="sec">Experience</div>', 'IT Assistant, Computer Shop',
+        '<div class="sec">Projects</div>', 'Inventory System', '<div class="sec">Certifications &amp; Skills Gained</div>', 'Cybersecurity Awareness', 'Spot phishing emails',
+        '<div class="sec">Honors &amp; Awards</div>', "Dean&#039;s Lister", '<div class="sec">Character References</div>', 'Dr. Reyes'];
     $positions = array_map(fn (string $text) => strpos($html, $text), $order);
     expect($positions)->each->not->toBeFalse()->and($positions)->toBe(collect($positions)->sort()->values()->all());
-    // No older layout parts, no signature block, and no "Appendix H" / "Curriculum Vitae" title: it starts at the name.
-    expect($html)->not->toContain('side-heading')->not->toContain("Applicant's signature")
+    // One Skills list (no Technical / Soft split), no signature block, no "Appendix H" / "Curriculum Vitae" title.
+    expect($html)->not->toContain('Technical:')->not->toContain('Soft skills')->not->toContain("Applicant's signature")
         ->not->toMatch('/appendix\s*h|curriculum\s+vitae/i');
 
     $resume = app(ResumeBuilderService::class)->build($student->fresh());
@@ -113,14 +117,14 @@ it('renders a student with almost no data without empty sections, rows, or place
 
     $html = redResumeHtml($student);
 
-    // Only Contact Me has something to show; no photo, so the initials circle.
-    expect($html)->toContain('<h1 class="surname">Peña</h1>')
+    // Contact, the photo placeholder and the seal; no empty section anywhere.
+    expect($html)->toContain('<h1 class="name">Niño Peña</h1>')
         ->toContain('nino@example.test')
         ->not->toContain('09171234567')
-        ->toContain('class="initials">NP<')
-        ->not->toContain('data:image/jpeg')
-        ->and(substr_count($html, 'class="pill"'))->toBe(1);
-    expect($html)
+        ->not->toContain('<div class="sec">')
+        ->not->toContain('<div class="side-heading">Education</div>')
+        ->not->toContain('<div class="side-heading">Skills</div>')
+        ->toContain('<div class="photo"><img src="data:image/svg+xml;base64,')
         ->not->toContain('null')
         ->not->toContain('N/A');
     expect(app(ResumeBuilderService::class)->build($student->fresh())->file_path)->not->toBeNull();
@@ -140,7 +144,7 @@ it('leaves out personal and sensitive data, however much is on the profile', fun
     $html = redResumeHtml($student);
 
     expect($content)->not->toHaveKey('personal')->and($content['version'])->toBe(5)
-        ->and($content['contact'])->toBe(['Mobile' => '09171234567', 'Email' => 'nino@example.test', 'City' => 'Cebu City, Cebu']);
+        ->and($content['contact'])->toBe(['Mobile' => '09171234567', 'Email' => 'nino@example.test', 'City address' => 'Cebu City, Cebu']);
     foreach (['Single', 'Catholic', '5 ft 3 in', '55 kg', 'March 4, 2003', '2003', 'Talisay', 'Osmeña Blvd', '6000', 'Barili', 'Maria Peña', 'Jose Peña', 'Mother', 'Filipino', 'Male', 'Personal data', 'Emergency'] as $private) {
         expect($html)->not->toContain($private);
     }
@@ -203,6 +207,8 @@ it('keeps older resumes on the layout they were generated with', function () {
     foreach ([
         'resumes/old2.pdf' => ['version' => 2, 'name' => 'Niño Peña', 'personal' => ['Gender' => 'Male']],
         'resumes/old3.pdf' => ['version' => 3, 'name' => 'Niño Peña', 'contact' => ['Email' => 'nino@example.test'], 'personal' => ['Gender' => 'Male'], 'skills' => ['PHP']],
+        // The one-column layout of version 4.
+        'resumes/old4.pdf' => ['version' => 4, 'name' => 'Niño Peña', 'contact' => ['Email' => 'nino@example.test', 'City' => 'Cebu City'], 'skills' => ['technical' => ['PHP'], 'soft' => ['Teamwork']]],
     ] as $path => $content) {
         $resume = Resume::create(['student_id' => $student->id, 'file_path' => $path, 'content' => $content, 'generated_at' => now()]);
 
@@ -251,7 +257,7 @@ it('reports the page count of unsaved edits for the editor, rate limited', funct
     $this->postJson(route('student.resume.pages', $resume), $payload)->assertOk()->assertJson(['pages' => 1, 'limit' => 2, 'fits' => true]);
 
     // Someone else's resume, and a form with errors (the editor keeps its last answer).
-    $this->postJson(route('student.resume.pages', $resume), [...$payload, 'name_given' => str_repeat('a', 90)])->assertStatus(422);
+    $this->postJson(route('student.resume.pages', $resume), [...$payload, 'name' => str_repeat('a', 130)])->assertStatus(422);
     $stranger = User::factory()->create(['role' => UserRole::Student]);
     Student::create(['user_id' => $stranger->id]);
     $this->actingAs($stranger)->postJson(route('student.resume.pages', $resume), $payload)->assertForbidden();
@@ -276,9 +282,10 @@ it('shows the 2x2 photo only while the student keeps it on', function () {
     $withPhoto = $service->layout($content, $student->fresh());
     $without = $service->layout([...$content, 'show_photo' => false], $student->fresh());
 
-    expect(substr_count($withPhoto['pdf'], '/Subtype /Image'))->toBeGreaterThanOrEqual(1)
-        ->and(substr_count($without['pdf'], '/Subtype /Image'))->toBe(0)
-        ->and($service->previewHtml([...$content, 'show_photo' => false]))->not->toContain('data:image/jpeg');
+    // The OJT seal is always one image; the 2x2 is the second. Turned off, there is no photo box at all.
+    expect(substr_count($withPhoto['pdf'], '/Subtype /Image'))->toBe(2)
+        ->and(substr_count($without['pdf'], '/Subtype /Image'))->toBe(1)
+        ->and($service->previewHtml([...$content, 'show_photo' => false]))->not->toContain('<div class="photo">');
 });
 
 // ---------------------------------------------------------------------------
@@ -300,7 +307,7 @@ it('opens an older resume with personal data in the editor as version 5, without
     $this->actingAs($student->user);
 
     $page = $this->get(route('student.resume.edit', $v3))->assertOk();
-    $page->assertSee('value="Peña"', false)->assertSee('value="Niño"', false)->assertSee('My own words.')->assertSee('value="Python"', false)->assertSee('value="BSIT"', false)
+    $page->assertSee('value="Niño Peña"', false)->assertSee('My own words.')->assertSee('value="Python"', false)
         ->assertDontSee('Birthday')->assertDontSee('Civil status')->assertDontSee('Maria Peña')->assertDontSee('Osmeña')->assertDontSee('Barili');
 
     $payload = app(ResumeContent::class)->toEditor(app(ResumeContent::class)->upgrade($v3->content, $student));
@@ -308,9 +315,8 @@ it('opens an older resume with personal data in the editor as version 5, without
 
     $saved = $v3->fresh()->content;
     expect($saved['version'])->toBe(5)->and($saved)->not->toHaveKey('personal')
-        ->and($saved['name_last'])->toBe('Peña')->and($saved['education'][0])->toMatchArray(['level' => 'College', 'detail' => 'BSIT'])
-        ->and($saved['contact'])->toBe(['Mobile' => '09171234567', 'Email' => 'nino@example.test', 'City' => 'Cebu City, Cebu'])
-        ->and($saved['skills']['technical'])->toContain('Python');
+        ->and($saved['contact'])->toBe(['Mobile' => '09171234567', 'Email' => 'nino@example.test', 'City address' => 'Cebu City, Cebu'])
+        ->and($saved['skills'])->toBe(['Python', 'Teamwork']);
 });
 
 it('rebuilds saved resumes without personal data with resumes:rebuild, and says which are too long', function () {
@@ -336,20 +342,46 @@ it('rebuilds saved resumes without personal data with resumes:rebuild, and says 
     $this->artisan('resumes:rebuild')->expectsOutputToContain('Updated 0 resume(s)')->assertSuccessful();
 });
 
-it('makes the 2x2 round, inside a burgundy ring, for the Appendix H layout', function () {
-    $blue = imagecreatetruecolor(100, 100);
-    imagefill($blue, 0, 0, imagecolorallocate($blue, 0, 0, 255));
-    ob_start();
-    imagejpeg($blue);
-    $square = ob_get_clean();
+it('moves the skills, then the education, to the right column when the left column would run past page 1', function () {
+    $student = redResumeStudent(['city' => 'Cebu City']);
+    $content = app(CompanyVisibleProfile::class)->resume($student->fresh());
+    $render = fn (array $content): string => view('student.resume.pdf', ['content' => $content, 'photo' => null])->render();
 
-    $round = imagecreatefromstring(app(\App\Services\ImageProcessor::class)->circle($square, 200));
-    $rgb = fn (int $x, int $y): array => [($c = imagecolorat($round, $x, $y)) >> 16 & 255, $c >> 8 & 255, $c & 255];
+    // A few skills: the left column, as in the template.
+    expect($render([...$content, 'skills' => ['PHP', 'MySQL']]))->toContain('<div class="side-heading">Skills</div>')->not->toContain('<div class="sec">Skills</div>');
 
-    [$r, $g, $b] = $rgb(2, 2);       // outside the circle: white
-    expect(min($r, $g, $b))->toBeGreaterThan(235);
-    [$r, $g, $b] = $rgb(100, 100);   // the photo
-    expect($b)->toBeGreaterThan(200)->and($r)->toBeLessThan(60);
-    [$r, $g, $b] = $rgb(100, 4);     // the ring: burgundy #5E010B
-    expect($r)->toBeGreaterThan(60)->toBeLessThan(130)->and($g)->toBeLessThan(40)->and($b)->toBeLessThan(50);
+    // Too many for the left column: the same list in the right column, none lost.
+    $many = $render([...$content, 'skills' => array_map(fn ($i) => "Technical skill number {$i}", range(1, 30))]);
+    expect($many)->toContain('<div class="sec">Skills</div>')->not->toContain('<div class="side-heading">Skills</div>')
+        ->toContain('<li>Technical skill number 1</li>')->toContain('<li>Technical skill number 30</li>');
+
+    // A very long education list moves too, so the left column never runs off the page.
+    $education = collect(range(1, 10))->mapWithKeys(fn ($i) => ["Level {$i}" => str_repeat('Long school name ', 7)])->all();
+    $long = $render([...$content, 'education' => $education]);
+    expect($long)->toContain('<div class="sec">Education</div>')->not->toContain('<div class="side-heading">Education</div>');
+
+    // Both still render as a PDF of at most two pages.
+    expect(app(ResumeBuilderService::class)->layout([...$content, 'education' => $education, 'skills' => array_map(fn ($i) => "Skill {$i}", range(1, 30))], $student)['pages'])->toBeLessThanOrEqual(2);
+});
+
+it('upgrades a version 4 resume: "City address", one Skills list, and the sidebar layout', function () {
+    $v4 = ['version' => 4, 'name' => 'Ana Cruz', 'contact' => ['Mobile' => '0917', 'Email' => 'ana@example.test', 'City' => 'Cebu City'],
+        'education' => ['Course' => 'BSIT'], 'skills' => ['technical' => ['PHP', 'MySQL'], 'soft' => ['Teamwork']]];
+
+    $upgraded = app(ResumeContent::class)->upgrade($v4);
+
+    expect($upgraded['version'])->toBe(5)
+        ->and($upgraded['contact'])->toBe(['Mobile' => '0917', 'Email' => 'ana@example.test', 'City address' => 'Cebu City'])
+        ->and($upgraded['skills'])->toBe(['PHP', 'MySQL', 'Teamwork'])
+        ->and(app(ResumeContent::class)->toEditor($upgraded)['skills'])->toBe(['PHP', 'MySQL', 'Teamwork']);
+});
+
+it('breaks a long email after its @ so it stays inside the left column', function () {
+    $student = redResumeStudent();
+    $content = app(CompanyVisibleProfile::class)->resume($student->fresh());
+
+    $html = view('student.resume.pdf', ['content' => [...$content, 'contact' => ['Email' => 'juan.delacruz.student2026@example.com']], 'photo' => null])->render();
+
+    expect($html)->toContain('juan.delacruz.student2026@<br>example.com')
+        ->and(view('student.resume.pdf', ['content' => $content, 'photo' => null])->render())->toContain('<span class="side-value">nino@example.test</span>');
 });

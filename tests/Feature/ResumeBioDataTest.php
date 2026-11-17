@@ -203,11 +203,11 @@ it('hides empty sections and rows, and shows filled ones in order', function () 
     expect($html)->not->toContain('Personal data')
         ->not->toContain('Filipino')
         ->not->toContain('Female')
-        ->not->toContain('<div class="pill">Skills</div>')
-        ->not->toContain('<div class="pill">Certifications</div>')
-        ->not->toContain('<div class="pill">Projects</div>')
-        ->not->toContain('<div class="pill">OJT and Experience</div>')
-        ->not->toContain('<div class="pill">Character References</div>')
+        ->not->toContain('<div class="side-heading">Skills</div>')
+        ->not->toContain('<div class="sec">Certifications &amp; Skills Gained</div>')
+        ->not->toContain('<div class="sec">Projects</div>')
+        ->not->toContain('<div class="sec">Experience</div>')
+        ->not->toContain('<div class="sec">Character References</div>')
         ->not->toContain('Place of birth')
         ->not->toContain('Provincial address');
 
@@ -218,10 +218,10 @@ it('hides empty sections and rows, and shows filled ones in order', function () 
     CharacterReference::create(['student_id' => $student->id, 'name' => 'Dr. Reyes', 'position' => 'Dean', 'organization' => 'SCC', 'contact_number' => '09170000001']);
 
     expect(renderResumeHtml($student))
-        ->toContain('<div class="pill">Skills</div>')
+        ->toContain('<div class="side-heading">Skills</div>')
         ->toContain('<li>Python</li>')
         ->toContain('<li>Public Speaking</li>')
-        ->toContain('<div class="pill">Character References</div>')
+        ->toContain('<div class="sec">Character References</div>')
         ->toContain('Dr. Reyes');
 });
 
@@ -260,7 +260,7 @@ it('lists certificates with their details and includes older certificates withou
     Certificate::create(['student_id' => $student->id, 'title' => 'Old AWS Certificate', 'issuer' => 'Amazon', 'file_path' => 'certificates/b.pdf']);
 
     expect(renderResumeHtml($student))
-        ->toContain('<div class="pill">Certifications</div>')
+        ->toContain('<div class="sec">Certifications &amp; Skills Gained</div>')
         ->toContain('Cybersecurity Awareness')
         ->toContain('Seminar')
         ->toContain('DICT')

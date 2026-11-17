@@ -2,22 +2,22 @@
 
 namespace App\Services;
 
-use App\Enums\SkillType;
-use App\Models\Skill;
 use App\Models\Student;
 
 /**
  * Converts a resume's stored content (the version 5 JSON the PDF template reads) to and from the
  * Resume Editor's form data, and holds the editor's validation rules.
  *
- * Version 5 follows the school's Appendix H curriculum vitae: the name in two lines (surname, then given
- * name and middle initial), a title line, About Me, contact, Technical and Soft skills, and Education as
- * entries (level, years, school). Stored content keeps label => value maps for contact and entry rows; the
- * editor works with ordered lists instead, so rows can be added, removed, and reordered.
+ * Version 5 is laid out with a burgundy left column (photo, contact, education, skills) and a white right
+ * column (name, about me, experience, projects, certifications, awards, references). Its content is the
+ * same as version 4's, with the city labelled "City address" and the education rows sized for the left column.
  *
- * It never carries personal or sensitive data (birth date, sex, civil status, religion, height and weight,
- * parents, full addresses, emergency contacts): an employer does not need them to shortlist a student,
- * and the Data Privacy Act treats them as sensitive. They stay on the profile for the school.
+ * Stored content keeps label => value maps (contact, education, entry rows). The editor works with
+ * ordered lists instead, so rows can be added, removed, and reordered.
+ *
+ * It never carries personal or sensitive data (birth date, sex, civil status, religion, height
+ * and weight, parents, full addresses, emergency contacts): an employer does not need them to shortlist
+ * a student, and the Data Privacy Act treats them as sensitive. They stay on the profile for the school.
  */
 class ResumeContent
 {
@@ -31,27 +31,24 @@ class ResumeContent
     public const CONTACT_FIELDS = [
         'mobile' => 'Mobile',
         'email' => 'Email',
-        'city' => 'City',
+        // The city and province only: no street, barangay or zip code.
+        'city' => 'City address',
     ];
 
     /** Entry sections, in resume order. */
     public const ENTRY_SECTIONS = ['certificates', 'projects', 'experiences', 'references'];
 
-    /** The education levels Appendix H lists, in order. */
-    public const EDUCATION_LEVELS = ['College', 'Senior High School', 'Junior High School', 'Elementary'];
+    /** Row-list sections (label + value pairs). */
+    public const ROW_SECTIONS = ['education'];
 
     public const MAX_ENTRIES = 30;
 
-    public const MAX_EDUCATION = 8;
+    /** Education sits in the left column, so it holds fewer and shorter rows. */
+    public const MAX_ROWS = 10;
+
+    public const MAX_ROW_VALUE = 120;
 
     public const MAX_ENTRY_ROWS = 10;
-
-    /** The left column holds About Me and the technical skills, so both are kept short enough to fit it. */
-    public const MAX_SUMMARY = 700;
-
-    public const MAX_TECHNICAL_SKILLS = 15;
-
-    public const MAX_SOFT_SKILLS = 12;
 
     public function isEditable(?array $content): bool
     {
@@ -71,13 +68,33 @@ class ResumeContent
             $content = $this->upgradeFromV3($content, $student);
         }
 
-        return $this->upgradeFromV4($content, $student);
+        // Version 4 => 5: the same content in the sidebar layout. The city row is labelled "City address", and
+        // the Technical and Soft skills become one Skills list again, as the template shows them.
+        $contact = collect($content['contact'] ?? [])
+            ->mapWithKeys(fn ($value, $label) => [$label === 'City' ? 'City address' : $label => $value])
+            ->all();
+
+        return [...$content, 'version' => self::EDITABLE_VERSION, 'contact' => $contact, 'skills' => self::skillList($content['skills'] ?? [])];
     }
 
     /**
-     * Version 3 (a burgundy sidebar resume with a "Personal data" section) as version 4: the personal data
-     * and the provincial address are dropped, the city comes from the profile, and the skills are split
-     * into Technical and Soft.
+     * The skills as one list. Version 4 kept Technical and Soft apart; versions 3 and 5 have a plain list.
+     *
+     * @return list<string>
+     */
+    public static function skillList(mixed $skills): array
+    {
+        if (! is_array($skills)) {
+            return [];
+        }
+        $list = array_is_list($skills) ? $skills : [...($skills['technical'] ?? []), ...($skills['soft'] ?? [])];
+
+        return array_values(array_filter(array_map(fn ($skill) => is_scalar($skill) ? trim((string) $skill) : '', $list), 'strlen'));
+    }
+
+    /**
+     * Version 3 content (an older burgundy sidebar resume with a "Personal data" section) as version 4: the
+     * personal data and the provincial address are dropped, and the city comes from the profile.
      */
     private function upgradeFromV3(array $content, ?Student $student): array
     {
@@ -87,62 +104,14 @@ class ResumeContent
             $contact['City'] = $city;
         }
 
-        $skills = collect($content['skills'] ?? [])->filter(fn ($skill) => is_string($skill) && $skill !== '')->values();
-        $types = Skill::query()->whereIn('name', $skills->all())->pluck('type', 'name');
-        $isSoft = fn (string $name): bool => ($types[$name] ?? null) === SkillType::Soft || ($types[$name] ?? null) === SkillType::Soft->value;
-
         unset($content['personal']);
 
         return [
             ...$content,
             'version' => 4,
             'contact' => $contact,
-            'skills' => [
-                'technical' => $skills->reject($isSoft)->values()->all(),
-                'soft' => $skills->filter($isSoft)->values()->all(),
-            ],
+            'skills' => self::skillList($content['skills'] ?? []),
             'show_photo' => $content['show_photo'] ?? true,
-        ];
-    }
-
-    /** Version 4 (one column) as version 5: the name in two lines, a title line, and education as entries. */
-    private function upgradeFromV4(array $content, ?Student $student): array
-    {
-        $name = (string) ($content['name'] ?? '');
-        $rows = collect(is_array($content['education'] ?? null) ? $content['education'] : []);
-        // "Cebu Central School (2014-2015)" => school and years.
-        $split = function (?string $value): array {
-            $value = trim((string) $value);
-
-            return preg_match('/^(.*\S)\s*\(([^()]+)\)$/u', $value, $match) ? [$match[1], $match[2]] : [$value, ''];
-        };
-
-        $education = [];
-        if ($rows->has('College') || $rows->has('Course') || filled($content['school'] ?? null)) {
-            $education[] = [
-                'level' => 'College',
-                'years' => $rows->has('Expected graduation') ? 'Expected graduation '.$rows['Expected graduation'] : (string) ($rows['Year level'] ?? ''),
-                'school' => (string) ($content['school'] ?? $rows['College'] ?? ''),
-                'detail' => (string) ($rows['Course'] ?? $content['course'] ?? ''),
-            ];
-        }
-        foreach (['Senior high school' => 'Senior High School', 'High school' => 'Junior High School', 'Elementary' => 'Elementary'] as $label => $level) {
-            if (filled($rows[$label] ?? null)) {
-                [$school, $years] = $split($rows[$label]);
-                $education[] = ['level' => $level, 'years' => $years, 'school' => $school, 'detail' => ''];
-            }
-        }
-        // Any other row the student added keeps its label as the level.
-        foreach ($rows->except(['College', 'Course', 'Year level', 'Expected graduation', 'Senior high school', 'High school', 'Elementary', 'Internship hours']) as $label => $value) {
-            $education[] = ['level' => (string) $label, 'years' => '', 'school' => (string) $value, 'detail' => ''];
-        }
-
-        return [
-            ...$content,
-            'version' => self::EDITABLE_VERSION,
-            ...CompanyVisibleProfile::nameParts($student, $name),
-            'title' => $content['title'] ?? (filled($content['course'] ?? null) ? $content['course'].' Student' : null),
-            'education' => $education,
         ];
     }
 
@@ -155,9 +124,7 @@ class ResumeContent
         $names = fn ($list): array => array_values(array_map('strval', is_array($list) ? $list : []));
 
         $data = [
-            'name_given' => (string) ($content['name_given'] ?? $content['name'] ?? ''),
-            'name_last' => (string) ($content['name_last'] ?? ''),
-            'title' => (string) ($content['title'] ?? ''),
+            'name' => (string) ($content['name'] ?? ''),
             'course' => (string) ($content['course'] ?? ''),
             'school' => (string) ($content['school'] ?? ''),
             'summary' => (string) ($content['summary'] ?? ''),
@@ -165,15 +132,8 @@ class ResumeContent
             'contact' => collect(self::CONTACT_FIELDS)
                 ->map(fn (string $label) => (string) ($content['contact'][$label] ?? ''))
                 ->all(),
-            'education' => collect(is_array($content['education'] ?? null) && array_is_list($content['education']) ? $content['education'] : [])
-                ->map(fn ($entry) => [
-                    'level' => (string) ($entry['level'] ?? ''),
-                    'years' => (string) ($entry['years'] ?? ''),
-                    'school' => (string) ($entry['school'] ?? ''),
-                    'detail' => (string) ($entry['detail'] ?? ''),
-                ])->values()->all(),
-            'skills_technical' => $names($content['skills']['technical'] ?? []),
-            'skills_soft' => $names($content['skills']['soft'] ?? []),
+            'education' => $pairs($content['education'] ?? []),
+            'skills' => self::skillList($content['skills'] ?? []),
             'awards' => collect($content['awards'] ?? [])->flatMap(fn ($group) => collect($group['awards'] ?? [])->map(fn ($award) => [
                 'group' => (string) ($group['label'] ?? ''),
                 'title' => (string) ($award['title'] ?? ''),
@@ -209,26 +169,14 @@ class ResumeContent
             ->map($text)->reject(fn ($item) => $item === '')->values()->all();
 
         $data = [
-            'name_given' => $text($input['name_given'] ?? ''),
-            'name_last' => $text($input['name_last'] ?? ''),
-            'title' => $text($input['title'] ?? ''),
+            'name' => $text($input['name'] ?? ''),
             'course' => $text($input['course'] ?? ''),
             'school' => $text($input['school'] ?? ''),
             'summary' => $text($input['summary'] ?? ''),
             'show_photo' => filter_var($input['show_photo'] ?? true, FILTER_VALIDATE_BOOL),
             'contact' => collect(self::CONTACT_FIELDS)->map(fn ($label, $key) => $text($input['contact'][$key] ?? ''))->all(),
-            'education' => collect(is_array($input['education'] ?? null) ? $input['education'] : [])
-                ->filter(fn ($item) => is_array($item))
-                ->map(fn ($entry) => [
-                    'level' => $text($entry['level'] ?? ''),
-                    'years' => $text($entry['years'] ?? ''),
-                    'school' => $text($entry['school'] ?? ''),
-                    'detail' => $text($entry['detail'] ?? ''),
-                ])
-                ->reject(fn ($entry) => implode('', $entry) === '')
-                ->values()->all(),
-            'skills_technical' => $list($input['skills_technical'] ?? []),
-            'skills_soft' => $list($input['skills_soft'] ?? []),
+            'education' => $rows($input['education'] ?? []),
+            'skills' => $list($input['skills'] ?? []),
             'awards' => collect(is_array($input['awards'] ?? null) ? $input['awards'] : [])
                 ->filter(fn ($item) => is_array($item))
                 ->map(fn ($award) => ['group' => $text($award['group'] ?? ''), 'title' => $text($award['title'] ?? ''), 'meta' => $text($award['meta'] ?? '')])
@@ -267,31 +215,28 @@ class ResumeContent
         };
 
         $rules = [
-            'name_given' => [$forPreview ? 'nullable' : 'required', 'string', 'max:80'],
-            'name_last' => ['nullable', 'string', 'max:80'],
-            'title' => ['nullable', 'string', 'max:120'],
+            'name' => [$forPreview ? 'nullable' : 'required', 'string', 'max:120'],
             'course' => ['nullable', 'string', 'max:150'],
             'school' => ['nullable', 'string', 'max:150'],
-            'summary' => ['nullable', 'string', 'max:'.self::MAX_SUMMARY],
+            'summary' => ['nullable', 'string', 'max:1200'],
             'show_photo' => ['boolean'],
             'contact.email' => [$forPreview ? 'nullable' : 'required', 'string', 'max:150', ...($forPreview ? [] : ['email'])],
             'contact.mobile' => ['nullable', 'string', 'max:40'],
             'contact.city' => ['nullable', 'string', 'max:120'],
-            'education' => ['array', 'max:'.self::MAX_EDUCATION],
-            'education.*.level' => ['required', 'string', 'max:60'],
-            'education.*.years' => ['nullable', 'string', 'max:40'],
-            'education.*.school' => ['nullable', 'string', 'max:150'],
-            'education.*.detail' => ['nullable', 'string', 'max:150'],
-            'skills_technical' => ['array', 'max:'.self::MAX_TECHNICAL_SKILLS],
-            'skills_technical.*' => ['string', 'max:60'],
-            'skills_soft' => ['array', 'max:'.self::MAX_SOFT_SKILLS],
-            'skills_soft.*' => ['string', 'max:60'],
+            'skills' => ['array', 'max:40'],
+            'skills.*' => ['string', 'max:80'],
             'awards' => ['array', 'max:40'],
             'awards.*.group' => ['nullable', 'string', 'max:100'],
             'awards.*.title' => ['required', 'string', 'max:1000'],
             'awards.*.meta' => ['nullable', 'string', 'max:150'],
             'update_profile_summary' => ['boolean'],
         ];
+
+        foreach (self::ROW_SECTIONS as $section) {
+            $rules[$section] = ['array', 'max:'.self::MAX_ROWS, $uniqueLabels];
+            $rules[$section.'.*.label'] = ['required', 'string', 'max:60'];
+            $rules[$section.'.*.value'] = ['required', 'string', 'max:'.self::MAX_ROW_VALUE];
+        }
 
         foreach (self::ENTRY_SECTIONS as $section) {
             $rules[$section] = ['array', 'max:'.self::MAX_ENTRIES];
@@ -309,16 +254,15 @@ class ResumeContent
 
     public function messages(): array
     {
-        // Each "*" matches one key segment, and the first matching key wins, so the specific messages
-        // come before the general entry title message.
+        // Each "*" matches one key segment, and the first matching key wins, so the awards message
+        // comes before the general entry title message.
         return [
-            'name_given.required' => 'Enter your given name.',
+            'name.required' => 'Enter your name.',
             'contact.email.required' => 'Enter a contact email.',
             'contact.email.email' => 'Enter a valid email address.',
-            'education.*.level.required' => 'Add the level (e.g. College), or remove this entry.',
-            'skills_technical.max' => 'Keep it to '.self::MAX_TECHNICAL_SKILLS.' technical skills, so they fit the left column.',
-            'summary.max' => 'Keep About Me to '.self::MAX_SUMMARY.' characters, so it fits the left column.',
             'awards.*.title.required' => 'Add the award, or remove this entry.',
+            '*.*.label.required' => 'Add a label, or clear this row.',
+            '*.*.value.required' => 'Add a value, or clear this row.',
             '*.*.rows.*.label.required' => 'Add a label, or clear this row.',
             '*.*.rows.*.value.required' => 'Add a value, or clear this row.',
             '*.*.title.required' => 'Add a title, or remove this entry.',
@@ -332,15 +276,11 @@ class ResumeContent
     public function fromEditor(array $data, array $base): array
     {
         $map = fn (array $rows): array => collect($rows)->mapWithKeys(fn ($row) => [$row['label'] => $row['value']])->all();
-        $name = trim($data['name_given'].' '.$data['name_last']);
 
         $content = [
             'version' => self::EDITABLE_VERSION,
-            'name' => $name,
-            'name_given' => $data['name_given'],
-            'name_last' => $data['name_last'],
-            'initials' => CompanyVisibleProfile::initials($name),
-            'title' => $data['title'] ?: null,
+            'name' => $data['name'],
+            'initials' => CompanyVisibleProfile::initials($data['name']),
             'id_photo_path' => $base['id_photo_path'] ?? null,
             'show_photo' => (bool) $data['show_photo'],
             'course' => $data['course'] ?: null,
@@ -352,7 +292,7 @@ class ResumeContent
                 ->mapWithKeys(fn ($label, $key) => [$label => $data['contact'][$key] ?? ''])
                 ->filter(fn ($value) => $value !== '')
                 ->all(),
-            'education' => $data['education'],
+            'education' => $map($data['education']),
             // Consecutive awards with the same group share one group heading, in the order given.
             'awards' => collect($data['awards'])->reduce(function (array $groups, array $award) {
                 $label = $award['group'] !== '' ? $award['group'] : 'Awards';
@@ -365,7 +305,7 @@ class ResumeContent
 
                 return $groups;
             }, []),
-            'skills' => ['technical' => $data['skills_technical'], 'soft' => $data['skills_soft']],
+            'skills' => $data['skills'],
         ];
 
         foreach (self::ENTRY_SECTIONS as $section) {

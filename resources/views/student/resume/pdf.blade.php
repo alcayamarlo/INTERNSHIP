@@ -4,39 +4,76 @@
     <meta charset="UTF-8">
     <title>Resume — {{ $content['name'] }}</title>
     @php
-        // The school's Appendix H curriculum vitae: a left column (photo, About Me, contact, skills) and a right
-        // column (name, title, education, soft skills, then the rest), in burgundy and white.
-        // "compact" is the tighter spacing the builder falls back to when the normal one runs over a page.
+        // Burgundy left column (photo, contact, education, skills) and a white right column (name, about me,
+        // experience, projects, certifications, awards, references). "compact" is the tighter spacing the builder
+        // falls back to when the normal one runs over a page.
         $compact = ($density ?? 'normal') === 'compact';
-        $margin = $compact ? 8 : 10; // mm
-        $size = $compact ? '8.9pt' : '9.6pt';
-        $sideSize = $compact ? '8.5pt' : '9pt';
-        $last = trim((string) ($content['name_last'] ?? ''));
-        $given = trim((string) ($content['name_given'] ?? ''));
-        if ($last === '' && $given === '') {
-            $given = (string) ($content['name'] ?? '');
-        }
-        $contact = $content['contact'] ?? [];
-        $technical = $content['skills']['technical'] ?? [];
-        $soft = $content['skills']['soft'] ?? [];
-        $education = is_array($content['education'] ?? null) && array_is_list($content['education']) ? $content['education'] : [];
-        $generatedAt = filled($content['generated_at'] ?? null)
-            ? \Illuminate\Support\Carbon::parse($content['generated_at'])->timezone('Asia/Manila')
-            : null;
-        // Entry rows ("Issuer: DICT") on one muted line.
+        $edge = $compact ? 10 : 12; // top and bottom page margin (mm); the left column runs from edge to edge
+        $headline = collect([$content['course'] ?? null, $content['school'] ?? null])->filter()->implode(' · ');
+        $contact = array_filter($content['contact'] ?? [], 'filled');
+        $education = is_array($content['education'] ?? null) ? array_filter($content['education'], 'filled') : [];
+        // One Skills list, as in the template (a version 4 resume kept Technical and Soft apart).
+        $skills = \App\Services\ResumeContent::skillList($content['skills'] ?? []);
+        $showPhotoBox = (bool) ($content['show_photo'] ?? true);
+
+        // No 2x2 yet: a placeholder in the template's colours (the student can turn the photo box off in the editor).
+        $placeholder = 'data:image/svg+xml;base64,'.base64_encode('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">'
+            .'<rect width="100" height="100" fill="#7A1F2B"/><circle cx="50" cy="38" r="16" fill="#D9A3AC"/>'
+            .'<path d="M20 100 C20 74 33 62 50 62 C67 62 80 74 80 100 Z" fill="#D9A3AC"/></svg>');
+        $sealFile = public_path('images/brand/ojt-seal-print.jpg');
+        $seal = is_file($sealFile) ? 'data:image/jpeg;base64,'.base64_encode(file_get_contents($sealFile)) : null;
+
+        /*
+         * The left column is only on page 1, so it must never run past the bottom of the page (the PDF renderer
+         * would cut it off). Its height is estimated on the safe side; when it would not fit, the skills, and if
+         * needed the education, move to the right column, which flows onto a second page.
+         */
+        $perLine = 23; // characters of a bold 10pt line in the left column
+        $valueHeight = fn ($text): float => 4.6 * max(1, (int) ceil(mb_strlen((string) $text) / $perLine));
+        $itemsHeight = fn (array $items): float => array_sum(array_map(fn ($value) => 3.9 + $valueHeight($value) + 2.6, $items));
+        $listHeight = fn (array $items): float => array_sum(array_map(fn ($value) => 4.6 * max(1, (int) ceil(mb_strlen((string) $value) / ($perLine - 2))) + 1, $items));
+        $section = 15.0;
+        $budget = 297 - 2 * $edge - 8;
+        $used = ($showPhotoBox ? 46 : 0) + ($contact ? $section + $itemsHeight($contact) : 0);
+        $educationHeight = $education ? $section + $itemsHeight($education) : 0;
+        $educationInSide = $used + $educationHeight <= $budget;
+        $used += $educationInSide ? $educationHeight : 0;
+        $skillsHeight = $skills ? $section + $listHeight($skills) : 0;
+        $skillsInSide = $used + $skillsHeight <= $budget;
+
+        // A contact value too long for the left column: an email breaks after its "@"; anything else wraps where it
+        // has to (word-wrap: break-word). Helvetica has no zero-width space, so no invisible break marks are used.
+        $contactValue = fn ($text): string => mb_strlen((string) $text) > $perLine && str_contains((string) $text, '@')
+            ? e(\Illuminate\Support\Str::before($text, '@')).'@<br>'.e(\Illuminate\Support\Str::after($text, '@'))
+            : e((string) $text);
+        // An entry's rows split into its date ("2022 – Present"), its organization, and the rest.
+        $splitRows = function (array $rows): array {
+            $date = $organization = null;
+            $others = [];
+            foreach ($rows as $label => $value) {
+                if ($date === null && preg_match('/period|date|year|when/i', (string) $label)) {
+                    $date = $value;
+                } elseif ($organization === null && preg_match('/organi[sz]ation|company|employer|agency/i', (string) $label)) {
+                    $organization = $value;
+                } else {
+                    $others[$label] = $value;
+                }
+            }
+
+            return [$date, $organization, $others];
+        };
         $meta = fn (array $rows): string => collect($rows)->map(fn ($value, $label) => $label.': '.$value)->implode('  ·  ');
-        // Small burgundy icons for Contact Me (SVG, which the PDF renderer supports; icon fonts it does not).
-        $icon = fn (string $paths): string => 'data:image/svg+xml;base64,'.base64_encode('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">'.$paths.'</svg>');
-        $icons = [
-            'Mobile' => $icon('<path fill="#5E010B" d="M3.6 1.2l2.2 2.2c.4.4.4 1 0 1.4l-.9.9a9.6 9.6 0 0 0 5.4 5.4l.9-.9c.4-.4 1-.4 1.4 0l2.2 2.2c.4.4.4 1 0 1.4l-1.3 1.3c-.6.6-1.6.8-2.4.4A16 16 0 0 1 1.5 5.9c-.4-.8-.2-1.8.4-2.4L3.2 1.2c.1-.1.3-.1.4 0z"/>'),
-            'Email' => $icon('<path fill="#5E010B" d="M1 3h14v10H1z"/><path fill="none" stroke="#FFFFFF" stroke-width="1.3" d="M1.6 3.6L8 9l6.4-5.4"/>'),
-            'City' => $icon('<path fill="#5E010B" d="M8 0C5 0 2.5 2.5 2.5 5.5 2.5 9.6 8 16 8 16s5.5-6.4 5.5-10.5C13.5 2.5 11 0 8 0zm0 7.8a2.3 2.3 0 1 1 0-4.6 2.3 2.3 0 0 1 0 4.6z"/>'),
-        ];
+        // A description written on several lines (or with "-" / "•") becomes bullet points.
+        $lines = fn (?string $text): array => array_values(array_filter(array_map(
+            fn ($line) => trim((string) preg_replace('/^\s*[-•*]\s*/u', '', $line)),
+            preg_split('/\R/u', (string) $text)
+        ), 'strlen'));
     @endphp
     <style>
-        :root { --resume-accent: #5E010B; --resume-on-accent: #FFFFFF; --resume-text: #2B2B2B; --resume-muted: #555555; }
+        :root { --resume-accent: #5E010B; --resume-accent-soft: #F7EDEF; --resume-on-accent: #FFFFFF; --resume-on-accent-muted: #EED3D8; --resume-text: #222222; --resume-muted: #555555; }
 
-        @page { size: A4 portrait; margin: {{ $margin }}mm; }
+        /* Only top and bottom margins: the burgundy column runs to the left edge of the page. */
+        @page { size: A4 portrait; margin: {{ $edge }}mm 0; }
 
         html, body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
@@ -46,210 +83,246 @@
             /* Helvetica is a built-in PDF font (narrow, so more fits on a page) and covers ñ / Ñ and the other accented
                letters of local names. The browser preview falls back to Arial, which looks the same. */
             font-family: Helvetica, Arial, sans-serif;
-            font-size: {{ $size }};
-            line-height: {{ $compact ? '1.24' : '1.3' }};
-            background: #FFFFFF;
+            font-size: {{ $compact ? '9pt' : '9.8pt' }};
+            line-height: {{ $compact ? '1.3' : '1.4' }};
         }
         p { margin: 0; word-wrap: break-word; }
 
-        /* The thin burgundy line between the columns, repeated on every page. */
-        .divider { position: fixed; top: 0; bottom: 0; left: 33.4%; width: 0.4mm; background: var(--resume-accent); }
+        /* The burgundy left column, on every page (it runs into the top and bottom margins). */
+        .band { position: fixed; top: -{{ $edge }}mm; bottom: -{{ $edge }}mm; left: 0; width: 33%; background: var(--resume-accent); }
+        .side { position: absolute; top: 0; left: 0; width: 33%; color: var(--resume-on-accent); }
+        .side-inner { margin: 0 8mm; }
+        .main { margin-left: 33%; padding: 0 9mm 0 8mm; }
 
-        /* Left column: page 1 only. Its content is capped (About Me, 15 skills, 3 contact lines) so it always fits. */
-        .side { position: absolute; top: 0; left: 0; width: 31%; font-size: {{ $sideSize }}; }
-        .main { margin-left: 36%; }
+        .photo { text-align: center; margin: 0 0 {{ $compact ? '1mm' : '2mm' }}; }
+        .photo img { width: {{ $compact ? '32mm' : '36mm' }}; height: {{ $compact ? '32mm' : '36mm' }}; border: 0.9mm solid #FFFFFF; }
 
-        /* Section headings: burgundy pills with white capitals, like the template. */
-        .pill {
-            display: block;
-            margin: {{ $compact ? '2.8mm' : '3.6mm' }} 0 {{ $compact ? '1.6mm' : '2mm' }};
-            padding: {{ $compact ? '1mm' : '1.2mm' }} 0;
-            border-radius: 3.6mm;
-            background: var(--resume-accent);
-            color: var(--resume-on-accent);
-            font-size: {{ $compact ? '9pt' : '9.8pt' }};
+        .side-heading {
+            margin: {{ $compact ? '4mm' : '6mm' }} 0 {{ $compact ? '2mm' : '3mm' }};
+            padding-bottom: 1.4mm;
+            border-bottom: 0.3mm solid var(--resume-on-accent-muted);
+            font-size: {{ $compact ? '9.4pt' : '10pt' }};
             font-weight: bold;
-            letter-spacing: 1.1px;
-            text-align: center;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .side-heading.first { margin-top: 0; }
+        .side-item { margin: 0 0 {{ $compact ? '1.8mm' : '2.6mm' }}; }
+        .side-label { display: block; color: var(--resume-on-accent-muted); font-size: {{ $compact ? '8pt' : '8.4pt' }}; }
+        .side-value { display: block; font-size: {{ $compact ? '9.2pt' : '10pt' }}; font-weight: bold; word-wrap: break-word; }
+        .side ul { margin: 0 0 {{ $compact ? '1.6mm' : '2.4mm' }}; padding-left: 4.4mm; }
+        .side li { margin: 0 0 {{ $compact ? '0.6mm' : '1mm' }}; font-size: {{ $compact ? '9.2pt' : '10pt' }}; font-weight: bold; }
+
+        .head { width: 100%; border-collapse: collapse; }
+        .head td { padding: 0; vertical-align: top; }
+        .name { margin: 0; color: var(--resume-accent); font-size: {{ $compact ? '24pt' : '28pt' }}; font-weight: bold; line-height: 1.08; word-wrap: break-word; }
+        .logo { width: 21mm; text-align: right; }
+        .logo img { width: {{ $compact ? '15mm' : '17mm' }}; height: {{ $compact ? '15mm' : '17mm' }}; }
+        .headline { margin: {{ $compact ? '3mm' : '4.5mm' }} 0 0; color: var(--resume-muted); font-size: {{ $compact ? '8.6pt' : '9.2pt' }}; }
+
+        /* Section headings: burgundy capitals over a burgundy line. */
+        .sec {
+            margin: {{ $compact ? '4mm' : '5.5mm' }} 0 {{ $compact ? '2mm' : '2.8mm' }};
+            padding-bottom: 1.3mm;
+            border-bottom: 0.6mm solid var(--resume-accent);
+            color: var(--resume-accent);
+            font-size: {{ $compact ? '9.6pt' : '10.4pt' }};
+            font-weight: bold;
+            letter-spacing: 2.2px;
             text-transform: uppercase;
             page-break-after: avoid;
         }
-        .side .pill { width: 86%; margin-left: auto; margin-right: auto; }
-        .main .pill { width: 52%; }
 
-        .photo { text-align: center; margin: 0 0 {{ $compact ? '1mm' : '2mm' }}; }
-        .photo img { width: {{ $compact ? '30mm' : '34mm' }}; height: {{ $compact ? '30mm' : '34mm' }}; }
-        .initials {
-            /* Padding instead of line-height: the PDF renderer places a tall line box lower than browsers do. */
-            width: 30mm; height: 20mm; padding-top: 10mm; margin: 0 auto;
-            border: 0.8mm solid var(--resume-accent); border-radius: 50%;
-            color: var(--resume-accent); font-size: 24pt; font-weight: bold; line-height: 1; text-align: center;
-        }
-        .about { text-align: justify; }
+        .entry { margin: 0 0 {{ $compact ? '2mm' : '3mm' }}; page-break-inside: avoid; }
+        .entry-head { width: 100%; border-collapse: collapse; }
+        .entry-head td { padding: 0; vertical-align: top; }
+        .entry-title { font-size: {{ $compact ? '9.6pt' : '10.4pt' }}; font-weight: bold; word-wrap: break-word; }
+        .entry-date { width: 34mm; padding-left: 3mm; color: #444444; text-align: right; }
+        .meta { color: var(--resume-muted); font-size: {{ $compact ? '8.2pt' : '8.6pt' }}; word-wrap: break-word; }
+        .note { margin-top: 0.6mm; }
+        ul.bullets { margin: 0.6mm 0 0; padding-left: 4.6mm; }
+        ul.bullets li { margin: 0 0 0.6mm; }
 
-        .contact { width: 100%; border-collapse: collapse; }
-        .contact td { padding: 0.8mm 0; vertical-align: middle; word-wrap: break-word; }
-        .contact .icon { width: 6mm; }
-        .contact .icon img { width: 3.6mm; height: 3.6mm; }
+        /* Certifications: one tinted box each, with the skills gained in two columns. */
+        .cert { margin: 0 0 {{ $compact ? '2mm' : '2.8mm' }}; padding: {{ $compact ? '2.4mm 3.4mm' : '3.2mm 4.2mm' }}; border-radius: 2mm; background: var(--resume-accent-soft); page-break-inside: avoid; }
+        .cert .entry-title { color: var(--resume-accent); }
+        .cert-skills { margin-top: 1.2mm; font-weight: bold; }
+        .cols { width: 100%; border-collapse: collapse; }
+        .cols td { width: 50%; padding: 0; vertical-align: top; }
 
-        ul.bullets { margin: 0; padding-left: 4.6mm; }
-        ul.bullets li { margin: 0 0 {{ $compact ? '0.5mm' : '0.9mm' }}; }
-
-        .surname { margin: 0; color: var(--resume-accent); font-size: {{ $compact ? '25pt' : '28pt' }}; font-weight: bold; line-height: 1.05; word-wrap: break-word; }
-        .given { margin: 0.6mm 0 0; color: var(--resume-accent); font-size: {{ $compact ? '18pt' : '21pt' }}; line-height: 1.1; word-wrap: break-word; }
-        .title { margin: 1.6mm 0 0; color: var(--resume-muted); font-size: {{ $compact ? '9.6pt' : '10.4pt' }}; letter-spacing: 1.4px; }
-
-        .edu { margin: 0 0 {{ $compact ? '1.6mm' : '2.2mm' }}; page-break-inside: avoid; }
-        .edu-level { font-weight: bold; font-size: {{ $compact ? '9.6pt' : '10.4pt' }}; }
-        .edu-years { color: var(--resume-muted); }
-        .edu-school { font-weight: bold; }
-
-        .entry { margin: 0 0 {{ $compact ? '1.4mm' : '1.8mm' }}; page-break-inside: avoid; }
-        .entry-title { font-weight: bold; color: var(--resume-accent); }
-        .entry-meta { color: var(--resume-muted); font-size: {{ $compact ? '8.2pt' : '8.6pt' }}; }
-        .entry-note { margin-top: 0.4mm; }
-        .group { margin: 0 0 0.8mm; font-weight: bold; color: var(--resume-accent); }
+        .kv { width: 100%; border-collapse: collapse; }
+        .kv td { padding: 0.3mm 0; vertical-align: top; word-wrap: break-word; }
+        .kv .label { width: 30%; color: var(--resume-muted); }
+        .group { margin: 0 0 0.8mm; color: var(--resume-accent); font-weight: bold; }
         .line { margin: 0 0 0.8mm; page-break-inside: avoid; }
-        .generated { margin-top: 4mm; color: var(--resume-muted); font-size: 7.5pt; text-align: right; }
     </style>
     @if($preview ?? false)
-        {{-- Resume Editor live preview (browser, not DomPDF): browsers ignore @page margins, so the page is a white
-             A4 sheet with the same margins, and the left column and the divider are placed inside them. --}}
+        {{-- Resume Editor live preview (browser, not DomPDF): browsers ignore @page margins, so the same margins are
+             added here and the page is a white A4 sheet with the burgundy column down its left side. --}}
         <style>
             html { background: #FFFFFF; }
-            body { width: 210mm; min-height: 297mm; padding: {{ $margin }}mm; box-sizing: border-box; position: relative; }
-            .divider { position: absolute; top: {{ $margin }}mm; bottom: {{ $margin }}mm; left: calc({{ $margin }}mm + (210mm - {{ 2 * $margin }}mm) * 0.334); }
-            .side { top: {{ $margin }}mm; left: {{ $margin }}mm; width: calc((210mm - {{ 2 * $margin }}mm) * 0.31); }
+            body { width: 210mm; min-height: 297mm; padding: {{ $edge }}mm 0; box-sizing: border-box; position: relative; background: #FFFFFF; }
+            .band { position: absolute; top: 0; bottom: 0; }
+            .side { top: {{ $edge }}mm; }
         </style>
     @endif
 </head>
 <body>
-    <div class="divider"></div>
+    <div class="band"></div>
 
     <div class="side">
-        <div class="photo">
-            @if($photo ?? null)
-                <img src="{{ $photo }}" alt="">
-            @elseif(filled($content['initials'] ?? null))
-                <div class="initials">{{ $content['initials'] }}</div>
+        <div class="side-inner">
+            @if($showPhotoBox)
+                <div class="photo"><img src="{{ $photo ?? $placeholder }}" alt=""></div>
+            @endif
+
+            @if($contact)
+                <div class="side-heading{{ $showPhotoBox ? '' : ' first' }}">Contact</div>
+                @foreach($contact as $label => $value)
+                    <div class="side-item"><span class="side-label">{{ $label }}</span><span class="side-value">{!! $contactValue($value) !!}</span></div>
+                @endforeach
+            @endif
+
+            @if($education && $educationInSide)
+                <div class="side-heading{{ $showPhotoBox || $contact ? '' : ' first' }}">Education</div>
+                @foreach($education as $label => $value)
+                    <div class="side-item"><span class="side-label">{{ $label }}</span><span class="side-value">{{ $value }}</span></div>
+                @endforeach
+            @endif
+
+            @if($skills && $skillsInSide)
+                <div class="side-heading">Skills</div>
+                <ul>
+                    @foreach($skills as $skill)<li>{{ $skill }}</li>@endforeach
+                </ul>
             @endif
         </div>
+    </div>
+
+    <div class="main">
+        <table class="head">
+            <tr>
+                <td><h1 class="name">{{ $content['name'] }}</h1></td>
+                @if($seal)<td class="logo"><img src="{{ $seal }}" alt=""></td>@endif
+            </tr>
+        </table>
+        @if($headline !== '')<p class="headline">{{ $headline }}</p>@endif
 
         @if(filled($content['summary'] ?? null))
-            <div class="pill">About Me</div>
-            <p class="about">{{ $content['summary'] }}</p>
+            <div class="sec">About Me</div>
+            <p>{{ $content['summary'] }}</p>
         @endif
 
-        @if(! empty($contact))
-            <div class="pill">Contact Me</div>
-            <table class="contact">
-                @foreach($contact as $label => $value)
-                    <tr>
-                        <td class="icon">@isset($icons[$label])<img src="{{ $icons[$label] }}" alt="">@endisset</td>
-                        <td>{{ $value }}</td>
-                    </tr>
+        @if($education && ! $educationInSide)
+            <div class="sec">Education</div>
+            <table class="kv">
+                @foreach($education as $label => $value)
+                    <tr><td class="label">{{ $label }}</td><td>{{ $value }}</td></tr>
                 @endforeach
             </table>
         @endif
 
-        @if($technical !== [])
-            <div class="pill">Skills</div>
-            <ul class="bullets">
-                @foreach($technical as $skill)
-                    <li>{{ $skill }}</li>
-                @endforeach
-            </ul>
-        @endif
-    </div>
-
-    <div class="main">
-        @if($last !== '')
-            <h1 class="surname">{{ $last }}</h1>
-            @if($given !== '')<p class="given">{{ $given }}</p>@endif
-        @else
-            <h1 class="surname">{{ $given }}</h1>
-        @endif
-        @if(filled($content['title'] ?? null))<p class="title">{{ $content['title'] }}</p>@endif
-
-        @if($education !== [])
-            <div class="pill">Education</div>
-            @foreach($education as $entry)
-                <div class="edu">
-                    <p class="edu-level">{{ $entry['level'] ?? '' }}</p>
-                    @if(filled($entry['years'] ?? null))<p class="edu-years">{{ $entry['years'] }}</p>@endif
-                    @if(filled($entry['school'] ?? null))<p class="edu-school">{{ $entry['school'] }}</p>@endif
-                    @if(filled($entry['detail'] ?? null))<p>{{ $entry['detail'] }}</p>@endif
+        @if(! empty($content['experiences']))
+            <div class="sec">Experience</div>
+            @foreach($content['experiences'] as $experience)
+                @php [$date, $organization, $others] = $splitRows($experience['rows'] ?? []); $bullets = $lines($experience['description'] ?? null); @endphp
+                <div class="entry">
+                    <table class="entry-head"><tr>
+                        <td class="entry-title">{{ $experience['title'] }}@if(filled($organization)), {{ $organization }}@endif</td>
+                        @if(filled($date))<td class="entry-date">{{ $date }}</td>@endif
+                    </tr></table>
+                    @if($others)<p class="meta">{{ $meta($others) }}</p>@endif
+                    @if($bullets)
+                        <ul class="bullets">
+                            @foreach($bullets as $bullet)<li>{{ $bullet }}</li>@endforeach
+                        </ul>
+                    @endif
                 </div>
             @endforeach
-        @endif
-
-        @if($soft !== [])
-            <div class="pill">Soft Skills</div>
-            <ul class="bullets">
-                @foreach($soft as $skill)
-                    <li>{{ $skill }}</li>
-                @endforeach
-            </ul>
         @endif
 
         @if(! empty($content['projects']))
-            <div class="pill">Projects</div>
+            <div class="sec">Projects</div>
             @foreach($content['projects'] as $project)
+                @php [$date, $organization, $others] = $splitRows($project['rows'] ?? []); $bullets = $lines($project['description'] ?? null); @endphp
                 <div class="entry">
-                    <p class="entry-title">{{ $project['title'] }}</p>
-                    @if(! empty($project['rows']))<p class="entry-meta">{{ $meta($project['rows']) }}</p>@endif
-                    @if(filled($project['description'] ?? null))<p class="entry-note">{{ $project['description'] }}</p>@endif
+                    <table class="entry-head"><tr>
+                        <td class="entry-title">{{ $project['title'] }}@if(filled($organization)), {{ $organization }}@endif</td>
+                        @if(filled($date))<td class="entry-date">{{ $date }}</td>@endif
+                    </tr></table>
+                    @if($others)<p class="meta">{{ $meta($others) }}</p>@endif
+                    @if(count($bullets) > 1)
+                        <ul class="bullets">
+                            @foreach($bullets as $bullet)<li>{{ $bullet }}</li>@endforeach
+                        </ul>
+                    @elseif($bullets)
+                        <p class="note">{{ $bullets[0] }}</p>
+                    @endif
                 </div>
             @endforeach
         @endif
 
-        @if(! empty($content['experiences']))
-            <div class="pill">OJT and Experience</div>
-            @foreach($content['experiences'] as $experience)
-                <div class="entry">
-                    <p class="entry-title">{{ $experience['title'] }}</p>
-                    @if(! empty($experience['rows']))<p class="entry-meta">{{ $meta($experience['rows']) }}</p>@endif
-                    @if(filled($experience['description'] ?? null))<p class="entry-note">{{ $experience['description'] }}</p>@endif
-                </div>
-            @endforeach
+        @if($skills && ! $skillsInSide)
+            {{-- Too many for the left column: the same list, in two columns. --}}
+            @php $halfSkills = (int) ceil(count($skills) / 2); @endphp
+            <div class="sec">Skills</div>
+            <table class="cols"><tr>
+                <td><ul class="bullets">@foreach(array_slice($skills, 0, $halfSkills) as $skill)<li>{{ $skill }}</li>@endforeach</ul></td>
+                <td>@if(count($skills) > $halfSkills)<ul class="bullets">@foreach(array_slice($skills, $halfSkills) as $skill)<li>{{ $skill }}</li>@endforeach</ul>@endif</td>
+            </tr></table>
         @endif
 
         @if(! empty($content['certificates']))
-            <div class="pill">Certifications</div>
+            <div class="sec">Certifications &amp; Skills Gained</div>
             @foreach($content['certificates'] as $certificate)
-                <div class="entry">
-                    <p class="entry-title">{{ $certificate['title'] }}</p>
-                    @if(! empty($certificate['rows']))<p class="entry-meta">{{ $meta($certificate['rows']) }}</p>@endif
-                    @if(! empty($certificate['skills']))<p class="entry-meta">Skills: {{ implode(', ', $certificate['skills']) }}</p>@endif
+                @php
+                    [$date, $organization, $others] = $splitRows($certificate['rows'] ?? []);
+                    if (filled($organization)) {
+                        $others = ['Organization' => $organization, ...$others];
+                    }
+                    $gained = array_values($certificate['skills'] ?? []);
+                    $half = (int) ceil(count($gained) / 2);
+                @endphp
+                <div class="cert">
+                    <table class="entry-head"><tr>
+                        <td class="entry-title">{{ $certificate['title'] }}</td>
+                        @if(filled($date))<td class="entry-date">{{ $date }}</td>@endif
+                    </tr></table>
+                    @if($others)<p class="meta">{{ $meta($others) }}</p>@endif
+                    @if($gained)
+                        <p class="cert-skills">Skills</p>
+                        <table class="cols"><tr>
+                            <td><ul class="bullets">@foreach(array_slice($gained, 0, $half) as $skill)<li>{{ $skill }}</li>@endforeach</ul></td>
+                            <td>@if(count($gained) > $half)<ul class="bullets">@foreach(array_slice($gained, $half) as $skill)<li>{{ $skill }}</li>@endforeach</ul>@endif</td>
+                        </tr></table>
+                    @endif
                 </div>
             @endforeach
         @endif
 
         @if(! empty($content['awards']))
-            <div class="pill">Honors and Awards</div>
+            <div class="sec">Honors &amp; Awards</div>
             @foreach($content['awards'] as $group)
                 @php $first = true; @endphp
                 @foreach($group['awards'] as $award)
                     @php
                         // An older multi-line honors paragraph is shown one plain line at a time.
-                        $lines = array_values(array_filter(array_map('trim', preg_split('/\R/u', (string) $award['title'])), 'strlen'));
+                        $awardLines = array_values(array_filter(array_map('trim', preg_split('/\R/u', (string) $award['title'])), 'strlen'));
                     @endphp
                     @if($first)<p class="group">{{ $group['label'] }}</p>@php $first = false; @endphp @endif
-                    @foreach($lines as $line)
-                        <p class="line">{{ $line }}@if($loop->last && ($award['meta'] ?? '') !== '') <span class="entry-meta">({{ $award['meta'] }})</span>@endif</p>
+                    @foreach($awardLines as $line)
+                        <p class="line">{{ $line }}@if($loop->last && ($award['meta'] ?? '') !== '') <span class="meta">({{ $award['meta'] }})</span>@endif</p>
                     @endforeach
                 @endforeach
             @endforeach
         @endif
 
         @if(! empty($content['references']))
-            <div class="pill">Character References</div>
+            <div class="sec">Character References</div>
             @foreach($content['references'] as $reference)
-                <p class="line"><strong>{{ $reference['title'] }}</strong>@if(! empty($reference['rows'])) <span class="entry-meta">— {{ implode(', ', array_values($reference['rows'])) }}</span>@endif</p>
+                <p class="line"><strong>{{ $reference['title'] }}</strong>@if(! empty($reference['rows'])) <span class="meta">— {{ implode(', ', array_values($reference['rows'])) }}</span>@endif</p>
             @endforeach
         @endif
-
-        @if($generatedAt)<p class="generated">Generated {{ $generatedAt->format('M d, Y') }}</p>@endif
     </div>
 </body>
 </html>

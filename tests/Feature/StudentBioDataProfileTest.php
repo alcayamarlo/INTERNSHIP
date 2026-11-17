@@ -560,13 +560,13 @@ it('puts skills on the resume as their own section, separate from certificates',
 
     $content = app(\App\Services\ResumeBuilderService::class)->build($student)->content;
 
-    expect($content['skills'])->toBe(['technical' => ['Singing'], 'soft' => []])
+    expect($content['skills'])->toBe(['Singing'])
         ->and(collect($content['certificates'])->pluck('title')->all())->toBe(['Database Design']);
 
     $html = view('student.resume.pdf', ['content' => $content, 'photo' => null])->render();
-    // Skills are their own section, before the certifications.
-    $skillsAt = strpos($html, '<div class="pill">Skills</div>');
-    $certificatesAt = strpos($html, '<div class="pill">Certifications</div>');
+    // Skills are their own section (left column), before the certifications.
+    $skillsAt = strpos($html, '<div class="side-heading">Skills</div>');
+    $certificatesAt = strpos($html, '<div class="sec">Certifications &amp; Skills Gained</div>');
     expect($skillsAt)->not->toBeFalse()
         ->and(strpos($html, 'Singing'))->toBeGreaterThan($skillsAt)->toBeLessThan($certificatesAt)
         ->and($certificatesAt)->toBeGreaterThan($skillsAt)

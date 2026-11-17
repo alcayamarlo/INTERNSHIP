@@ -47,18 +47,17 @@
             <div class="card-header"><h2 id="reTitlePersonal"><i class="bi bi-person-vcard" aria-hidden="true"></i> Personal info</h2></div>
             <div class="card-body">
                 <div class="sb-field-grid sb-field-grid--2">
-                    {{-- Appendix H prints the surname large on its own line, then the given name. --}}
-                    <label class="sb-field">
-                        <span>Surname</span>
-                        <input type="text" class="form-control" data-field="name_last" value="{{ $editor['name_last'] }}" maxlength="80" autocomplete="family-name" placeholder="e.g. Dela Cruz">
-                    </label>
-                    <label class="sb-field">
-                        <span>Given name and middle initial <b class="sb-req" aria-hidden="true">*</b></span>
-                        <input type="text" class="form-control" data-field="name_given" value="{{ $editor['name_given'] }}" maxlength="80" required autocomplete="given-name" placeholder="e.g. Juan M.">
-                    </label>
                     <label class="sb-field sb-span-all">
-                        <span>Title under your name</span>
-                        <input type="text" class="form-control" data-field="title" value="{{ $editor['title'] }}" maxlength="120" placeholder="e.g. BS Information Technology Student, or Web Developer Intern">
+                        <span>Full name <b class="sb-req" aria-hidden="true">*</b></span>
+                        <input type="text" class="form-control" data-field="name" value="{{ $editor['name'] }}" maxlength="120" required autocomplete="name">
+                    </label>
+                    <label class="sb-field">
+                        <span>Course</span>
+                        <input type="text" class="form-control" data-field="course" value="{{ $editor['course'] }}" maxlength="150" placeholder="e.g. BS Information Technology">
+                    </label>
+                    <label class="sb-field">
+                        <span>School</span>
+                        <input type="text" class="form-control" data-field="school" value="{{ $editor['school'] }}" maxlength="150">
                     </label>
                     <label class="sb-field">
                         <span>Contact email <b class="sb-req" aria-hidden="true">*</b></span>
@@ -69,7 +68,7 @@
                         <input type="tel" class="form-control" data-field="contact.mobile" value="{{ $editor['contact']['mobile'] }}" maxlength="40" autocomplete="tel">
                     </label>
                     <label class="sb-field">
-                        <span>City</span>
+                        <span>City address</span>
                         <input type="text" class="form-control" data-field="contact.city" value="{{ $editor['contact']['city'] }}" maxlength="120" placeholder="e.g. Cebu City, Cebu" autocomplete="address-level2">
                     </label>
                 </div>
@@ -88,7 +87,7 @@
             <div class="card-body">
                 <label class="sb-field">
                     <span class="visually-hidden">About me</span>
-                    <textarea class="form-control" data-field="summary" rows="4" maxlength="{{ \App\Services\ResumeContent::MAX_SUMMARY }}" placeholder="Two or three sentences about your goals and strengths.">{{ $editor['summary'] }}</textarea>
+                    <textarea class="form-control" data-field="summary" rows="4" maxlength="1200" placeholder="Two or three sentences about your goals and strengths.">{{ $editor['summary'] }}</textarea>
                 </label>
                 <div class="form-check mt-2">
                     <input class="form-check-input" type="checkbox" id="reUpdateProfile" data-field="update_profile_summary">
@@ -101,16 +100,12 @@
         <section class="card sb-editor-section" aria-labelledby="reTitleEducation">
             <div class="card-header"><h2 id="reTitleEducation"><i class="bi bi-mortarboard" aria-hidden="true"></i> Education</h2></div>
             <div class="card-body">
-                <p class="sb-form-intro">College, Senior High School, Junior High School and Elementary, newest first.</p>
-                <div class="sb-list-edit" data-list="education" data-empty-text="No education yet.">
-                    @foreach($editor['education'] as $entry)
-                        @include('student.resume.partials.editor-education', ['entry' => $entry])
+                <div class="sb-list-edit sb-list-edit--rows" data-list="education" data-empty-text="No education details.">
+                    @foreach($editor['education'] as $row)
+                        @include('student.resume.partials.editor-row', ['row' => $row, 'labelPlaceholder' => 'e.g. High school / SHS', 'valuePlaceholder' => 'e.g. Cebu City NHS (2022)'])
                     @endforeach
                 </div>
-                <button type="button" class="sb-add-btn" data-add="education"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add education</button>
-                <datalist id="reEducationLevels">
-                    @foreach(\App\Services\ResumeContent::EDUCATION_LEVELS as $level)<option value="{{ $level }}"></option>@endforeach
-                </datalist>
+                <button type="button" class="sb-add-btn" data-add="row-education"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add education</button>
             </div>
         </section>
 
@@ -118,21 +113,12 @@
         <section class="card sb-editor-section" aria-labelledby="reTitleSkills">
             <div class="card-header"><h2 id="reTitleSkills"><i class="bi bi-stars" aria-hidden="true"></i> Skills</h2></div>
             <div class="card-body">
-                <h3 class="sb-form-subhead">Technical skills</h3>
-                <div class="sb-list-edit sb-list-edit--values" data-list="skills_technical" data-empty-text="No technical skills yet.">
-                    @foreach($editor['skills_technical'] as $skill)
+                <div class="sb-list-edit sb-list-edit--values" data-list="skills" data-empty-text="No skills yet.">
+                    @foreach($editor['skills'] as $skill)
                         @include('student.resume.partials.editor-value', ['value' => $skill])
                     @endforeach
                 </div>
-                <button type="button" class="sb-add-btn" data-add="value-skills"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add technical skill</button>
-
-                <h3 class="sb-form-subhead mt-3">Soft skills</h3>
-                <div class="sb-list-edit sb-list-edit--values" data-list="skills_soft" data-empty-text="No soft skills yet.">
-                    @foreach($editor['skills_soft'] as $skill)
-                        @include('student.resume.partials.editor-value', ['value' => $skill])
-                    @endforeach
-                </div>
-                <button type="button" class="sb-add-btn" data-add="value-skills"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add soft skill</button>
+                <button type="button" class="sb-add-btn" data-add="value-skills"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add skill</button>
             </div>
         </section>
 
@@ -191,7 +177,7 @@
       data-confirm-title="Discard your changes?" data-confirm-label="Discard"></form>
 
 {{-- Blank items for the Add buttons. --}}
-<template data-template="education">@include('student.resume.partials.editor-education', ['entry' => null])</template>
+<template data-template="row-education">@include('student.resume.partials.editor-row', ['row' => null, 'labelPlaceholder' => 'e.g. High school / SHS', 'valuePlaceholder' => 'e.g. Cebu City NHS (2022)'])</template>
 <template data-template="value-skills">@include('student.resume.partials.editor-value', ['value' => ''])</template>
 <template data-template="award">@include('student.resume.partials.editor-award', ['award' => null])</template>
 @foreach($entrySections as $section => $config)

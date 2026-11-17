@@ -323,7 +323,7 @@ class ResumeBuilderService
             ])->setPaper('a4')->output(), 'pages' => 1, 'density' => 'normal'];
         }
 
-        // Version 4 is the one-column layout; version 5 the Appendix H two-column one.
+        // Version 4 is the one-column layout; version 5 the burgundy sidebar one.
         $view = $version === 4 ? 'student.resume.pdf-v4' : 'student.resume.pdf';
         $photo = $this->photoFor($content);
         $normal = $this->renderCurrent($view, $content, $photo, 'normal');
@@ -347,25 +347,10 @@ class ResumeBuilderService
         return ['pdf' => $bytes, 'pages' => (int) $pdf->getDomPDF()->getCanvas()->get_page_count(), 'density' => $density];
     }
 
-    /**
-     * The photo for the resume: the private 2x2, unless the student turned it off. The Appendix H layout
-     * (version 5) shows it round, inside a burgundy ring; older layouts keep the square.
-     */
+    /** The photo for the resume: the private 2x2, unless the student turned it off. */
     private function photoFor(array $content): ?string
     {
-        if (! ($content['show_photo'] ?? true)) {
-            return null;
-        }
-        $square = $this->resumePhoto($content);
-        if ($square === null || (int) ($content['version'] ?? 1) < 5) {
-            return $square;
-        }
-
-        try {
-            return 'data:image/jpeg;base64,'.base64_encode($this->images->circle(base64_decode(substr($square, strlen('data:image/jpeg;base64,'))), 400));
-        } catch (\Throwable) {
-            return $square; // GD missing or an unreadable image: the square photo still works.
-        }
+        return ($content['show_photo'] ?? true) ? $this->resumePhoto($content) : null;
     }
 
     /**
