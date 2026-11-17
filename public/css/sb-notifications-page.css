@@ -189,3 +189,12 @@ html body.sb-app .nt-card .nt-head p { margin-top: 2px; }
 html body.sb-app .nt-card .nt-bulk { min-height: 48px; padding: 4px 20px; }
 html body.sb-app .nt-card .nt-item { padding: 10px 20px; min-height: 68px; }
 html body.sb-app .nt-card .nt-foot { min-height: 52px; }
+
+/* ---------- Edge to edge, like the notification detail page ---------- */
+html body.sb-app .sb-main:has(.nt-card) > .sb-content { padding: 0; }
+html body.sb-app .sb-content > .nt-card { border: 0; border-radius: 0; }
+html body.sb-app .nt-card .nt-head { padding: 14px 24px; }
+html body.sb-app .nt-card .nt-bulk, html body.sb-app .nt-card .nt-item, html body.sb-app .nt-card .nt-foot { padding-left: 24px; padding-right: 24px; }
+@media (max-width: 899.98px) {
+    html body.sb-app .nt-card .nt-head, html body.sb-app .nt-card .nt-bulk, html body.sb-app .nt-card .nt-item, html body.sb-app .nt-card .nt-foot { padding-left: 16px; padding-right: 16px; }
+}
