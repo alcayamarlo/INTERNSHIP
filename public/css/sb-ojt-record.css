@@ -1,4 +1,4 @@
-/* Coordinator > OJT record (Overview tab). Scoped to .ojt-record; tokens only. */
+/* OJT record pages (Coordinator, Admin, Employer): Overview tab. Scoped to .ojt-record; tokens only. */
 html body.sb-app .ojt-record .ojt-progress--record { border: 1px solid var(--ds-hair); border-radius: var(--ds-r-card); background: var(--ds-surface); margin: 0 0 var(--ds-sp-5); }
 html body.sb-app .ojt-record .ojt-progress--record .card-body { padding: 20px 24px; }
 
@@ -23,3 +23,11 @@ html body.sb-app .ojt-record .ojt-progress--record .sb-note { margin-top: var(--
 
 /* Panels */
 html body.sb-app .ojt-record .sb-upanel > .card { border: 1px solid var(--ds-hair); border-radius: var(--ds-r-card); }
+
+/* Employer > Intern record: the existing server-driven tabs (.sb-section-tab) get the same underline look. */
+html body.sb-app .ojt-intern-record .sb-tabbar { position: sticky; top: var(--sb-topbar-height, 68px); z-index: 20; margin: 0 0 var(--ds-sp-5); padding: 0; background: var(--ds-surface); border-bottom: 1px solid var(--ds-hair); }
+html body.sb-app .ojt-intern-record .sb-section-tabs { display: flex; align-items: stretch; gap: 4px; min-height: 52px; padding: 0; border: 0; background: transparent; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; scrollbar-color: var(--ds-input-border) transparent; }
+html body.sb-app .ojt-intern-record .sb-section-tab { position: relative; flex: none; display: inline-flex; align-items: center; gap: 8px; height: 52px; padding: 0 16px; border: 0; border-radius: 0; background: transparent; box-shadow: none; font-size: 15px; font-weight: 700; color: var(--ds-muted); white-space: nowrap; }
+html body.sb-app .ojt-intern-record .sb-section-tab:hover { background: var(--ds-red-tint); color: var(--ds-ink); }
+html body.sb-app .ojt-intern-record .sb-section-tab[aria-selected="true"] { background: transparent; color: var(--ds-red-text); }
+html body.sb-app .ojt-intern-record .sb-section-tab[aria-selected="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--ds-red); }

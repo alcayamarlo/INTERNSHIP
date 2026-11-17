@@ -3,7 +3,7 @@
 @section('title', 'OJT · '.($placement->student?->user?->name ?? 'Student'))
 
 @section('content')
-<link rel="stylesheet" href="{{ asset('css/coordinator-ojt-record.css') }}?v={{ @filemtime(public_path('css/coordinator-ojt-record.css')) }}">
+<link rel="stylesheet" href="{{ asset('css/sb-ojt-record.css') }}?v={{ @filemtime(public_path('css/sb-ojt-record.css')) }}">
 @php
     $recordAvatar = \App\Support\Avatar::for($placement->student?->user);
     $recordName = $placement->student?->user?->name ?? 'Student';
