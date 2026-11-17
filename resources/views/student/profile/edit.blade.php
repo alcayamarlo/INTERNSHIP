@@ -3,6 +3,7 @@
 @section('title', 'My Profile')
 
 @section('content')
+<link rel="stylesheet" href="{{ asset('css/student-profile-layout.css') }}?v={{ @filemtime(public_path('css/student-profile-layout.css')) }}">
 @php
     $tabErrorFields = [
         'personal' => ['first_name', 'middle_name', 'last_name', 'suffix', 'gender', 'date_of_birth', 'place_of_birth', 'citizenship', 'languages', 'civil_status', 'religion', 'height_feet', 'height_inches', 'weight_kg', 'about_me', 'profile_picture'],
@@ -54,6 +55,13 @@
                 @error('profile_picture')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
         </div>
+        <div class="resume-actions">
+            <a href="{{ route('student.resume.index') }}" class="btn-profile"><i class="bi bi-file-earmark-person" aria-hidden="true"></i> View resume</a>
+            <form method="POST" action="{{ route('student.resume.generate') }}">
+                @csrf
+                <button type="submit" class="btn-primary-profile" title="Only your 3 latest resumes are kept. Generating a new one removes the oldest."><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Generate resume</button>
+            </form>
+        </div>
         <div class="completion">
             <div class="completion-line">
                 <strong>Profile completion</strong>
@@ -77,13 +85,6 @@
                 @else
                     Program not set
                 @endif
-            </div>
-            <div class="resume-actions">
-                <a href="{{ route('student.resume.index') }}" class="btn-profile"><i class="bi bi-file-earmark-person" aria-hidden="true"></i> View resume</a>
-                <form method="POST" action="{{ route('student.resume.generate') }}">
-                    @csrf
-                    <button type="submit" class="btn-primary-profile" title="Only your 3 latest resumes are kept. Generating a new one removes the oldest."><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Generate resume</button>
-                </form>
             </div>
         </div>
     </header>

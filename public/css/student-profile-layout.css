@@ -1,0 +1,60 @@
+/* Student > My Profile: same layout as the other detail pages (profile header, slim completion card, underline tabs, clean panels).
+   CSS only: every id, class and data attribute used by student-profile.js is unchanged. Tokens only. */
+html body.sb-app .student-profile-page { padding-bottom: var(--ds-sp-6); }
+
+/* ---- Profile header: avatar + name left, actions right, completion card below ---- */
+html body.sb-app .student-profile-page .profile-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "identity actions" "completion completion"; align-items: center; gap: var(--ds-sp-4) var(--ds-sp-6); padding: var(--ds-sp-6) 0 var(--ds-sp-4); border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+html body.sb-app .student-profile-page .identity { grid-area: identity; gap: var(--ds-sp-6); }
+html body.sb-app .student-profile-page .avatar-wrap { flex: 0 0 112px; width: 112px; height: 112px; }
+html body.sb-app .student-profile-page .avatar { width: 112px; height: 112px; background: #111; color: #fff; font-size: 38px; font-weight: 800; letter-spacing: .02em; box-shadow: 0 0 0 4px var(--ds-surface), 0 0 0 5px var(--ds-hair); }
+html body.sb-app .student-profile-page .profile-name { margin: 0; font-size: 32px; font-weight: 700; line-height: 1.15; color: var(--ds-ink); overflow-wrap: anywhere; }
+html body.sb-app .student-profile-page .profile-subline { margin: 6px 0 0; font-size: 16px; font-weight: 600; color: var(--ds-ink); }
+
+html body.sb-app .student-profile-page .resume-actions { grid-area: actions; display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 12px; margin: 0; }
+html body.sb-app .student-profile-page .resume-actions form { margin: 0; }
+html body.sb-app .student-profile-page .btn-profile, html body.sb-app .student-profile-page .resume-actions .btn-primary-profile { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 20px; border-radius: var(--ds-r-pill); border: 1.5px solid var(--ds-input-border); background: var(--ds-surface); color: var(--ds-ink); font-weight: 700; text-decoration: none; }
+html body.sb-app .student-profile-page .resume-actions .btn-primary-profile { border-color: var(--ds-red-text); color: var(--ds-red-text); }
+html body.sb-app .student-profile-page .btn-profile:hover, html body.sb-app .student-profile-page .resume-actions .btn-primary-profile:hover { background: var(--ds-red-tint); }
+
+/* Completion: one slim card */
+html body.sb-app .student-profile-page .completion { grid-area: completion; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "line meta" "track meta" "steps meta"; align-items: center; gap: 8px var(--ds-sp-6); min-width: 0; margin: 0; padding: var(--ds-sp-4) var(--ds-sp-6); border: 1px solid var(--ds-hair); border-radius: var(--ds-r-card); background: var(--ds-surface); }
+html body.sb-app .student-profile-page .completion-line { grid-area: line; display: flex; justify-content: space-between; gap: 12px; font-size: 14px; }
+html body.sb-app .student-profile-page .completion-track { grid-area: track; height: 8px; border-radius: var(--ds-r-pill); background: var(--ds-hair); overflow: hidden; }
+html body.sb-app .student-profile-page .completion-fill { height: 100%; border-radius: inherit; background: var(--ds-red); }
+html body.sb-app .student-profile-page .completion-steps { grid-area: steps; font-size: 14px; }
+html body.sb-app .student-profile-page .completion-steps summary { cursor: pointer; font-weight: 700; color: var(--ds-red-text); }
+html body.sb-app .student-profile-page .completion > .small { grid-area: meta; align-self: center; margin: 0 !important; white-space: nowrap; font-size: 14px; color: var(--ds-muted); }
+
+/* ---- Privacy card: calm tint banner ---- */
+html body.sb-app .student-profile-page .privacy-consent-card { margin: 0 0 var(--ds-sp-4); padding: var(--ds-sp-4) var(--ds-sp-6); border: 1px solid var(--ds-hair); border-radius: var(--ds-r-card); background: var(--ds-red-tint); box-shadow: none; }
+html body.sb-app .student-profile-page .privacy-consent-card .panel-heading { margin: 0 0 6px; font-size: 17px; }
+html body.sb-app .student-profile-page .privacy-consent-card .portfolio-description { margin: 0 0 12px; font-size: 14px; color: var(--ds-muted); }
+html body.sb-app .student-profile-page .privacy-consent-card form { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px var(--ds-sp-4); }
+html body.sb-app .student-profile-page .privacy-consent-card form .invalid-feedback { grid-column: 1 / -1; margin: 0; }
+html body.sb-app .student-profile-page .privacy-consent-card form .mt-2 { margin: 0 !important; }
+
+/* ---- Underline tabs (same as the OJT record and student pages) ---- */
+html body.sb-app .student-profile-page .tabs { position: sticky; top: var(--sb-topbar-height, 68px); z-index: 20; gap: 4px; height: 52px; margin: 0 0 var(--ds-sp-5); overflow-x: auto; background: var(--ds-surface); border-bottom: 1px solid var(--ds-hair); scrollbar-width: none; }
+html body.sb-app .student-profile-page .tabs::-webkit-scrollbar { display: none; }
+html body.sb-app .student-profile-page .tab { height: 52px; min-height: 52px; padding: 0 16px; border: 0; border-bottom: 0; border-radius: 0; font-size: 15px; font-weight: 700; color: var(--ds-muted); }
+html body.sb-app .student-profile-page .tab::before { content: ""; position: absolute; inset: 6px 0; border-radius: 10px; background: transparent; z-index: -1; }
+html body.sb-app .student-profile-page .tab:hover::before { background: var(--ds-red-tint); }
+html body.sb-app .student-profile-page .tab[aria-selected="true"] { color: var(--ds-red-text); border-bottom: 0; }
+html body.sb-app .student-profile-page .tab[aria-selected="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--ds-red); }
+html body.sb-app .student-profile-page .tab:focus-visible { outline: 3px solid var(--ds-focus); outline-offset: -3px; border-radius: 10px; }
+
+/* ---- Panels and form controls ---- */
+html body.sb-app .student-profile-page .profile-panel { border: 1px solid var(--ds-hair); border-radius: var(--ds-r-card); background: var(--ds-surface); box-shadow: none; }
+html body.sb-app .student-profile-page .profile-panel :is(.form-control, .form-select) { min-height: var(--ds-control-h); border-radius: var(--ds-r-input); border: 1.5px solid var(--ds-input-border); }
+html body.sb-app .student-profile-page .profile-panel textarea.form-control { min-height: 110px; }
+html body.sb-app .student-profile-page .profile-panel :is(.form-control, .form-select):focus { border-color: var(--ds-red); box-shadow: 0 0 0 3px var(--ds-ring); outline: 0; }
+html body.sb-app .student-profile-page .profile-panel .form-label { font-size: var(--ds-fs-label); font-weight: 800; letter-spacing: var(--ds-ls-label); text-transform: uppercase; color: var(--ds-label); }
+
+@media (max-width: 899.98px) {
+    html body.sb-app .student-profile-page .profile-header { grid-template-columns: minmax(0, 1fr); grid-template-areas: "identity" "actions" "completion"; }
+    html body.sb-app .student-profile-page .avatar-wrap, html body.sb-app .student-profile-page .avatar { width: 88px; height: 88px; flex-basis: 88px; font-size: 30px; }
+    html body.sb-app .student-profile-page .profile-name { font-size: 26px; }
+    html body.sb-app .student-profile-page .resume-actions { justify-content: flex-start; }
+    html body.sb-app .student-profile-page .completion { grid-template-columns: minmax(0, 1fr); grid-template-areas: "line" "track" "steps" "meta"; }
+    html body.sb-app .student-profile-page .privacy-consent-card form { grid-template-columns: minmax(0, 1fr); }
+}
