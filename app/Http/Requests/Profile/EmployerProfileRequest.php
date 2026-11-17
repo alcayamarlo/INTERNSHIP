@@ -19,7 +19,7 @@ class EmployerProfileRequest extends FormRequest
             'company_name' => ['required', 'string', 'max:255'],
             'company_logo' => FileUploadService::imageRules(),
             'description' => ['nullable', 'string', 'max:2000'],
-            'industry' => ['required', 'string', 'max:100'],
+            ...app(\App\Services\IndustryCatalog::class)->rules(),
             'company_size' => ['nullable', 'string', 'in:1-10,11-50,51-200,201-500,500+'],
             'website' => ['nullable', 'url', 'max:255'],
 

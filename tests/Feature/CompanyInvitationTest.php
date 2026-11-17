@@ -62,7 +62,7 @@ function companyForm(array $overrides = []): array
         'company_name' => 'Applus Velosi Philippines Inc.',
         'address' => 'IT Park, Cebu City',
         'phone' => '09171234567',
-        'industry' => 'Information Technology',
+        'industry' => 'Information',
         'contact_person' => 'Ian Olmoguez',
         'description' => 'Engineering and inspection services.',
         'website' => 'https://applus.test',
@@ -117,7 +117,7 @@ it('prefills the company form from the link and creates a verified employer on a
         ->and($user->must_change_password)->toBeFalse()
         ->and($employer->verified_at)->not->toBeNull()
         ->and($employer->verified_by_user_id)->toBe($coordinator->id)
-        ->and($employer->industry)->toBe('Information Technology')
+        ->and($employer->industry)->toBe('Information')
         ->and($invitation->status)->toBe(CompanyInvitationStatus::Accepted)
         ->and($invitation->employer_id)->toBe($employer->id);
     // No automatic login: the company signs in from the landing page with the password it just set.

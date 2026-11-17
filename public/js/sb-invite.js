@@ -19,6 +19,12 @@
 
     function field(name) { return form.querySelector('[name="' + name + '"]'); }
     function val(name) { var f = field(name); return f ? f.value.trim() : ''; }
+    /* The industry shown on the review: the typed text when "Other" is chosen. */
+    function industryText() {
+        var select = field('industry');
+        if (!select) return '';
+        return select.value === select.getAttribute('data-other-value') ? val('industry_other') : select.options[select.selectedIndex].text.trim();
+    }
 
     /* ----- messages ----- */
     function setError(input, msg) {
@@ -53,7 +59,7 @@
 
     function validateStep(n) {
         var panel = form.querySelector('[data-step="' + n + '"]');
-        var inputs = Array.prototype.slice.call(panel.querySelectorAll('input[name], textarea[name]'));
+        var inputs = Array.prototype.slice.call(panel.querySelectorAll('input[name], textarea[name], select[name]'));
         var first = null;
         inputs.forEach(function (i) { if (!checkInput(i) && !first) first = i; });
         if (first) first.focus();
@@ -66,6 +72,11 @@
     form.addEventListener('input', function (e) {
         if (e.target.classList && e.target.classList.contains('is-invalid')) checkInput(e.target);
         if (e.target.name === 'password') strength(e.target.value);
+    });
+
+    /* Choosing an industry clears its error. */
+    form.addEventListener('change', function (e) {
+        if (e.target.tagName === 'SELECT' && e.target.classList.contains('is-invalid')) checkInput(e.target);
     });
 
     /* ----- password ----- */
@@ -93,7 +104,7 @@
     function fillReview() {
         Array.prototype.forEach.call(form.querySelectorAll('[data-sum]'), function (el) {
             var key = el.getAttribute('data-sum');
-            var v = key === 'password' ? (val('password') ? '••••••••' : '') : val(key);
+            var v = key === 'password' ? (val('password') ? '••••••••' : '') : key === 'industry' ? industryText() : val(key);
             el.textContent = v || '—';
         });
     }

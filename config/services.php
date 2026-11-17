@@ -18,6 +18,13 @@ return [
         'key' => env('POSTMARK_API_KEY'),
     ],
 
+    // Industry list for the company forms (NAICS sectors from Oanor). Called from the server only;
+    // the key never reaches the browser (App\Services\IndustryCatalog).
+    'industry' => [
+        'key' => env('INDUSTRY_API_KEY'),
+        'url' => env('INDUSTRY_API_URL', 'https://api.oanor.com/naics-api/v1/naicsx/sectors-list'),
+    ],
+
     'resend' => [
         'key' => env('RESEND_API_KEY'),
     ],

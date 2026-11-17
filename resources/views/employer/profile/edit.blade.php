@@ -86,8 +86,7 @@
                 <div class="cp-row">
                     <div class="cp-field">
                         <label class="form-label" for="industry">Industry <span class="text-danger" aria-hidden="true">*</span></label>
-                        <input id="industry" type="text" class="form-control @error('industry') is-invalid @enderror" name="industry" value="{{ old('industry', $employer->industry) }}" required>
-                        @error('industry')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        @include('partials.industry-select', ['id' => 'industry', 'stored' => $employer->industry])
                     </div>
                     <div class="cp-field">
                         <label class="form-label" for="company_size">Company Size</label>

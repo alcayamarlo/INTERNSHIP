@@ -140,7 +140,7 @@ function p1Invite(User $coordinator, array $overrides = []): string
 function p1CompanyForm(array $overrides = []): array
 {
     return [
-        'industry' => 'Information Technology', 'contact_person' => 'Ian Olmoguez', 'description' => 'Engineering services.',
+        'industry' => 'Information', 'contact_person' => 'Ian Olmoguez', 'description' => 'Engineering services.',
         'website' => 'https://applus.test', 'password' => 'Secret#2026', 'password_confirmation' => 'Secret#2026', ...$overrides,
     ];
 }

@@ -6,6 +6,7 @@ use App\Enums\CompanyInvitationStatus;
 use App\Models\CompanyInvitation;
 use App\Rules\StrongPassword;
 use App\Services\CompanyInvitationService;
+use App\Services\IndustryCatalog;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -15,7 +16,7 @@ use Illuminate\Validation\ValidationException;
  */
 class CompanyInvitationController extends Controller
 {
-    public function __construct(private CompanyInvitationService $invitations) {}
+    public function __construct(private CompanyInvitationService $invitations, private IndustryCatalog $industries) {}
 
     public function show(string $token)
     {
@@ -44,14 +45,18 @@ class CompanyInvitationController extends Controller
         $validated = $request->validate([
             'address' => [$invitation && blank($invitation->address) ? 'required' : 'exclude', 'string', 'max:500'],
             'phone' => [$invitation && blank($invitation->phone) ? 'nullable' : 'exclude', 'string', 'max:20'],
-            'industry' => ['required', 'string', 'max:255'],
+            ...$this->industries->rules(),
             'contact_person' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:2000'],
             'website' => ['nullable', 'url', 'max:255'],
             'password' => ['required', 'string', 'confirmed', new StrongPassword],
         ], [
             'contact_person.required' => 'Enter the name of the person who will manage this account.',
+            ...$this->industries->messages(),
         ]);
+        // The chosen sector, or what was typed for "Other".
+        $validated['industry'] = $this->industries->resolve($validated);
+        unset($validated['industry_other']);
 
         try {
             $user = $this->invitations->accept($token, $validated);

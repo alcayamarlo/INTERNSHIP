@@ -86,7 +86,7 @@ it('uploads and displays employer logos on the public disk', function () {
         ->postJson(route('employer.profile.update'), [
             '_method' => 'PUT',
             'company_name' => $employer->company_name,
-            'industry' => 'Technology',
+            'industry' => 'Information',
             'company_size' => '1-10',
             'contact_person' => $user->name,
             'position' => 'Hiring Manager',

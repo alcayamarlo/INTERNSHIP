@@ -1,0 +1,16 @@
+/* Industry dropdown (Tom Select default theme) made to look like the form fields around it. */
+/* The wrapper copies the select's classes; only the inner .ts-control draws the field. The longer
+   selector wins over the invite card's own ".form-control" styling. */
+html body .ts-wrapper.form-control, html body .ts-wrapper.form-select,
+html body.sb-glass.skillbridge-public .inv-card .ts-wrapper.form-control { padding: 0; border: 0; background: none; box-shadow: none; min-height: 0; height: auto; }
+.ts-wrapper .ts-control { display: flex; align-items: center; min-height: 46px; padding: 8px 14px; border: 1.5px solid #D7D0D3; border-radius: 12px; background: #fff; background-image: none; box-shadow: none; font: inherit; color: inherit; }
+.ts-wrapper.single .ts-control, .ts-wrapper.single.input-active .ts-control { background-image: none; background-color: #fff; box-shadow: none; }
+.ts-wrapper.focus .ts-control { border-color: #7A0013; box-shadow: 0 0 0 3px rgba(122, 0, 19, .16); }
+.ts-wrapper .ts-control > input { font: inherit; }
+.ts-wrapper.is-invalid .ts-control { border-color: #B3261E; }
+.ts-wrapper .ts-dropdown { border: 1.5px solid #D7D0D3; border-radius: 12px; margin-top: 4px; box-shadow: 0 12px 28px rgba(31, 26, 28, .16); overflow: hidden; z-index: 2000; font: inherit; }
+.ts-wrapper .ts-dropdown .option { padding: 9px 14px; }
+.ts-wrapper .ts-dropdown .active { background: #F7E9EB; color: #5E010B; }
+.ts-wrapper .ts-dropdown .no-results { padding: 9px 14px; color: #6b6468; }
+[data-theme="dark"] .ts-wrapper .ts-control, [data-theme="dark"] .ts-wrapper .ts-dropdown { background: #1f1a1c; color: #f1eced; border-color: #4a4144; }
+[data-theme="dark"] .ts-wrapper .ts-dropdown .active { background: #3a1c22; color: #fff; }

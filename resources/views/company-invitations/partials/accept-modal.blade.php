@@ -45,9 +45,7 @@
                         </div>
                         <div class="inv-f">
                             <label class="form-label" for="ciIndustry">Industry <span aria-hidden="true">*</span></label>
-                            <input id="ciIndustry" name="industry" class="form-control @error('industry') is-invalid @enderror" required maxlength="255"
-                                   value="{{ old('industry') }}" placeholder="e.g. Information Technology">
-                            @error('industry')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            @include('partials.industry-select', ['id' => 'ciIndustry', 'stored' => null])
                         </div>
                         <div class="inv-f">
                             @if(filled($invitation->address))

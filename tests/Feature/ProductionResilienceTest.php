@@ -51,7 +51,7 @@ it('saves the employer company profile and logo with only company fields', funct
     $this->actingAs($user)->postJson(route('employer.profile.update'), [
         '_method' => 'PUT',
         'company_name' => 'New Name',
-        'industry' => 'Software',
+        'industry' => 'Information',
         'company_size' => '11-50',
         'website' => 'https://example.test',
         'description' => 'We build things.',

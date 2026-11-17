@@ -882,6 +882,6 @@ it('saves the supervisor job title and the trainee department', function () {
     expect($placement->fresh()->department)->toBe('IT Department');
 
     $this->get(route('employer.profile.edit'))->assertOk()->assertSee('Your job title');
-    $this->put(route('employer.profile.update'), ['company_name' => 'OJT Labs', 'industry' => 'IT', 'position' => 'Solutions Architect'])->assertSessionHasNoErrors();
+    $this->put(route('employer.profile.update'), ['company_name' => 'OJT Labs', 'industry' => 'Information', 'position' => 'Solutions Architect'])->assertSessionHasNoErrors();
     expect($fixture['employer']->fresh()->position)->toBe('Solutions Architect');
 });

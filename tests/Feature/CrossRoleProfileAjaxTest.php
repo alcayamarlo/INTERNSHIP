@@ -59,7 +59,7 @@ it('saves an employer profile and logo asynchronously', function () {
         ->postJson(route('employer.profile.update'), [
             '_method' => 'PUT',
             'company_name' => 'Updated AJAX Employer',
-            'industry' => 'Technology',
+            'industry' => 'Information',
             'company_size' => '1-10',
             'contact_person' => $user->name,
             'position' => 'Hiring Manager',
@@ -105,7 +105,7 @@ it('keeps the employer logo when the profile is saved without a new one', functi
     Storage::fake('public');
     $user = User::factory()->create(['role' => UserRole::Employer]);
     $employer = Employer::create(['user_id' => $user->id, 'company_name' => 'Keep Logo Co', 'contact_person' => $user->name]);
-    $profile = ['_method' => 'PUT', 'company_name' => 'Keep Logo Co', 'industry' => 'Technology', 'contact_person' => $user->name,
+    $profile = ['_method' => 'PUT', 'company_name' => 'Keep Logo Co', 'industry' => 'Information', 'contact_person' => $user->name,
         'email' => $user->email, 'phone' => '09123456789', 'street' => '1 Main Street', 'city' => 'Cebu City', 'province' => 'Cebu', 'zip_code' => '6000'];
 
     $this->actingAs($user)->postJson(route('employer.profile.update-logo'), ['company_logo' => crossRolePng('logo.png')])->assertOk();

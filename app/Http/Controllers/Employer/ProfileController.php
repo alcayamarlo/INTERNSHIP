@@ -120,7 +120,7 @@ class ProfileController extends Controller
 
                 $employerUpdates = [
                     'company_name' => $validated['company_name'],
-                    'industry' => $validated['industry'],
+                    'industry' => app(\App\Services\IndustryCatalog::class)->resolve($validated),
                     'company_size' => $validated['company_size'] ?? null,
                     'description' => $validated['description'] ?? null,
                     'website' => $validated['website'] ?? null,
