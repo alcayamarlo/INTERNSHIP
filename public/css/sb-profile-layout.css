@@ -87,3 +87,6 @@ html body.sb-app .cp-remove:hover { background: var(--cp-tint); }
 html body.sb-app .cp-actions-inline { margin: 0; }
 html body.sb-app .cp-card--single { max-width: 720px; }
 html body.sb-app .cp-card__footer { display: flex; justify-content: flex-end; padding: 16px 24px 20px; border-top: 1px solid var(--cp-hair); }
+
+/* Read-only value in a profile card */
+html body.sb-app .cp-value { margin: 0; font-size: 15px; line-height: 1.5; color: var(--cp-ink); overflow-wrap: anywhere; }
