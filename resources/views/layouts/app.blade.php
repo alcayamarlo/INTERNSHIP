@@ -156,6 +156,14 @@
                 ['employer.supervisors.index', 'employer.supervisors.*', 'bi-person-gear', 'Supervisors'],
             ],
         ],
+        (bool) $currentUser?->isRole(UserRole::Supervisor) => [
+            'Overview' => [
+                ['supervisor.dashboard', 'supervisor.dashboard', 'bi-grid-1x2', 'Dashboard'],
+            ],
+            'OJT' => [
+                ['supervisor.interns.index', 'supervisor.interns.*', 'bi-person-workspace', 'My Interns'],
+            ],
+        ],
         (bool) $currentUser?->isRole(UserRole::Coordinator) => [
             'Overview' => [
                 ['coordinator.dashboard', 'coordinator.dashboard', 'bi-grid-1x2', 'Dashboard'],

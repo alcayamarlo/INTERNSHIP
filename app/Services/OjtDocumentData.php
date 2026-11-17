@@ -343,8 +343,8 @@ class OjtDocumentData
             if ($ojtMissing) {
                 $links[] = ['label' => 'Set my OJT details', 'url' => route('student.ojt.index', ['placement' => $placement->id, 'tab' => 'progress']).'#ojtDetails'];
             }
-        } elseif ($viewer?->isRole(UserRole::Employer) && $ojtMissing) {
-            $links[] = ['label' => 'Set the OJT details', 'url' => route('employer.interns.show', ['placement' => $placement->id, 'tab' => 'progress'])];
+        } elseif ($viewer?->isRole(UserRole::Employer, UserRole::Supervisor) && $ojtMissing) {
+            $links[] = ['label' => 'Set the OJT details', 'url' => route($viewer->role->ojtRoutePrefix().'.interns.show', ['placement' => $placement->id, 'tab' => 'progress'])];
         }
 
         return $links;

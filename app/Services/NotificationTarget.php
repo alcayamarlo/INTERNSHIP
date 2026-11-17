@@ -112,6 +112,7 @@ class NotificationTarget
                 'tab' => in_array($section, [self::TIME_RECORD, self::WEEKLY_REPORT, self::MONTHLY_EVALUATION], true) ? $section : 'progress',
             ]).'#ojtDetails',
             UserRole::Employer => route('employer.interns.show', ['placement' => $placement, 'tab' => $section ?? 'progress']),
+            UserRole::Supervisor => route('supervisor.interns.show', ['placement' => $placement, 'tab' => $section ?? 'progress']),
             UserRole::Coordinator => route('coordinator.placements.show', $placement).'#'.(self::COORDINATOR_TABS[$section] ?? 'overview'),
             UserRole::Admin => route('admin.placements.show', $placement),
             default => null,

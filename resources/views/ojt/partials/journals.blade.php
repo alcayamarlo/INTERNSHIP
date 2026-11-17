@@ -3,6 +3,7 @@
     Older journals (accomplishments-style) still render their original fields.
 --}}
 @php
+    $ojt = auth()->user()->role->ojtRoutePrefix();
     $mode ??= 'readonly';
     $weeklyReports = app(\App\Services\WeeklyReportService::class);
 @endphp
@@ -73,14 +74,14 @@
                         <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
                     </form>
                 @elseif($mode === 'employer' && ! $entry->isCertified())
-                    <form method="POST" action="{{ route('employer.interns.journals.review', [$placement, $entry]) }}" class="mt-2">
+                    <form method="POST" action="{{ route($ojt.'.interns.journals.review', [$placement, $entry]) }}" class="mt-2">
                         @csrf @method('PATCH')
                         <label class="form-label small" for="comment-{{ $entry->id }}">Comment (optional)</label>
                         <textarea id="comment-{{ $entry->id }}" name="supervisor_comment" rows="2" class="form-control form-control-sm mb-2" maxlength="2000"></textarea>
                         <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-patch-check" aria-hidden="true"></i> Certify true and correct</button>
                     </form>
                 @elseif($entry->isCertified() && ! $placement->isCleared() && in_array($mode, ['employer', 'coordinator'], true))
-                    <form method="POST" action="{{ $mode === 'employer' ? route('employer.interns.journals.reopen', [$placement, $entry]) : route('coordinator.reviews.journals.reopen', $entry) }}" class="mt-2"
+                    <form method="POST" action="{{ $mode === 'employer' ? route($ojt.'.interns.journals.reopen', [$placement, $entry]) : route('coordinator.reviews.journals.reopen', $entry) }}" class="mt-2"
                           data-confirm-label="Reopen" data-confirm="Reopen this certification? The supervisor will need to certify the report again." data-confirm-title="Reopen certification">
                         @csrf @if($mode === 'employer') @method('PATCH') @endif
                         <button type="submit" class="btn btn-sm btn-outline-danger">Reopen certification</button>

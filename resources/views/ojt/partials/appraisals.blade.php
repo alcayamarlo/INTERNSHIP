@@ -73,7 +73,7 @@
         };
         $formAction = match ($ratingColumn) {
             'self' => route('student.ojt.appraisals.self', $appraisal),
-            'supervisor' => route('employer.interns.appraisals.rate', $appraisal),
+            'supervisor' => route(auth()->user()->role->ojtRoutePrefix().'.interns.appraisals.rate', $appraisal),
             'adviser' => route('coordinator.appraisals.adviser', $appraisal),
             default => null,
         };

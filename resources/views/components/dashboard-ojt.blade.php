@@ -22,6 +22,17 @@
                 ['Evaluations due', $user->employer->placements()->where('status', Placement::STATUS_ACTIVE)->whereDoesntHave('evaluation')->count()],
             ],
         ];
+    } elseif ($user?->isRole(UserRole::Supervisor)) {
+        $mine = Placement::where('supervisor_user_id', $user->id);
+        $card = [
+            'type' => 'stats',
+            'href' => route('supervisor.interns.index'),
+            'stats' => [
+                ['Ongoing interns', (clone $mine)->where('status', Placement::STATUS_ACTIVE)->count()],
+                ['DTR entries to review', AttendanceLog::whereIn('placement_id', (clone $mine)->pluck('id'))->where('status', AttendanceLog::STATUS_PENDING)->count()],
+                ['Evaluations due', (clone $mine)->where('status', Placement::STATUS_ACTIVE)->whereDoesntHave('evaluation')->count()],
+            ],
+        ];
     } elseif ($user?->isRole(UserRole::Coordinator) && $user->coordinator) {
         $scoped = Placement::whereIn('student_id', $user->coordinator->scopedStudentsQuery()->select('id'));
         $card = [

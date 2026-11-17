@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Employer;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\AttendanceLog;
 use App\Models\Evaluation;
@@ -17,6 +18,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 class InternController extends Controller
@@ -30,18 +32,22 @@ class InternController extends Controller
 
     public function index(Request $request)
     {
-        $employer = Auth::user()->employer;
+        // The HR account lists the whole company; a supervisor only the interns assigned to them.
+        $user = Auth::user();
+        $isSupervisor = $user->isRole(UserRole::Supervisor);
+        $employer = $isSupervisor ? $user->supervisor?->employer : $user->employer;
         abort_unless($employer, 403);
 
         $status = $request->query('status');
         // "none": no supervisor, or one who was deactivated (HR covers those interns). Otherwise a supervisor's user id.
-        $supervisorFilter = $request->query('supervisor');
+        $supervisorFilter = $isSupervisor ? null : $request->query('supervisor');
         $noSupervisor = fn ($query) => $query->where(fn ($q) => $q->whereNull('supervisor_user_id')
             ->orWhereHas('supervisorUser', fn ($user) => $user->where('is_active', false)));
-        $supervisors = $employer->supervisors()->with('user')->get()
+        $supervisors = $isSupervisor ? collect() : $employer->supervisors()->with('user')->get()
             ->sortBy(fn ($supervisor) => mb_strtolower((string) $supervisor->user?->name))->values();
 
         $placements = $employer->placements()
+            ->when($isSupervisor, fn ($query) => $query->where('supervisor_user_id', $user->id))
             ->with(['student.user', 'internship', 'evaluation:id,placement_id,average_score', 'supervisorUser:id,name,is_active'])
             ->when($supervisorFilter === 'none', $noSupervisor)
             ->when(is_numeric($supervisorFilter), fn ($query) => $query->where('supervisor_user_id', (int) $supervisorFilter))
@@ -56,14 +62,15 @@ class InternController extends Controller
         $placements->getCollection()->each(fn (Placement $placement) => $placement
             ->setAttribute('company_profile', $placement->student ? $companyProfile->summary($placement->student) : null));
 
-        $withoutSupervisor = $noSupervisor($employer->placements())->count();
+        $withoutSupervisor = $isSupervisor ? 0 : $noSupervisor($employer->placements())->count();
 
         return view('employer.interns.index', compact('placements', 'status', 'supervisors', 'supervisorFilter', 'withoutSupervisor'));
     }
 
     public function show(Placement $placement)
     {
-        $this->authorize('supervise', $placement);
+        // The HR account can always look; only whoever supervises this intern (supervise) gets the action forms.
+        $this->authorize('view', $placement);
 
         $placement->load([
             'student.user',
@@ -79,7 +86,10 @@ class InternController extends Controller
             ? app(CompanyVisibleProfile::class)->for($placement->student, Auth::user())
             : null;
 
-        return view('employer.interns.show', compact('placement', 'profile'));
+        $canSupervise = Gate::allows('supervise', $placement);
+        $supervisorUser = $placement->activeSupervisor();
+
+        return view('employer.interns.show', compact('placement', 'profile', 'canSupervise', 'supervisorUser'));
     }
 
     public function updateSchedule(Request $request, Placement $placement)

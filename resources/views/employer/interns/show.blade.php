@@ -4,6 +4,11 @@
 
 @section('content')
 @php
+    // HR and supervisors share this page: route names follow the role, and the action forms only show for
+    // whoever supervises this intern (HR is read-only once a supervisor is assigned).
+    $ojt = auth()->user()->role->ojtRoutePrefix();
+    $canSupervise ??= true;
+    $partialMode = $canSupervise ? 'employer' : 'readonly';
     // Same tab buttons as the student's My OJT page, plus the employer-only Evaluation tab.
     $tabs = [
         'progress' => ['Progress', 'bi-speedometer2'],
@@ -29,9 +34,13 @@
     <span class="sb-pheader__strong">{{ $placement->internship?->title ?? 'Internship' }}</span>
     <span><i class="bi bi-calendar-event" aria-hidden="true"></i>{{ $placement->start_date?->format('M d, Y') }} – {{ $placement->end_date?->format('M d, Y') ?? 'ongoing' }}</span>
     <x-slot:actions>
-        <a href="{{ route('employer.interns.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back</a>
+        <a href="{{ route($ojt.'.interns.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back</a>
     </x-slot:actions>
 </x-profile-header>
+
+@if(! $canSupervise && ($supervisorUser ?? null))
+    <div class="sb-callout mb-3" role="status"><i class="bi bi-person-gear" aria-hidden="true"></i> <strong>{{ $supervisorUser->name }}</strong> supervises this intern: they approve the time records, certify the weekly reports and submit the evaluations. You can follow the progress here. To change the supervisor, use <a href="{{ route('employer.interns.index') }}">Interns</a>.</div>
+@endif
 
 <div class="sb-tabbar">
     <div class="sb-section-tabs" role="tablist" aria-label="OJT sections" data-ojt-tabs>
@@ -62,11 +71,11 @@
     </div>
 @endif
 
-@if($placement->isActive())
+@if($placement->isActive() && $canSupervise)
     <div class="card mb-4">
         <div class="card-header"><h2 class="h6 mb-0"><i class="bi bi-calendar-range" aria-hidden="true"></i> OJT schedule</h2></div>
         <div class="card-body">
-            <form method="POST" action="{{ route('employer.interns.schedule', $placement) }}" class="row g-2 align-items-end">
+            <form method="POST" action="{{ route($ojt.'.interns.schedule', $placement) }}" class="row g-2 align-items-end">
                 @csrf @method('PUT')
                 <div class="col-md-3">
                     <label class="form-label" for="start_date">Start date</label>
@@ -103,17 +112,17 @@
 
 {{-- Time Record --}}
 <section id="ojt-panel-time-record" class="sb-tab-panel" role="tabpanel" aria-labelledby="ojt-tab-time-record" @if($activeTab !== 'time-record') hidden @endif>
-@include('ojt.partials.attendance', ['placement' => $placement, 'mode' => 'employer'])
+@include('ojt.partials.attendance', ['placement' => $placement, 'mode' => $partialMode])
 </section>
 
 {{-- Weekly Journal --}}
 <section id="ojt-panel-weekly-journal" class="sb-tab-panel" role="tabpanel" aria-labelledby="ojt-tab-weekly-journal" @if($activeTab !== 'weekly-journal') hidden @endif>
-@include('ojt.partials.journals', ['placement' => $placement, 'mode' => 'employer'])
+@include('ojt.partials.journals', ['placement' => $placement, 'mode' => $partialMode])
 </section>
 
 {{-- Monthly Evaluation --}}
 <section id="ojt-panel-monthly-evaluation" class="sb-tab-panel" role="tabpanel" aria-labelledby="ojt-tab-monthly-evaluation" @if($activeTab !== 'monthly-evaluation') hidden @endif>
-@include('ojt.partials.appraisals', ['placement' => $placement, 'mode' => 'employer'])
+@include('ojt.partials.appraisals', ['placement' => $placement, 'mode' => $partialMode])
 </section>
 
 {{-- Evaluation --}}
@@ -138,18 +147,26 @@
         @elseif($placement->evaluation?->isLegacy())
             <p class="text-muted small">This evaluation was submitted on the earlier 1-5 form and is kept as is.</p>
             @include('ojt.partials.evaluation', ['placement' => $placement])
+        @elseif(! $canSupervise)
+            @if($placement->evaluation)
+                @include('ojt.partials.evaluation', ['placement' => $placement])
+            @else
+                <x-empty-state icon="bi-clipboard-check" title="Waiting for the supervisor" message="{{ ($supervisorUser?->name ?? 'The supervisor') }} submits the Final Performance Evaluation." />
+            @endif
         @elseif(! $placement->rating_requested_at && ! $placement->evaluation)
             <x-empty-state icon="bi-clipboard-check" title="No final evaluation requested yet" message="Your coordinator requests the Final Performance Evaluation near the end of the OJT." />
         @else
             @php
                 $evaluation = $placement->evaluation;
                 $employerProfile = auth()->user()->employer;
+                // The job title printed under the supervisor's name: the supervisor's own, or the HR account's.
+                $positionDefault = auth()->user()->isRole(\App\Enums\UserRole::Supervisor) ? auth()->user()->supervisor?->position : $employerProfile?->position;
             @endphp
             <p class="small text-muted">
                 The school's Final Performance Evaluation Report. Rate each factor with a whole number up to its maximum. You can update it until the coordinator clears the OJT.
                 @if($placement->rating_due_on)<strong>Due {{ $placement->rating_due_on->format('M d, Y') }}.</strong>@endif
             </p>
-            <form method="POST" action="{{ route('employer.interns.evaluation.store', $placement) }}" novalidate>
+            <form method="POST" action="{{ route($ojt.'.interns.evaluation.store', $placement) }}" novalidate>
                 @csrf
                 <h3 class="h6 mt-2">Part II. Training details</h3>
                 <div class="row g-2 mb-3">
@@ -173,9 +190,9 @@
                     <div class="col-md-4">
                         <label class="form-label" for="supervisor_designation">Your designation / job title <span class="sb-req" aria-hidden="true">*</span></label>
                         <input id="supervisor_designation" name="supervisor_designation" maxlength="100" required class="form-control @error('supervisor_designation') is-invalid @enderror"
-                               value="{{ old('supervisor_designation', $evaluation?->supervisor_designation ?? $employerProfile?->position) }}" placeholder="e.g. Solutions Architect">
+                               value="{{ old('supervisor_designation', $evaluation?->supervisor_designation ?? $positionDefault) }}" placeholder="e.g. Solutions Architect">
                         @error('supervisor_designation')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        @if(blank($employerProfile?->position))<div class="form-text">Saved to your profile for next time.</div>@endif
+                        @if($employerProfile && blank($employerProfile->position))<div class="form-text">Saved to your profile for next time.</div>@endif
                     </div>
                 </div>
 

@@ -1,5 +1,6 @@
 {{-- DTR table. Expects $placement and $mode: student | employer | readonly. --}}
 @php
+    $ojt = auth()->user()->role->ojtRoutePrefix();
     $mode ??= 'readonly';
     $logs = $placement->attendanceLogs;
     $hasPending = $logs->contains('status', \App\Models\AttendanceLog::STATUS_PENDING);
@@ -9,7 +10,7 @@
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <h2 class="h6 mb-0"><i class="bi bi-clock" aria-hidden="true"></i> Daily Time Record</h2>
         @if($mode === 'employer' && $hasPending && ! $placement->isCleared())
-            <form method="POST" action="{{ route('employer.interns.attendance.approve-all', $placement) }}" data-confirm-label="Approve all" data-confirm="Approve every pending time entry?" data-confirm-title="Approve all">
+            <form method="POST" action="{{ route($ojt.'.interns.attendance.approve-all', $placement) }}" data-confirm-label="Approve all" data-confirm="Approve every pending time entry?" data-confirm-title="Approve all">
                 @csrf
                 <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-check2-all" aria-hidden="true"></i> Approve all pending</button>
             </form>
@@ -50,7 +51,7 @@
                         @elseif($mode === 'employer')
                             <td class="text-nowrap sb-stack-block sb-stack-hide-empty">
                                 @unless($locked)
-                                    <form method="POST" action="{{ route('employer.interns.attendance.review', [$placement, $log]) }}" class="d-flex flex-column gap-1 sb-cell-form">
+                                    <form method="POST" action="{{ route($ojt.'.interns.attendance.review', [$placement, $log]) }}" class="d-flex flex-column gap-1 sb-cell-form">
                                         @csrf @method('PATCH')
                                         <input type="text" name="reviewer_remarks" class="form-control form-control-sm" placeholder="Remarks (required to reject)" maxlength="1000" aria-label="Remarks for {{ $log->work_date->format('M d') }}">
                                         <div class="d-flex gap-1">

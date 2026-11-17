@@ -82,6 +82,9 @@ it('renders a submission key and disables the send button while submitting', fun
 it('renders Enter-to-send behavior for every messaging role', function () {
     $users = [];
     foreach (UserRole::all() as $role) {
+        if ($role === UserRole::Supervisor) {
+            continue; // a supervisor can only open a thread with their own interns (SupervisorAreaTest)
+        }
         $users[$role->value] = User::factory()->create(['role' => $role]);
     }
     openMessaging($users[UserRole::Employer->value], $users[UserRole::Student->value]);

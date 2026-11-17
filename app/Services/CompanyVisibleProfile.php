@@ -101,7 +101,7 @@ class CompanyVisibleProfile
         $hasApplied = $appliedInternships->isNotEmpty();
         $isPlaced = $hasApplied && Placement::query()
             ->where('student_id', $student->id)
-            ->where('employer_id', $viewer->employer?->id)
+            ->where('employer_id', $viewer->companyId())
             ->exists();
         $student->loadMissing(['user', 'major', 'studentSkills.skill', 'experiences', 'competencies.learnedSkills']);
         $certifiedNames = $student->certifiedCompetencyNames();
@@ -283,7 +283,7 @@ class CompanyVisibleProfile
      */
     private function appliedInternships(int $studentId, User $viewer): Collection
     {
-        $employerId = $viewer->employer?->id;
+        $employerId = $viewer->companyId();
         if (! $employerId) {
             return collect();
         }

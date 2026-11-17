@@ -47,6 +47,11 @@ class LiveUpdates
         $student = Student::withTrashed()->whereKey($studentId)->first(['id', 'user_id', 'institution_id', 'program_id']);
         $userIds = [$student?->user_id, $employerId ? Employer::withTrashed()->whereKey($employerId)->value('user_id') : null];
 
+        if ($employerId) {
+            // The company's supervisor for this intern, if one is assigned.
+            array_push($userIds, ...\App\Models\Placement::query()->where('student_id', $studentId)->where('employer_id', $employerId)->whereNotNull('supervisor_user_id')->pluck('supervisor_user_id')->all());
+        }
+
         if ($student?->institution_id && $student->program_id) {
             array_push($userIds, ...Coordinator::query()->where('institution_id', $student->institution_id)->where('program_id', $student->program_id)->pluck('user_id')->all());
         }

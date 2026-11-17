@@ -39,6 +39,8 @@ class MessagingEligibility
 
     public const STUDENT_NOT_ASSIGNED = 'You can only message students assigned to you.';
 
+    public const SUPERVISOR_NOT_ASSIGNED = 'You can only message the supervisor assigned to you.';
+
     public const ADMIN_FOR_STUDENT = 'You can reply to an administrator only after they message you.';
 
     public function canSend(User $sender, User $recipient): Response
@@ -57,6 +59,12 @@ class MessagingEligibility
             [UserRole::Employer->value, UserRole::Student->value] => $this->companyChatOpen($sender, $recipient)
                 ? Response::allow()
                 : Response::deny(self::STUDENT_LOCKED_FOR_COMPANY),
+            [UserRole::Student->value, UserRole::Supervisor->value] => $this->isSupervisorOf($recipient, $sender)
+                ? Response::allow()
+                : Response::deny(self::SUPERVISOR_NOT_ASSIGNED),
+            [UserRole::Supervisor->value, UserRole::Student->value] => $this->isSupervisorOf($sender, $recipient)
+                ? Response::allow()
+                : Response::deny(self::STUDENT_NOT_ASSIGNED),
             [UserRole::Student->value, UserRole::Coordinator->value] => $this->isAssignedCoordinator($recipient, $sender)
                 ? Response::allow()
                 : Response::deny(self::COORDINATOR_NOT_ASSIGNED),
@@ -106,6 +114,9 @@ class MessagingEligibility
             $user->isRole(UserRole::Employer) => $query->where(fn (Builder $inner) => $inner
                 ->where('role', '!=', UserRole::Student->value)
                 ->orWhereIn('id', $this->companyStudentUserIds($user)))->pluck('id'),
+            $user->isRole(UserRole::Supervisor) => $query->where(fn (Builder $inner) => $inner
+                ->where('role', '!=', UserRole::Student->value)
+                ->orWhereIn('id', Student::query()->whereHas('placements', fn (Builder $placements) => $placements->where('supervisor_user_id', $user->id))->select('user_id')))->pluck('id'),
             $user->isRole(UserRole::Coordinator) => $query->where(fn (Builder $inner) => $inner
                 ->where('role', '!=', UserRole::Student->value)
                 ->orWhereIn('id', $user->coordinator
@@ -159,7 +170,12 @@ class MessagingEligibility
                 ->pluck('internship.employer.user_id')
             : collect();
 
-        return $query->whereIn('id', $coordinatorUserIds->concat($companyUserIds)->filter()->unique()->all())->pluck('id');
+        // The supervisor(s) the company assigned to this student.
+        $supervisorUserIds = $student
+            ? \App\Models\Placement::query()->where('student_id', $student->id)->whereNotNull('supervisor_user_id')->pluck('supervisor_user_id')
+            : collect();
+
+        return $query->whereIn('id', $coordinatorUserIds->concat($companyUserIds)->concat($supervisorUserIds)->filter()->unique()->all())->pluck('id');
     }
 
     /** User ids of students with a Reviewed-or-later application to this company. */
@@ -170,6 +186,15 @@ class MessagingEligibility
                 ->whereIn('status', self::openStatusValues())
                 ->whereHas('internship.employer', fn (Builder $employer) => $employer->where('user_id', $employerUser->id)))
             ->pluck('user_id');
+    }
+
+    /** Whether this supervisor is assigned to one of the student's placements. */
+    private function isSupervisorOf(User $supervisorUser, User $studentUser): bool
+    {
+        return \App\Models\Placement::query()
+            ->where('supervisor_user_id', $supervisorUser->id)
+            ->whereHas('student', fn (Builder $student) => $student->where('user_id', $studentUser->id))
+            ->exists();
     }
 
     private function isAssignedCoordinator(User $coordinatorUser, User $studentUser): bool

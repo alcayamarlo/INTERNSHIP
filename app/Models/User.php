@@ -180,6 +180,12 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(Supervisor::class);
     }
 
+    /** The company this account works for: the HR account's own, or the supervisor's employer. */
+    public function companyId(): ?int
+    {
+        return $this->employer?->id ?? $this->supervisor?->employer_id;
+    }
+
     /** Active, not archived, not suspended: able to sign in and act. */
     public function canActNow(): bool
     {

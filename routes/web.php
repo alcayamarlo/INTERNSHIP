@@ -308,6 +308,21 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             Route::post('/interns/appraisals/{appraisal}', [AppraisalController::class, 'submitSupervisor'])->name('interns.appraisals.rate');
         });
 
+        // The company's supervisors: the same OJT supervision pages and actions as the HR account has for
+        // unassigned interns, limited by PlacementPolicy::supervise to the interns assigned to them.
+        Route::prefix('supervisor')->name('supervisor.')->middleware('role:supervisor')->group(function () {
+            Route::get('/dashboard', [App\Http\Controllers\Supervisor\DashboardController::class, 'index'])->name('dashboard');
+            Route::get('/interns', [EmployerInternController::class, 'index'])->name('interns.index');
+            Route::get('/interns/{placement}', [EmployerInternController::class, 'show'])->name('interns.show');
+            Route::put('/interns/{placement}/schedule', [EmployerInternController::class, 'updateSchedule'])->name('interns.schedule');
+            Route::patch('/interns/{placement}/attendance/{attendanceLog}', [EmployerInternController::class, 'reviewAttendance'])->name('interns.attendance.review');
+            Route::post('/interns/{placement}/attendance/approve-all', [EmployerInternController::class, 'approveAllAttendance'])->name('interns.attendance.approve-all');
+            Route::patch('/interns/{placement}/journals/{journalEntry}', [EmployerInternController::class, 'reviewJournal'])->name('interns.journals.review');
+            Route::patch('/interns/{placement}/journals/{journalEntry}/reopen', [EmployerInternController::class, 'reopenJournal'])->name('interns.journals.reopen');
+            Route::post('/interns/{placement}/evaluation', [EmployerInternController::class, 'storeEvaluation'])->name('interns.evaluation.store');
+            Route::post('/interns/appraisals/{appraisal}', [AppraisalController::class, 'submitSupervisor'])->name('interns.appraisals.rate');
+        });
+
         Route::prefix('coordinator')->name('coordinator.')->middleware('role:coordinator')->group(function () {
             Route::get('/dashboard', [CoordinatorDashboardController::class, 'index'])->name('dashboard');
             Route::get('/profile', [App\Http\Controllers\Coordinator\ProfileController::class, 'edit'])->name('profile.edit');
