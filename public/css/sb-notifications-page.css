@@ -161,3 +161,31 @@ html body.sb-app .nt-card .nt-list > .sb-empty, html body.sb-app .nt-card .nt-li
     html body.sb-app .nt-card .nt-time, html body.sb-app .nt-card .nt-actions, html body.sb-app .nt-card .nt-item, html body.sb-app .nt-card .nt-ib { transition: none; }
     html body.sb-app .nt-toast { animation: none; }
 }
+
+/* ---------- Fixes: softer active tab, no hover overlap, tighter frame ---------- */
+html body.sb-app .nt-card a.nt-tab { color: var(--nt-brand); }
+html body.sb-app .nt-card a.nt-tab.is-active,
+html body.sb-app .nt-card a.nt-tab.is-active:hover,
+html body.sb-app .nt-card a.nt-tab.is-active:visited { background: var(--nt-tint); border-color: var(--nt-brand); color: var(--nt-brand); box-shadow: none; }
+html body.sb-app .nt-card a.nt-tab.is-active .nt-count { background: var(--nt-brand); color: #fff; }
+html body.sb-app .nt-card a.nt-tab:not(.is-active) .nt-count { background: #F2EDEF; color: var(--nt-muted); }
+
+/* time and actions swap instantly (never both visible) and the title never underlines */
+html body.sb-app .nt-card .nt-time, html body.sb-app .nt-card .nt-actions { transition: none; }
+html body.sb-app .nt-card .nt-item:hover .nt-time, html body.sb-app .nt-card .nt-item:focus-within .nt-time { visibility: hidden; }
+html body.sb-app .nt-card .nt-item:hover .nt-actions, html body.sb-app .nt-card .nt-item:focus-within .nt-actions { visibility: visible; }
+html body.sb-app .nt-card .nt-actions { visibility: hidden; }
+html body.sb-app .nt-card .nt-open, html body.sb-app .nt-card .nt-open:hover, html body.sb-app .nt-card .nt-open:hover * { text-decoration: none; }
+@media (max-width: 899.98px), (hover: none) {
+    html body.sb-app .nt-card .nt-actions { visibility: visible; }
+    html body.sb-app .nt-card .nt-time { visibility: visible !important; }
+}
+
+/* a little more room for rows */
+html body.sb-app .sb-main:has(.nt-card) > .sb-content { padding: 16px 20px; }
+html body.sb-app .nt-card .nt-head { padding: 12px 20px; }
+html body.sb-app .nt-card .nt-head h1 { font-size: 1.5rem; }
+html body.sb-app .nt-card .nt-head p { margin-top: 2px; }
+html body.sb-app .nt-card .nt-bulk { min-height: 48px; padding: 4px 20px; }
+html body.sb-app .nt-card .nt-item { padding: 10px 20px; min-height: 68px; }
+html body.sb-app .nt-card .nt-foot { min-height: 52px; }
