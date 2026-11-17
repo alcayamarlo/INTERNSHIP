@@ -9,10 +9,10 @@ use App\Services\ResumeContent;
 use Illuminate\Console\Command;
 
 /**
- * Re-renders saved resumes that are older than version 4, so employers stop receiving copies that carry
+ * Re-renders saved resumes in the current format (the Appendix H layout), so employers stop receiving copies that carry
  * personal data (birth date, civil status, religion, home address, ...).
  *
- * A version 3 resume keeps what the student wrote and loses only the personal data. A version 1 or 2 resume
+ * A version 3 or 4 resume keeps what the student wrote (and loses any personal data). A version 1 or 2 resume
  * has no structure to carry over, so it is rebuilt from the student's current profile.
  */
 class RebuildResumes extends Command
@@ -41,7 +41,7 @@ class RebuildResumes extends Command
                     continue;
                 }
 
-                $fromProfile = $version !== ResumeContent::UPGRADABLE_VERSION;
+                $fromProfile = ! in_array($version, ResumeContent::UPGRADABLE_VERSIONS, true);
                 try {
                     $new = $fromProfile ? $profile->resume($student) : $content->upgrade($resume->content, $student);
                     $pages = $builder->layout($new, $student)['pages'];

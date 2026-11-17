@@ -565,8 +565,8 @@ it('puts skills on the resume as their own section, separate from certificates',
 
     $html = view('student.resume.pdf', ['content' => $content, 'photo' => null])->render();
     // Skills are their own section, before the certifications.
-    $skillsAt = strpos($html, '<div class="sec">Skills</div>');
-    $certificatesAt = strpos($html, '<div class="sec">Certifications</div>');
+    $skillsAt = strpos($html, '<div class="pill">Skills</div>');
+    $certificatesAt = strpos($html, '<div class="pill">Certifications</div>');
     expect($skillsAt)->not->toBeFalse()
         ->and(strpos($html, 'Singing'))->toBeGreaterThan($skillsAt)->toBeLessThan($certificatesAt)
         ->and($certificatesAt)->toBeGreaterThan($skillsAt)

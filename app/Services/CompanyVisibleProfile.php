@@ -179,7 +179,7 @@ class CompanyVisibleProfile
      * short document (one page, two at most), so a long profile is trimmed here; the student can
      * change what is on it in the Resume Editor.
      */
-    public const RESUME_LIMITS = ['certificates' => 8, 'projects' => 5, 'experiences' => 5, 'awards' => 8, 'references' => 3, 'skills' => 24];
+    public const RESUME_LIMITS = ['certificates' => 8, 'projects' => 5, 'experiences' => 5, 'awards' => 8, 'references' => 3, 'technical_skills' => 15, 'soft_skills' => 10];
 
     /** Long free text on a resume is cut to this many characters. */
     public const RESUME_TEXT_LIMIT = 350;
@@ -192,20 +192,24 @@ class CompanyVisibleProfile
     public function resume(Student $student): array
     {        $student->loadMissing(['user', 'institution', 'studentSkills.skill', 'experiences', 'competencies.learnedSkills', 'certificates', 'characterReferences']);
         $user = $student->user;
-        $hours = $student->internshipHours();
         $rows = fn (array $values): array => array_filter($values, 'filled');
         $name = $user?->name ?? trim($student->first_name.' '.$student->last_name);
 
         return [
-            'version' => 4,
+            'version' => 5,
             'name' => $name,
+            // Appendix H prints the surname large on its own line, then the given name and middle initial.
+            ...self::nameParts($student, $name),
             'initials' => self::initials($name),
+            // The line under the name; the student can change it in the Resume Editor.
+            'title' => filled($student->program) ? $student->program.' Student' : null,
             // The resume photo is only ever the private 2x2 picture, never the profile picture.
             'id_photo_path' => $student->id_photo_path,
             // The student can leave the photo off in the Resume Editor.
             'show_photo' => true,
             'course' => $student->program,
             'school' => $student->institution?->name,
+            // "About Me" sits in the left column, so it is kept short.
             'summary' => filled($student->about_me) ? Str::limit(trim($student->about_me), 600) : null,
             'generated_at' => now('Asia/Manila')->toIso8601String(),
             // Only what a first contact needs: no street address, no zip code.
@@ -214,16 +218,14 @@ class CompanyVisibleProfile
                 'Email' => $user?->email,
                 'City' => collect([$student->city, $student->province])->filter()->implode(', '),
             ]),
-            'education' => $rows([
-                'College' => $student->department,
-                'Course' => $student->program,
-                'Year level' => $student->year_level,
-                'Expected graduation' => $student->expected_graduation?->format('F Y'),
-                'Elementary' => $this->school($student->elementary_school, $student->elementary_year_graduated),
-                'High school' => $this->school($student->high_school, $student->high_school_year_graduated),
-                'Senior high school' => $this->school($student->senior_high_school, $student->senior_high_year_graduated),
-                'Internship hours' => $hours['required'] ? $hours['rendered'].' / '.$hours['required'] : ($hours['rendered'] ?: null),
-            ]),
+            // College, Senior High, Junior High, Elementary: level, years, school, and the course for college.
+            'education' => array_values(array_filter([
+                ['level' => 'College', 'years' => $student->expected_graduation ? 'Expected graduation '.$student->expected_graduation->format('Y') : (string) $student->year_level,
+                    'school' => (string) $student->institution?->name, 'detail' => (string) $student->program],
+                ['level' => 'Senior High School', 'years' => (string) $student->senior_high_year_graduated, 'school' => (string) $student->senior_high_school, 'detail' => ''],
+                ['level' => 'Junior High School', 'years' => (string) $student->high_school_year_graduated, 'school' => (string) $student->high_school, 'detail' => ''],
+                ['level' => 'Elementary', 'years' => (string) $student->elementary_year_graduated, 'school' => (string) $student->elementary_school, 'detail' => ''],
+            ], fn (array $entry) => filled($entry['school']) || filled($entry['detail']))),
             'awards' => $this->limitAwards($this->awards($student), self::RESUME_LIMITS['awards']),
             'skills' => $this->resumeSkills($student),
             // My Certificates entries first, then older Documents-tab certificates that have no details yet.
@@ -275,12 +277,37 @@ class CompanyVisibleProfile
     /** Technical and Soft skills, in the order the student added them, up to the limit. */
     private function resumeSkills(Student $student): array
     {
-        $skills = $student->studentSkills->sortBy('id')->map(fn ($studentSkill) => $studentSkill->skill)->filter()->take(self::RESUME_LIMITS['skills'])->values();
+        $skills = $student->studentSkills->sortBy('id')->map(fn ($studentSkill) => $studentSkill->skill)->filter()->values();
+        $isSoft = fn ($skill) => $skill->type === \App\Enums\SkillType::Soft;
 
         return [
-            'technical' => $skills->reject(fn ($skill) => $skill->type === \App\Enums\SkillType::Soft)->pluck('name')->values()->all(),
-            'soft' => $skills->filter(fn ($skill) => $skill->type === \App\Enums\SkillType::Soft)->pluck('name')->values()->all(),
+            'technical' => $skills->reject($isSoft)->pluck('name')->take(self::RESUME_LIMITS['technical_skills'])->values()->all(),
+            'soft' => $skills->filter($isSoft)->pluck('name')->take(self::RESUME_LIMITS['soft_skills'])->values()->all(),
         ];
+    }
+
+    /**
+     * The name in two lines, as Appendix H prints it: the surname, then the given name with the middle
+     * initial (and suffix). From the profile's name fields; otherwise the last word of the full name.
+     *
+     * @return array{name_last: string, name_given: string}
+     */
+    public static function nameParts(?Student $student, string $fullName): array
+    {
+        if ($student && filled($student->last_name) && filled($student->first_name)) {
+            $middle = filled($student->middle_name) ? ' '.mb_strtoupper(mb_substr(trim($student->middle_name), 0, 1)).'.' : '';
+            $suffix = filled($student->suffix) ? ' '.trim($student->suffix) : '';
+
+            return ['name_last' => trim($student->last_name), 'name_given' => trim($student->first_name).$middle.$suffix];
+        }
+
+        $words = preg_split('/\s+/u', trim($fullName)) ?: [];
+        if (count($words) < 2) {
+            return ['name_last' => '', 'name_given' => trim($fullName)];
+        }
+        $last = array_pop($words);
+
+        return ['name_last' => $last, 'name_given' => implode(' ', $words)];
     }
 
     private function shortText(?string $text): ?string

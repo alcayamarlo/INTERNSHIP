@@ -290,7 +290,7 @@ it('never puts the profile picture on the resume: a profile picture alone gives 
         ->and(json_encode($content))->not->toContain($student->fresh()->profile_picture)
         ->and(resumePhotoOf($student))->toBeNull()
         // Without a 2x2 there is no photo box at all (no placeholder).
-        ->and(view('student.resume.pdf', ['content' => $content, 'photo' => null])->render())->not->toContain('<img');
+        ->and(view('student.resume.pdf', ['content' => $content, 'photo' => null])->render())->not->toContain('data:image/jpeg')->toContain('class="initials">AC<');
 
     $resume = app(ResumeBuilderService::class)->build($student->fresh());
     expect(resumeHasPhoto(Storage::disk('private')->get($resume->file_path)))->toBeFalse();

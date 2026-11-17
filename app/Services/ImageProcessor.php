@@ -101,6 +101,58 @@ class ImageProcessor
         return $jpeg;
     }
 
+    /**
+     * A round photo as JPEG bytes: the square photo inside a coloured ring, with white outside the circle.
+     * PDF renderers cannot clip an image to a circle, so the circle is drawn into the picture itself.
+     * Drawn at twice the size and scaled down, so the edge of the circle is smooth.
+     *
+     * @param  array{0: int, 1: int, 2: int}  $ring  RGB of the ring
+     */
+    public function circle(string $squareJpeg, int $size, array $ring = [94, 1, 11], float $ringRatio = 0.035): string
+    {
+        if (! extension_loaded('gd')) {
+            throw new RuntimeException('Photos need the PHP GD extension. Enable extension=gd in php.ini.');
+        }
+        $source = @imagecreatefromstring($squareJpeg);
+        if ($source === false) {
+            throw new RuntimeException('The photo could not be read.');
+        }
+
+        $big = $size * 2;
+        $photo = imagecreatetruecolor($big, $big);
+        imagecopyresampled($photo, $source, 0, 0, 0, 0, $big, $big, imagesx($source), imagesy($source));
+
+        $canvas = imagecreatetruecolor($big, $big);
+        $white = imagecolorallocate($canvas, 255, 255, 255);
+        $ringColour = imagecolorallocate($canvas, ...$ring);
+        imagefill($canvas, 0, 0, $white);
+
+        $centre = ($big - 1) / 2;
+        $outer = $big / 2;
+        $inner = $outer * (1 - 2 * $ringRatio);
+        for ($y = 0; $y < $big; $y++) {
+            for ($x = 0; $x < $big; $x++) {
+                $distance = sqrt(($x - $centre) ** 2 + ($y - $centre) ** 2);
+                if ($distance <= $inner) {
+                    imagesetpixel($canvas, $x, $y, imagecolorat($photo, $x, $y));
+                } elseif ($distance <= $outer) {
+                    imagesetpixel($canvas, $x, $y, $ringColour);
+                }
+            }
+        }
+
+        $out = imagecreatetruecolor($size, $size);
+        imagecopyresampled($out, $canvas, 0, 0, 0, 0, $size, $size, $big, $big);
+        ob_start();
+        imagejpeg($out, null, 88);
+        $jpeg = (string) ob_get_clean();
+        foreach ([$source, $photo, $canvas, $out] as $image) {
+            imagedestroy($image);
+        }
+
+        return $jpeg;
+    }
+
     /** Applies the EXIF orientation that phone cameras record instead of rotating the pixels. */
     private function upright(\GdImage $image, string $bytes): \GdImage
     {

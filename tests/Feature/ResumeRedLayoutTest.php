@@ -71,7 +71,7 @@ function bigResumeContent(Student $student, int $entries, int $words): array
     return $content;
 }
 
-it('renders every section in one column for a student with full data', function () {
+it('renders every section in the Appendix H layout for a student with full data', function () {
     $student = redResumeStudent([
         'program' => 'BS Information Technology', 'department' => 'College of Computer Studies', 'year_level' => '4th Year',
         'about_me' => 'Build reliable web apps.', 'city' => 'Cebu City', 'province' => 'Cebu',
@@ -91,13 +91,17 @@ it('renders every section in one column for a student with full data', function 
     $html = redResumeHtml($student);
 
     // The standard order: objective, education, skills, projects, OJT and experience, certifications, awards, references.
-    $order = ['<h1 class="name">Niño Peña</h1>', '09171234567  |  nino@example.test  |  Cebu City, Cebu', 'Career objective', 'Education', 'Cebu Central School (2014-2015)',
-        '<div class="sec">Skills</div>', '<strong>Technical:</strong> Python', '<div class="sec">Projects</div>', 'Inventory System', '<div class="sec">OJT and experience</div>', 'IT Assistant',
-        '<div class="sec">Certifications</div>', 'Spot phishing emails', '<div class="sec">Honors and awards</div>', "Dean&#039;s Lister", '<div class="sec">Character references</div>', 'Dr. Reyes'];
+    // Left column (photo, About Me, Contact Me, Skills), then the right column (name, title, Education, ...).
+    $order = ['class="initials">NP<', '<div class="pill">About Me</div>', 'Build reliable web apps.', '<div class="pill">Contact Me</div>', '09171234567', 'nino@example.test', 'Cebu City, Cebu',
+        '<div class="pill">Skills</div>', '<li>Python</li>', '<h1 class="surname">Peña</h1>', '<p class="given">Niño</p>', '<p class="title">BS Information Technology Student</p>',
+        '<div class="pill">Education</div>', '<p class="edu-level">College</p>', '<p class="edu-level">Elementary</p>', '<p class="edu-years">2014-2015</p>', '<p class="edu-school">Cebu Central School</p>',
+        '<div class="pill">Projects</div>', 'Inventory System', '<div class="pill">OJT and Experience</div>', 'IT Assistant',
+        '<div class="pill">Certifications</div>', 'Spot phishing emails', '<div class="pill">Honors and Awards</div>', "Dean&#039;s Lister", '<div class="pill">Character References</div>', 'Dr. Reyes'];
     $positions = array_map(fn (string $text) => strpos($html, $text), $order);
     expect($positions)->each->not->toBeFalse()->and($positions)->toBe(collect($positions)->sort()->values()->all());
-    // One column: no sidebar, no signature block.
-    expect($html)->not->toContain('side-heading')->not->toContain("Applicant's signature");
+    // No older layout parts, no signature block, and no "Appendix H" / "Curriculum Vitae" title: it starts at the name.
+    expect($html)->not->toContain('side-heading')->not->toContain("Applicant's signature")
+        ->not->toMatch('/appendix\s*h|curriculum\s+vitae/i');
 
     $resume = app(ResumeBuilderService::class)->build($student->fresh());
     expect(Storage::disk('private')->get($resume->file_path))->toStartWith('%PDF');
@@ -109,11 +113,14 @@ it('renders a student with almost no data without empty sections, rows, or place
 
     $html = redResumeHtml($student);
 
-    expect($html)->toContain('<h1 class="name">Niño Peña</h1>')
+    // Only Contact Me has something to show; no photo, so the initials circle.
+    expect($html)->toContain('<h1 class="surname">Peña</h1>')
         ->toContain('nino@example.test')
         ->not->toContain('09171234567')
-        ->not->toContain('<div class="sec">')
-        ->not->toContain('<img')
+        ->toContain('class="initials">NP<')
+        ->not->toContain('data:image/jpeg')
+        ->and(substr_count($html, 'class="pill"'))->toBe(1);
+    expect($html)
         ->not->toContain('null')
         ->not->toContain('N/A');
     expect(app(ResumeBuilderService::class)->build($student->fresh())->file_path)->not->toBeNull();
@@ -132,7 +139,7 @@ it('leaves out personal and sensitive data, however much is on the profile', fun
     $content = app(CompanyVisibleProfile::class)->resume($student->fresh());
     $html = redResumeHtml($student);
 
-    expect($content)->not->toHaveKey('personal')->and($content['version'])->toBe(4)
+    expect($content)->not->toHaveKey('personal')->and($content['version'])->toBe(5)
         ->and($content['contact'])->toBe(['Mobile' => '09171234567', 'Email' => 'nino@example.test', 'City' => 'Cebu City, Cebu']);
     foreach (['Single', 'Catholic', '5 ft 3 in', '55 kg', 'March 4, 2003', '2003', 'Talisay', 'Osmeña Blvd', '6000', 'Barili', 'Maria Peña', 'Jose Peña', 'Mother', 'Filipino', 'Male', 'Personal data', 'Emergency'] as $private) {
         expect($html)->not->toContain($private);
@@ -244,7 +251,7 @@ it('reports the page count of unsaved edits for the editor, rate limited', funct
     $this->postJson(route('student.resume.pages', $resume), $payload)->assertOk()->assertJson(['pages' => 1, 'limit' => 2, 'fits' => true]);
 
     // Someone else's resume, and a form with errors (the editor keeps its last answer).
-    $this->postJson(route('student.resume.pages', $resume), [...$payload, 'name' => str_repeat('a', 130)])->assertStatus(422);
+    $this->postJson(route('student.resume.pages', $resume), [...$payload, 'name_given' => str_repeat('a', 90)])->assertStatus(422);
     $stranger = User::factory()->create(['role' => UserRole::Student]);
     Student::create(['user_id' => $stranger->id]);
     $this->actingAs($stranger)->postJson(route('student.resume.pages', $resume), $payload)->assertForbidden();
@@ -271,14 +278,14 @@ it('shows the 2x2 photo only while the student keeps it on', function () {
 
     expect(substr_count($withPhoto['pdf'], '/Subtype /Image'))->toBeGreaterThanOrEqual(1)
         ->and(substr_count($without['pdf'], '/Subtype /Image'))->toBe(0)
-        ->and($service->previewHtml([...$content, 'show_photo' => false]))->not->toContain('<img');
+        ->and($service->previewHtml([...$content, 'show_photo' => false]))->not->toContain('data:image/jpeg');
 });
 
 // ---------------------------------------------------------------------------
 // Older resumes
 // ---------------------------------------------------------------------------
 
-it('opens an older resume with personal data in the editor as version 4, without the personal data', function () {
+it('opens an older resume with personal data in the editor as version 5, without the personal data', function () {
     $student = redResumeStudent(['city' => 'Cebu City', 'province' => 'Cebu']);
     $tag = SkillTag::firstOrCreate(['name_normalized' => 'python'], ['name' => 'Python']);
     $v3 = Resume::create([
@@ -293,14 +300,15 @@ it('opens an older resume with personal data in the editor as version 4, without
     $this->actingAs($student->user);
 
     $page = $this->get(route('student.resume.edit', $v3))->assertOk();
-    $page->assertSee('value="Niño Peña"', false)->assertSee('My own words.')->assertSee('value="Python"', false)
+    $page->assertSee('value="Peña"', false)->assertSee('value="Niño"', false)->assertSee('My own words.')->assertSee('value="Python"', false)->assertSee('value="BSIT"', false)
         ->assertDontSee('Birthday')->assertDontSee('Civil status')->assertDontSee('Maria Peña')->assertDontSee('Osmeña')->assertDontSee('Barili');
 
     $payload = app(ResumeContent::class)->toEditor(app(ResumeContent::class)->upgrade($v3->content, $student));
     $this->putJson(route('student.resume.update', $v3), $payload)->assertOk();
 
     $saved = $v3->fresh()->content;
-    expect($saved['version'])->toBe(4)->and($saved)->not->toHaveKey('personal')
+    expect($saved['version'])->toBe(5)->and($saved)->not->toHaveKey('personal')
+        ->and($saved['name_last'])->toBe('Peña')->and($saved['education'][0])->toMatchArray(['level' => 'College', 'detail' => 'BSIT'])
         ->and($saved['contact'])->toBe(['Mobile' => '09171234567', 'Email' => 'nino@example.test', 'City' => 'Cebu City, Cebu'])
         ->and($saved['skills']['technical'])->toContain('Python');
 });
@@ -319,11 +327,29 @@ it('rebuilds saved resumes without personal data with resumes:rebuild, and says 
     expect($v3->fresh()->content['version'])->toBe(3);
 
     $this->artisan('resumes:rebuild')->expectsOutputToContain('Updated 2 resume(s) (1 rebuilt from the profile). 1 already current.')->assertSuccessful();
-    expect($v3->fresh()->content)->not->toHaveKey('personal')->and($v3->fresh()->content['version'])->toBe(4)
-        ->and($v2->fresh()->content['version'])->toBe(4)->and($v2->fresh()->content['summary'])->toBe('From the profile.')
-        ->and($current->fresh()->content['version'])->toBe(4)
+    expect($v3->fresh()->content)->not->toHaveKey('personal')->and($v3->fresh()->content['version'])->toBe(5)
+        ->and($v2->fresh()->content['version'])->toBe(5)->and($v2->fresh()->content['summary'])->toBe('From the profile.')
+        ->and($current->fresh()->content['version'])->toBe(5)
         ->and(Storage::disk('private')->get($v3->fresh()->file_path))->toStartWith('%PDF');
 
     // Running it again finds nothing to do.
     $this->artisan('resumes:rebuild')->expectsOutputToContain('Updated 0 resume(s)')->assertSuccessful();
+});
+
+it('makes the 2x2 round, inside a burgundy ring, for the Appendix H layout', function () {
+    $blue = imagecreatetruecolor(100, 100);
+    imagefill($blue, 0, 0, imagecolorallocate($blue, 0, 0, 255));
+    ob_start();
+    imagejpeg($blue);
+    $square = ob_get_clean();
+
+    $round = imagecreatefromstring(app(\App\Services\ImageProcessor::class)->circle($square, 200));
+    $rgb = fn (int $x, int $y): array => [($c = imagecolorat($round, $x, $y)) >> 16 & 255, $c >> 8 & 255, $c & 255];
+
+    [$r, $g, $b] = $rgb(2, 2);       // outside the circle: white
+    expect(min($r, $g, $b))->toBeGreaterThan(235);
+    [$r, $g, $b] = $rgb(100, 100);   // the photo
+    expect($b)->toBeGreaterThan(200)->and($r)->toBeLessThan(60);
+    [$r, $g, $b] = $rgb(100, 4);     // the ring: burgundy #5E010B
+    expect($r)->toBeGreaterThan(60)->toBeLessThan(130)->and($g)->toBeLessThan(40)->and($b)->toBeLessThan(50);
 });

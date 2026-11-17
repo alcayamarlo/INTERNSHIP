@@ -59,15 +59,15 @@ it('opens the editor with the form, the live preview, and all four actions', fun
     $this->actingAs($student->user)
         ->get(route('student.resume.edit', $resume))
         ->assertOk()
-        ->assertSee('value="Ana Cruz"', false)
+        ->assertSee('value="Cruz"', false)->assertSee('value="Ana"', false)
         ->assertSee('value="ana@example.com"', false)
         ->assertSee('data-preview-frame', false)
-        ->assertSeeInOrder(['Personal info', 'Career objective', 'Education', 'Skills', 'Work experience', 'Projects', 'Certifications', 'Character references'])
+        ->assertSeeInOrder(['Personal info', 'Surname', 'Given name and middle initial', 'Title under your name', 'About me', 'Education', 'Skills', 'Work experience', 'Projects', 'Certifications', 'Character references'])
         ->assertSee('Technical skills')->assertSee('Soft skills')->assertSee('Show my 2x2 photo on the resume')
         ->assertSee('data-page-status', false)->assertSee('data-pages-url="'.route('student.resume.pages', $resume).'"', false)
         ->assertDontSee('Personal details')->assertDontSee('Provincial address')->assertDontSee('Birthday')
         ->assertSeeInOrder(['Cancel', 'Download PDF', 'Save as new resume', 'Save changes'])
-        ->assertSee("Also update my profile's career objective", false);
+        ->assertSee("Also update my profile's About me", false);
 });
 
 it('renders the live preview from unsaved edits without storing anything', function () {
@@ -76,7 +76,7 @@ it('renders the live preview from unsaved edits without storing anything', funct
     $before = $resume->content;
 
     $this->actingAs($student->user)
-        ->postJson(route('student.resume.preview', $resume), editorPayload($resume, ['summary' => 'Fresh preview summary.', 'name' => '']))
+        ->postJson(route('student.resume.preview', $resume), editorPayload($resume, ['summary' => 'Fresh preview summary.', 'name_given' => '']))
         ->assertOk()
         ->assertHeader('Content-Type', 'text/html; charset=UTF-8')
         ->assertSee('Fresh preview summary.');
@@ -91,7 +91,8 @@ it('saves edits to that resume only, re-renders its PDF, and leaves the profile 
 
     $this->actingAs($student->user)
         ->putJson(route('student.resume.update', $resume), editorPayload($resume, [
-            'name' => 'Ana B. Cruz',
+            'name_given' => 'Ana B.',
+            'name_last' => 'Cruz',
             'summary' => 'Edited summary for this resume.',
             'skills_technical' => ['Excel', '  '],
             'skills_soft' => ['Customer service'],
@@ -111,7 +112,8 @@ it('saves edits to that resume only, re-renders its PDF, and leaves the profile 
         ->and($resume->content['summary'])->toBe('Edited summary for this resume.')
         ->and($resume->content['skills'])->toBe(['technical' => ['Excel'], 'soft' => ['Customer service']])
         ->and($resume->content['show_photo'])->toBeFalse()
-        ->and($resume->content['version'])->toBe(4)
+        ->and($resume->content['version'])->toBe(5)
+        ->and($resume->content['name_last'])->toBe('Cruz')->and($resume->content['name_given'])->toBe('Ana B.')
         ->and($resume->content['experiences'])->toHaveCount(1)
         ->and($resume->content['experiences'][0]['rows'])->toBe(['Organization' => 'City Hall'])
         ->and($resume->content['id_photo_path'])->toBeNull()
@@ -146,20 +148,22 @@ it('requires a name and contact email, complete rows, and entry titles', functio
 
     $this->actingAs($student->user)
         ->putJson(route('student.resume.update', $resume), editorPayload($resume, [
-            'name' => ' ',
+            'name_given' => ' ',
             'contact' => ['email' => 'not-an-email'],
-            'education' => [['label' => 'College', 'value' => ''], ['label' => 'Course', 'value' => 'BSIT'], ['label' => 'course', 'value' => 'IT']],
+            'education' => [['level' => '', 'years' => '2020-2022', 'school' => 'Cebu City NHS', 'detail' => '']],
             'projects' => [['title' => '', 'rows' => [['label' => 'Tools used', 'value' => 'Laravel']], 'skills' => [], 'description' => '']],
-            'summary' => str_repeat('a', 1201),
+            'skills_technical' => array_map(fn ($i) => "Skill {$i}", range(1, 16)),
+            'summary' => str_repeat('a', 701),
         ]))
         ->assertStatus(422)
         ->assertJsonValidationErrors([
-            'name' => 'Enter your name.',
+            'name_given' => 'Enter your given name.',
             'contact.email' => 'Enter a valid email address.',
-            'education.0.value' => 'Add a value, or clear this row.',
-            'education' => 'Each label in this list must be different.',
+            'education.0.level' => 'Add the level (e.g. College), or remove this entry.',
             'projects.0.title' => 'Add a title, or remove this entry.',
-            'summary',
+            // The left column has room for 15 skills and a short About Me.
+            'skills_technical' => 'Keep it to 15 technical skills, so they fit the left column.',
+            'summary' => 'Keep About Me to 700 characters, so it fits the left column.',
         ]);
 
     expect($resume->fresh()->content)->toBe($before);

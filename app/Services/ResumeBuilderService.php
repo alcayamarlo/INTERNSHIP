@@ -323,12 +323,14 @@ class ResumeBuilderService
             ])->setPaper('a4')->output(), 'pages' => 1, 'density' => 'normal'];
         }
 
+        // Version 4 is the one-column layout; version 5 the Appendix H two-column one.
+        $view = $version === 4 ? 'student.resume.pdf-v4' : 'student.resume.pdf';
         $photo = $this->photoFor($content);
-        $normal = $this->renderCurrent($content, $photo, 'normal');
+        $normal = $this->renderCurrent($view, $content, $photo, 'normal');
         if ($normal['pages'] <= 1) {
             return $normal;
         }
-        $compact = $this->renderCurrent($content, $photo, 'compact');
+        $compact = $this->renderCurrent($view, $content, $photo, 'compact');
         if ($compact['pages'] <= 1) {
             return $compact;
         }
@@ -337,18 +339,33 @@ class ResumeBuilderService
     }
 
     /** @return array{pdf: string, pages: int, density: string} */
-    private function renderCurrent(array $content, ?string $photo, string $density): array
+    private function renderCurrent(string $view, array $content, ?string $photo, string $density): array
     {
-        $pdf = Pdf::loadView('student.resume.pdf', ['content' => $content, 'photo' => $photo, 'density' => $density])->setPaper('a4');
+        $pdf = Pdf::loadView($view, ['content' => $content, 'photo' => $photo, 'density' => $density])->setPaper('a4');
         $bytes = $pdf->output();
 
         return ['pdf' => $bytes, 'pages' => (int) $pdf->getDomPDF()->getCanvas()->get_page_count(), 'density' => $density];
     }
 
-    /** The photo for the resume: the private 2x2, unless the student turned it off. */
+    /**
+     * The photo for the resume: the private 2x2, unless the student turned it off. The Appendix H layout
+     * (version 5) shows it round, inside a burgundy ring; older layouts keep the square.
+     */
     private function photoFor(array $content): ?string
     {
-        return ($content['show_photo'] ?? true) ? $this->resumePhoto($content) : null;
+        if (! ($content['show_photo'] ?? true)) {
+            return null;
+        }
+        $square = $this->resumePhoto($content);
+        if ($square === null || (int) ($content['version'] ?? 1) < 5) {
+            return $square;
+        }
+
+        try {
+            return 'data:image/jpeg;base64,'.base64_encode($this->images->circle(base64_decode(substr($square, strlen('data:image/jpeg;base64,'))), 400));
+        } catch (\Throwable) {
+            return $square; // GD missing or an unreadable image: the square photo still works.
+        }
     }
 
     /**
