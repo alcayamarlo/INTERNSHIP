@@ -117,3 +117,23 @@ html body.sb-app .sb-notification-menu .sbn-empty p { margin: 0; font-size: 14px
 @media (prefers-reduced-motion: reduce) {
     html body.sb-app .sb-notification-menu.show { animation: none; }
 }
+
+/* ---------- Dark theme: readable text, calm hover and unread tints ---------- */
+html:root:root:root:root[data-theme="dark"] body.sb-app .sb-notification-menu {
+    --sbn-ink: #F4F4F5; --sbn-muted: #C9C5C8; --sbn-soft: #A8A3A7; --sbn-brand: #F08A9B; --sbn-tint: rgba(218, 92, 112, .2);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, .55); scrollbar-color: #3A3A40 transparent;
+}
+html:root:root:root:root[data-theme="dark"] body.sb-app .sb-notification-menu::-webkit-scrollbar-thumb { background: #3A3A40; }
+html:root:root:root:root[data-theme="dark"] body.sb-app .sbn-label { color: #A0A0A6; }
+html:root:root:root:root[data-theme="dark"] body.sb-app .sb-notification-menu .notification-open-link:hover { background: rgba(255, 255, 255, .05); }
+html:root:root:root:root[data-theme="dark"] body.sb-app .sb-notification-menu .sb-notification-item.is-unread { background: rgba(218, 92, 112, .12); }
+html:root:root:root:root[data-theme="dark"] body.sb-app .sb-notification-menu .sb-notification-item.is-unread .notification-open-link:hover { background: rgba(218, 92, 112, .2); }
+html:root:root:root:root[data-theme="dark"] body.sb-app .sb-notification-menu .sb-notification-item.is-unread::before { background: #DA5C70; }
+html:root:root:root:root[data-theme="dark"] body.sb-app .sb-notification-menu .sb-notification-item.is-unread .notification-open-link::after { background: #DA5C70; }
+html:root:root:root:root[data-theme="dark"] body.sb-app .sb-notification-menu .notification-open-link strong,
+html:root:root:root:root[data-theme="dark"] body.sb-app .sb-notification-menu .sbn-text > strong { color: #F4F4F5; }
+html:root:root:root:root[data-theme="dark"] body.sb-app .sb-notification-menu .sbn-icon,
+html:root:root:root:root[data-theme="dark"] body.sb-app .sb-notification-menu .notification-open-link:not(:has(.sbn-icon))::before { background: rgba(218, 92, 112, .2); color: #F08A9B; }
+html:root:root:root:root[data-theme="dark"] body.sb-app .sbn-pill { background: rgba(218, 92, 112, .22); color: #F4A7B4; }
+html:root:root:root:root[data-theme="dark"] body.sb-app .sbn-link { color: #F08A9B; }
+html:root:root:root:root[data-theme="dark"] body.sb-app .sb-notification-menu .sbn-empty .sb-empty-icon { background: rgba(218, 92, 112, .2); color: #F08A9B; }

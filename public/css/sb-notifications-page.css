@@ -198,3 +198,17 @@ html body.sb-app .nt-card .nt-bulk, html body.sb-app .nt-card .nt-item, html bod
 @media (max-width: 899.98px) {
     html body.sb-app .nt-card .nt-head, html body.sb-app .nt-card .nt-bulk, html body.sb-app .nt-card .nt-item, html body.sb-app .nt-card .nt-foot { padding-left: 16px; padding-right: 16px; }
 }
+
+/* ---------- Dark theme ---------- */
+html:root:root:root:root[data-theme="dark"] body.sb-app {
+    --nt-brand: #F08A9B; --nt-tint: rgba(218, 92, 112, .2); --nt-hover: rgba(255, 255, 255, .05); --nt-unread: rgba(218, 92, 112, .12);
+    --nt-muted: #C9C5C8; --nt-soft: #A8A3A7; --nt-field: #3A3A40; --nt-danger: #F2877D; --nt-danger-tint: rgba(242, 135, 125, .16);
+}
+html:root:root:root:root[data-theme="dark"] body.sb-app .nt-card a.nt-tab:not(.is-active) .nt-count { background: rgba(255, 255, 255, .08); color: #C9C5C8; }
+html:root:root:root:root[data-theme="dark"] body.sb-app .nt-card a.nt-tab.is-active .nt-count { background: #DA5C70; color: #fff; }
+html:root:root:root:root[data-theme="dark"] body.sb-app .nt-card .nt-item.is-unread:hover, html:root:root:root:root[data-theme="dark"] body.sb-app .nt-card .nt-item.is-unread:focus-within { background: rgba(218, 92, 112, .2); }
+html:root:root:root:root[data-theme="dark"] body.sb-app .nt-card .nt-list { scrollbar-color: #3A3A40 transparent; }
+html:root:root:root:root[data-theme="dark"] body.sb-app .nt-card .nt-list::-webkit-scrollbar-thumb { background: #3A3A40; }
+html:root:root:root:root[data-theme="dark"] body.sb-app .nt-card .nt-item:has(.nt-select:checked)::before { background: #DA5C70; }
+html:root:root:root:root[data-theme="dark"] body.sb-app .nt-toast { box-shadow: 0 12px 32px rgba(0, 0, 0, .55); }
+html:root:root:root:root[data-theme="dark"] body.sb-app .nt-card .nt-more-menu { box-shadow: 0 12px 32px rgba(0, 0, 0, .55); }
