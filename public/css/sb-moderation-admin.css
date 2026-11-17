@@ -1,0 +1,12 @@
+html body.sb-app .mod-summary { display: flex; align-items: center; gap: 16px; padding: 18px 22px; border-radius: 20px; border: 1px solid var(--ds-hair); background: var(--ds-surface); }
+html body.sb-app .mod-summary > div { display: grid; gap: 2px; min-width: 0; }
+html body.sb-app .mod-summary strong { font-size: 16px; color: var(--ds-ink); }
+html body.sb-app .mod-summary span:not(.mod-summary__icon) { font-size: 14px; color: var(--ds-muted); }
+html body.sb-app .mod-summary__icon { display: grid; place-items: center; flex: none; width: 48px; height: 48px; border-radius: 16px; font-size: 22px; }
+html body.sb-app .mod-summary--alert { background: #fbeef1; border-color: #efc9d2; }
+html body.sb-app .mod-summary--alert .mod-summary__icon { background: var(--ds-red-text, #7a0019); color: #fff; }
+html body.sb-app .mod-summary--clear .mod-summary__icon { background: #e6f4ea; color: #1e7a3c; }
+html body.sb-app .mod-filters { display: grid; gap: 12px; padding: 16px 18px; background: var(--ds-surface); border: 1px solid var(--ds-hair); border-radius: 20px; }
+html body.sb-app .mod-filters .sb-section-tabs, html body.sb-app .mod-filters .sb-pill-tabs { margin: 0; }
+html body.sb-app .mod-page .table tbody tr td { vertical-align: middle; }
+@media (max-width: 767px) { html body.sb-app .mod-summary { padding: 16px; } }

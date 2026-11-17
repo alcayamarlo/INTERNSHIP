@@ -1,0 +1,22 @@
+html body.sb-app .ann-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+html body.sb-app .ann-stat { display: flex; align-items: center; gap: 14px; padding: 18px 20px; background: var(--ds-surface); border: 1px solid var(--ds-hair); border-radius: 20px; }
+html body.sb-app .ann-stat__icon { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 14px; background: #f6e8ec; color: var(--ds-red-text, #7a0019); font-size: 20px; }
+html body.sb-app .ann-stat__label { display: block; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--ds-label); }
+html body.sb-app .ann-stat__value { display: block; font-size: 28px; font-weight: 800; line-height: 1.1; color: var(--ds-ink); }
+html body.sb-app .ann-list { list-style: none; margin: 0; padding: 8px; display: grid; gap: 4px; }
+html body.sb-app .ann-item { display: flex; align-items: flex-start; gap: 16px; padding: 18px 16px; border-radius: 16px; transition: background .15s; }
+html body.sb-app .ann-item + .ann-item { border-top: 1px solid var(--ds-hair); border-top-left-radius: 0; border-top-right-radius: 0; }
+html body.sb-app .ann-item:hover { background: #faf6f7; }
+html body.sb-app .ann-item__icon { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 14px; background: #f6e8ec; color: var(--ds-red-text, #7a0019); font-size: 20px; }
+html body.sb-app .ann-item__main { flex: 1 1 auto; min-width: 0; display: grid; gap: 6px; }
+html body.sb-app .ann-item__top { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
+html body.sb-app .ann-item__title { margin: 0; font-size: 17px; font-weight: 700; color: var(--ds-ink); overflow-wrap: anywhere; }
+html body.sb-app .ann-item__excerpt { margin: 0; font-size: 14px; color: var(--ds-muted); overflow-wrap: anywhere; }
+html body.sb-app .ann-item__meta { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--ds-muted); }
+html body.sb-app .ann-item__meta .bi { margin-right: 4px; color: var(--ds-red-text, #7a0019); }
+html body.sb-app .ann-item__actions { flex: none; display: flex; gap: 6px; }
+@media (max-width: 767px) {
+    html body.sb-app .ann-stats { grid-template-columns: 1fr; }
+    html body.sb-app .ann-item { flex-wrap: wrap; }
+    html body.sb-app .ann-item__actions { margin-left: 60px; }
+}

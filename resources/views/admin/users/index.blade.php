@@ -100,7 +100,7 @@
                                 @endif
                             </td>
                             <td class="text-nowrap sb-stack-block">
-                                <span class="sb-row-actions">
+                                <span class="sb-row-actions" style="flex-wrap:nowrap;justify-content:flex-end">
                                     @if($user->role === \App\Enums\UserRole::Student && $user->student)
                                         <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.students.files', $user->student) }}" title="View student files" aria-label="View files for {{ $user->name }}">
                                             <i class="bi bi-folder2-open" aria-hidden="true"></i>
@@ -162,7 +162,7 @@
                                             <form action="{{ route('admin.users.archive', $user) }}" method="POST" class="d-inline" data-confirm="Archive {{ $user->name }}? They will no longer be able to sign in. You can restore the account later." data-confirm-title="Archive user" data-confirm-label="Archive">
                                                 @csrf
                                                 <button type="submit" class="btn btn-sm btn-outline-danger" title="Archive user" aria-label="Archive {{ $user->name }}">
-                                                    <i class="bi bi-archive" aria-hidden="true"></i> Archive
+                                                    <i class="bi bi-archive" aria-hidden="true"></i>
                                                 </button>
                                             </form>
                                         @endif

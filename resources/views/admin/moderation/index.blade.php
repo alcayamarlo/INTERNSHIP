@@ -3,9 +3,19 @@
 @section('title', 'Reported Content')
 
 @section('content')
-<div class="sb-dash">
+<link rel="stylesheet" href="{{ asset('css/sb-moderation-admin.css') }}?v={{ @filemtime(public_path('css/sb-moderation-admin.css')) }}">
+<div class="sb-dash mod-page">
 <x-page-header title="Reported content" subtitle="Postings, companies, messages, and users that people reported. Only administrators see this." />
 
+<div class="mod-summary {{ $openCount ? 'mod-summary--alert' : 'mod-summary--clear' }}" role="status">
+    <span class="mod-summary__icon" aria-hidden="true"><i class="bi {{ $openCount ? 'bi-flag-fill' : 'bi-shield-check' }}"></i></span>
+    <div>
+        <strong>{{ $openCount ? $openCount.' open '.\Illuminate\Support\Str::plural('report', $openCount).' waiting for review' : 'No open reports' }}</strong>
+        <span>{{ $openCount ? 'Review each report and take action to keep the platform safe.' : 'Everything has been reviewed. New reports will show up here.' }}</span>
+    </div>
+</div>
+
+<div class="mod-filters">
 <nav class="sb-section-tabs mb-0" aria-label="Report status">
     <a class="sb-section-tab {{ $status === 'open' ? 'active' : '' }}" href="{{ route('admin.moderation.index', array_filter(['type' => $type])) }}" @if($status === 'open') aria-current="page" @endif>Open @if($openCount)<span class="sb-tab-count">{{ $openCount }}</span>@endif</a>
     <a class="sb-section-tab {{ $status === 'resolved' ? 'active' : '' }}" href="{{ route('admin.moderation.index', array_filter(['status' => 'resolved', 'type' => $type])) }}" @if($status === 'resolved') aria-current="page" @endif>Resolved</a>
@@ -17,11 +27,12 @@
         <a href="{{ route('admin.moderation.index', array_filter(['status' => $status === 'resolved' ? 'resolved' : null, 'type' => $key])) }}" class="sb-pill-tab {{ $type === $key ? 'is-active' : '' }}" @if($type === $key) aria-current="true" @endif>{{ $label }}</a>
     @endforeach
 </div>
+</div>
 
 <div class="card">
     <div class="table-responsive">
         <table class="table table-hover mb-0 sb-table-stack">
-            <thead><tr><th>Reported</th><th>Item</th><th>Reason</th><th>Reported by</th><th>{{ $status === 'open' ? 'Received' : 'Outcome' }}</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+            <thead><tr><th>Type</th><th>Item</th><th>Reason</th><th>Reported by</th><th>{{ $status === 'open' ? 'Received' : 'Outcome' }}</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
             <tbody>
                 @forelse($reports as $report)
                     <tr>
@@ -37,10 +48,10 @@
                                 <small class="sb-row-sub">{{ $report->resolved_at?->timezone('Asia/Manila')->format('M d, Y') }}</small>
                             @endif
                         </td>
-                        <td class="text-end sb-stack-block"><a href="{{ route('admin.moderation.show', $report) }}" class="btn btn-sm btn-outline-primary">{{ $report->isOpen() ? 'Review' : 'View' }}</a></td>
+                        <td class="text-end text-nowrap sb-stack-block" style="width:1%"><a href="{{ route('admin.moderation.show', $report) }}" class="btn btn-sm btn-outline-primary text-nowrap"><i class="bi {{ $report->isOpen() ? 'bi-search' : 'bi-eye' }}" aria-hidden="true"></i> {{ $report->isOpen() ? 'Review' : 'View' }}</a></td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="sb-table-empty sb-stack-block text-center text-muted">{{ $status === 'open' ? 'No open reports. All clear.' : 'No resolved reports yet.' }}</td></tr>
+                    <tr><td colspan="6" class="sb-stack-block"><x-empty-state :icon="$status === 'open' ? 'bi-shield-check' : 'bi-clipboard-check'" :title="$status === 'open' ? 'No open reports. All clear.' : 'No resolved reports yet.'" :message="$status === 'open' ? 'When someone reports a posting, company, message or user, it will appear here.' : 'Reports you resolve will be listed here with their outcome.'" /></td></tr>
                 @endforelse
             </tbody>
         </table>

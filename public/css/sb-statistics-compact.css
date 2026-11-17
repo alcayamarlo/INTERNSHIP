@@ -1,0 +1,10 @@
+html body.sb-app .st-page { gap: 16px; }
+html body.sb-app .st-page .sb-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+html body.sb-app .st-page .sb-kpis .sb-stat { display: flex; flex-direction: row; align-items: center; height: auto; gap: 12px; padding: 14px 16px; border-radius: 18px; }
+html body.sb-app .st-page .sb-stat-icon { flex: none; width: 40px; height: 40px; border-radius: 12px; font-size: 18px; margin: 0; }
+html body.sb-app .st-page .sb-stat-body { display: grid; gap: 0; width: auto; min-width: 0; flex: 1 1 auto; }
+html body.sb-app .st-page .sb-stat-label { font-size: 10.5px; letter-spacing: .06em; line-height: 1.3; }
+html body.sb-app .st-page .sb-stat-value { font-size: 26px; line-height: 1.15; margin: 0; white-space: nowrap; }
+html body.sb-app .st-page .stats-table th, html body.sb-app .st-page .stats-table td { padding-top: 9px; padding-bottom: 9px; vertical-align: middle; }
+html body.sb-app .st-page .card-body { padding: 14px 20px; }
+@media (max-width: 1199.98px) { html body.sb-app .st-page .sb-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

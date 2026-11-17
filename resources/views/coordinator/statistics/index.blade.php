@@ -3,8 +3,9 @@
 @section('title', 'Statistics & Reports')
 
 @section('content')
-<div class="sb-dash">
-<x-page-header title="Statistics &amp; Reports" :subtitle="'Your students, as of '.$stats['generated_at']->format('M d, Y h:i A').' (Philippine time)'">
+<link rel="stylesheet" href="{{ asset('css/sb-statistics-compact.css') }}?v={{ @filemtime(public_path('css/sb-statistics-compact.css')) }}">
+<div class="sb-dash st-page">
+<x-page-header title="Statistics & Reports" :subtitle="'Your students, as of '.$stats['generated_at']->format('M d, Y h:i A').' (Philippine time)'">
     <a href="{{ route('coordinator.statistics.export', 'pdf') }}" class="btn btn-outline-primary"><i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Export PDF</a>
     <a href="{{ route('coordinator.statistics.export', 'xlsx') }}" class="btn btn-outline-success"><i class="bi bi-file-earmark-excel" aria-hidden="true"></i> Export Excel</a>
 </x-page-header>
