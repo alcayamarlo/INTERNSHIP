@@ -1,0 +1,119 @@
+/* Bell dropdown: fixed header with actions, clickable rows, no per-row buttons.
+   Row markup is also produced by resources/js/app.js for live notifications (link > strong, span, time),
+   so both shapes are styled. Scoped with html body.sb-app to win over sb-theme.css. */
+
+html body.sb-app .sb-notification-dropdown { position: relative; }
+
+/* ---------- Panel ---------- */
+html body.sb-app .sb-notification-menu {
+    --sbn-ink: var(--ds-ink, #1a1517);
+    --sbn-muted: #4A4A52;
+    --sbn-soft: #6B6B73;
+    --sbn-hair: var(--ds-hair, #E6E1E3);
+    --sbn-brand: var(--ds-red-text, #7A0013);
+    --sbn-tint: #F6E7EA;
+    position: absolute; right: 0; left: auto; top: calc(100% + 12px);
+    width: min(560px, calc(100vw - 24px));
+    max-height: min(70vh, 640px); max-height: min(70dvh, 640px);
+    padding: 0; margin: 0;
+    display: none; flex-direction: column;
+    overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
+    background: var(--ds-surface, #fff);
+    border: 1px solid var(--sbn-hair); border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(22, 22, 26, .18);
+    z-index: 1060;
+    scrollbar-width: thin; scrollbar-color: #D7D0D3 transparent;
+}
+html body.sb-app .sb-notification-menu.show { display: flex; animation: sbn-in .15s ease-out both; }
+html body.sb-app .sb-notification-menu::-webkit-scrollbar { width: 4px; }
+html body.sb-app .sb-notification-menu::-webkit-scrollbar-thumb { background: #D7D0D3; border-radius: 4px; }
+html body.sb-app .sb-notification-menu::-webkit-scrollbar-track { background: transparent; }
+html body.sb-app .sb-notification-menu::-webkit-scrollbar-button { display: none; }
+@keyframes sbn-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Header (stays visible while the list scrolls) ---------- */
+html body.sb-app .sb-notification-menu .sbn-head {
+    position: sticky; top: 0; z-index: 2; flex: none;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px;
+    padding: 16px 20px; margin: 0;
+    background: var(--ds-surface, #fff); border-bottom: 1px solid var(--sbn-hair);
+    white-space: normal;
+}
+html body.sb-app .sbn-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
+html body.sb-app .sbn-label { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: #5B5B63; }
+html body.sb-app .sbn-pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; background: var(--sbn-tint); color: var(--sbn-brand); font-size: 12px; font-weight: 700; white-space: nowrap; }
+html body.sb-app .sbn-pill[hidden], html body.sb-app .sbn-readall[hidden] { display: none; }
+html body.sb-app .sbn-actions { display: flex; align-items: center; gap: 12px; }
+html body.sb-app .sbn-readall { margin: 0; }
+html body.sb-app .sbn-divider { width: 1px; height: 16px; background: var(--sbn-hair); }
+html body.sb-app .sbn-actions .sbn-readall[hidden] + .sbn-divider { display: none; }
+html body.sb-app .sbn-link { display: inline-flex; align-items: center; gap: 6px; padding: 4px 2px; border: 0; background: transparent; color: var(--sbn-brand); font: inherit; font-size: 13px; font-weight: 800; text-decoration: none; cursor: pointer; white-space: nowrap; }
+html body.sb-app .sbn-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+html body.sb-app .sbn-link:focus-visible { outline: 3px solid rgba(122, 0, 19, .45); outline-offset: 2px; border-radius: 6px; }
+/* Nothing to act on: hide the header actions. */
+html body.sb-app .sb-notification-menu:not(:has(.sb-notification-item)) .sbn-actions { display: none; }
+
+/* ---------- Rows ---------- */
+html body.sb-app .sb-notification-menu .sb-notification-item {
+    position: relative; flex: none; width: 100%; margin: 0; padding: 0; border-radius: 0; background: transparent; line-height: 1.4;
+}
+html body.sb-app .sb-notification-menu .sb-notification-item + .sb-notification-item { margin-top: 0; border-top: 1px solid var(--sbn-hair); }
+html body.sb-app .sb-notification-menu .sb-notification-item.is-unread { background: #FBF1F3; }
+html body.sb-app .sb-notification-menu .sb-notification-item.is-unread::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--sbn-brand); }
+html body.sb-app .sb-notification-menu .notification-open-link {
+    position: relative; display: block; min-height: 40px; padding: 14px 44px 14px 76px; color: var(--sbn-ink); text-decoration: none;
+}
+html body.sb-app .sb-notification-menu .notification-open-link:hover { background: #FBF7F8; }
+html body.sb-app .sb-notification-menu .sb-notification-item.is-unread .notification-open-link:hover { background: #F8E8EC; }
+html body.sb-app .sb-notification-menu .notification-open-link:focus-visible { outline: 3px solid rgba(122, 0, 19, .45); outline-offset: -3px; }
+
+/* icon tile: a real element for server-rendered rows, a pseudo-element fallback for live ones */
+html body.sb-app .sb-notification-menu .sbn-icon,
+html body.sb-app .sb-notification-menu .notification-open-link:not(:has(.sbn-icon))::before {
+    position: absolute; left: 20px; top: 14px; display: grid; place-items: center; width: 40px; height: 40px; margin: 0; border-radius: 50%; background: var(--sbn-tint); color: var(--sbn-brand); font-size: 18px; line-height: 1;
+}
+html body.sb-app .sb-notification-menu .notification-open-link:not(:has(.sbn-icon))::before { content: "\f18a"; font-family: "bootstrap-icons"; font-style: normal; }
+html body.sb-app .sb-notification-menu .sbn-icon .bi { line-height: 1; }
+
+html body.sb-app .sb-notification-menu .sbn-text { display: block; min-width: 0; margin: 0; color: inherit; font-size: inherit; }
+html body.sb-app .sb-notification-menu .notification-open-link strong,
+html body.sb-app .sb-notification-menu .sbn-text > strong {
+    display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin: 0; font-size: 15px; font-weight: 600; color: var(--sbn-ink); overflow-wrap: normal;
+}
+html body.sb-app .sb-notification-menu .sb-notification-item.is-unread .notification-open-link strong { font-weight: 800; }
+html body.sb-app .sb-notification-menu .sbn-text > span,
+html body.sb-app .sb-notification-menu .notification-open-link > span:not(.sbn-icon):not(.sbn-text) {
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; margin: 2px 0 0; font-size: 14px; line-height: 1.45; color: var(--sbn-muted);
+}
+html body.sb-app .sb-notification-menu .notification-open-link time { display: block; margin-top: 6px; font-size: 12.5px; color: var(--sbn-soft); }
+
+/* unread dot at the right edge */
+html body.sb-app .sb-notification-menu .sb-notification-item.is-unread .notification-open-link::after {
+    content: ""; position: absolute; right: 20px; top: 50%; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: var(--sbn-brand);
+}
+
+/* ---------- Empty state ---------- */
+html body.sb-app .sb-notification-menu .sbn-empty { padding: 36px 24px; text-align: center; }
+html body.sb-app .sb-notification-menu .sbn-empty .sb-empty-icon { display: grid; place-items: center; width: 56px; height: 56px; margin: 0 auto 12px; border-radius: 50%; background: var(--sbn-tint); color: var(--sbn-brand); font-size: 26px; }
+html body.sb-app .sb-notification-menu .sbn-empty h3 { margin: 0 0 4px; font-size: 16px; font-weight: 700; color: var(--sbn-ink); }
+html body.sb-app .sb-notification-menu .sbn-empty p { margin: 0; font-size: 14px; color: var(--sbn-soft); }
+
+/* ---------- Mobile: a sheet under the topbar ---------- */
+@media (max-width: 639.98px) {
+    html body.sb-app .sb-notification-dropdown { position: static; }
+    html body.sb-app .sb-notification-menu {
+        position: fixed; top: calc(var(--sb-topbar-height, 72px) + 8px); left: 12px; right: 12px; width: auto;
+        max-height: calc(100vh - 88px); max-height: calc(100dvh - 88px);
+    }
+    html body.sb-app .sb-notification-menu .sbn-head { padding: 14px 16px; }
+    html body.sb-app .sbn-actions { width: 100%; justify-content: space-between; gap: 8px; }
+    html body.sb-app .sbn-link { min-height: 44px; }
+    html body.sb-app .sb-notification-menu .notification-open-link { padding: 14px 36px 14px 68px; }
+    html body.sb-app .sb-notification-menu .sbn-icon,
+    html body.sb-app .sb-notification-menu .notification-open-link:not(:has(.sbn-icon))::before { left: 14px; }
+    html body.sb-app .sb-notification-menu .sb-notification-item.is-unread .notification-open-link::after { right: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html body.sb-app .sb-notification-menu.show { animation: none; }
+}

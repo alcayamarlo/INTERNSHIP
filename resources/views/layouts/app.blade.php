@@ -97,6 +97,8 @@
     <link rel="stylesheet" href="{{ asset('css/sb-theme.css') }}?v={{ @filemtime(public_path('css/sb-theme.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-modal.css') }}?v={{ @filemtime(public_path('css/sb-modal.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-responsive-v2.css') }}?v={{ @filemtime(public_path('css/sb-responsive-v2.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/sb-notifications-panel.css') }}?v={{ @filemtime(public_path('css/sb-notifications-panel.css')) }}">
+    <script defer src="{{ asset('js/sb-notif-panel.js') }}?v={{ @filemtime(public_path('js/sb-notif-panel.js')) }}"></script>
     <script defer src="{{ asset('js/skillbridge-ui.js') }}?v={{ @filemtime(public_path('js/skillbridge-ui.js')) }}"></script>
     <script defer src="{{ asset('js/sb-modal.js') }}?v={{ @filemtime(public_path('js/sb-modal.js')) }}"></script>
     <script defer src="{{ asset('js/sb-motion.js') }}?v={{ @filemtime(public_path('js/sb-motion.js')) }}"></script>
@@ -404,47 +406,51 @@
                 $recentNotifications = $currentUser->appNotifications()->inbox()->latest()->take(5)->get();
             @endphp
             <div class="dropdown sb-notification-dropdown">
-                <button type="button" class="sb-top-action" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" aria-label="Notifications{{ $unread ? ', '.$unread.' unread' : '' }}">
+                <button type="button" class="sb-top-action" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" aria-haspopup="dialog" aria-controls="sbNotificationPanel" aria-label="Notifications{{ $unread ? ', '.$unread.' unread' : '' }}">
                     <i class="bi bi-bell" aria-hidden="true"></i>
                     @if($unread > 0)
                         <span class="sb-notification-badge" data-unread-badge>{{ $unread > 9 ? '9+' : $unread }}</span>
                     @endif
                 </button>
-                <div class="dropdown-menu dropdown-menu-end sb-notification-menu">
-                    <div class="dropdown-header">Recent notifications</div>
+                <div class="dropdown-menu dropdown-menu-end sb-notification-menu" id="sbNotificationPanel" role="dialog" aria-label="Notifications">
+                    {{-- Fixed header: title, unread count and the two actions. Rows below are plain links; Mark read / Archive live on the Notifications page. --}}
+                    <div class="dropdown-header sbn-head">
+                        <div class="sbn-title">
+                            <span class="sbn-label">Recent notifications</span>
+                            <span class="sbn-pill" data-sbn-pill @if($unread < 1) hidden @endif>{{ $unread > 9 ? '9+' : $unread }} new</span>
+                        </div>
+                        <div class="sbn-actions">
+                            <form action="{{ route('notifications.read-all') }}" method="POST" class="sbn-readall" data-sbn-readall data-ajax-notification="read-all" @if($unread < 1) hidden @endif>
+                                @csrf
+                                <button type="submit" class="sbn-link">Mark all as read</button>
+                            </form>
+                            <span class="sbn-divider" aria-hidden="true"></span>
+                            <a class="sbn-link" href="{{ route('notifications.index') }}">View all notifications <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                        </div>
+                    </div>
                     @forelse($recentNotifications as $notification)
+                        @php
+                            $nType = \Illuminate\Support\Str::lower((string) $notification->type);
+                            $nIcon = \Illuminate\Support\Str::contains($nType, ['company', 'employer', 'invitation', 'internship', 'moa']) ? 'bi-building'
+                                : (\Illuminate\Support\Str::contains($nType, ['student', 'profile', 'validation', 'application', 'change']) ? 'bi-person' : 'bi-bell');
+                        @endphp
                         <div class="sb-notification-item {{ $notification->read_at ? '' : 'is-unread' }}" data-notification-item data-notification-id="{{ $notification->id }}">
                             <a class="notification-open-link" href="{{ route('notifications.show', $notification) }}" data-notification-open data-read-url="{{ route('notifications.read', $notification) }}">
-                                <strong>{{ $notification->title }}</strong>
-                                <span>{{ $notification->message }}</span>
-                                <time datetime="{{ $notification->created_at->toIso8601String() }}">{{ $notification->created_at->diffForHumans() }}</time>
+                                <span class="sbn-icon" aria-hidden="true"><i class="bi {{ $nIcon }}"></i></span>
+                                <span class="sbn-text">
+                                    <strong>{{ $notification->title }}</strong>
+                                    <span>{{ $notification->message }}</span>
+                                    <time datetime="{{ $notification->created_at->toIso8601String() }}">{{ $notification->created_at->diffForHumans() }}</time>
+                                </span>
                             </a>
-                            @if(!$notification->read_at)
-                                <form action="{{ route('notifications.read', $notification) }}" method="POST" class="mt-2" data-ajax-notification="read">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-outline-primary">Mark read</button>
-                                </form>
-                            @endif
-                            {{-- Archive is reversible (Notifications → Archived → Unarchive), so it needs no confirmation. --}}
-                            <form action="{{ route('notifications.archive', $notification) }}" method="POST" class="mt-2" data-ajax-notification="archive">
-                                @csrf
-                                <button type="submit" class="btn btn-sm btn-outline-secondary">Archive</button>
-                            </form>
                         </div>
                     @empty
-                        <div class="sb-empty">
-                            <span class="sb-empty-icon" aria-hidden="true"><i class="bi bi-bell"></i></span>
-                            <h3>You’re all caught up</h3>
+                        <div class="sb-empty sbn-empty">
+                            <span class="sb-empty-icon" aria-hidden="true"><i class="bi bi-check-circle"></i></span>
+                            <h3>You’re all caught up.</h3>
                             <p>New notifications will appear here.</p>
                         </div>
                     @endforelse
-                    @if($unread > 0)
-                        <form action="{{ route('notifications.read-all') }}" method="POST" class="px-2 py-2" data-ajax-notification="read-all">
-                            @csrf
-                            <button type="submit" class="btn btn-sm btn-outline-primary w-100">Mark all as read</button>
-                        </form>
-                    @endif
-                    <a class="dropdown-item justify-content-center" href="{{ route('notifications.index') }}">View all notifications</a>
                 </div>
             </div>
 
