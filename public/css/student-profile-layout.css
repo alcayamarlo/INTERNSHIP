@@ -10,7 +10,15 @@ html body.sb-app .student-profile-page .sp-main { min-width: 0; }
 /* ---- Summary card ---- */
 html body.sb-app .student-profile-page .profile-header { position: sticky; top: calc(var(--sb-topbar-height, 68px) + 16px); display: flex; flex-direction: column; align-items: stretch; gap: var(--ds-sp-5); padding: var(--ds-sp-6); border: 1px solid var(--ds-hair); border-radius: var(--ds-r-card); background: var(--ds-surface); box-shadow: none; text-align: center; }
 html body.sb-app .student-profile-page .identity { display: flex; flex-direction: column; align-items: center; gap: var(--ds-sp-4); }
-html body.sb-app .student-profile-page .avatar-wrap { flex: none; width: 112px; height: 112px; }
+html body.sb-app .student-profile-page .avatar-wrap { position: static; flex: none; display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; height: auto; }
+html body.sb-app .student-profile-page .avatar-wrap .avatar-action { position: static; inset: auto; display: flex; align-items: center; justify-content: center; width: 100%; min-height: 40px; padding: 0 16px; border: 1.5px solid var(--ds-input-border); border-radius: var(--ds-r-pill); background: var(--ds-surface); color: var(--ds-ink); font-family: inherit; font-size: 14px; font-weight: 700; opacity: 1; cursor: pointer; }
+html body.sb-app .student-profile-page .avatar-wrap .avatar-action:hover { background: var(--ds-red-tint); }
+html body.sb-app .student-profile-page .avatar-remove { width: 100%; min-height: 40px; padding: 0 16px; border: 1.5px solid var(--ds-input-border); border-radius: var(--ds-r-pill); background: var(--ds-surface); color: var(--ds-red-text); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+html body.sb-app .student-profile-page .avatar-remove[hidden] { display: none; }
+html body.sb-app .student-profile-page .avatar-remove:hover { background: var(--ds-red-tint); }
+html body.sb-app .student-profile-page .avatar-hint { margin: 0; font-size: 12.5px; line-height: 1.45; color: var(--ds-muted); }
+html body.sb-app .student-profile-page .avatar-error { margin: 0; font-size: 12.5px; text-align: left; }
+html body.sb-app .student-profile-page .avatar-error:empty { display: none; }
 html body.sb-app .student-profile-page .avatar { width: 112px; height: 112px; background: #111; color: #fff; font-size: 38px; font-weight: 800; letter-spacing: .02em; box-shadow: 0 0 0 4px var(--ds-surface), 0 0 0 5px var(--ds-hair); }
 html body.sb-app .student-profile-page .profile-name { margin: 0; font-size: 20px; font-weight: 800; line-height: 1.25; color: var(--ds-ink); overflow-wrap: anywhere; }
 html body.sb-app .student-profile-page .profile-subline { margin: 4px 0 0; font-size: 14px; font-weight: 400; color: var(--ds-muted); }

@@ -41,6 +41,9 @@
                     <x-avatar :avatar="$profileAvatar" :alt="$user->name" />
                 </div>
                 <button type="button" class="avatar-action" data-photo-pick>{{ $profileAvatar['url'] ? 'Change photo' : 'Upload photo' }}</button>
+                <button type="button" class="avatar-remove" data-photo-remove @unless($profileAvatar['url']) hidden @endunless>Remove photo</button>
+                <p class="avatar-hint">JPG, PNG, or WebP, up to 5 MB. It is cropped to a square from the center.</p>
+                <div class="invalid-feedback d-block avatar-error" data-photo-error role="alert">@error('profile_picture'){{ $message }}@enderror</div>
                 <form method="POST" action="{{ route('student.profile.update-picture') }}" enctype="multipart/form-data" class="visually-hidden" id="profilePictureForm">
                     @csrf
                     <input type="file" name="profile_picture" id="profilePictureInput" accept="image/jpeg,image/png,image/webp" aria-label="Profile photo">
