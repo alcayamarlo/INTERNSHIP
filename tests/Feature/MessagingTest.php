@@ -191,6 +191,9 @@ it('rejects a tampered student recipient id on the server', function () {
 it('allows non-student roles to message every other role', function () {
     $users = [];
     foreach (UserRole::all() as $role) {
+        if ($role === UserRole::Supervisor) {
+            continue; // supervisor messaging has its own rules and tests (SupervisorMessagingTest)
+        }
         $users[$role->value] = User::factory()->create([
             'name' => 'Message recipient '.$role->value,
             'role' => $role,

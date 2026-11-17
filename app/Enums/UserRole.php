@@ -9,6 +9,9 @@ enum UserRole: string
     case Employer = 'employer';
     case Coordinator = 'coordinator';
 
+    /** The company's on-site supervisor: created by the HR account, handles only the interns assigned to them. */
+    case Supervisor = 'supervisor';
+
     /**
      * @return list<self>
      */
@@ -32,7 +35,8 @@ enum UserRole: string
         return match ($this) {
             self::Admin => 'Administrators',
             self::Student => 'Students',
-            self::Employer => 'Employers',
+            self::Employer => 'HR / Company accounts',
+            self::Supervisor => 'Supervisors',
             self::Coordinator => 'Coordinators',
         };
     }
@@ -42,9 +46,16 @@ enum UserRole: string
         return match ($this) {
             self::Admin => 'Administrator',
             self::Student => 'Student',
-            self::Employer => 'Employer',
+            self::Employer => 'HR / Company',
             self::Coordinator => 'Coordinator',
+            self::Supervisor => 'Supervisor',
         };
+    }
+
+    /** Route-name prefix of the OJT supervision pages (My Interns): the supervisor has their own area. */
+    public function ojtRoutePrefix(): string
+    {
+        return $this === self::Supervisor ? 'supervisor' : 'employer';
     }
 
     public function dashboardRoute(): string
@@ -54,6 +65,7 @@ enum UserRole: string
             self::Student => 'student.dashboard',
             self::Employer => 'employer.dashboard',
             self::Coordinator => 'coordinator.dashboard',
+            self::Supervisor => 'supervisor.dashboard',
         };
     }
 }

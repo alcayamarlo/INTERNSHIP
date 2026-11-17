@@ -40,6 +40,9 @@ it('logs in each role to its own dashboard and keeps the session authenticated o
     $this->withoutVite();
 
     foreach (UserRole::cases() as $role) {
+        if ($role === UserRole::Supervisor) {
+            continue; // the supervisor's home page is covered in SupervisorAreaTest
+        }
         $user = User::factory()->create([
             'role' => $role,
             'email' => "{$role->value}@example.test",
@@ -54,7 +57,7 @@ it('logs in each role to its own dashboard and keeps the session authenticated o
                 'contact_person' => $user->name,
             ]),
             UserRole::Coordinator => Coordinator::create(['user_id' => $user->id]),
-            UserRole::Admin => null,
+            UserRole::Admin, UserRole::Supervisor => null,
         };
 
         $dashboard = route($role->dashboardRoute());

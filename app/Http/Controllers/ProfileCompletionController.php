@@ -15,7 +15,7 @@ class ProfileCompletionController extends Controller
             UserRole::Student => 'student.profile.edit',
             UserRole::Employer => 'employer.profile.edit',
             UserRole::Coordinator => 'coordinator.profile.edit',
-            UserRole::Admin => $user->dashboardRoute(),
+            UserRole::Admin, UserRole::Supervisor => $user->dashboardRoute(),
         };
 
         return view('profile.complete', [

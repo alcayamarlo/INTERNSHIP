@@ -174,6 +174,18 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(Coordinator::class);
     }
 
+    /** The supervisor profile (company link and job title) of a supervisor account. */
+    public function supervisor(): HasOne
+    {
+        return $this->hasOne(Supervisor::class);
+    }
+
+    /** Active, not archived, not suspended: able to sign in and act. */
+    public function canActNow(): bool
+    {
+        return $this->is_active && $this->archived_at === null && ! $this->isSuspended();
+    }
+
     public function sentMessages(): HasMany
     {
         return $this->hasMany(Message::class, 'sender_id');

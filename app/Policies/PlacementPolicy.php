@@ -13,7 +13,9 @@ class PlacementPolicy
         return match ($user->role) {
             UserRole::Admin => true,
             UserRole::Student => $this->isStudentOwner($user, $placement),
+            // The HR account can always look at its company's interns; acting is limited by supervise().
             UserRole::Employer => $this->isEmployerOwner($user, $placement),
+            UserRole::Supervisor => $placement->supervisor_user_id !== null && (int) $placement->supervisor_user_id === (int) $user->id,
             UserRole::Coordinator => $this->coordinatorCanAccess($user, $placement),
             default => false,
         };
@@ -27,10 +29,19 @@ class PlacementPolicy
             && $placement->isActive();
     }
 
-    /** Employer approves hours, comments on journals and evaluates. */
+    /**
+     * Approves hours, certifies reports and evaluates. With an assigned (active) supervisor only that
+     * supervisor may; with none, the company's HR account does it, so current OJTs never stop.
+     */
     public function supervise(User $user, Placement $placement): bool
     {
-        return $user->isRole(UserRole::Employer) && $this->isEmployerOwner($user, $placement);
+        $assigned = $placement->activeSupervisor();
+
+        return match ($user->role) {
+            UserRole::Supervisor => $assigned !== null && $assigned->is($user),
+            UserRole::Employer => $assigned === null && $this->isEmployerOwner($user, $placement),
+            default => false,
+        };
     }
 
     public function clear(User $user, Placement $placement): bool

@@ -81,6 +81,12 @@ class Employer extends Model
         return $this->hasMany(Placement::class);
     }
 
+    /** The on-site supervisors this company's HR account created. */
+    public function supervisors(): HasMany
+    {
+        return $this->hasMany(Supervisor::class);
+    }
+
     public function internships(): HasMany
     {
         return $this->hasMany(Internship::class);

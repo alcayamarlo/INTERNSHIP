@@ -43,6 +43,7 @@ class Placement extends Model
         'rating_due_on',
         'department',
         'supervisor_name',
+        'supervisor_user_id',
         'validated_at',
         'validated_by_user_id',
         'validation_remarks',
@@ -121,6 +122,31 @@ class Placement extends Model
     public function employer(): BelongsTo
     {
         return $this->belongsTo(Employer::class);
+    }
+
+    /** The supervisor account the company assigned to this intern (see activeSupervisor()). */
+    public function supervisorUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'supervisor_user_id');
+    }
+
+    /**
+     * The assigned supervisor, only while they can still act: the account is active and still belongs
+     * to this company. A deactivated supervisor leaves the intern to the HR account, so nothing stops.
+     */
+    public function activeSupervisor(): ?User
+    {
+        $user = $this->supervisorUser;
+
+        return $user && $user->canActNow() && $user->supervisor && (int) $user->supervisor->employer_id === (int) $this->employer_id
+            ? $user
+            : null;
+    }
+
+    /** Who does the supervisor's work for this OJT: the assigned supervisor, otherwise the company's HR account. */
+    public function supervisingUser(): ?User
+    {
+        return $this->activeSupervisor() ?? $this->employer?->user;
     }
 
     public function internship(): BelongsTo
