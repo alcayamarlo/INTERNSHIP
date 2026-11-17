@@ -32,7 +32,7 @@ function liveFixture(): array
     $studentUser = User::factory()->create(['role' => UserRole::Student]);
     $student = Student::create(['user_id' => $studentUser->id, 'institution_id' => $institution->id]);
     $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
-    Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);
+    assignDepartment(Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]), $student);
     $employerUser = User::factory()->create(['role' => UserRole::Employer]);
     $employer = Employer::create(['user_id' => $employerUser->id, 'company_name' => 'Live Co', 'contact_person' => 'HR']);
     $internship = Internship::create(['employer_id' => $employer->id, 'title' => 'Live Intern', 'description' => 'x', 'status' => 'open']);
@@ -45,19 +45,23 @@ function liveFixture(): array
     return compact('studentUser', 'coordinatorUser', 'employerUser', 'application', 'bystander');
 }
 
-it('keeps the Pusher call for notifications out of the request when a queue worker runs', function () {
-    expect(new NotificationCreated(new \App\Models\AppNotification))->toBeInstanceOf(ShouldBroadcast::class)
-        ->not->toBeInstanceOf(ShouldBroadcastNow::class);
+it('pushes notifications live right after the response, without a queue worker', function () {
+    expect(new NotificationCreated(new \App\Models\AppNotification))->toBeInstanceOf(ShouldBroadcastNow::class);
 
     withQueueWorker();
     Queue::fake();
+    Event::fake([NotificationCreated::class]);
     $user = User::factory()->create();
 
     app(NotificationService::class)->send($user, 'test', 'Hello', 'World');
 
-    // The bell row exists right away; the push and the email wait for the worker.
+    // The bell row exists right away; the Pusher push waits only until the response is sent.
     $this->assertDatabaseHas('notifications', ['user_id' => $user->id, 'title' => 'Hello']);
-    Queue::assertPushed(BroadcastEvent::class, fn ($job) => $job->event instanceof NotificationCreated);
+    Event::assertNotDispatched(NotificationCreated::class);
+    app(\Illuminate\Support\Defer\DeferredCallbackCollection::class)->invoke();
+    Event::assertDispatched(NotificationCreated::class);
+    // Never a queued broadcast job; only the email waits for the worker.
+    Queue::assertNotPushed(BroadcastEvent::class);
     Queue::assertPushed(SendNotification::class);
 });
 
@@ -99,15 +103,18 @@ it('pings everyone involved once, with all changed topics, when an application i
     });
 });
 
-it('sends no live pings without a queue worker, so clicks never wait on Pusher', function () {
+it('sends live pings even without a queue worker, and none without Pusher', function () {
     config(['queue.default' => 'sync', 'broadcasting.default' => 'pusher']);
     Event::fake([LiveUpdate::class]);
     $f = liveFixture();
 
     $this->actingAs($f['employerUser'])
         ->put(route('employer.applicants.status', $f['application']), ['status' => 'accepted']);
+    Event::assertDispatchedTimes(LiveUpdate::class, 1);
 
-    Event::assertNotDispatched(LiveUpdate::class);
+    // No real broadcaster configured (e.g. tests, or Pusher keys removed): nothing is sent.
+    config(['broadcasting.default' => 'null']);
+    expect(app(\App\Services\LiveUpdates::class)->enabled())->toBeFalse();
 });
 
 it('marks the lists people keep open as live regions', function () {

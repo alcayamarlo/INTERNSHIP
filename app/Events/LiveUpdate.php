@@ -4,7 +4,7 @@ namespace App\Events;
 
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 
 /**
  * "Something you can see changed" ping, sent to each affected user's private channel.
@@ -14,7 +14,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
  * swaps the matching [data-live-region] areas (resources/js/app.js), which still goes through
  * the normal controllers and policies.
  */
-class LiveUpdate implements ShouldBroadcast
+class LiveUpdate implements ShouldBroadcastNow
 {
     use InteractsWithSockets;
 

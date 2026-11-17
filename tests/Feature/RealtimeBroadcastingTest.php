@@ -14,6 +14,7 @@ uses(RefreshDatabase::class);
 
 it('broadcasts a NotificationCreated event when a notification is sent, without needing live Pusher credentials', function () {
     Event::fake([NotificationCreated::class]);
+    $this->withoutDefer(); // the push normally goes out right after the response
 
     $user = User::factory()->create(['role' => UserRole::Student]);
 

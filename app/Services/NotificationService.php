@@ -10,6 +10,8 @@ use App\Models\Coordinator;
 use App\Models\Student;
 use App\Models\User;
 
+use function Illuminate\Support\defer;
+
 class NotificationService
 {
     /**
@@ -27,13 +29,20 @@ class NotificationService
             'data' => $data,
         ]);
 
-        try {
-            broadcast(new NotificationCreated($notification))->toOthers();
-        } catch (\Throwable $exception) {
-            // Broadcasting is additive; the in-app row above already exists
-            // regardless of whether a live push succeeds (e.g. no Pusher keys).
-            report($exception);
-        }
+        // Live bell + toast over Pusher, sent right after the response (no queue worker needed,
+        // and the click never waits on Pusher).
+        defer(function () use ($notification): void {
+            try {
+                // Skipped when the save was rolled back (the notification never really happened).
+                if (AppNotification::query()->whereKey($notification->id)->exists()) {
+                    broadcast(new NotificationCreated($notification))->toOthers();
+                }
+            } catch (\Throwable $exception) {
+                // Broadcasting is additive; the in-app row above already exists
+                // regardless of whether a live push succeeds (e.g. no Pusher keys).
+                report($exception);
+            }
+        });
 
         if (! $email) {
             return $notification;

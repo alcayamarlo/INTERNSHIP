@@ -14,9 +14,9 @@ use function Illuminate\Support\defer;
  * Collects who should see a live refresh during one request (or queue job) and sends one
  * LiveUpdate per group of users at the end, after the response has gone to the browser.
  *
- * Only active with a real broadcaster AND a queue worker (QUEUE_CONNECTION other than sync):
- * with sync, every push would be a Pusher HTTP call inside the user's click, which is exactly
- * the lag this avoids. Without it, pages still refresh on new notifications.
+ * Active whenever a real broadcaster (Pusher) is set. The pushes go out straight to Pusher
+ * (no queue worker needed) from a defer() callback, after the response has gone to the browser,
+ * so the click itself never waits on Pusher.
  */
 class LiveUpdates
 {
@@ -31,13 +31,12 @@ class LiveUpdates
 
     public function enabled(): bool
     {
-        return in_array(config('broadcasting.default'), ['pusher', 'reverb', 'ably'], true)
-            && config('queue.default') !== 'sync';
+        return in_array(config('broadcasting.default'), ['pusher', 'reverb', 'ably'], true);
     }
 
     /**
      * Everyone who can see a record about this student: the student, the company involved,
-     * the coordinators of the student's institution, and the administrators.
+     * the coordinator of the student's department, and the administrators.
      */
     public function forStudentRecord(?int $studentId, ?int $employerId, string $topic): void
     {
@@ -45,11 +44,11 @@ class LiveUpdates
             return;
         }
 
-        $student = Student::withTrashed()->whereKey($studentId)->first(['id', 'user_id', 'institution_id']);
+        $student = Student::withTrashed()->whereKey($studentId)->first(['id', 'user_id', 'institution_id', 'program_id']);
         $userIds = [$student?->user_id, $employerId ? Employer::withTrashed()->whereKey($employerId)->value('user_id') : null];
 
-        if ($student?->institution_id) {
-            array_push($userIds, ...Coordinator::query()->where('institution_id', $student->institution_id)->pluck('user_id')->all());
+        if ($student?->institution_id && $student->program_id) {
+            array_push($userIds, ...Coordinator::query()->where('institution_id', $student->institution_id)->where('program_id', $student->program_id)->pluck('user_id')->all());
         }
 
         $this->queue([...$userIds, ...$this->adminIds()], $topic);
