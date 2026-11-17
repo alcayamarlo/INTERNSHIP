@@ -146,6 +146,8 @@
         if (!validateStep(1)) { e.preventDefault(); show(1); return; }
         if (!validateStep(2)) { e.preventDefault(); show(2); return; }
         submitting = true;
+        // Keep the button width so the layout does not jump when the label changes.
+        btnSubmit.style.minWidth = btnSubmit.offsetWidth + 'px';
         btnSubmit.disabled = true;
         btnSubmit.classList.add('is-loading');
         btnSubmit.querySelector('[data-inv-submit-text]').textContent = 'Creating account...';
@@ -153,9 +155,14 @@
 
     /* ----- start on the step that has a server error ----- */
     var firstStep = 1;
+    var hasServerError = false;
     for (var i = 0; i < panels.length; i++) {
-        if (panels[i].querySelector('.is-invalid')) { firstStep = Number(panels[i].getAttribute('data-step')); break; }
+        if (panels[i].querySelector('.is-invalid')) { firstStep = Number(panels[i].getAttribute('data-step')); hasServerError = true; break; }
     }
-    show(firstStep, firstStep !== 1);
+    show(firstStep, hasServerError);
+    if (hasServerError) {
+        var firstBad = panels[firstStep - 1].querySelector('.is-invalid');
+        if (firstBad && firstBad.scrollIntoView) firstBad.scrollIntoView({ block: 'center', behavior: 'auto' });
+    }
     strength(val('password'));
 })();
