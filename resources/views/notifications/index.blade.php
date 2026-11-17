@@ -51,6 +51,7 @@
         .nt-row { flex-direction: column; gap: 2px; }
     }
 </style>
+<link rel="stylesheet" href="{{ asset('css/sb-notifications-page.css') }}?v={{ @filemtime(public_path('css/sb-notifications-page.css')) }}">
 @endpush
 
 @section('content')

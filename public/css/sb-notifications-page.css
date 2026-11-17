@@ -1,0 +1,73 @@
+/* Notifications page: calmer header, card rows with clear unread state, quieter actions.
+   Overrides the inline rules on the page. Frontend only. */
+html body.sb-app .nt-card {
+    --nt-gutter: max(32px, calc((100% - 1040px) / 2));
+    --nt-brand: var(--ds-red-text, #7A0013);
+    --nt-hair: var(--ds-hair, #E6E1E3);
+    --nt-tint: #F6E7EA;
+    background: var(--ds-bg, #FBFAFA);
+}
+
+/* ---------- Header ---------- */
+html body.sb-app .nt-card .nt-head { padding: 22px var(--nt-gutter) 18px; background: var(--ds-surface, #fff); border-bottom: 1px solid var(--nt-hair); gap: 14px 20px; }
+html body.sb-app .nt-card .nt-head h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; color: var(--ds-ink, #1a1517); }
+html body.sb-app .nt-card .nt-head p { margin-top: 4px; font-size: .9rem; color: #5f5a5c; }
+html body.sb-app .nt-card .nt-tools { gap: 10px; }
+html body.sb-app .nt-card .nt-tools .btn-group { display: inline-flex; gap: 2px; padding: 4px; border: 1px solid var(--nt-hair); border-radius: 999px; background: #F6F2F4; }
+html body.sb-app .nt-card .nt-tools .btn-group .btn { border: 0; border-radius: 999px !important; min-height: 34px; padding: 0 14px; background: transparent; color: #4A4A52; font-weight: 700; box-shadow: none; }
+html body.sb-app .nt-card .nt-tools .btn-group .btn:hover { background: #fff; color: var(--nt-brand); }
+html body.sb-app .nt-card .nt-tools .btn-group .btn.btn-primary { background: var(--nt-brand); color: #fff; }
+html body.sb-app .nt-card .nt-tools .btn-group .btn.btn-primary .nt-count { background: rgba(255, 255, 255, .22); color: #fff; }
+html body.sb-app .nt-card .nt-count { min-width: 1.6em; padding: .15em .5em; text-align: center; }
+html body.sb-app .nt-card .nt-tools > form .btn { border: 1px solid var(--nt-hair); background: #fff; color: var(--nt-brand); font-weight: 700; border-radius: 999px; min-height: 38px; }
+html body.sb-app .nt-card .nt-tools > form .btn:hover { background: var(--nt-tint); border-color: #E7C9D0; }
+html body.sb-app .nt-card .nt-tools > form .btn-outline-secondary { color: #4A4A52; }
+
+/* ---------- Bulk bar ---------- */
+html body.sb-app .nt-card .nt-bulk { padding: 10px var(--nt-gutter); background: #FBF8F9; border-bottom: 1px solid var(--nt-hair); gap: 8px 10px; }
+html body.sb-app .nt-card .nt-bulk label { margin-right: 6px; color: #4A4A52; font-weight: 600; }
+html body.sb-app .nt-card .nt-bulk .btn { min-height: 32px; border-radius: 999px; background: #fff; border: 1px solid var(--nt-hair); color: #4A4A52; font-weight: 700; }
+html body.sb-app .nt-card .nt-bulk .btn:disabled { opacity: .5; }
+html body.sb-app .nt-card .nt-bulk .btn.btn-outline-danger:not(:disabled) { color: #B3261E; }
+html body.sb-app .nt-card .nt-feedback { padding: 10px var(--nt-gutter); background: #fff; }
+
+/* ---------- List: one card per notification ---------- */
+html body.sb-app .nt-card .nt-list { padding: 16px var(--nt-gutter) 24px; scrollbar-width: thin; scrollbar-color: #D7D0D3 transparent; }
+html body.sb-app .nt-card .nt-item {
+    position: relative; margin: 0 0 10px; padding: 16px 18px; gap: 14px;
+    background: var(--ds-surface, #fff); border: 1px solid var(--nt-hair); border-radius: 16px;
+    transition: box-shadow .15s ease, border-color .15s ease, background-color .15s ease;
+}
+html body.sb-app .nt-card .nt-item + .nt-item { border-top: 1px solid var(--nt-hair); }
+html body.sb-app .nt-card .nt-item:hover { border-color: #DCCFD3; box-shadow: 0 6px 18px rgba(22, 22, 26, .06); }
+html body.sb-app .nt-card .nt-item.is-unread { background: #FBF1F3; border-color: #F0D5DB; }
+html body.sb-app .nt-card .nt-item.is-unread::before { content: ""; position: absolute; left: 0; top: 14px; bottom: 14px; width: 4px; border-radius: 0 4px 4px 0; background: var(--nt-brand); }
+html body.sb-app .nt-card .nt-select { margin-top: 12px; }
+html body.sb-app .nt-card .nt-icon { width: 44px; height: 44px; border: 0; background: var(--nt-tint); color: var(--nt-brand); font-size: 19px; }
+html body.sb-app .nt-card .nt-item.is-unread .nt-icon { background: #F1D7DD; }
+html body.sb-app .nt-card .nt-item.is-unread .nt-icon::after { top: -2px; right: -2px; width: 12px; height: 12px; border: 2px solid #FBF1F3; }
+html body.sb-app .nt-card .nt-title { font-size: 1rem; font-weight: 700; line-height: 1.3; color: var(--ds-ink, #1a1517); }
+html body.sb-app .nt-card .nt-item.is-unread .nt-title { font-weight: 800; }
+html body.sb-app .nt-card .nt-item .badge { padding: .25em .65em; border-radius: 999px; background: var(--nt-tint) !important; color: var(--nt-brand) !important; font-weight: 700; }
+html body.sb-app .nt-card .nt-time { padding-top: 2px; color: #6B6B73; font-size: .8125rem; }
+html body.sb-app .nt-card .nt-msg { margin-top: 4px; font-size: .9rem; color: #4A4A52; }
+
+/* ---------- Actions: quiet text buttons that stand out on hover ---------- */
+html body.sb-app .nt-card .nt-actions { gap: 4px; margin: 10px 0 0 -10px; }
+html body.sb-app .nt-card .nt-actions .btn { min-height: 30px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; color: #4A4A52; font-size: .8125rem; font-weight: 700; box-shadow: none; }
+html body.sb-app .nt-card .nt-actions .btn:hover { background: #F6F2F4; color: var(--ds-ink, #1a1517); }
+html body.sb-app .nt-card .nt-actions .btn-outline-primary { color: var(--nt-brand); }
+html body.sb-app .nt-card .nt-actions .btn-outline-primary:hover { background: var(--nt-tint); color: var(--nt-brand); }
+html body.sb-app .nt-card .nt-actions .btn-outline-danger { color: #B3261E; }
+html body.sb-app .nt-card .nt-actions .btn-outline-danger:hover { background: #FDECEA; color: #B3261E; }
+html body.sb-app .nt-card .nt-actions .btn:focus-visible { outline: 3px solid rgba(122, 0, 19, .45); outline-offset: 1px; }
+
+html body.sb-app .nt-card .nt-foot { padding: 12px var(--nt-gutter); background: var(--ds-surface, #fff); }
+
+@media (max-width: 575.98px) {
+    html body.sb-app .nt-card { --nt-gutter: 14px; }
+    html body.sb-app .nt-card .nt-head h1 { font-size: 1.35rem; }
+    html body.sb-app .nt-card .nt-item { padding: 14px; gap: 10px; }
+    html body.sb-app .nt-card .nt-icon { width: 40px; height: 40px; }
+    html body.sb-app .nt-card .nt-actions .btn { min-height: 40px; }
+}
