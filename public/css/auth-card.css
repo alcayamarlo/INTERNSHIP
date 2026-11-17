@@ -463,3 +463,74 @@ html body .lm-root input.lm-code-box:focus { outline: 0 !important; outline-offs
 /* The short description under the title is always visible (it was hidden on short screens) */
 .lm-root .lm-cap { display: block; margin: 8px 0 0; color: #535353; opacity: 1; font-size: 13.5px; line-height: 1.45; }
 @media (max-height: 640px) { .lm-root .lm-cap { display: block; }}
+/* =====================================================================================================
+   Fixed light palette for the auth modal. It never follows the site or dashboard theme (light or dark):
+   the tokens are re-declared on .lm-root, so everything inside resolves to these values.
+   ===================================================================================================== */
+html body .lm-root,
+html[data-theme="dark"] body .lm-root {
+    color-scheme: light;
+    --burgundy: #7A010E; --burgundy-text: #7A010E; --burgundy-hover: #5E010B;
+    --burgundy-tint: #F8EDEF; --burgundy-tint-text: #7A010E; --burgundy-border: #F1D9DD;
+    --sb-surface: #FFFFFF; --sb-ink: #0B0D12; --sb-muted: #535353; --sb-border: #767676;
+    --sb-brand: #7A010E; --sb-brand-deep: #7A010E; --sb-brand-soft: #F8EDEF;
+    --surface-alt: #F3F0F1; --text: #0B0D12; --solid-bg: #FFFFFF;
+    --lm-head-ink: #FFFFFF; --lm-head-sub: #FFFFFF;
+}
+html body .lm-root .lm-dialog { background: #FFFFFF; color: #0B0D12; border-color: rgba(11, 13, 18, .12); box-shadow: 0 30px 80px rgba(10, 10, 10, .35); }
+
+/* Red header: always white text on burgundy */
+html body .lm-root .lm-head,
+html[data-theme="dark"] body .lm-root .lm-head { background: radial-gradient(ellipse at 90% 0%, rgba(255, 255, 255, .12), transparent 55%), linear-gradient(180deg, #7A010E, #7A010E); color: #FFFFFF; }
+html body .lm-root .lm-brand,
+html body .lm-root .lm-title,
+html body .lm-root .lm-title .lm-t1 { color: #FFFFFF; }
+html body .lm-root .lm-title .lm-t2,
+html body .lm-root .lm-cap { color: #FFFFFF; opacity: 1; }
+html body .lm-root .lm-title::before { background: #FFFFFF; }
+html body .lm-root .lm-logo { background: #FFFFFF; border-color: rgba(255, 255, 255, .6); }
+html body .lm-root .lm-close { background: #FFFFFF; color: #0B0D12; border-color: #FFFFFF; }
+html body .lm-root .lm-close:hover { background: #F8EDEF; }
+html body .lm-root .lm-close:focus-visible { outline: 3px solid #FFFFFF; outline-offset: 2px; }
+
+/* Body */
+html body .lm-root .lm-body { background: #FFFFFF; color: #0B0D12; }
+html body .lm-root .lm-label,
+html body .lm-root .lm-check { color: #0B0D12; }
+html body .lm-root .lm-lead,
+html body .lm-root .lm-hint,
+html body .lm-root .lm-resend,
+html body .lm-root .lm-timer,
+html body .lm-root .lm-trust,
+html body .lm-root .lm-foot,
+html body .lm-root .lm-strength-text,
+html body .lm-root .lm-ico,
+html body .lm-root .lm-toggle { color: #535353; }
+html body .lm-root .lm-input,
+html body .lm-root .lm-code-box { background: #FFFFFF; color: #0B0D12; border-color: #767676; }
+html body .lm-root .lm-input[readonly] { background: #F3F0F1; color: #535353; }
+html body .lm-root .lm-input::placeholder { color: #666666; }
+html body .lm-root .lm-input:-webkit-autofill { -webkit-text-fill-color: #0B0D12; box-shadow: 0 0 0 1000px #FFFFFF inset; }
+html body .lm-root .lm-box { background: #FFFFFF; border-color: #767676; }
+html body .lm-root .lm-badge { background: #F3F0F1; color: #0B0D12; }
+html body .lm-root .lm-strength-bars i { background: #F1D9DD; }
+html body .lm-root .lm-checklist { border-color: #D7D0D3; }
+html body .lm-root .lm-checklist li { color: #535353; }
+html body .lm-root .lm-checklist li.is-met { color: #0B0D12; }
+html body .lm-root .lm-error,
+html body .lm-root .lm-timer.is-expired,
+html body .lm-root .lm-link,
+html body .lm-root .lm-label span { color: #7A010E; }
+
+/* Notices: light tint, dark readable text */
+html body .lm-root .lm-info { background: #F8EDEF; color: #0B0D12; }
+html body .lm-root .lm-info svg { color: #7A010E; }
+html body .lm-root .lm-alert-bad,
+html[data-theme="dark"] body .lm-root .lm-alert-bad { background: #F8EDEF; color: #0B0D12; border-left: 3px solid #7A010E; }
+html body .lm-root .lm-alert-ok,
+html body .lm-root .lm-success,
+html[data-theme="dark"] body .lm-root .lm-alert-ok,
+html[data-theme="dark"] body .lm-root .lm-success { background: #F3F0F1; color: #0B0D12; }
+html body .lm-root .lm-caps,
+html[data-theme="dark"] body .lm-root .lm-caps { background: #F8EDEF; color: #7A010E; }
+html body .lm-root .lm-submit { background: #7A010E; color: #FFFFFF; }

@@ -3,6 +3,7 @@
 @section('title', 'Applicants')
 
 @section('content')
+<link rel="stylesheet" href="{{ asset('css/applicant-side-card.css') }}?v={{ @filemtime(public_path('css/applicant-side-card.css')) }}">
 {{-- Table on the left, the selected applicant on the right; Review opens the full page. Shared components only. --}}
 <div class="sb-dash">
 
@@ -55,48 +56,54 @@
             @endif
         </div>
 
-        <div class="card sb-side-panel" aria-label="Selected applicant" aria-live="polite">
+        <div class="card sb-side-panel apc-card" aria-label="Selected applicant" aria-live="polite">
             @forelse($applications as $app)
                 @php
                     $c = $app->company_profile;
                     $initials = collect(preg_split('/\s+/', trim($c['name'])))->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->implode('');
                     $topSkills = array_slice($c['skills'] ?? [], 0, 3);
                 @endphp
-                <div class="sb-side-panel-item" data-ap-panel="{{ $app->id }}" @unless($loop->first) hidden @endunless>
-                    <div class="card-body">
-                        <div class="sb-person">
-                            <span class="sb-initials sb-initials--lg" aria-hidden="true">@if(!empty($c['photo_url']))<img src="{{ $c['photo_url'] }}" alt="">@else{{ $initials }}@endif</span>
-                            <div class="sb-person-text">
-                                <h2 class="sb-detail-title">{{ $c['name'] }}</h2>
-                                <span>{{ $c['program'] ?? '—' }}</span>
-                            </div>
-                        </div>
-                        <div class="sb-block">
-                            <p class="sb-block-title">Application</p>
-                            <dl class="sb-fields">
-                                <div><dt>Internship</dt><dd>{{ $app->internship->title }}</dd></div>
-                                <div><dt>Match</dt><dd class="is-big">{{ $app->match_percentage }}%</dd></div>
-                                <div><dt>Status</dt><dd><x-status-badge :status="$app->status->value" :label="$app->status->companyLabel()" /></dd></div>
-                                <div><dt>Applied</dt><dd>{{ $app->applied_at?->format('M d, Y') ?? '—' }}</dd></div>
-                            </dl>
-                        </div>
-                        <div class="sb-block">
-                            <p class="sb-block-title">Student</p>
-                            <dl class="sb-fields">
-                                <div><dt>Program</dt><dd>{{ $c['program'] ?? '—' }}</dd></div>
-                                <div><dt>Year level</dt><dd>{{ $c['year_level'] ?? '—' }}</dd></div>
-                                <div><dt>Top skills</dt><dd>
-                                    @if($topSkills)
-                                        {{ implode(', ', $topSkills) }}
-                                    @else
-                                        <span class="text-muted">—</span>
-                                    @endif
-                                </dd></div>
-                            </dl>
+                @php
+                    $statusKey = $app->status->value;
+                    $pillTone = match (true) {
+                        in_array($statusKey, ['accepted', 'completed'], true) => 'dark',
+                        in_array($statusKey, ['rejected', 'withdrawn'], true) => 'danger',
+                        $statusKey === 'interview' => 'info',
+                        in_array($statusKey, ['applied', 'submitted', 'reviewed'], true) => 'warn',
+                        default => 'neutral',
+                    };
+                    $allSkills = array_values($c['skills'] ?? []);
+                    $shownSkills = array_slice($allSkills, 0, 3);
+                    $moreSkills = max(0, count($allSkills) - 3);
+                    $identityLine = trim(($c['program'] ?? '').(! empty($c['year_level']) ? ' · '.$c['year_level'] : ''));
+                    $matchWidth = max(0, min(100, (int) $app->match_percentage));
+                @endphp
+                <div class="sb-side-panel-item apc-item" data-ap-panel="{{ $app->id }}" @unless($loop->first) hidden @endunless>
+                    <div class="apc-head">
+                        <div class="apc-band" aria-hidden="true"></div>
+                        <div class="apc-identity">
+                            <span class="apc-avatar" aria-hidden="true">@if(!empty($c['photo_url']))<img src="{{ $c['photo_url'] }}" alt="">@else{{ $initials }}@endif</span>
+                            <h2 class="apc-name">{{ $c['name'] }}</h2>
+                            @if($identityLine !== '')<p class="apc-sub">{{ $identityLine }}</p>@endif
+                            <span class="apc-pill apc-pill--{{ $pillTone }}">{{ $app->status->companyLabel() }}</span>
                         </div>
                     </div>
-                    <div class="card-footer">
-                        <a href="{{ route('employer.applicants.show', $app) }}" class="btn btn-primary w-100">Review</a>
+                    <dl class="apc-details">
+                        <div class="apc-row"><dt>Applied for</dt><dd class="apc-strong">{{ $app->internship->title }}</dd></div>
+                        <div class="apc-row"><dt>Applied</dt><dd>{{ $app->applied_at?->format('M d, Y · h:i A') ?? '—' }}</dd></div>
+                        <div class="apc-row">
+                            <dt>Match score</dt>
+                            <dd class="apc-score"><span class="apc-score__num">{{ $app->match_percentage }}%</span><span class="apc-meter" aria-hidden="true"><span class="apc-meter__fill" style="width: {{ $matchWidth }}%"></span></span></dd>
+                        </div>
+                        @if($shownSkills)
+                            <div class="apc-row">
+                                <dt>Top skills</dt>
+                                <dd><ul class="apc-chips">@foreach($shownSkills as $skill)<li>{{ $skill }}</li>@endforeach @if($moreSkills > 0)<li class="apc-chips__more">+{{ $moreSkills }}</li>@endif</ul></dd>
+                            </div>
+                        @endif
+                    </dl>
+                    <div class="apc-actions">
+                        <a href="{{ route('employer.applicants.show', $app) }}" class="btn btn-primary apc-review">Review</a>
                     </div>
                 </div>
             @empty

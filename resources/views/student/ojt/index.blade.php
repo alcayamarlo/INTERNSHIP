@@ -133,44 +133,69 @@
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2 class="modal-title h5" id="dailyEntryModalLabel">Add daily entry</h2>
+                    <div>
+                        <h2 class="modal-title h5" id="dailyEntryModalLabel">Add daily entry</h2>
+                        <p class="wr-subtitle">Log the hours you worked and what you did.</p>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="dailyEntryForm" method="POST" action="{{ route('student.ojt.attendance.store', $placement) }}">
-                            @csrf
-<input type="hidden" name="_modal" value="daily">
-                            <div class="row g-2">
-                                <div class="col-12">
-                                    <label class="form-label" for="work_date">Date</label>
-                                    <input type="date" id="work_date" name="work_date" value="{{ old('work_date', now()->toDateString()) }}" max="{{ now()->toDateString() }}" min="{{ $placement->start_date->toDateString() }}" class="form-control @error('work_date') is-invalid @enderror" required>
-                                    @error('work_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        @csrf
+                        <input type="hidden" name="_modal" value="daily">
+
+                        <section class="wr-section" aria-labelledby="de-time-title">
+                            <div class="wr-section-head">
+                                <span class="wr-step" aria-hidden="true">1</span>
+                                <div>
+                                    <h3 class="wr-section-title" id="de-time-title">Date and hours</h3>
+                                    <p class="wr-section-hint">When did you work, and how long was your break?</p>
                                 </div>
-                                <div class="col-4">
-                                    <label class="form-label" for="time_in">Time in</label>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="work_date">Date <span class="sb-req" aria-hidden="true">*</span></label>
+                                <input type="date" id="work_date" name="work_date" value="{{ old('work_date', now()->toDateString()) }}" max="{{ now()->toDateString() }}" min="{{ $placement->start_date->toDateString() }}" class="form-control @error('work_date') is-invalid @enderror" required>
+                                @error('work_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="wr-times">
+                                <div>
+                                    <label class="form-label" for="time_in">Time in <span class="sb-req" aria-hidden="true">*</span></label>
                                     <input type="time" id="time_in" name="time_in" value="{{ old('time_in', '08:00') }}" class="form-control @error('time_in') is-invalid @enderror" required>
                                     @error('time_in')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
-                                <div class="col-4">
-                                    <label class="form-label" for="time_out">Time out</label>
+                                <div>
+                                    <label class="form-label" for="time_out">Time out <span class="sb-req" aria-hidden="true">*</span></label>
                                     <input type="time" id="time_out" name="time_out" value="{{ old('time_out', '17:00') }}" class="form-control @error('time_out') is-invalid @enderror" required>
                                     @error('time_out')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
-                                <div class="col-4">
+                                <div>
                                     <label class="form-label" for="break_minutes">Break (min)</label>
                                     <input type="number" id="break_minutes" name="break_minutes" min="0" max="240" value="{{ old('break_minutes', 60) }}" class="form-control @error('break_minutes') is-invalid @enderror">
                                     @error('break_minutes')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
-                                <div class="col-12">
-                                    <label class="form-label" for="task_summary">Tasks done</label>
-                                    <textarea id="task_summary" name="task_summary" rows="3" maxlength="2000" class="form-control @error('task_summary') is-invalid @enderror" required>{{ old('task_summary') }}</textarea>
-                                    @error('task_summary')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="wr-summary" data-de-summary aria-live="polite">
+                                <span>Total hours for this day</span>
+                                <strong data-de-total>8h 0m</strong>
+                            </div>
+                        </section>
+
+                        <section class="wr-section" aria-labelledby="de-tasks-title">
+                            <div class="wr-section-head">
+                                <span class="wr-step" aria-hidden="true">2</span>
+                                <div>
+                                    <h3 class="wr-section-title" id="de-tasks-title">Tasks done</h3>
+                                    <p class="wr-section-hint">Briefly describe what you worked on today.</p>
                                 </div>
                             </div>
-                            
-                        </form>
+                            <textarea id="task_summary" name="task_summary" rows="4" maxlength="2000" aria-label="Tasks done" aria-describedby="task_summary-count" data-de-count class="form-control @error('task_summary') is-invalid @enderror" required>{{ old('task_summary') }}</textarea>
+                            @error('task_summary')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            <div class="wr-counter" id="task_summary-count" aria-live="polite">0 / 2000</div>
+                        </section>
+                    </form>
                 </div>
                 <div class="modal-footer">
+                    <span class="wr-footer-note"><span class="sb-req">*</span> Required</span>
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary" form="dailyEntryForm">Submit time entry</button>
                 </div>
@@ -181,43 +206,65 @@
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2 class="modal-title h5" id="weeklyJournalModalLabel">Add weekly activity narrative report</h2>
+                    <div>
+                        <h2 class="modal-title h5" id="weeklyJournalModalLabel">Add weekly activity narrative report</h2>
+                        <p class="wr-subtitle">Confirm the details, pick the week, then write about it.</p>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="weeklyJournalForm" method="POST" action="{{ route('student.ojt.journals.store', $placement) }}">
-                            @csrf
-<input type="hidden" name="_modal" value="weekly">
-                            @include('ojt.partials.report-header-fields', ['placement' => $placement])
-                            <div class="row g-2">
-                                <div class="col-md-5">
+                        @csrf
+                        <input type="hidden" name="_modal" value="weekly">
+                        @include('ojt.partials.report-header-fields', ['placement' => $placement])
+
+                        <section class="wr-section" aria-labelledby="wr-week-title">
+                            <div class="wr-section-head">
+                                <span class="wr-step" aria-hidden="true">2</span>
+                                <div>
+                                    <h3 class="wr-section-title" id="wr-week-title">Reporting week</h3>
+                                    <p class="wr-section-hint">Choose any day inside the week you are reporting on.</p>
+                                </div>
+                            </div>
+                            <div class="wr-week">
+                                <div>
                                     <label class="form-label" for="week_start">Any day in the week <span class="sb-req" aria-hidden="true">*</span></label>
                                     <input type="date" id="week_start" name="week_start" value="{{ old('week_start', now()->toDateString()) }}" max="{{ now()->toDateString() }}" class="form-control @error('week_start') is-invalid @enderror" required>
                                     @error('week_start')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
-                                <div class="col-md-7 d-flex align-items-end">
-                                    <p class="small text-muted mb-1">The daily activity table (dates, activities, hours) is filled in from your time records for that week. Write at least 20 characters in each section below.</p>
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label" for="challenges">Difficulties encountered <span class="sb-req" aria-hidden="true">*</span></label>
-                                    <textarea id="challenges" name="challenges" rows="3" minlength="20" maxlength="5000" class="form-control @error('challenges') is-invalid @enderror" required>{{ old('challenges') }}</textarea>
-                                    @error('challenges')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label" for="actions_taken">Actions taken <span class="sb-req" aria-hidden="true">*</span></label>
-                                    <textarea id="actions_taken" name="actions_taken" rows="3" minlength="20" maxlength="5000" class="form-control @error('actions_taken') is-invalid @enderror" required>{{ old('actions_taken') }}</textarea>
-                                    @error('actions_taken')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label" for="learnings">Learning insights <span class="sb-req" aria-hidden="true">*</span></label>
-                                    <textarea id="learnings" name="learnings" rows="3" minlength="20" maxlength="5000" class="form-control @error('learnings') is-invalid @enderror" required>{{ old('learnings') }}</textarea>
-                                    @error('learnings')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                <p class="wr-note"><i class="bi bi-info-circle" aria-hidden="true"></i><span>The daily activity table (dates, activities, hours) is filled in automatically from your time records for that week.</span></p>
+                            </div>
+                        </section>
+
+                        @php
+                            $narrativeFields = [
+                                'challenges' => ['Difficulties encountered', 'What was hard or got in the way this week?'],
+                                'actions_taken' => ['Actions taken', 'What did you do to deal with those difficulties?'],
+                                'learnings' => ['Learning insights', 'What did you learn, and how will you use it?'],
+                            ];
+                        @endphp
+                        <section class="wr-section" aria-labelledby="wr-narrative-title">
+                            <div class="wr-section-head">
+                                <span class="wr-step" aria-hidden="true">3</span>
+                                <div>
+                                    <h3 class="wr-section-title" id="wr-narrative-title">Your narrative</h3>
+                                    <p class="wr-section-hint">Write at least 20 characters in each part.</p>
                                 </div>
                             </div>
-                            
-                        </form>
+                            @foreach($narrativeFields as $name => [$label, $help])
+                                <div class="wr-narrative">
+                                    <label for="{{ $name }}">{{ $label }} <span class="sb-req" aria-hidden="true">*</span></label>
+                                    <p class="wr-help" id="{{ $name }}-help">{{ $help }}</p>
+                                    <textarea id="{{ $name }}" name="{{ $name }}" rows="3" minlength="20" maxlength="5000" aria-describedby="{{ $name }}-help {{ $name }}-count" data-wr-count class="form-control @error($name) is-invalid @enderror" required>{{ old($name) }}</textarea>
+                                    @error($name)<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                    <div class="wr-counter" id="{{ $name }}-count" data-wr-counter aria-live="polite">0 / 20 minimum</div>
+                                </div>
+                            @endforeach
+                        </section>
+                    </form>
                 </div>
                 <div class="modal-footer">
+                    <span class="wr-footer-note"><span class="sb-req">*</span> Required</span>
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary" form="weeklyJournalForm">Submit report</button>
                 </div>
@@ -225,6 +272,9 @@
         </div>
     </div>
 
+    @push('styles')
+        <link rel="stylesheet" href="{{ asset('css/ojt-weekly-report.css') }}?v={{ @filemtime(public_path('css/ojt-weekly-report.css')) }}">
+    @endpush
     @push('scripts')
         <script src="{{ asset('js/sb-modals.js') }}?v={{ @filemtime(public_path('js/sb-modals.js')) }}"></script>
         <script src="{{ asset('js/ojt-report-header.js') }}?v={{ @filemtime(public_path('js/ojt-report-header.js')) }}"></script>

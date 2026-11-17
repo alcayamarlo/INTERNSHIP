@@ -33,31 +33,41 @@
     $loggedWeekend = $placement->attendanceLogs()->where('status', '!=', \App\Models\AttendanceLog::STATUS_REJECTED)->pluck('work_date')
         ->map(fn ($date) => \Carbon\CarbonImmutable::parse($date))->filter->isWeekend()->map->toDateString()->values();
 @endphp
-<fieldset class="report-header-fields border rounded p-3 mb-3"
+<section class="wr-section report-header-fields"
           data-report-header
           data-start-monday="{{ $placement->start_date?->copy()->startOfWeek()->toDateString() }}"
           data-start-date="{{ $placement->start_date?->toDateString() }}"
           data-end-date="{{ $placement->end_date?->toDateString() }}"
           data-logged-weekend='@json($loggedWeekend)'
-          data-period-names='@json($periodNames)'>
-    <legend class="float-none w-auto px-1 h6 mb-0">Report details</legend>
-    <p class="small text-muted mb-2">Filled in from your profile and OJT record. Use <i class="bi bi-pencil" aria-hidden="true"></i><span class="visually-hidden">the pencil</span> to change a detail on this report only.</p>
+          data-period-names='@json($periodNames)'
+          aria-labelledby="wr-details-title">
+    <div class="wr-section-head">
+        <span class="wr-step" aria-hidden="true">1</span>
+        <div>
+            <h3 class="wr-section-title" id="wr-details-title">Report details</h3>
+            <p class="wr-section-hint">Filled in from your profile and OJT record.</p>
+        </div>
+        <a class="wr-link" href="{{ route('student.profile.edit') }}"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> Edit profile</a>
+    </div>
 
-    <dl class="row small mb-2">
+    <p class="wr-group-label">From your profile <span class="text-lowercase fw-normal">(locked)</span></p>
+    <div class="wr-locked">
         @foreach($locked as $field => $label)
-            <dt class="col-5 col-md-4 fw-normal text-muted">{{ $label }}</dt>
-            <dd class="col-7 col-md-8 mb-1">
-                @if($values[$field] !== '')
-                    {{ $values[$field] }}
-                @else
-                    <span class="sb-req fw-semibold">Missing</span>
-                @endif
-                <i class="bi bi-lock text-muted ms-1" aria-hidden="true" title="Change this on your profile page"></i><span class="visually-hidden">(locked; change it on your profile page)</span>
-            </dd>
+            <div class="wr-tile">
+                <span class="wr-tile-label"><i class="bi bi-lock" aria-hidden="true" title="Change this on your profile page"></i>{{ $label }}<span class="visually-hidden">(locked; change it on your profile page)</span></span>
+                <span class="wr-tile-value">
+                    @if($values[$field] !== '')
+                        {{ $values[$field] }}
+                    @else
+                        <span class="sb-req">Missing</span>
+                    @endif
+                </span>
+            </div>
         @endforeach
-    </dl>
-    <p class="small mb-3"><a href="{{ route('student.profile.edit') }}">Change locked details on your profile</a></p>
+    </div>
 
+    <p class="wr-group-label">For this report <span class="text-lowercase fw-normal">(use <i class="bi bi-pencil" aria-hidden="true"></i><span class="visually-hidden">the pencil</span> to change)</span></p>
+    <div class="wr-editable">
     @foreach($editable as $field => [$label, $default])
         @php
             $oldValue = old('header.'.$field);
@@ -65,14 +75,14 @@
             $value = $editing ? $oldValue : $default;
             $inputId = 'hf-'.$field;
         @endphp
-        <div class="hf-row mb-2" data-hf="{{ $field }}" data-default="{{ $default }}" @if($editing) data-editing @endif>
-            <div class="d-flex flex-wrap align-items-center gap-2">
-                <span class="text-muted small hf-label" id="{{ $inputId }}-label">{{ $label }}</span>
-                <span class="fw-semibold hf-display" data-hf-display @if($editing) hidden @endif>{{ $default !== '' ? $default : '—' }}</span>
-                <button type="button" class="btn btn-link btn-sm p-0" data-hf-edit @if($editing) hidden @endif aria-label="Edit {{ $label }}"><i class="bi bi-pencil" aria-hidden="true"></i></button>
-                <button type="button" class="btn btn-link btn-sm p-0 small" data-hf-reset @unless($editing) hidden @endunless>Reset to profile value</button>
+        <div class="hf-row wr-field @if(in_array($field, ['company', 'inclusive_dates'], true)) wr-field--wide @endif" data-hf="{{ $field }}" data-default="{{ $default }}" @if($editing) data-editing @endif>
+            <div class="wr-field-top">
+                <span class="wr-field-label hf-label" id="{{ $inputId }}-label">{{ $label }}</span>
+                <button type="button" class="wr-reset" data-hf-reset @unless($editing) hidden @endunless>Reset to profile value</button>
+                <button type="button" class="wr-icon-btn" data-hf-edit @if($editing) hidden @endif aria-label="Edit {{ $label }}"><i class="bi bi-pencil" aria-hidden="true"></i></button>
             </div>
-            <div class="mt-1" data-hf-editor @unless($editing) hidden @endunless>
+            <span class="wr-field-value hf-display" data-hf-display @if($editing) hidden @endif>{{ $default !== '' ? $default : '—' }}</span>
+            <div data-hf-editor @unless($editing) hidden @endunless>
                 @if($field === 'designation')
                     <select id="{{ $inputId }}" name="header[designation]" class="form-select form-select-sm @error('header.designation') is-invalid @enderror" aria-labelledby="{{ $inputId }}-label" @disabled(! $editing)>
                         <option value="">Select...</option>
@@ -105,4 +115,5 @@
             </div>
         </div>
     @endforeach
-</fieldset>
+    </div>
+</section>

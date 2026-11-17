@@ -3,7 +3,28 @@
 @section('title', 'Edit Company Profile')
 
 @section('content')
-<div class="sb-dash">
+<link rel="stylesheet" href="{{ asset('css/employer-company-profile.css') }}?v={{ @filemtime(public_path('css/employer-company-profile.css')) }}">
+@php
+    $employerLogoUrl = \App\Support\Avatar::url($employer->logo);
+    $employerInitials = collect(preg_split('/\s+/', trim($employer->company_name)))
+        ->filter()
+        ->map(fn ($part) => mb_substr($part, 0, 1))
+        ->take(2)
+        ->implode('');
+
+    // Profile completeness from the saved values already in this view (no extra queries).
+    $completeness = [
+        'Company name' => filled($employer->company_name),
+        'Industry' => filled($employer->industry),
+        'Website' => filled($employer->website),
+        'Description' => filled($employer->description),
+        'Company size' => filled($employerInfo['company_size'] ?? null),
+        'Your job title' => filled($employer->position),
+    ];
+    $completeCount = count(array_filter($completeness));
+    $completePercent = (int) round($completeCount / count($completeness) * 100);
+@endphp
+<div class="sb-dash cp-page">
 <x-page-header title="Company Profile" subtitle="Update your company information and contact details">
     @if($employer->isVerified())
         <x-verified-badge :employer="$employer" />
@@ -12,100 +33,126 @@
     @endif
 </x-page-header>
 
-<div class="sb-form sb-form--lead">
+<div class="cp-grid">
 
-        <div class="card sb-form-section sb-identity">
-                <div class="sb-logo-box">
-                    @php
-                        $employerLogoUrl = \App\Support\Avatar::url($employer->logo);
-                        $employerInitials = collect(preg_split('/\s+/', trim($employer->company_name)))
-                            ->filter()
-                            ->map(fn ($part) => mb_substr($part, 0, 1))
-                            ->take(2)
-                            ->implode('');
-                    @endphp
-                    <img data-company-logo src="{{ $employerLogoUrl ?? '' }}" alt="{{ $employer->company_name }} logo" @if(!$employerLogoUrl) hidden @endif onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
-                    <span data-company-initials @if($employerLogoUrl) hidden @endif>{{ strtoupper($employerInitials ?: 'C') }}</span>
-                </div>
-
-                <form method="POST" action="{{ route('employer.profile.update-logo') }}" enctype="multipart/form-data" id="logoForm" class="d-none">
-                    @csrf
-                    <input type="file" name="company_logo" id="logoInput" accept="image/jpeg,image/jpg,image/png">
-                </form>
-
-                <p class="sb-identity-name">{{ $employer->company_name }}</p>
-                @if($employer->industry)<p class="sb-identity-sub">{{ $employer->industry }}</p>@endif
-
-                <button type="button" class="btn btn-outline-primary" id="uploadCompanyLogo">
-                    <i class="bi bi-cloud-upload" aria-hidden="true"></i> {{ $employer->logo ? 'Change Logo' : 'Upload Logo' }}
-                </button>
-                <p class="sb-identity-sub">JPG or PNG</p>
-                <div data-employer-feedback class="small mt-2" role="status" aria-live="polite"></div>
+    {{-- ===== Left: company summary ===== --}}
+    <aside class="card cp-summary" aria-label="Company summary">
+        <div class="cp-logo">
+            <img data-company-logo src="{{ $employerLogoUrl ?? '' }}" alt="{{ $employer->company_name }} logo" @if(!$employerLogoUrl) hidden @endif onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+            <span data-company-initials @if($employerLogoUrl) hidden @endif>{{ strtoupper($employerInitials ?: 'C') }}</span>
         </div>
 
-        <section class="card sb-form-section" aria-labelledby="companyInfoTitle">
-                <h2 class="sb-form-title" id="companyInfoTitle">Company Information</h2>
-                <form method="POST" action="{{ route('employer.profile.update') }}" enctype="multipart/form-data" data-ajax-form id="employerProfileForm">
-                    @csrf
-                    @method('PUT')
+        <form method="POST" action="{{ route('employer.profile.update-logo') }}" enctype="multipart/form-data" id="logoForm" class="d-none">
+            @csrf
+            <input type="file" name="company_logo" id="logoInput" accept="image/jpeg,image/jpg,image/png">
+        </form>
 
-                    <div class="row g-3">
-                    <div class="col-12">
-                        <label class="form-label" for="company_name">Company Name <span class="text-danger" aria-hidden="true">*</span></label>
-                        <input id="company_name" type="text" class="form-control @error('company_name') is-invalid @enderror" name="company_name" value="{{ old('company_name', $employer->company_name) }}" required>
-                        @error('company_name')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+        <p class="cp-name">{{ $employer->company_name }}</p>
+        @if($employer->industry)<p class="cp-industry">{{ $employer->industry }}</p>@endif
+
+        <button type="button" class="cp-upload" id="uploadCompanyLogo">
+            <i class="bi bi-cloud-upload" aria-hidden="true"></i> {{ $employer->logo ? 'Change Logo' : 'Upload Logo' }}
+        </button>
+        <p class="cp-note">JPG or PNG</p>
+        <div data-employer-feedback class="small mt-2" role="status" aria-live="polite"></div>
+
+        <div class="cp-complete">
+            <div class="cp-complete__head"><span>Profile completeness</span><strong>{{ $completePercent }}%</strong></div>
+            <div class="cp-meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $completePercent }}" aria-label="Profile completeness"><span class="cp-meter__fill" style="width: {{ $completePercent }}%"></span></div>
+            <ul class="cp-checklist">
+                @foreach($completeness as $item => $done)
+                    <li class="{{ $done ? 'is-done' : '' }}"><span class="cp-check" aria-hidden="true"></span>{{ $item }}<span class="visually-hidden"> {{ $done ? '(done)' : '(missing)' }}</span></li>
+                @endforeach
+            </ul>
+        </div>
+    </aside>
+
+    {{-- ===== Right: grouped form cards (one form) ===== --}}
+    <form method="POST" action="{{ route('employer.profile.update') }}" enctype="multipart/form-data" data-ajax-form id="employerProfileForm" class="cp-form">
+        @csrf
+        @method('PUT')
+
+        <section class="card cp-card" aria-labelledby="companyInfoTitle">
+            <header class="cp-card__head">
+                <span class="cp-card__icon" aria-hidden="true"><i class="bi bi-building"></i></span>
+                <div><h2 class="cp-card__title" id="companyInfoTitle">Basic information</h2><p class="cp-card__sub">How your company appears to students.</p></div>
+            </header>
+            <div class="cp-card__body">
+                <div class="cp-field">
+                    <label class="form-label" for="company_name">Company Name <span class="text-danger" aria-hidden="true">*</span></label>
+                    <input id="company_name" type="text" class="form-control @error('company_name') is-invalid @enderror" name="company_name" value="{{ old('company_name', $employer->company_name) }}" required>
+                    @error('company_name')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                </div>
+                <div class="cp-row">
+                    <div class="cp-field">
+                        <label class="form-label" for="industry">Industry <span class="text-danger" aria-hidden="true">*</span></label>
+                        <input id="industry" type="text" class="form-control @error('industry') is-invalid @enderror" name="industry" value="{{ old('industry', $employer->industry) }}" required>
+                        @error('industry')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
+                    <div class="cp-field">
+                        <label class="form-label" for="company_size">Company Size</label>
+                        <select id="company_size" class="form-select @error('company_size') is-invalid @enderror" name="company_size">
+                            <option value="">Select...</option>
+                            <option value="1-10" {{ old('company_size', $employerInfo['company_size'] ?? '') === '1-10' ? 'selected' : '' }}>1-10 employees</option>
+                            <option value="11-50" {{ old('company_size', $employerInfo['company_size'] ?? '') === '11-50' ? 'selected' : '' }}>11-50 employees</option>
+                            <option value="51-200" {{ old('company_size', $employerInfo['company_size'] ?? '') === '51-200' ? 'selected' : '' }}>51-200 employees</option>
+                            <option value="201-500" {{ old('company_size', $employerInfo['company_size'] ?? '') === '201-500' ? 'selected' : '' }}>201-500 employees</option>
+                            <option value="500+" {{ old('company_size', $employerInfo['company_size'] ?? '') === '500+' ? 'selected' : '' }}>500+ employees</option>
+                        </select>
+                        @error('company_size')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                    </div>
+                </div>
+            </div>
+        </section>
 
-                        <div class="col-md-6">
-                            <label class="form-label" for="industry">Industry <span class="text-danger" aria-hidden="true">*</span></label>
-                            <input id="industry" type="text" class="form-control @error('industry') is-invalid @enderror" name="industry" value="{{ old('industry', $employer->industry) }}" required>
-                            @error('industry')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label" for="company_size">Company Size</label>
-                            <select id="company_size" class="form-select @error('company_size') is-invalid @enderror" name="company_size">
-                                <option value="">Select...</option>
-                                <option value="1-10" {{ old('company_size', $employerInfo['company_size'] ?? '') === '1-10' ? 'selected' : '' }}>1-10 employees</option>
-                                <option value="11-50" {{ old('company_size', $employerInfo['company_size'] ?? '') === '11-50' ? 'selected' : '' }}>11-50 employees</option>
-                                <option value="51-200" {{ old('company_size', $employerInfo['company_size'] ?? '') === '51-200' ? 'selected' : '' }}>51-200 employees</option>
-                                <option value="201-500" {{ old('company_size', $employerInfo['company_size'] ?? '') === '201-500' ? 'selected' : '' }}>201-500 employees</option>
-                                <option value="500+" {{ old('company_size', $employerInfo['company_size'] ?? '') === '500+' ? 'selected' : '' }}>500+ employees</option>
-                            </select>
-                            @error('company_size')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
-                        </div>
-
-                    <div class="col-md-6">
+        <section class="card cp-card" aria-labelledby="cpRoleTitle">
+            <header class="cp-card__head">
+                <span class="cp-card__icon" aria-hidden="true"><i class="bi bi-person"></i></span>
+                <div><h2 class="cp-card__title" id="cpRoleTitle">Your role and website</h2><p class="cp-card__sub">Used on evaluations and on your public profile.</p></div>
+            </header>
+            <div class="cp-card__body">
+                <div class="cp-row">
+                    <div class="cp-field">
                         <label class="form-label" for="position">Your job title</label>
                         <input id="position" type="text" class="form-control @error('position') is-invalid @enderror" name="position" maxlength="100" placeholder="e.g. Solutions Architect" value="{{ old('position', $employer->position) }}" aria-describedby="positionHint">
                         <div id="positionHint" class="form-text">Printed as "Designation / Job Title" on the interns' Final Performance Evaluation.</div>
                         @error('position')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
-
-                    <div class="col-md-6">
+                    <div class="cp-field">
                         <label class="form-label" for="website">Website</label>
                         <input id="website" type="url" class="form-control @error('website') is-invalid @enderror" name="website" placeholder="https://www.example.com" value="{{ old('website', $employer->website) }}">
                         @error('website')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
-
-                    <div class="col-12">
-                        <label class="form-label" for="description">Company Description</label>
-                        <textarea id="description" class="form-control @error('description') is-invalid @enderror" name="description" rows="3" placeholder="Describe your company, mission, and culture">{{ old('description', $employer->description) }}</textarea>
-                        @error('description')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
-                    </div>
-
-                    <div class="col-12 sb-form-actions">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle" aria-hidden="true"></i> Save Changes
-                        </button>
-                        <a href="{{ route('employer.dashboard') }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-x-circle" aria-hidden="true"></i> Cancel
-                        </a>
-                    </div>
-                    </div>
-                </form>
+                </div>
+            </div>
         </section>
 
+        <section class="card cp-card" aria-labelledby="cpAboutTitle">
+            <header class="cp-card__head">
+                <span class="cp-card__icon" aria-hidden="true"><i class="bi bi-file-text"></i></span>
+                <div><h2 class="cp-card__title" id="cpAboutTitle">About the company</h2><p class="cp-card__sub">A short description students will read.</p></div>
+            </header>
+            <div class="cp-card__body">
+                <div class="cp-field">
+                    <label class="form-label" for="description">Company Description</label>
+                    <textarea id="description" class="form-control @error('description') is-invalid @enderror" name="description" rows="3" placeholder="Describe your company, mission, and culture">{{ old('description', $employer->description) }}</textarea>
+                    <div class="form-text">Keep it short and clear. 2 to 4 sentences work best.</div>
+                    @error('description')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                </div>
+            </div>
+        </section>
+
+        <div data-ajax-feedback class="small cp-feedback" role="status" aria-live="polite"></div>
+    </form>
+</div>
+
+{{-- Sticky save bar. The submit button sits outside the form tag and points to it with form="...", so the existing ajax save works unchanged. --}}
+<div class="cp-savebar">
+    <p class="cp-savebar__hint" data-cp-unsaved hidden>You have unsaved changes.</p>
+    <button type="button" class="cp-discard" data-cp-discard>Discard</button>
+    <button type="submit" form="employerProfileForm" class="cp-save">
+        <i class="bi bi-check-circle" aria-hidden="true"></i> Save Changes
+    </button>
 </div>
 </div>
 @endsection
@@ -122,7 +169,7 @@
     input.addEventListener('change', async () => {
         if (!input.files.length) return;
 
-        const originalLabel = button.textContent;
+        const originalLabel = button.innerHTML;
         // Only the logo is sent (its own endpoint), so an unfinished company profile cannot block it.
         const data = new FormData(uploadForm);
         button.disabled = true;
@@ -154,9 +201,37 @@
         } finally {
             input.value = '';
             button.disabled = false;
-            button.textContent = originalLabel;
+            button.innerHTML = originalLabel;
         }
     });
+})();
+</script>
+<script>
+(() => {
+    // Unsaved-changes bar: show the hint after any edit; Discard restores the last saved values (no request is sent).
+    const form = document.getElementById('employerProfileForm');
+    const hint = document.querySelector('[data-cp-unsaved]');
+    const discard = document.querySelector('[data-cp-discard]');
+    if (!form || !hint) return;
+    const setDirty = (on) => { hint.hidden = !on; };
+    form.addEventListener('input', () => setDirty(true));
+    form.addEventListener('change', () => setDirty(true));
+    discard?.addEventListener('click', () => {
+        form.reset();
+        setDirty(false);
+        form.querySelectorAll('.is-invalid').forEach((el) => el.classList.remove('is-invalid'));
+    });
+
+    // The shared ajax handler writes the result into [data-ajax-feedback]. On success the new values count as saved.
+    const feedback = form.querySelector('[data-ajax-feedback]');
+    if (feedback) {
+        new MutationObserver(() => {
+            if (!feedback.classList.contains('text-success') || feedback.textContent.trim() === '') return;
+            form.querySelectorAll('input:not([type="hidden"]):not([type="file"]), textarea').forEach((el) => { el.defaultValue = el.value; });
+            form.querySelectorAll('select').forEach((select) => { [...select.options].forEach((o) => { o.defaultSelected = o.selected; }); });
+            setDirty(false);
+        }).observe(feedback, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+    }
 })();
 </script>
 @endpush

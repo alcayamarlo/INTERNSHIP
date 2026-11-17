@@ -62,8 +62,10 @@
 </div>
 
 
-{{-- Row 3 --}}
+{{-- Rows 3 and 4: two stacked columns so the cards never leave a gap under a shorter neighbour --}}
+<link rel="stylesheet" href="{{ asset('css/coordinator-dashboard-columns.css') }}?v={{ @filemtime(public_path('css/coordinator-dashboard-columns.css')) }}">
 <div class="sb-layout-2">
+<div class="sb-col">
 
     {{-- Recent applications --}}
 
@@ -105,35 +107,6 @@
         @endif
 
     </div>
-
-
-    {{-- Quick actions --}}
-
-    <x-dashboard-quick-actions title="Quick Actions" icon="bi-lightning-charge">
-
-        <a href="{{ route('coordinator.verification.index') }}" class="list-group-item list-group-item-action">
-            <i class="bi bi-shield-check" aria-hidden="true"></i> Verification Queue
-        </a>
-        <a href="{{ route('coordinator.students.index') }}" class="list-group-item list-group-item-action">
-            <i class="bi bi-people" aria-hidden="true"></i> Manage Students
-        </a>
-        <a href="{{ route('coordinator.statistics.index') }}#generate-report" class="list-group-item list-group-item-action">
-            <i class="bi bi-file-earmark-bar-graph" aria-hidden="true"></i> Generate Reports
-        </a>
-        <a href="{{ route('messages.index') }}" class="list-group-item list-group-item-action">
-            <i class="bi bi-chat-dots" aria-hidden="true"></i> Messages &amp; Announcements
-        </a>
-        <a href="{{ route('notifications.index') }}" class="list-group-item list-group-item-action">
-            <i class="bi bi-bell" aria-hidden="true"></i> Notifications
-        </a>
-
-    </x-dashboard-quick-actions>
-
-</div>
-
-
-{{-- Row 4 --}}
-<div class="sb-layout-2">
 
     {{-- Recent students --}}
 
@@ -179,6 +152,30 @@
 
     </div>
 
+</div>
+<div class="sb-col">
+
+    {{-- Quick actions --}}
+
+    <x-dashboard-quick-actions title="Quick Actions" icon="bi-lightning-charge">
+
+        <a href="{{ route('coordinator.verification.index') }}" class="list-group-item list-group-item-action">
+            <i class="bi bi-shield-check" aria-hidden="true"></i> Verification Queue
+        </a>
+        <a href="{{ route('coordinator.students.index') }}" class="list-group-item list-group-item-action">
+            <i class="bi bi-people" aria-hidden="true"></i> Manage Students
+        </a>
+        <a href="{{ route('coordinator.statistics.index') }}#generate-report" class="list-group-item list-group-item-action">
+            <i class="bi bi-file-earmark-bar-graph" aria-hidden="true"></i> Generate Reports
+        </a>
+        <a href="{{ route('messages.index') }}" class="list-group-item list-group-item-action">
+            <i class="bi bi-chat-dots" aria-hidden="true"></i> Messages &amp; Announcements
+        </a>
+        <a href="{{ route('notifications.index') }}" class="list-group-item list-group-item-action">
+            <i class="bi bi-bell" aria-hidden="true"></i> Notifications
+        </a>
+
+    </x-dashboard-quick-actions>
 
     {{-- Institution info --}}
 
@@ -201,6 +198,7 @@
 
     </div>
 
+</div>
 </div>
 
 </div>

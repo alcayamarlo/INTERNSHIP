@@ -1,0 +1,17 @@
+/* Academic settings > Calendar and student ID: two stacked columns, one save action. */
+html body.sb-app .aa-cal { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+html body.sb-app .aa-cal__col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+html body.sb-app .aa-cal__col > .card { margin: 0; }
+html body.sb-app .aa-cal .card-body { padding: 20px 24px 24px; }
+html body.sb-app .aa-cal .sb-form-intro { margin: 0 0 16px; }
+html body.sb-app .aa-cal .form-label, html body.sb-app .aa-cal .sb-matrix-label { display: block; margin: 0 0 6px; }
+html body.sb-app .aa-cal .form-text { margin-top: 6px; }
+html body.sb-app .aa-cal .form-select, html body.sb-app .aa-cal .form-control { min-height: 44px; border-radius: 12px; }
+html body.sb-app .aa-cal .form-control-sm { min-height: 44px; font-size: inherit; padding: .5rem .75rem; }
+html body.sb-app .aa-cal textarea.form-control { min-height: 140px; resize: vertical; }
+html body.sb-app .aa-cal .sb-input-narrow { max-width: 160px; }
+html body.sb-app .aa-cal hr { margin: 20px 0; border-color: var(--line, #E6E1E3); opacity: 1; }
+html body.sb-app .aa-cal__actions { display: flex; justify-content: flex-end; margin: 0; padding: 0; }
+html body.sb-app .aa-cal__actions .btn { min-height: 48px; padding: 0 28px; border-radius: 999px; font-weight: 700; }
+@media (max-width: 1199.98px) { html body.sb-app .aa-cal { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 639.98px) { html body.sb-app .aa-cal__actions .btn { width: 100%; } }

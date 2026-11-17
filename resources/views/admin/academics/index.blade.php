@@ -23,7 +23,7 @@
 <div>
 <div class="sb-dash">
 <x-page-header title="Academic settings" subtitle="Manage school programs, majors, internship hours, and academic calendar defaults.">
-    <a href="{{ route($academicsRoute.'programs.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add program</a>
+    <a href="{{ route($academicsRoute.'programs.create') }}" class="btn btn-primary" data-open="program-modal" aria-haspopup="dialog"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add program</a>
 </x-page-header>
 
 @if($errors->any())
@@ -185,7 +185,9 @@
 <div class="sb-tab-panel" role="tabpanel" id="aa-panel-calendar" aria-labelledby="aa-tab-calendar" tabindex="0" @if($defaultTab !== 'calendar') hidden @endif>
     <form method="POST" action="{{ route($academicsRoute.'settings.update') }}#calendar">
         @csrf
-        <div class="sb-form sb-form--even">
+        <link rel="stylesheet" href="{{ asset('css/academic-calendar-layout.css') }}?v={{ @filemtime(public_path('css/academic-calendar-layout.css')) }}">
+        <div class="aa-cal">
+            <div class="aa-cal__col">
 
             <section class="card">
                 <div class="card-header"><h2><i class="bi bi-calendar3" aria-hidden="true"></i> Term date ranges</h2></div>
@@ -256,6 +258,20 @@
                 </div>
             </section>
 
+            <section class="card" aria-labelledby="ojtDepartmentsHeading">
+                <div class="card-header"><h2 id="ojtDepartmentsHeading"><i class="bi bi-diagram-3" aria-hidden="true"></i> OJT departments (Designation)</h2></div>
+                <div class="card-body">
+                    <label class="form-label" for="ojt_departments_text">One department per line</label>
+                    <textarea id="ojt_departments_text" name="ojt_departments_text" rows="6" class="form-control form-control-sm @error('ojt_departments') is-invalid @enderror @error('ojt_departments.*') is-invalid @enderror">{{ old('ojt_departments_text', implode("\n", $settings->ojtDepartments())) }}</textarea>
+                    @error('ojt_departments')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    @foreach($errors->get('ojt_departments.*') as $messages)<div class="invalid-feedback d-block">{{ $messages[0] }}</div>@endforeach
+                    <div class="form-text">Students and supervisors pick the trainee's Designation from this list, so it is spelled the same on every form. Removing a name does not change forms already submitted.</div>
+                </div>
+            </section>
+
+            </div>
+            <div class="aa-cal__col">
+
             <section class="card" aria-labelledby="evaluationPeriodsHeading">
                 <div class="card-header"><h2 id="evaluationPeriodsHeading"><i class="bi bi-clipboard-data" aria-hidden="true"></i> Monthly evaluation periods</h2></div>
                 <div class="card-body">
@@ -275,17 +291,6 @@
                         @error('journal_due_days')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         <div class="form-text">A week's Activity Narrative Report is due this many days after its Friday. Students are reminded before and when overdue.</div>
                     </div>
-                </div>
-            </section>
-
-            <section class="card" aria-labelledby="ojtDepartmentsHeading">
-                <div class="card-header"><h2 id="ojtDepartmentsHeading"><i class="bi bi-diagram-3" aria-hidden="true"></i> OJT departments (Designation)</h2></div>
-                <div class="card-body">
-                    <label class="form-label" for="ojt_departments_text">One department per line</label>
-                    <textarea id="ojt_departments_text" name="ojt_departments_text" rows="6" class="form-control form-control-sm @error('ojt_departments') is-invalid @enderror @error('ojt_departments.*') is-invalid @enderror">{{ old('ojt_departments_text', implode("\n", $settings->ojtDepartments())) }}</textarea>
-                    @error('ojt_departments')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    @foreach($errors->get('ojt_departments.*') as $messages)<div class="invalid-feedback d-block">{{ $messages[0] }}</div>@endforeach
-                    <div class="form-text">Students and supervisors pick the trainee's Designation from this list, so it is spelled the same on every form. Removing a name does not change forms already submitted.</div>
                 </div>
             </section>
 
@@ -321,10 +326,12 @@
                         @error('required_ojt_hours')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         <div class="form-text">Fallback for new placements when the student's program has no required internship hours. Existing placements keep their target.</div>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Save academic settings</button>
                 </div>
             </section>
-
+                <div class="aa-cal__actions">
+                    <button type="submit" class="btn btn-primary">Save academic settings</button>
+                </div>
+            </div>
         </div>
     </form>
 </div>
@@ -376,6 +383,7 @@
         show(ids.indexOf(fromHash) !== -1 ? fromHash : tablist.dataset.defaultTab);
     })();
 </script>
+@include('admin.academics.partials.program-modal')
 </div>
 </div>
 @endsection

@@ -1365,3 +1365,6 @@ html body.sb-app .sb-cell-score { min-width: 96px; width: 120px; }
 @media (min-width: 768px) {
     html body.sb-app .sb-cell-text { min-width: 220px; }
     html body.sb-app .sb-cell-form { min-width: 190px; }}
+
+/* Verified company badge: always green, in every page and theme. */
+html body.sb-app .badge.sb-verified-badge, html[data-theme="dark"] body.sb-app .badge.sb-verified-badge { background: #166534 !important; color: #fff !important; border: 0; }

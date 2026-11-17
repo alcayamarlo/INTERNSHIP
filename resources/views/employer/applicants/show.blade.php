@@ -3,45 +3,181 @@
 @section('title', $profile['name'])
 
 @section('content')
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/employer-applicant-review.css') }}?v={{ @filemtime(public_path('css/employer-applicant-review.css')) }}">
+@endpush
 @php
     $hasSkillsTab = (bool) ($profile['competencies'] || $profile['certificates'] || $profile['skills']);
     $hasExperienceTab = (bool) ($profile['experiences'] || $profile['references']);
     $hasFilesTab = (bool) ($profile['projects'] || $profile['documents']);
 @endphp
 
-<x-page-header :title="$profile['name']" :subtitle="trim(($profile['program'] ?? '').($profile['year_level'] ? ' — '.$profile['year_level'] : ''))">
-    <a href="{{ route('employer.applicants.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to Applicants</a>
-    @if($application->student?->user)
-        @include('partials.report-button', ['type' => 'user', 'id' => $application->student->user_id, 'label' => $profile['name']])
-    @endif
-</x-page-header>
+@php
+    $initials = collect(preg_split('/\s+/', trim($profile['name'])))->filter()->take(2)->map(fn ($word) => mb_strtoupper(mb_substr($word, 0, 1)))->implode('');
+    $programLine = trim(($profile['program'] ?? '').($profile['year_level'] ? ' · '.$profile['year_level'] : ''));
+    $canMessage = auth()->user()?->can('message.send', $application->student->user);
+@endphp
 
-<div class="sb-layout-2" data-refresh-on-focus>
-    <div class="sb-stack">
-        <section class="card" aria-label="Application summary">
-            <div class="card-body">
-                <dl class="sb-fields sb-fields--tiles">
-                    <div class="sb-span-all"><dt>Applied for</dt><dd class="fw-semibold">{{ $application->internship->title }}</dd></div>
-                    <div><dt>Match score</dt><dd><span class="sb-tag sb-tag--brand">{{ $application->match_percentage }}%</span></dd></div>
-                    <div><dt>Applied</dt><dd>{{ $application->applied_at?->format('M d, Y h:i A') }}</dd></div>
-                    <div>
-                        <dt>Status</dt>
-                        {{-- Status badge is rewritten by resources/js/app.js after an ajax status update. --}}
-                        <dd><span class="badge {{ $application->status->badgeClass() }}" data-application-status>{{ $application->status->companyLabel() }}</span></dd>
+<div class="ap-page" data-refresh-on-focus>
+    <div class="ap-top">
+        <a href="{{ route('employer.applicants.index') }}" class="ap-back"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to Applicants</a>
+        @if($application->student?->user)
+            @include('partials.report-button', ['type' => 'user', 'id' => $application->student->user_id, 'label' => $profile['name']])
+        @endif
+    </div>
+
+    <div class="ap-main">
+        <aside class="ap-profile" aria-label="Applicant profile">
+            <div class="ap-band" aria-hidden="true"></div>
+            <div class="ap-profile-body">
+                <div class="ap-avatar" aria-hidden="true">{{ $initials }}</div>
+                <h1 class="ap-name">{{ $profile['name'] }}</h1>
+                @if($programLine !== '')<p class="ap-program">{{ $programLine }}</p>@endif
+                {{-- The badge keeps its bg-* class: resources/js/app.js rewrites text and class after an ajax status update. --}}
+                <span class="badge {{ $application->status->badgeClass() }}" data-application-status>{{ $application->status->companyLabel() }}</span>
+
+                <hr class="ap-hr">
+                <dl class="mb-0">
+                    <div class="ap-fact"><dt>Applied for</dt><dd class="ap-strong">{{ $application->internship->title }}</dd></div>
+                    <div class="ap-fact"><dt>Applied</dt><dd class="ap-nowrap">{{ $application->applied_at?->format('M d, Y · h:i A') }}</dd></div>
+                    <div class="ap-fact">
+                        <dt>Match score</dt>
+                        <dd class="ap-score"><span>{{ $application->match_percentage }}%</span><span class="ap-meter" aria-hidden="true"><span style="width: {{ max(0, min(100, (int) $application->match_percentage)) }}%"></span></span></dd>
                     </div>
                 </dl>
-            </div>
-        </section>
 
-        <section class="card">
-            <div class="card-body">
-                <div class="sb-section-tabs" role="tablist" aria-label="Applicant details">
-                    <button type="button" class="sb-section-tab" role="tab" id="arTabOverview" aria-controls="arPanelOverview" aria-selected="true" data-ar-tab="overview">Overview</button>
-                    @if($hasSkillsTab)<button type="button" class="sb-section-tab" role="tab" id="arTabSkills" aria-controls="arPanelSkills" aria-selected="false" tabindex="-1" data-ar-tab="skills">Skills &amp; certificates</button>@endif
-                    @if($hasExperienceTab)<button type="button" class="sb-section-tab" role="tab" id="arTabExperience" aria-controls="arPanelExperience" aria-selected="false" tabindex="-1" data-ar-tab="experience">Experience &amp; references</button>@endif
-                    @if($hasFilesTab)<button type="button" class="sb-section-tab" role="tab" id="arTabFiles" aria-controls="arPanelFiles" aria-selected="false" tabindex="-1" data-ar-tab="files">Projects &amp; documents</button>@endif
+                <hr class="ap-hr">
+                <div class="ap-actions">
+                    @if($applicationResume)
+                        <button type="button" class="ap-btn ap-btn--primary employer-file-preview"
+                            data-preview-url="{{ route('employer.applicants.resume.preview', $application, false) }}"
+                            data-download-url="{{ route('employer.applicants.resume', $application, false) }}"
+                            data-file-name="Resume" data-file-category="Resume" data-file-issuer=""
+                            data-file-uploaded="{{ $applicationResume->generated_at?->format('M d, Y') ?? 'Unknown' }}"
+                            data-file-status="Available" data-file-reviewer="{{ $applicationResume->reviewerUser?->name ?? 'Not reviewed' }}"
+                            data-file-reviewed-at="{{ $applicationResume->reviewed_at?->format('M d, Y') ?? 'Not reviewed' }}"
+                            data-file-size="{{ $applicationResume->file_size_display }}" data-file-extension="pdf">
+                            <i class="bi bi-eye" aria-hidden="true"></i> View resume
+                        </button>
+                        <a href="{{ route('employer.applicants.resume', $application, false) }}" class="ap-btn"><i class="bi bi-file-earmark-text" aria-hidden="true"></i> Download resume</a>
+                    @endif
+                    @if($canMessage)
+                        <a href="{{ route('messages.show', $application->student->user) }}" class="ap-btn"><i class="bi bi-chat" aria-hidden="true"></i> Message Student</a>
+                    @endif
+                    @if($application->placement)
+                        <a href="{{ route('employer.interns.show', $application->placement) }}" class="ap-btn"><i class="bi bi-clock-history" aria-hidden="true"></i> Open OJT record</a>
+                    @endif
                 </div>
+            </div>
+        </aside>
 
+        <div class="ap-right">
+            @if(in_array($application->status, [\App\Enums\ApplicationStatus::Accepted, \App\Enums\ApplicationStatus::Completed], true))
+                @include('employer.partials.coordinator-contact', ['student' => $application->student])
+            @endif
+
+            <section class="ap-card ap-statusbar" aria-label="Update status">
+                {{-- The student already has an ongoing OJT from another application, so "Accepted" is not offered. --}}
+                @if($placedElsewhere)
+                    <div class="alert alert-warning" role="status">
+                        <i class="bi bi-info-circle" aria-hidden="true"></i>
+                        This student already has an ongoing OJT placement with another company, so you can't accept this application right now. A student can only have one OJT at a time.
+                    </div>
+                @endif
+                @if($availableStatuses !== [])
+                {{-- Stays on this page: the badge, the next statuses and the confirmation update in place. --}}
+                <form method="POST" action="{{ route('employer.applicants.status', $application) }}" data-ajax-form data-application-status-form>
+                    @csrf @method('PUT')
+                    <div class="ap-status-row">
+                        <div class="ap-field ap-field--status">
+                            <label class="ap-label" for="statusSelect">Status</label>
+                            <select id="statusSelect" class="form-select @error('status') is-invalid @enderror" name="status" required>
+                                @foreach($availableStatuses as $status)
+                                    <option value="{{ $status->value }}" {{ $application->status === $status ? 'selected' : '' }}>{{ $status->companyLabel() }}</option>
+                                @endforeach
+                            </select>
+                            @error('status')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="ap-field ap-field--interview">
+                            <label class="ap-label" for="interviewAt">Interview date</label>
+                            <input id="interviewAt" type="datetime-local" class="form-control" name="interview_at" value="{{ old('interview_at', $application->interview_at?->format('Y-m-d\TH:i')) }}">
+                        </div>
+                        <div class="ap-field ap-field--notes">
+                            <label class="ap-label" for="employerNotes">Notes</label>
+                            <textarea id="employerNotes" class="form-control" name="employer_notes" rows="1">{{ old('employer_notes', $application->employer_notes) }}</textarea>
+                        </div>
+                        <button type="submit" class="btn ap-update">Update status</button>
+                    </div>
+                </form>
+                @else
+                    <p class="ap-help mt-0">No further status changes are available.</p>
+                @endif
+                @unless($canMessage)
+                    <p class="ap-help">Mark the application Reviewed to message the student.</p>
+                @endunless
+            </section>
+
+            @php
+                $overviewGroups = [
+                    'Contact' => ['rows' => $profile['contact'] ?? null, 'keys' => ['Email', 'Mobile', 'City address']],
+                    'Personal' => ['rows' => $profile['personal'] ?? [], 'keys' => ['Gender', 'Date of birth', 'Place of birth']],
+                    'Academic' => ['rows' => $profile['academic'] ?? [], 'keys' => ['College', 'Course', 'Year level']],
+                ];
+            @endphp
+            <section class="ap-card ap-overview" aria-labelledby="apOverviewTitle">
+                <header class="ap-overview__head">
+                    <span class="ap-overview__icon" aria-hidden="true"><i class="bi bi-person-lines-fill"></i></span>
+                    <h2 class="ap-overview__title" id="apOverviewTitle">Overview</h2>
+                </header>
+                <div class="ap-overview__body">
+                    @foreach($overviewGroups as $groupTitle => $group)
+                        <section class="ap-ov-group">
+                            <h3 class="ap-ov-group__title">{{ $groupTitle }}</h3>
+                            @if($group['rows'] === null)
+                                <p class="ap-help mt-0">Hidden because this application was withdrawn.</p>
+                            @else
+                                <dl class="ap-ov-fields">
+                                    @foreach($group['keys'] as $key)
+                                        <div class="ap-ov-field"><dt>{{ $key === 'City address' ? 'City address' : $key }}</dt><dd>{{ $group['rows'][$key] ?? '—' }}</dd></div>
+                                    @endforeach
+                                </dl>
+                            @endif
+                        </section>
+                    @endforeach
+                </div>
+                <footer class="ap-overview__foot">
+                    <button type="button" class="ap-overview__btn" data-ar-open="overview">View full profile <span aria-hidden="true">→</span></button>
+                </footer>
+            </section>
+            @if($hasFilesTab)
+            <section class="applicant__tiles ap-files-tile" aria-label="Applicant files">
+                <button type="button" class="applicant__tile" data-ar-open="files">
+                    <span class="applicant__tile-icon" aria-hidden="true"><i class="bi bi-folder2-open"></i></span>
+                    <span class="applicant__tile-title">Projects &amp; documents</span>
+                    <span class="applicant__tile-cta">View <i class="bi bi-arrow-right" aria-hidden="true"></i></span>
+                </button>
+            </section>
+            @endif
+        </div>{{-- /.ap-right --}}
+    </div>{{-- /.ap-main --}}
+</div>{{-- /.ap-page --}}
+
+<dialog class="applicant-modal" id="applicantModal" aria-modal="true" aria-labelledby="applicantModalName">
+    <div class="applicant-modal__header">
+        <span class="applicant-modal__avatar" aria-hidden="true">{{ $initials }}</span>
+        <div class="applicant-modal__who">
+            <h2 class="applicant-modal__name" id="applicantModalName">{{ $profile['name'] }}</h2>
+            @if($programLine !== '')<p class="applicant-modal__program">{{ $programLine }}</p>@endif
+        </div>
+        <button type="button" class="applicant-modal__close" data-ar-close aria-label="Close"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+    </div>
+    <div class="applicant-modal__tabs" role="tablist" aria-label="Applicant details">
+        <button type="button" class="applicant-modal__tab" role="tab" id="arTabOverview" aria-controls="arPanelOverview" aria-selected="true" data-ar-tab="overview">Overview</button>
+        @if($hasSkillsTab)<button type="button" class="applicant-modal__tab" role="tab" id="arTabSkills" aria-controls="arPanelSkills" aria-selected="false" tabindex="-1" data-ar-tab="skills">Skills &amp; certificates</button>@endif
+        @if($hasExperienceTab)<button type="button" class="applicant-modal__tab" role="tab" id="arTabExperience" aria-controls="arPanelExperience" aria-selected="false" tabindex="-1" data-ar-tab="experience">Experience &amp; references</button>@endif
+        @if($hasFilesTab)<button type="button" class="applicant-modal__tab" role="tab" id="arTabFiles" aria-controls="arPanelFiles" aria-selected="false" tabindex="-1" data-ar-tab="files">Projects &amp; documents</button>@endif
+    </div>
+    <div class="applicant-modal__body" tabindex="0" aria-label="Applicant details">
                 {{-- Overview: bio-data in columns so it fits one screen --}}
                 <div class="sb-tab-panel" role="tabpanel" id="arPanelOverview" aria-labelledby="arTabOverview" data-ar-panel="overview">
                     <div class="sb-grid sb-grid--2">
@@ -56,23 +192,7 @@
                     </div>
 
                     @if($profile['awards'])
-                        <section class="sb-block">
-                            <h2>Honors / awards</h2>
-                            <dl class="sb-fields">
-                                @foreach($profile['awards'] as $group)
-                                    <div>
-                                        <dt>{{ $group['label'] }}</dt>
-                                        <dd>
-                                            <ul class="list-unstyled mb-0">
-                                                @foreach($group['awards'] as $award)
-                                                    <li>{!! nl2br(e($award['title'])) !!}@if($award['meta'] !== '')<span class="sb-row-sub">{{ $award['meta'] }}</span>@endif</li>
-                                                @endforeach
-                                            </ul>
-                                        </dd>
-                                    </div>
-                                @endforeach
-                            </dl>
-                        </section>
+                        @include('employer.applicants.partials.awards-blocks', ['awardGroups' => $profile['awards']])
                     @endif
 
                     @if($profile['social_links'])
@@ -200,88 +320,20 @@
                     @endforeach
                 </div>
                 @endif
-            </div>
-        </section>
     </div>
-
-    <aside class="sb-stack">
-        @if(in_array($application->status, [\App\Enums\ApplicationStatus::Accepted, \App\Enums\ApplicationStatus::Completed], true))
-            @include('employer.partials.coordinator-contact', ['student' => $application->student])
-        @endif
-
-        <section class="card">
-            <div class="card-body d-grid gap-2">
-                @if($applicationResume)
-                    <button type="button" class="btn btn-outline-primary employer-file-preview"
-                        data-preview-url="{{ route('employer.applicants.resume.preview', $application, false) }}"
-                        data-download-url="{{ route('employer.applicants.resume', $application, false) }}"
-                        data-file-name="Resume" data-file-category="Resume" data-file-issuer=""
-                        data-file-uploaded="{{ $applicationResume->generated_at?->format('M d, Y') ?? 'Unknown' }}"
-                        data-file-status="Available" data-file-reviewer="{{ $applicationResume->reviewerUser?->name ?? 'Not reviewed' }}"
-                        data-file-reviewed-at="{{ $applicationResume->reviewed_at?->format('M d, Y') ?? 'Not reviewed' }}"
-                        data-file-size="{{ $applicationResume->file_size_display }}" data-file-extension="pdf">
-                        <i class="bi bi-eye" aria-hidden="true"></i> View resume
-                    </button>
-                    <a href="{{ route('employer.applicants.resume', $application, false) }}" class="btn btn-outline-primary"><i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Download resume</a>
-                @endif
-                @can('message.send', $application->student->user)
-                    <a href="{{ route('messages.show', $application->student->user) }}" class="btn btn-outline-secondary"><i class="bi bi-chat" aria-hidden="true"></i> Message Student</a>
-                @else
-                    <small class="sb-note">Mark the application Reviewed to message the student.</small>
-                @endcan
-            </div>
-        </section>
-
-        <section class="card">
-            <div class="card-header"><h2>Update Status</h2></div>
-            <div class="card-body">
-                {{-- The student already has an ongoing OJT from another application, so "Accepted" is not offered. --}}
-                @if($placedElsewhere)
-                    <div class="alert alert-warning small" role="status">
-                        <i class="bi bi-info-circle" aria-hidden="true"></i>
-                        This student already has an ongoing OJT placement with another company, so you can't accept this application right now. A student can only have one OJT at a time.
-                    </div>
-                @endif
-                @if($availableStatuses !== [])
-                {{-- Stays on this page: the badge, the next statuses and the confirmation update in place. --}}
-                <form method="POST" action="{{ route('employer.applicants.status', $application) }}" data-ajax-form data-application-status-form>
-                    @csrf @method('PUT')
-                    <div class="mb-3">
-                        <label class="form-label" for="statusSelect">Status</label>
-                        <select id="statusSelect" class="form-select @error('status') is-invalid @enderror" name="status" required>
-                            @foreach($availableStatuses as $status)
-                                <option value="{{ $status->value }}" {{ $application->status === $status ? 'selected' : '' }}>{{ $status->companyLabel() }}</option>
-                            @endforeach
-                        </select>
-                        @error('status')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="interviewAt">Interview Date</label>
-                        <input id="interviewAt" type="datetime-local" class="form-control" name="interview_at" value="{{ old('interview_at', $application->interview_at?->format('Y-m-d\TH:i')) }}">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="employerNotes">Notes</label>
-                        <textarea id="employerNotes" class="form-control" name="employer_notes" rows="2">{{ old('employer_notes', $application->employer_notes) }}</textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Update Status</button>
-                </form>
-                @else
-                    <p class="text-muted mb-0">No further status changes are available.</p>
-                @endif
-                @if($application->placement)
-                    <a href="{{ route('employer.interns.show', $application->placement) }}" class="btn btn-outline-primary w-100 mt-3">
-                        <i class="bi bi-clock-history" aria-hidden="true"></i> Open OJT record (DTR, journal, evaluation)
-                    </a>
-                @endif
-            </div>
-        </section>
-    </aside>
-</div>
+</dialog>
 
 <script>
 (() => {
-    const tabs = [...document.querySelectorAll('[data-ar-tab]')];
-    const panels = [...document.querySelectorAll('[data-ar-panel]')];
+    const modal = document.getElementById('applicantModal');
+    if (!modal) return;
+    const tabs = [...modal.querySelectorAll('[data-ar-tab]')];
+    const panels = [...modal.querySelectorAll('[data-ar-panel]')];
+    const body = modal.querySelector('.applicant-modal__body');
+    const root = document.documentElement;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let opener = null;
+
     const show = (name, focus) => {
         tabs.forEach((tab) => {
             const on = tab.dataset.arTab === name;
@@ -290,14 +342,46 @@
             if (on && focus) tab.focus();
         });
         panels.forEach((panel) => { panel.hidden = panel.dataset.arPanel !== name; });
+        body.scrollTop = 0;
     };
+
+    const open = (name, trigger) => {
+        opener = trigger;
+        show(name);
+        root.classList.add('applicant-modal-open');
+        if (!modal.open) modal.showModal();
+    };
+
+    const finish = () => {
+        modal.classList.remove('is-closing');
+        if (modal.open) modal.close();
+        root.classList.remove('applicant-modal-open');
+        if (opener && opener.isConnected) opener.focus();
+    };
+    const close = () => {
+        if (!modal.open || modal.classList.contains('is-closing')) return;
+        if (reduceMotion.matches) return finish();
+        modal.classList.add('is-closing');
+        setTimeout(finish, 150);
+    };
+
+    document.querySelectorAll('[data-ar-open]').forEach((tile) => tile.addEventListener('click', () => open(tile.dataset.arOpen, tile)));
+    modal.querySelector('[data-ar-close]').addEventListener('click', close);
+    // Esc: use the same animated close. A click on the overlay (the dialog element itself) closes too.
+    modal.addEventListener('cancel', (event) => { event.preventDefault(); close(); });
+    modal.addEventListener('click', (event) => { if (event.target === modal) close(); });
+    // Safety net if the dialog is closed any other way.
+    modal.addEventListener('close', () => root.classList.remove('applicant-modal-open'));
+
     tabs.forEach((tab, index) => {
         tab.addEventListener('click', () => show(tab.dataset.arTab));
         tab.addEventListener('keydown', (event) => {
-            if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+            if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
             event.preventDefault();
-            const next = tabs[(index + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
-            show(next.dataset.arTab, true);
+            const last = tabs.length - 1;
+            const target = event.key === 'Home' ? 0 : event.key === 'End' ? last
+                : (index + (event.key === 'ArrowRight' ? 1 : last)) % tabs.length;
+            show(tabs[target].dataset.arTab, true);
         });
     });
 })();

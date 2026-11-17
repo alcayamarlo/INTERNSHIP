@@ -101,8 +101,6 @@ html[data-theme="dark"] h4, html[data-theme="dark"] h5, html[data-theme="dark"] 
 /* ---------------------------------------------------------------------
    Tame the red: large areas use a deep gradient, bright red stays on small elements
    --------------------------------------------------------------------- */
-html body.sb-app .sb-sidebar { background: linear-gradient(180deg, var(--burgundy), var(--burgundy)); }
-html[data-theme="dark"] body.sb-app .sb-sidebar { background: linear-gradient(180deg, var(--burgundy), var(--burgundy)); }
 
 .lm-head { background: radial-gradient(ellipse at 90% 0%, rgba(255, 255, 255, .12), transparent 55%), linear-gradient(180deg, var(--burgundy), var(--burgundy)); }
 html[data-theme="dark"] .lm-head { background: radial-gradient(ellipse at 90% 0%, rgba(255, 255, 255, .08), transparent 55%), linear-gradient(180deg, var(--burgundy), var(--burgundy)); }

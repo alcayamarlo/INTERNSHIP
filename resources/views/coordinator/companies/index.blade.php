@@ -5,7 +5,7 @@
 @section('content')
 <div class="sb-dash">
 <x-page-header title="Partner companies" subtitle="Contacts, MOA status, postings, and your students placed with each company. Open a company to set its MOA dates or mark a posting not suitable.">
-    <a href="{{ route('coordinator.companies.invitations.index') }}#invite" class="btn btn-primary"><i class="bi bi-envelope-plus" aria-hidden="true"></i> Invite a company</a>
+    <a href="{{ route('coordinator.companies.invitations.index') }}#invite" class="btn btn-primary" data-open="invite-modal" aria-haspopup="dialog"><i class="bi bi-envelope-plus" aria-hidden="true"></i> Invite a company</a>
 </x-page-header>
 
 @include('coordinator.companies.partials.tabs')
@@ -64,5 +64,6 @@
     </div>
     @if($companies->hasPages())<div class="card-footer">{{ $companies->links() }}</div>@endif
 </div>
+@include('coordinator.companies.partials.invite-modal')
 </div>
 @endsection

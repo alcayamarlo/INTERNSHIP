@@ -1,0 +1,46 @@
+/* Employer > Applicants: selected-applicant card. Same look as the profile card on the applicant detail page. */
+html body.sb-app .apc-card { position: sticky; top: calc(var(--sb-topbar-height, 72px) + 16px); display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 20px; border: 1px solid #E6E1E3; background: var(--surface, #fff); max-height: calc(100dvh - var(--sb-topbar-height, 72px) - 32px); }
+html body.sb-app .apc-item { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+html body.sb-app .apc-item[hidden] { display: none !important; }
+html body.sb-app .apc-head { flex: none; }
+html body.sb-app .apc-band { height: 72px; background: #7A0013; }
+html body.sb-app .apc-identity { padding: 0 24px 16px; border-bottom: 1px solid var(--line, #E6E1E3); }
+html body.sb-app .apc-avatar { display: grid; place-items: center; width: 80px; height: 80px; margin: -40px 0 12px; border-radius: 50%; background: #111; color: #fff; border: 4px solid var(--surface, #fff); font-size: 26px; font-weight: 800; letter-spacing: .02em; overflow: hidden; }
+html body.sb-app .apc-avatar img { width: 100%; height: 100%; object-fit: cover; }
+html body.sb-app .apc-name { margin: 0 0 4px; font-size: 22px; font-weight: 800; line-height: 1.2; color: var(--text, #16161A); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+html body.sb-app .apc-sub { margin: 0 0 12px; font-size: 14px; line-height: 1.4; color: var(--muted, #4A4A52); overflow-wrap: anywhere; }
+html body.sb-app .apc-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 800; line-height: 1.2; background: #EDE7E9; color: #16161A; }
+html body.sb-app .apc-pill::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+html body.sb-app .apc-pill--warn { background: #FFF1CC; color: #6B4A00; }
+html body.sb-app .apc-pill--dark { background: #111; color: #fff; }
+html body.sb-app .apc-pill--danger { background: #FDECEA; color: #B42318; }
+html body.sb-app .apc-pill--info { background: #E4EEFF; color: #1B3A73; }
+html body.sb-app .apc-details { flex: 1 1 auto; min-height: 0; margin: 0; padding: 16px 24px; display: grid; gap: 14px; align-content: start; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #D7D0D3 transparent; }
+html body.sb-app .apc-details::-webkit-scrollbar { width: 4px; }
+html body.sb-app .apc-details::-webkit-scrollbar-thumb { background: #D7D0D3; border-radius: 4px; }
+html body.sb-app .apc-details::-webkit-scrollbar-track { background: transparent; }
+html body.sb-app .apc-row dt { margin: 0 0 3px; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #5B5B63; }
+html body.sb-app .apc-row dd { margin: 0; font-size: 16px; line-height: 1.4; color: var(--text, #16161A); overflow-wrap: anywhere; }
+html body.sb-app .apc-row dd.apc-strong { font-size: 17px; font-weight: 800; }
+html body.sb-app .apc-score { display: flex; align-items: center; gap: 12px; }
+html body.sb-app .apc-score__num { font-weight: 800; flex: none; }
+html body.sb-app .apc-meter { flex: 1 1 auto; height: 8px; border-radius: 999px; background: #E6E1E3; overflow: hidden; }
+html body.sb-app .apc-meter__fill { display: block; height: 100%; border-radius: inherit; background: #7A0013; }
+html body.sb-app .apc-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+html body.sb-app .apc-chips li { padding: 4px 10px; border-radius: 999px; background: #F6E7EA; color: #16161A; font-size: 12px; font-weight: 600; line-height: 1.3; }
+html body.sb-app .apc-chips .apc-chips__more { background: transparent; border: 1px solid #D7D0D3; color: #4A4A52; }
+html body.sb-app .apc-actions { flex: none; padding: 16px 24px 24px; border-top: 1px solid var(--line, #E6E1E3); display: grid; gap: 10px; }
+html body.sb-app .apc-review { height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 999px; font-weight: 800; background: #7A0013; border-color: #7A0013; color: #fff; }
+html body.sb-app .apc-review:hover { background: #5C000F; border-color: #5C000F; color: #fff; }
+html body.sb-app .apc-card :is(a, button):focus-visible { outline: 3px solid var(--text, #111); outline-offset: 3px; }
+html[data-theme="dark"] body.sb-app .apc-card { border-color: var(--line, #26262A); }
+html[data-theme="dark"] body.sb-app .apc-row dt { color: #A0A0A6; }
+html[data-theme="dark"] body.sb-app .apc-meter { background: #2A2A2F; }
+html[data-theme="dark"] body.sb-app .apc-chips li { background: #2A0F14; color: #F4F4F5; }
+html[data-theme="dark"] body.sb-app .apc-chips .apc-chips__more { border-color: #3A3A40; color: #B4B4BA; }
+html[data-theme="dark"] body.sb-app .apc-pill { background: #2A2A2F; color: #F4F4F5; }
+html[data-theme="dark"] body.sb-app .apc-pill--warn { background: #3A2E0A; color: #FFD97A; }
+html[data-theme="dark"] body.sb-app .apc-pill--dark { background: #000; color: #fff; }
+html[data-theme="dark"] body.sb-app .apc-pill--danger { background: #2A0F14; color: #F0B6BF; }
+html[data-theme="dark"] body.sb-app .apc-pill--info { background: #14233F; color: #9DBDF5; }
+@media (max-width: 1199.98px) { html body.sb-app .apc-card { position: static; max-height: none; } html body.sb-app .apc-details { overflow: visible; } }
