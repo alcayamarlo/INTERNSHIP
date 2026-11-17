@@ -85,6 +85,7 @@
 
 
     @stack('styles')
+    <link rel="stylesheet" href="{{ asset('css/sb-foundation.css') }}?v={{ @filemtime(public_path('css/sb-foundation.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}?v={{ @filemtime(public_path('css/skillbridge-ui.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/skillbridge-dashboard.css') }}?v=1">
     <link rel="stylesheet" href="{{ asset('css/skillbridge-sidebar.css') }}?v={{ @filemtime(public_path('css/skillbridge-sidebar.css')) }}">

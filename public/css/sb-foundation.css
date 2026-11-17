@@ -1,0 +1,70 @@
+/* =========================================================================================
+   SkillBridge responsive foundation: shared by the landing page, public pages, auth/guest pages,
+   error pages and the signed-in app. Loaded early; every rule is low-specificity (:where) or scoped
+   to the public/guest bodies, so existing component CSS always wins. Mobile-first.
+
+   Breakpoints (min-width, the only ones to use):  480  640  768  1024  1280  1536
+   Phones < 480 < large phones < 640 < tablets < 768 < small laptops < 1024 < laptops < 1280 < desktops < 1536.
+   (CSS variables cannot be used inside @media, so these numbers are written out; see --bp-* in sb-tokens.css.)
+   The signed-in app also has public/css/sb-responsive-v2.css (shell, tables, forms) on top of this file.
+   ========================================================================================= */
+
+/* ---------- Shared custom properties ---------- */
+:root {
+    /* full-height units: vh first (old browsers), then dvh (follows the mobile address bar), svh = smallest viewport */
+    --sb-full-h: 100vh;
+    --sb-small-h: 100vh;
+    /* safe areas (notches, home indicator); 0 where unsupported */
+    --sb-safe-top: env(safe-area-inset-top, 0px);
+    --sb-safe-right: env(safe-area-inset-right, 0px);
+    --sb-safe-bottom: env(safe-area-inset-bottom, 0px);
+    --sb-safe-left: env(safe-area-inset-left, 0px);
+    /* fluid spacing and type for public/guest pages (the app has the --ds-* equivalents) */
+    --sb-pad: clamp(16px, 3vw, 32px);
+    --sb-fs-title: clamp(24px, 2vw + 16px, 36px);
+    --sb-fs-section: clamp(20px, 1.4vw + 14px, 28px);
+    --sb-fs-body: clamp(15px, .3vw + 14px, 16px);
+}
+@supports (height: 100dvh) { :root { --sb-full-h: 100dvh; } }
+@supports (height: 100svh) { :root { --sb-small-h: 100svh; } }
+
+/* ---------- Boxes, media and text ---------- */
+:where(*, *::before, *::after) { box-sizing: border-box; }
+:where(html) { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; -webkit-tap-highlight-color: rgba(122, 0, 19, .14); }
+:where(img, video, canvas, svg) { max-width: 100%; }
+:where(img, video) { height: auto; }
+:where(body) { overflow-wrap: break-word; }
+:where(.text-break, [data-wrap-anywhere], a[href^="mailto:"]) { overflow-wrap: anywhere; }
+/* flex and grid children may shrink instead of forcing the page wider */
+:where(.row, .d-flex, .sb-grid, .sb-layout-2, .sb-split-table, .public-grid-3) > * { min-width: 0; }
+
+/* ---------- Public and guest pages: never scroll sideways (safe-area padding is handled per component in Step 2) ---------- */
+html body:is(.skillbridge-public, .skillbridge-guest) { overflow-x: clip; }
+@supports not (overflow: clip) { html body:is(.skillbridge-public, .skillbridge-guest) { overflow-x: hidden; } }
+
+/* ---------- Focus: a visible 3px outline everywhere (component styles can still override) ---------- */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible { outline: 3px solid rgba(122, 0, 19, .6); outline-offset: 2px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible { outline-color: rgba(240, 138, 155, .75); } }
+:root[data-theme="dark"] :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible { outline-color: rgba(240, 138, 155, .75); }
+
+/* ---------- Touch devices: 44px targets and 16px fields (stops iOS zoom on focus) ---------- */
+@media (pointer: coarse) {
+    html body:is(.skillbridge-public, .skillbridge-guest) :is(.public-button, .public-nav-toggle, .pns-toggle, .lm-close, .lm-toggle, .lm-submit, .lm-link) { min-height: 44px; }
+    html body:is(.skillbridge-public, .skillbridge-guest) :is(.public-nav-toggle, .lm-close, .lm-toggle) { min-width: 44px; }
+    html body:is(.skillbridge-public, .skillbridge-guest) .public-nav-links a { min-height: 44px; display: inline-flex; align-items: center; }
+}
+@media (max-width: 767.98px) {
+    html body:is(.skillbridge-public, .skillbridge-guest) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]), select, textarea),
+    html body .lm-root .lm-input { font-size: 16px; }
+}
+/* hover-only effects need a tap/focus equivalent: keep hover-revealed controls visible without a pointer */
+@media (hover: none) {
+    html body:is(.skillbridge-public, .skillbridge-guest) :is([data-hover-actions], .sb-hover-actions) { opacity: 1; visibility: visible; }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+    html body:is(.skillbridge-public, .skillbridge-guest) *, html body:is(.skillbridge-public, .skillbridge-guest) *::before, html body:is(.skillbridge-public, .skillbridge-guest) *::after {
+        animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important;
+    }
+}

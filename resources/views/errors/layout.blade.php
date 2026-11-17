@@ -2,7 +2,8 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#7A010E">
     <title>@yield('title') · SkillBridge</title>
     <link rel="icon" href="{{ asset('favicon.ico') }}">
     <link rel="stylesheet" href="{{ asset('css/sb-tokens.css') }}">
@@ -21,6 +22,7 @@
         .err-btn--ghost { border-color: var(--line); background: transparent; color: var(--text); }
         .err-btn:focus-visible { outline: 2px solid var(--burgundy-text); outline-offset: 3px; }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/sb-foundation.css') }}?v={{ @filemtime(public_path('css/sb-foundation.css')) }}">
 </head>
 <body>
     <main class="err">
