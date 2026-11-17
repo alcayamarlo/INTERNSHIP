@@ -8,7 +8,7 @@
     <a href="{{ route('admin.students.import.create') }}" class="btn btn-outline-primary">
         <i class="bi bi-upload" aria-hidden="true"></i> Import Students
     </a>
-    <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
+    <a href="{{ route('admin.users.create') }}" class="btn btn-primary" data-open="create-user-modal" aria-haspopup="dialog">
         <i class="bi bi-plus-lg" aria-hidden="true"></i> Create User
     </a>
 </x-page-header>
@@ -299,9 +299,11 @@
                 </form>
             </div>
         </div>
-    </div>
+</div>
 @endforeach
 @endif
+
+@include('admin.users.partials.create-user-modal')
 
 @endsection
 

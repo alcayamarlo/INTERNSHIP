@@ -1,0 +1,101 @@
+/* =====================================================================================
+   Shared pop-up shell for every role. Two selectors, one look:
+   - .sb-modal           native <dialog> from <x-modal>
+   - .modal-content ...  existing Bootstrap modals (restyled to the same shell)
+   Colors come from the theme tokens, so light and dark both work.
+   ===================================================================================== */
+html.sb-modal-open, html.sb-modal-open body { overflow: hidden; }
+
+/* ---- native dialog ---- */
+dialog.sb-modal {
+    position: fixed; inset: 0; margin: auto; padding: 0; border: 0; border-radius: 20px;
+    width: min(640px, 92vw); max-width: 92vw; height: fit-content; max-height: 90dvh; overflow: hidden;
+    background: var(--surface, #fff); color: var(--text, var(--ds-ink));
+    box-shadow: 0 24px 64px rgba(0, 0, 0, .28);
+}
+dialog.sb-modal--confirm { width: min(480px, 92vw); }
+dialog.sb-modal--large { width: min(880px, 94vw); max-width: 94vw; }
+dialog.sb-modal:not([open]) { display: none; }
+dialog.sb-modal[open] { display: flex; flex-direction: column; }
+dialog.sb-modal::backdrop { background: rgba(17, 17, 17, .55); }
+.sb-modal__form { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; margin: 0; overflow: hidden; }
+.sb-modal__header { flex: none; display: flex; align-items: flex-start; gap: 14px; padding: 20px 24px 16px; border-bottom: 1px solid var(--line, var(--ds-hair)); }
+.sb-modal__icon { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--burgundy-tint, var(--ds-red-tint)); color: var(--burgundy, var(--ds-red)); font-size: 18px; }
+.sb-modal__titles { flex: 1 1 auto; min-width: 0; }
+.sb-modal__title { margin: 0; font-size: 20px; font-weight: 800; line-height: 1.25; color: var(--text, var(--ds-ink)); }
+.sb-modal__subtitle { margin: 2px 0 0; font-size: 14px; line-height: 1.45; color: var(--muted, var(--ds-muted)); }
+.sb-modal__close { flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: transparent; color: var(--text, var(--ds-ink)); border: 1.5px solid var(--line, var(--ds-hair)); cursor: pointer; }
+.sb-modal__close:hover { background: var(--surface-alt, #F8F6F7); }
+.sb-modal__body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 20px 24px; scrollbar-width: thin; scrollbar-color: var(--ds-input-border) transparent; }
+.sb-modal__footer { flex: none; display: flex; justify-content: flex-end; gap: 12px; padding: 16px 24px 20px; border-top: 1px solid var(--line, var(--ds-hair)); }
+.sb-modal__footer .btn { min-height: 44px; border-radius: 999px; font-weight: 700; padding-left: 22px; padding-right: 22px; }
+.sb-modal :is(button, a, input, select, textarea):focus-visible { outline: 3px solid var(--text, #111); outline-offset: 2px; }
+.sb-modal .form-label { display: block; margin: 0 0 6px; }
+.sb-modal .form-control, .sb-modal .form-select { min-height: 44px; border-radius: 12px; border: 1.5px solid var(--ds-input-border); }
+.sb-modal textarea.form-control { min-height: 96px; resize: vertical; }
+.sb-modal .form-control:focus, .sb-modal .form-select:focus { border-color: var(--burgundy, var(--ds-red)); box-shadow: 0 0 0 3px var(--ds-ring); outline: 0; }
+.sb-modal .form-control.is-invalid, .sb-modal .form-select.is-invalid { border-color: var(--ds-error); }
+.sb-modal .invalid-feedback { color: var(--ds-error); }
+.sb-modal__grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 20px 16px; align-items: start; }
+.sb-modal__grid > * { min-width: 0; grid-column: 1 / -1; }
+.sb-modal__grid > .sm-2 { grid-column: span 2; } .sb-modal__grid > .sm-3 { grid-column: span 3; } .sb-modal__grid > .sm-4 { grid-column: span 4; }
+.sb-modal__grid > .sm-end { align-self: end; }
+.sb-modal__hint { margin: 6px 0 0; font-size: 13px; color: var(--muted, var(--ds-muted)); }
+.sb-modal__check { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0; margin: 0; }
+.sb-modal__check .form-check-input { flex: none; width: 18px; height: 18px; margin: 0; float: none; }
+.sb-modal__check .form-check-label { margin: 0; }
+@media (max-width: 639.98px) {
+    dialog.sb-modal { inset: 0; width: 100vw; max-width: none; height: 100dvh; max-height: none; border-radius: 0; }
+    .sb-modal__header, .sb-modal__body, .sb-modal__footer { padding-left: 16px; padding-right: 16px; }
+    .sb-modal__grid { grid-template-columns: 1fr; }
+    .sb-modal__grid > * { grid-column: 1 !important; }
+    .sb-modal__footer .btn-primary { flex: 1 1 auto; }
+}
+
+/* ---- existing Bootstrap modals: same shell, no markup change ---- */
+html body.sb-app .modal-content { border: 0; border-radius: 20px; background: var(--surface, #fff); color: var(--text, var(--ds-ink)); box-shadow: 0 24px 64px rgba(0, 0, 0, .28); overflow: hidden; }
+html body.sb-app .modal-header { align-items: center; gap: 12px; padding: 20px 24px 16px; border-bottom: 1px solid var(--line, var(--ds-hair)); }
+html body.sb-app .modal-title { font-size: 20px; font-weight: 800; line-height: 1.25; }
+html body.sb-app .modal-body { padding: 20px 24px; scrollbar-width: thin; scrollbar-color: var(--ds-input-border) transparent; }
+html body.sb-app .modal-footer { justify-content: flex-end; gap: 12px; padding: 16px 24px 20px; border-top: 1px solid var(--line, var(--ds-hair)); }
+html body.sb-app .modal-footer > * { margin: 0; }
+html body.sb-app .modal-footer .btn { min-height: 44px; border-radius: 999px; font-weight: 700; padding-left: 22px; padding-right: 22px; }
+html body.sb-app .modal-header .btn-close { width: 36px; height: 36px; margin: 0 0 0 auto; padding: 0; border: 1.5px solid var(--line, var(--ds-hair)); border-radius: 50%; background-size: 12px; opacity: 1; }
+html body.sb-app .modal-header .btn-close:hover { background-color: var(--surface-alt, #F8F6F7); }
+html body.sb-app .modal-backdrop { --bs-backdrop-bg: #111; --bs-backdrop-opacity: .55; }
+html body.sb-app .modal .form-control, html body.sb-app .modal .form-select { min-height: 44px; border-radius: 12px; border: 1.5px solid var(--ds-input-border); }
+html body.sb-app .modal textarea.form-control { min-height: 96px; }
+html body.sb-app .modal :is(button, a, input, select, textarea):focus-visible { outline: 3px solid var(--text, #111); outline-offset: 2px; }
+@media (max-width: 639.98px) {
+    html body.sb-app .modal-header, html body.sb-app .modal-body, html body.sb-app .modal-footer { padding-left: 16px; padding-right: 16px; }
+}
+
+/* ---- existing native file-preview dialogs (.sb-dialog): same centered shell ---- */
+dialog.sb-dialog { position: fixed; inset: 0; margin: auto; padding: 0; border: 0; border-radius: 20px; width: min(880px, 94vw); max-width: 94vw; height: fit-content; max-height: 90dvh; overflow: hidden; background: var(--surface, #fff); color: var(--text, var(--ds-ink)); box-shadow: 0 24px 64px rgba(0, 0, 0, .28); }
+dialog.sb-dialog:not([open]) { display: none; }
+dialog.sb-dialog[open] { display: flex; flex-direction: column; }
+dialog.sb-dialog::backdrop { background: rgba(17, 17, 17, .55); }
+dialog.sb-dialog .sb-dialog-header { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 24px 16px; border-bottom: 1px solid var(--line, var(--ds-hair)); }
+dialog.sb-dialog .sb-dialog-header h2 { margin: 0; font-size: 20px; font-weight: 800; }
+dialog.sb-dialog .sb-dialog-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; margin: 0; padding: 20px 24px; scrollbar-width: thin; scrollbar-color: var(--ds-input-border) transparent; }
+dialog.sb-dialog .btn-close { width: 36px; height: 36px; margin: 0; padding: 0; border: 1.5px solid var(--line, var(--ds-hair)); border-radius: 50%; background-size: 12px; opacity: 1; }
+@media (max-width: 639.98px) { dialog.sb-dialog { inset: 0; width: 100vw; max-width: none; height: 100dvh; max-height: none; border-radius: 0; } }
+
+/* Root cause of the "stuck in the corner" bug: layout rules such as `.sb-dash > *` and `.sb-layout-2 > *`
+   set `margin: 0 !important` on every direct child, which removes the dialog's auto margins.
+   These selectors are more specific, so centering always wins wherever the dialog is placed. */
+html body.sb-app dialog.sb-modal,
+html body.sb-app dialog.sb-dialog,
+html body.sb-app dialog.applicant-modal { position: fixed; inset: 0; margin: auto !important; }
+
+/* ---- group labels, password eye toggle, submit loading state ---- */
+.sb-modal__group { grid-column: 1 / -1; margin: 0; padding-bottom: 6px; border-bottom: 1px solid var(--ds-hair); font-size: var(--ds-fs-label); font-weight: 800; letter-spacing: var(--ds-ls-label); text-transform: uppercase; color: var(--ds-label); }
+.sb-modal__grid > .sb-modal__group:not(:first-child) { margin-top: 8px; }
+.sb-modal__grid > [hidden] { display: none; }
+.sb-modal__pw { position: relative; }
+.sb-modal__pw .form-control { padding-right: 48px; }
+.sb-modal__eye { position: absolute; top: 50%; right: 6px; transform: translateY(-50%); display: grid; place-items: center; width: 36px; height: 36px; border: 0; border-radius: 10px; background: transparent; color: var(--ds-muted); cursor: pointer; }
+.sb-modal__eye:hover { background: var(--ds-red-tint); color: var(--ds-ink); }
+.sb-modal__spinner { display: inline-block; width: 16px; height: 16px; margin-right: 8px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .45); border-top-color: #fff; vertical-align: -3px; animation: sb-modal-spin .7s linear infinite; }
+@keyframes sb-modal-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .sb-modal__spinner { animation: none; } }

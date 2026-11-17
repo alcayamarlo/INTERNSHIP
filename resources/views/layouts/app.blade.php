@@ -98,7 +98,9 @@
     <link rel="stylesheet" href="{{ asset('css/sb-icons.css') }}?v={{ @filemtime(public_path('css/sb-icons.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-tokens.css') }}?v={{ @filemtime(public_path('css/sb-tokens.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-theme.css') }}?v={{ @filemtime(public_path('css/sb-theme.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/sb-modal.css') }}?v={{ @filemtime(public_path('css/sb-modal.css')) }}">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}?v={{ @filemtime(public_path('js/skillbridge-ui.js')) }}"></script>
+    <script defer src="{{ asset('js/sb-modal.js') }}?v={{ @filemtime(public_path('js/sb-modal.js')) }}"></script>
     <script defer src="{{ asset('js/sb-motion.js') }}?v={{ @filemtime(public_path('js/sb-motion.js')) }}"></script>
     @vite('resources/js/app.js')
 
@@ -286,6 +288,27 @@
         @endforeach
 
     </nav>
+    {{-- Keep the sidebar menu where it was: restore its scroll position before first paint, and keep the active item in view. --}}
+    <script>
+    (function () {
+        var nav = document.querySelector('.sb-nav');
+        if (!nav) return;
+        var KEY = 'sb-nav-scroll';
+        try {
+            var saved = sessionStorage.getItem(KEY);
+            if (saved !== null) nav.scrollTop = parseInt(saved, 10) || 0;
+        } catch (e) {}
+        var active = nav.querySelector('.sb-nav-link.active');
+        if (active) {
+            var top = active.offsetTop, bottom = top + active.offsetHeight;
+            if (top < nav.scrollTop || bottom > nav.scrollTop + nav.clientHeight) nav.scrollTop = Math.max(0, top - nav.clientHeight / 2);
+        }
+        function save() { try { sessionStorage.setItem(KEY, String(nav.scrollTop)); } catch (e) {} }
+        nav.addEventListener('scroll', save, { passive: true });
+        nav.addEventListener('click', save);
+        window.addEventListener('pagehide', save);
+    })();
+    </script>
 
 
     {{-- SIDEBAR FOOTER --}}

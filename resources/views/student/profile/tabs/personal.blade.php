@@ -1,23 +1,4 @@
 <section class="profile-panel" id="panel-personal" role="tabpanel" aria-labelledby="tab-personal" tabindex="0" @if($activeTab !== 'personal') hidden @endif>
-    {{-- Saved on its own (not part of the Personal form), so it never touches the unsaved-changes bar. --}}
-    <section class="photo-field" aria-labelledby="profilePhotoHeading">
-        <h2 class="panel-heading" id="profilePhotoHeading">Profile photo <span class="panel-tag">Optional</span></h2>
-        <div class="photo-field-row">
-            <div class="avatar photo-field-preview" data-avatar>
-                <x-avatar :avatar="$profileAvatar" :alt="$user->name" />
-            </div>
-            <div>
-                <div class="d-flex flex-wrap gap-2">
-                    <button type="button" class="btn-profile" data-photo-pick>{{ $profileAvatar['url'] ? 'Change photo' : 'Upload photo' }}</button>
-                    <button type="button" class="btn-profile" data-photo-remove @unless($profileAvatar['url']) hidden @endunless>Remove photo</button>
-                </div>
-                <p class="portfolio-description mt-2 mb-0">JPG, PNG, or WebP, up to 5 MB. It is cropped to a square from the center.</p>
-                <div class="invalid-feedback d-block" data-photo-error role="alert">@error('profile_picture'){{ $message }}@enderror</div>
-            </div>
-        </div>
-    </section>
-    <hr class="section-divider">
-
     <form method="POST" action="{{ route('student.profile.update') }}" data-profile-section="personal" novalidate>
         @csrf
         @method('PUT')

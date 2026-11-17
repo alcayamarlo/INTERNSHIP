@@ -1,0 +1,33 @@
+/* OJT record pages (Coordinator, Admin, Employer): Overview tab. Scoped to .ojt-record; tokens only. */
+html body.sb-app .ojt-record .ojt-progress--record { border: 1px solid var(--ds-hair); border-radius: var(--ds-r-card); background: var(--ds-surface); margin: 0 0 var(--ds-sp-5); }
+html body.sb-app .ojt-record .ojt-progress--record .card-body { padding: 20px 24px; }
+
+/* Slim one-line banner (At risk / waiting for validation) */
+html body.sb-app .ojt-record .ojt-progress--record .sb-callout { display: flex; align-items: center; min-height: 48px; margin: 0 0 var(--ds-sp-4) !important; padding: 8px 16px; border: 0; border-radius: 14px; background: var(--ds-red-tint); }
+html body.sb-app .ojt-record .ojt-progress--record .sb-callout p { margin: 0; font-size: 14px; line-height: 1.4; color: var(--ds-ink); }
+html body.sb-app .ojt-record .ojt-progress--record .sb-callout .bi { margin-right: 6px; color: var(--ds-red-text); }
+
+/* Progress row + bar */
+html body.sb-app .ojt-record .ojt-progress--record .progress { height: 8px; border-radius: var(--ds-r-pill); background: var(--ds-hair); margin-bottom: var(--ds-sp-4) !important; }
+html body.sb-app .ojt-record .ojt-progress--record .progress-bar { border-radius: inherit; background: var(--ds-red); }
+
+/* Four equal stat tiles */
+html body.sb-app .ojt-record .ojt-progress--record .sb-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--ds-sp-4); }
+html body.sb-app .ojt-record .ojt-progress--record .sb-tile { display: flex; flex-direction: column; justify-content: center; min-height: 88px; padding: 14px 18px; border: 1px solid var(--ds-hair); border-radius: 16px; background: var(--ds-bg); }
+html body.sb-app .ojt-record .ojt-progress--record .sb-tile-label { font-size: var(--ds-fs-label); font-weight: 800; letter-spacing: var(--ds-ls-label); text-transform: uppercase; color: var(--ds-label); }
+html body.sb-app .ojt-record .ojt-progress--record .sb-tile-value { margin-top: 4px; font-size: 24px; font-weight: 800; line-height: 1.15; color: var(--ds-ink); }
+@media (max-width: 899.98px) { html body.sb-app .ojt-record .ojt-progress--record .sb-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* The explanatory note */
+html body.sb-app .ojt-record .ojt-progress--record .sb-note { margin-top: var(--ds-sp-4) !important; font-size: 14px; line-height: 1.5; color: var(--ds-muted); }
+
+/* Panels */
+html body.sb-app .ojt-record .sb-upanel > .card { border: 1px solid var(--ds-hair); border-radius: var(--ds-r-card); }
+
+/* Employer > Intern record: the existing server-driven tabs (.sb-section-tab) get the same underline look. */
+html body.sb-app .ojt-intern-record .sb-tabbar { position: sticky; top: var(--sb-topbar-height, 68px); z-index: 20; margin: 0 0 var(--ds-sp-5); padding: 0; background: var(--ds-surface); border-bottom: 1px solid var(--ds-hair); }
+html body.sb-app .ojt-intern-record .sb-section-tabs { display: flex; align-items: stretch; gap: 4px; min-height: 52px; padding: 0; border: 0; background: transparent; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; scrollbar-color: var(--ds-input-border) transparent; }
+html body.sb-app .ojt-intern-record .sb-section-tab { position: relative; flex: none; display: inline-flex; align-items: center; gap: 8px; height: 52px; padding: 0 16px; border: 0; border-radius: 0; background: transparent; box-shadow: none; font-size: 15px; font-weight: 700; color: var(--ds-muted); white-space: nowrap; }
+html body.sb-app .ojt-intern-record .sb-section-tab:hover { background: var(--ds-red-tint); color: var(--ds-ink); }
+html body.sb-app .ojt-intern-record .sb-section-tab[aria-selected="true"] { background: transparent; color: var(--ds-red-text); }
+html body.sb-app .ojt-intern-record .sb-section-tab[aria-selected="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--ds-red); }

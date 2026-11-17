@@ -134,4 +134,44 @@
             weekInput.addEventListener('change', function () { updateWeek(container, weekInput); });
         }
     });
+
+    // Live "x / 20 minimum" counter under each narrative textarea.
+    document.querySelectorAll('[data-wr-count]').forEach(function (area) {
+        var counter = document.getElementById(area.id + '-count');
+        if (!counter) { return; }
+        var min = Number(area.getAttribute('minlength')) || 20;
+        function update() {
+            var length = area.value.trim().length;
+            counter.textContent = length >= min ? length + ' characters' : length + ' / ' + min + ' minimum';
+            counter.classList.toggle('is-ok', length >= min);
+        }
+        area.addEventListener('input', update);
+        update();
+    });
+
+    // Daily entry: live total hours (time out - time in - break) and tasks character counter.
+    var dailyForm = document.getElementById('dailyEntryForm');
+    if (dailyForm) {
+        var tIn = dailyForm.querySelector('[name="time_in"]');
+        var tOut = dailyForm.querySelector('[name="time_out"]');
+        var brk = dailyForm.querySelector('[name="break_minutes"]');
+        var box = dailyForm.querySelector('[data-de-summary]');
+        var total = dailyForm.querySelector('[data-de-total]');
+        var minutes = function (v) { var p = (v || '').split(':'); return p.length < 2 ? null : Number(p[0]) * 60 + Number(p[1]); };
+        var refresh = function () {
+            var a = minutes(tIn.value), b = minutes(tOut.value);
+            var mins = (a === null || b === null) ? null : b - a - (Number(brk.value) || 0);
+            var ok = mins !== null && mins > 0;
+            box.classList.toggle('is-invalid', !ok);
+            total.textContent = ok ? Math.floor(mins / 60) + 'h ' + (mins % 60) + 'm' : 'Check your times';
+        };
+        [tIn, tOut, brk].forEach(function (el) { el.addEventListener('input', refresh); });
+        refresh();
+        var tasks = dailyForm.querySelector('[data-de-count]');
+        var tasksCount = document.getElementById('task_summary-count');
+        var max = Number(tasks.getAttribute('maxlength')) || 2000;
+        var upd = function () { tasksCount.textContent = tasks.value.length + ' / ' + max; };
+        tasks.addEventListener('input', upd);
+        upd();
+    }
 })();

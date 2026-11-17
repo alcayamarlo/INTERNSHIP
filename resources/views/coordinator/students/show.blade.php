@@ -3,29 +3,38 @@
 @section('title', 'Student Profile')
 
 @section('content')
-<x-page-header :title="$student->user->name" :subtitle="($student->program ?: 'Program not set').' · '.($student->year_level ?: 'Year level not set')">
-    <a class="btn btn-outline-secondary" href="{{ route('coordinator.students.index') }}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to Students</a>
-</x-page-header>
+<link rel="stylesheet" href="{{ asset('css/coordinator-student-record.css') }}?v={{ @filemtime(public_path('css/coordinator-student-record.css')) }}">
+@php $studentAvatar = \App\Support\Avatar::for($student->user); @endphp
+<div class="sb-dash student-record">
+<x-profile-header :name="$student->user->name" :avatar="$studentAvatar" eyebrow="Student profile">
+    @if($student->profile_verified_at)
+        <x-slot:badge><x-status-badge status="verified" label="Profile verified" /></x-slot:badge>
+    @endif
+    <span class="sb-pheader__strong">{{ ($student->program ?: 'Program not set').' · '.($student->year_level ?: 'Year level not set') }}</span>
+    <span><i class="bi bi-building" aria-hidden="true"></i>{{ $student->institution?->name ?? 'Institution not set' }}</span>
+    <span>
+        <i class="bi bi-person-vcard" aria-hidden="true"></i>School ID {{ $student->student_id_number ?: 'Not provided' }}
+        @if($studentIdNeedsCorrection)<span class="sb-tag sb-tag--brand">ID needs correction</span>@endif
+        <span class="sb-pheader__sep" aria-hidden="true">·</span><i class="bi bi-envelope" aria-hidden="true"></i>{{ $student->user->email }}
+        <span class="sb-pheader__sep" aria-hidden="true">·</span><i class="bi bi-telephone" aria-hidden="true"></i>{{ $student->user->phone ?: 'Phone not provided' }}
+    </span>
+    <x-slot:actions>
+        <a class="btn btn-outline-secondary" href="{{ route('coordinator.students.index') }}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to Students</a>
+    </x-slot:actions>
+</x-profile-header>
 
-<div class="sb-stack">
-    <section class="card" aria-label="Student summary">
-        <div class="card-body sb-person">
-            <div class="sb-ring" style="--sb-value: {{ $profileCompletion }}" role="img" aria-label="Profile {{ $profileCompletion }} percent complete"><span>{{ $initials }}</span></div>
-            <div class="sb-person-text">
-                <strong>{{ $student->institution?->name ?? 'Institution not set' }}</strong>
-                <ul class="sb-tags mt-2">
-                    <li>School ID {{ $student->student_id_number ?: 'Not provided' }}</li>
-                    @if($studentIdNeedsCorrection)
-                        <li class="sb-tag--brand">ID needs correction</li>
-                    @endif
-                    <li>{{ $student->user->email }}</li>
-                    <li>{{ $student->user->phone ?: 'Phone not provided' }}</li>
-                </ul>
-            </div>
-        </div>
-    </section>
+<div class="sb-utabs-bar">
+    <div class="sb-utabs" role="tablist" aria-label="Student sections">
+        <button type="button" class="sb-utab" role="tab" id="tab-overview" aria-controls="overview" aria-selected="true"><span>Overview</span></button>
+        <button type="button" class="sb-utab" role="tab" id="tab-academic" aria-controls="academic" aria-selected="false" tabindex="-1"><span>Academic and eligibility</span></button>
+        <button type="button" class="sb-utab" role="tab" id="tab-certificates" aria-controls="certificates" aria-selected="false" tabindex="-1"><span>Certificates and skills</span></button>
+        <button type="button" class="sb-utab" role="tab" id="tab-portfolio" aria-controls="portfolio" aria-selected="false" tabindex="-1"><span>Portfolio</span></button>
+    </div>
+</div>
 
-    <section class="sb-kpis" aria-label="Submission summary">
+{{-- ===== Overview ===== --}}
+<section class="sb-upanel sb-stack" role="tabpanel" id="overview" aria-labelledby="tab-overview" tabindex="0">
+    <section class="sb-kpis student-record__kpis" aria-label="Submission summary">
         <div class="card sb-kpi"><span class="sb-kpi-label">Profile complete</span><span class="sb-kpi-value">{{ $profileCompletion }}%</span></div>
         <div class="card sb-kpi"><span class="sb-kpi-label">Certificates</span><span class="sb-kpi-value">{{ $competencies->count() }}</span></div>
         <div class="card sb-kpi"><span class="sb-kpi-label">Older certificate files</span><span class="sb-kpi-value">{{ $certificates->count() }}</span></div>
@@ -41,8 +50,7 @@
         </div>
     </section>
 
-    {{-- Three columns: details (left), review actions (middle), collections (right). --}}
-    <div class="sb-grid sb-grid--3">
+    <div class="sb-grid sb-grid--2">
         <div class="sb-stack">
             <section class="card">
                 <div class="card-header"><h2>Student details</h2></div>
@@ -69,6 +77,32 @@
             </section>
         </div>
 
+        <section class="card">
+            <div class="card-header"><h2>Recent activity</h2></div>
+            <div class="card-body">
+                @if($recentActivity->isEmpty())
+                    <p class="sb-note">No recent activity recorded.</p>
+                @else
+                    <ol class="sb-timeline">
+                        @foreach($recentActivity as $activity)
+                            <li class="{{ $activity['is_verification'] ? 'is-done' : '' }}">
+                                <p><strong>{{ $activity['actor'] }}</strong> {{ $activity['action'] }} <strong>{{ $activity['item'] }}</strong></p>
+                                @if($activity['note'])
+                                    <p class="sb-timeline-note">{{ $activity['note'] }}</p>
+                                @endif
+                                <time>{{ $activity['created_at'] }}</time>
+                            </li>
+                        @endforeach
+                    </ol>
+                @endif
+            </div>
+        </section>
+    </div>
+</section>
+
+{{-- ===== Academic and eligibility ===== --}}
+<section class="sb-upanel" role="tabpanel" id="academic" aria-labelledby="tab-academic" tabindex="0" hidden>
+    <div class="sb-grid sb-grid--2">
         <div class="sb-stack">
             <section class="card">
                 <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
@@ -108,62 +142,6 @@
                         </div>
                         <div><button type="submit" class="btn btn-primary">Save academic progress</button></div>
                     </form>
-                </div>
-            </section>
-
-            <section class="card" aria-labelledby="eligibilityHeading" data-eligibility>
-                <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
-                    <h2 id="eligibilityHeading">Internship eligibility</h2>
-                    <x-status-badge :status="$eligibility['eligible'] ? 'approved' : 'pending'" :label="$eligibility['eligible'] ? 'Eligible to apply' : 'Not eligible yet'" />
-                </div>
-                <div class="card-body sb-stack sb-stack--tight">
-                    <p class="sb-note">{{ $eligibility['source'] === 'program' ? 'Checked against the program criteria for this term.' : 'Checked against the school-wide rules (no program criteria this term).' }}</p>
-                    @if($eligibility['rules'])
-                        <ul class="sb-checks">
-                            @foreach($eligibility['rules'] as $rule)
-                                <li class="{{ $rule['passed'] ? 'is-pass' : 'is-fail' }}" data-rule="{{ $rule['key'] }}">
-                                    <i class="bi {{ $rule['passed'] ? 'bi-check-circle-fill' : 'bi-x-circle' }}" aria-hidden="true"></i>
-                                    <span><strong>{{ $rule['label'] }}</strong>: {{ $rule['detail'] }}</span>
-                                    <span class="visually-hidden">{{ $rule['passed'] ? '(passed)' : '(failed)' }}</span>
-                                </li>
-                            @endforeach
-                        </ul>
-                    @else
-                        <p>No eligibility rules apply this term.</p>
-                    @endif
-
-                    {{-- One form per decision: the decision travels in a hidden field, not on the (auto-disabled) button. --}}
-                    <div class="sb-inline-panel">
-                        <form method="POST" action="{{ route('coordinator.students.eligibility.store', $student) }}" class="d-grid gap-2">
-                            @csrf
-                            <input type="hidden" name="decision" value="rejected">
-                            <div>
-                                <label class="form-label" for="eligibilityReason">Reason <span class="text-muted small">(required to mark not eligible; the student sees it)</span></label>
-                                <input id="eligibilityReason" type="text" name="reason" maxlength="1000" class="form-control @error('reason') is-invalid @enderror" value="{{ old('reason') }}" required>
-                                @error('reason')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                            </div>
-                            <button type="submit" class="btn btn-outline-primary">Mark not eligible</button>
-                        </form>
-                        <form method="POST" action="{{ route('coordinator.students.eligibility.store', $student) }}">
-                            @csrf
-                            <input type="hidden" name="decision" value="approved">
-                            <button type="submit" class="btn btn-primary w-100">Approve</button>
-                        </form>
-                    </div>
-
-                    @if($eligibilityHistory->isNotEmpty())
-                        <div>
-                            <h3 class="sb-block-title">Decision history</h3>
-                            <ul class="sb-rows">
-                                @foreach($eligibilityHistory as $decision)
-                                    <li class="small">
-                                        <x-status-badge :status="$decision->isRejected() ? 'rejected' : 'approved'" :label="$decision->isRejected() ? 'Not eligible' : 'Approved'" />
-                                        <span>{{ $decision->created_at->format('M d, Y h:i A') }} · {{ $decision->decidedBy?->name ?? 'Coordinator' }}@if($decision->reason) · {{ $decision->reason }}@endif</span>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
                 </div>
             </section>
 
@@ -216,6 +194,67 @@
             @endif
         </div>
 
+        <section class="card" aria-labelledby="eligibilityHeading" data-eligibility>
+            <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <h2 id="eligibilityHeading">Internship eligibility</h2>
+                <x-status-badge :status="$eligibility['eligible'] ? 'approved' : 'pending'" :label="$eligibility['eligible'] ? 'Eligible to apply' : 'Not eligible yet'" />
+            </div>
+            <div class="card-body sb-stack sb-stack--tight">
+                <p class="sb-note">{{ $eligibility['source'] === 'program' ? 'Checked against the program criteria for this term.' : 'Checked against the school-wide rules (no program criteria this term).' }}</p>
+                @if($eligibility['rules'])
+                    <ul class="sb-checks">
+                        @foreach($eligibility['rules'] as $rule)
+                            <li class="{{ $rule['passed'] ? 'is-pass' : 'is-fail' }}" data-rule="{{ $rule['key'] }}">
+                                <i class="bi {{ $rule['passed'] ? 'bi-check-circle-fill' : 'bi-x-circle' }}" aria-hidden="true"></i>
+                                <span><strong>{{ $rule['label'] }}</strong>: {{ $rule['detail'] }}</span>
+                                <span class="visually-hidden">{{ $rule['passed'] ? '(passed)' : '(failed)' }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <p>No eligibility rules apply this term.</p>
+                @endif
+
+                {{-- One form per decision: the decision travels in a hidden field, not on the (auto-disabled) button. --}}
+                <div class="sb-inline-panel">
+                    <form method="POST" action="{{ route('coordinator.students.eligibility.store', $student) }}" class="d-grid gap-2">
+                        @csrf
+                        <input type="hidden" name="decision" value="rejected">
+                        <div>
+                            <label class="form-label" for="eligibilityReason">Reason <span class="text-muted small">(required to mark not eligible; the student sees it)</span></label>
+                            <input id="eligibilityReason" type="text" name="reason" maxlength="1000" class="form-control @error('reason') is-invalid @enderror" value="{{ old('reason') }}" required>
+                            @error('reason')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <button type="submit" class="btn btn-outline-primary">Mark not eligible</button>
+                    </form>
+                    <form method="POST" action="{{ route('coordinator.students.eligibility.store', $student) }}">
+                        @csrf
+                        <input type="hidden" name="decision" value="approved">
+                        <button type="submit" class="btn btn-primary w-100">Approve</button>
+                    </form>
+                </div>
+
+                @if($eligibilityHistory->isNotEmpty())
+                    <div>
+                        <h3 class="sb-block-title">Decision history</h3>
+                        <ul class="sb-rows">
+                            @foreach($eligibilityHistory as $decision)
+                                <li class="small">
+                                    <x-status-badge :status="$decision->isRejected() ? 'rejected' : 'approved'" :label="$decision->isRejected() ? 'Not eligible' : 'Approved'" />
+                                    <span>{{ $decision->created_at->format('M d, Y h:i A') }} · {{ $decision->decidedBy?->name ?? 'Coordinator' }}@if($decision->reason) · {{ $decision->reason }}@endif</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+            </div>
+        </section>
+    </div>
+</section>
+
+{{-- ===== Certificates and skills ===== --}}
+<section class="sb-upanel" role="tabpanel" id="certificates" aria-labelledby="tab-certificates" tabindex="0" hidden>
+    <div class="sb-grid sb-grid--2">
         <div class="sb-stack">
             <section class="card">
                 <div class="card-header d-flex align-items-center justify-content-between gap-2"><h2>Certificates</h2><span class="sb-tag">{{ $competencies->count() }}</span></div>
@@ -235,21 +274,6 @@
                         @endforeach
                     </ul>
                 @endif
-            </section>
-
-            <section class="card">
-                <div class="card-header d-flex align-items-center justify-content-between gap-2"><h2>Skills</h2><span class="sb-tag">{{ $skills->count() }}</span></div>
-                <div class="card-body">
-                    @if($skills->isEmpty())
-                        <p class="sb-note">No skills added yet.</p>
-                    @else
-                        <ul class="sb-tags" aria-label="Self-declared skills">
-                            @foreach($skills as $skill)
-                                <li>{{ $skill['name'] }}@if($skill['level_label']) · {{ $skill['level_label'] }}@endif @if($skill['has_certificate'])<i class="bi bi-file-earmark-check" aria-hidden="true" title="Has certificate"></i><span class="visually-hidden">(has certificate)</span>@endif</li>
-                            @endforeach
-                        </ul>
-                    @endif
-                </div>
             </section>
 
             <section class="card">
@@ -273,47 +297,46 @@
                     </ul>
                 @endif
             </section>
+        </div>
 
-            <section class="card">
-                <div class="card-header d-flex align-items-center justify-content-between gap-2"><h2>Portfolio</h2><span class="sb-tag">{{ $portfolios->count() }}</span></div>
-                @if($portfolios->isEmpty())
-                    <div class="card-body"><p class="sb-note">No portfolio items yet.</p></div>
+        <section class="card">
+            <div class="card-header d-flex align-items-center justify-content-between gap-2"><h2>Skills</h2><span class="sb-tag">{{ $skills->count() }}</span></div>
+            <div class="card-body">
+                @if($skills->isEmpty())
+                    <p class="sb-note">No skills added yet.</p>
                 @else
-                    <ul class="sb-rows sb-rows--card">
-                        @foreach($portfolios as $portfolio)
-                            <li>
-                                <div class="sb-grow">
-                                    <span class="sb-row-title">{{ $portfolio['title'] }}</span>
-                                    <span class="sb-row-sub">{{ $portfolio['description'] ?: 'No description provided.' }}</span>
-                                </div>
-                                <x-status-badge :status="$portfolio['status']" :label="ucfirst($portfolio['status'])" />
-                            </li>
+                    <ul class="sb-tags" aria-label="Self-declared skills">
+                        @foreach($skills as $skill)
+                            <li>{{ $skill['name'] }}@if($skill['level_label']) · {{ $skill['level_label'] }}@endif @if($skill['has_certificate'])<i class="bi bi-file-earmark-check" aria-hidden="true" title="Has certificate"></i><span class="visually-hidden">(has certificate)</span>@endif</li>
                         @endforeach
                     </ul>
                 @endif
-            </section>
-
-            <section class="card">
-                <div class="card-header"><h2>Recent activity</h2></div>
-                <div class="card-body">
-                    @if($recentActivity->isEmpty())
-                        <p class="sb-note">No recent activity recorded.</p>
-                    @else
-                        <ol class="sb-timeline">
-                            @foreach($recentActivity as $activity)
-                                <li class="{{ $activity['is_verification'] ? 'is-done' : '' }}">
-                                    <p><strong>{{ $activity['actor'] }}</strong> {{ $activity['action'] }} <strong>{{ $activity['item'] }}</strong></p>
-                                    @if($activity['note'])
-                                        <p class="sb-timeline-note">{{ $activity['note'] }}</p>
-                                    @endif
-                                    <time>{{ $activity['created_at'] }}</time>
-                                </li>
-                            @endforeach
-                        </ol>
-                    @endif
-                </div>
-            </section>
-        </div>
+            </div>
+        </section>
     </div>
+</section>
+
+{{-- ===== Portfolio ===== --}}
+<section class="sb-upanel" role="tabpanel" id="portfolio" aria-labelledby="tab-portfolio" tabindex="0" hidden>
+    <section class="card">
+        <div class="card-header d-flex align-items-center justify-content-between gap-2"><h2>Portfolio</h2><span class="sb-tag">{{ $portfolios->count() }}</span></div>
+        @if($portfolios->isEmpty())
+            <div class="card-body"><p class="sb-note">No portfolio items yet.</p></div>
+        @else
+            <ul class="sb-rows sb-rows--card">
+                @foreach($portfolios as $portfolio)
+                    <li>
+                        <div class="sb-grow">
+                            <span class="sb-row-title">{{ $portfolio['title'] }}</span>
+                            <span class="sb-row-sub">{{ $portfolio['description'] ?: 'No description provided.' }}</span>
+                        </div>
+                        <x-status-badge :status="$portfolio['status']" :label="ucfirst($portfolio['status'])" />
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </section>
+</section>
 </div>
+<script src="{{ asset('js/sb-underline-tabs.js') }}?v={{ @filemtime(public_path('js/sb-underline-tabs.js')) }}"></script>
 @endsection

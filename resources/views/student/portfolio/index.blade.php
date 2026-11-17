@@ -92,19 +92,9 @@
 
 @section('content')
 <div class="student-page-shell">
-<div class="mb-4">
-    <div class="d-flex justify-content-between align-items-center">
-        <div>
-            <h1 class="student-page-title">My Portfolio</h1>
-            <p class="student-page-subtitle">Upload and manage your certificates, projects, and supporting documents</p>
-        </div>
-        <div class="btn-group">
-            <a href="{{ route('student.portfolio.create') }}" class="btn btn-primary">
-                <i class="bi bi-cloud-upload"></i> Upload File
-            </a>
-        </div>
-    </div>
-</div>
+<x-page-header title="My Portfolio" subtitle="Upload and manage your certificates, projects, and supporting documents">
+    <a href="{{ route('student.portfolio.create') }}" class="btn btn-primary"><i class="bi bi-cloud-upload" aria-hidden="true"></i> Upload File</a>
+</x-page-header>
 
 <!-- Statistics Cards -->
 <div class="row g-4 mb-4">

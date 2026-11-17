@@ -1,0 +1,39 @@
+/* Detail-page profile header + underline tab bar (used by x-profile-header and the .sb-utabs markup). Tokens only. */
+html body.sb-app .sb-pheader { display: flex; align-items: center; gap: 24px; padding: 24px 0 20px; }
+html body.sb-app .sb-pheader__avatar { flex: none; display: grid; place-items: center; width: 112px; height: 112px; border-radius: 50%; overflow: hidden; background: #111; color: #fff; font-size: 36px; font-weight: 800; letter-spacing: .02em; box-shadow: 0 0 0 4px var(--ds-surface), 0 0 0 5px var(--ds-hair); }
+html body.sb-app .sb-pheader__avatar img { width: 100%; height: 100%; object-fit: cover; }
+html body.sb-app .sb-pheader__avatar [hidden] { display: none; }
+html body.sb-app .sb-pheader__info { flex: 1 1 auto; min-width: 0; display: grid; gap: 4px; }
+html body.sb-app .sb-pheader__eyebrow { margin: 0; font-size: var(--ds-fs-label); font-weight: 800; letter-spacing: var(--ds-ls-label); text-transform: uppercase; color: var(--ds-label); }
+html body.sb-app .sb-pheader__titlerow { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; min-width: 0; }
+html body.sb-app .sb-pheader__name { margin: 0; min-width: 0; max-width: 100%; font-size: 32px; font-weight: 700; line-height: 1.15; color: var(--ds-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html body.sb-app .sb-pheader__meta { display: grid; gap: 4px; font-size: 14px; color: var(--ds-muted); }
+html body.sb-app .sb-pheader__meta .sb-pheader__strong { font-size: 16px; font-weight: 700; color: var(--ds-ink); }
+html body.sb-app .sb-pheader__meta .bi { font-size: 18px; margin-right: 6px; vertical-align: -3px; }
+html body.sb-app .sb-pheader__actions { flex: none; display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 12px; }
+html body.sb-app .sb-pheader__actions .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 20px; border-radius: var(--ds-r-pill); border-width: 1.5px; font-weight: 700; }
+html body.sb-app .sb-pheader__actions .btn-outline-secondary { border-color: var(--ds-input-border); color: var(--ds-ink); background: var(--ds-surface); }
+html body.sb-app .sb-pheader__actions .btn-outline-primary { border-color: var(--ds-red-text); color: var(--ds-red-text); background: var(--ds-surface); }
+@media (max-width: 899.98px) {
+    html body.sb-app .sb-pheader { flex-wrap: wrap; gap: 16px; }
+    html body.sb-app .sb-pheader__avatar { width: 88px; height: 88px; font-size: 30px; }
+    html body.sb-app .sb-pheader__info { flex-basis: calc(100% - 112px); }
+    html body.sb-app .sb-pheader__actions { flex-basis: 100%; justify-content: flex-start; }
+    html body.sb-app .sb-pheader__name { white-space: normal; font-size: 26px; }
+}
+
+/* Underline tab bar */
+html body.sb-app .sb-utabs-bar { position: sticky; top: var(--sb-topbar-height, 68px); z-index: 20; margin: 0 0 20px; background: var(--ds-surface); border-bottom: 1px solid var(--ds-hair); }
+html body.sb-app .sb-utabs { display: flex; align-items: stretch; gap: 4px; min-height: 52px; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; scrollbar-color: var(--ds-input-border) transparent; }
+html body.sb-app .sb-utabs::-webkit-scrollbar { height: 6px; }
+html body.sb-app .sb-utabs::-webkit-scrollbar-thumb { background: var(--ds-input-border); border-radius: 6px; }
+html body.sb-app .sb-utabs::-webkit-scrollbar-track { background: transparent; }
+html body.sb-app .sb-utab { position: relative; flex: none; height: 52px; padding: 0 16px; border: 0; background: transparent; font-family: inherit; font-size: 15px; font-weight: 700; color: var(--ds-muted); cursor: pointer; white-space: nowrap; }
+html body.sb-app .sb-utab::before { content: ""; position: absolute; inset: 6px 0; border-radius: 10px; background: transparent; z-index: 0; }
+html body.sb-app .sb-utab > span { position: relative; z-index: 1; }
+html body.sb-app .sb-utab:hover::before { background: var(--ds-red-tint); }
+html body.sb-app .sb-utab[aria-selected="true"] { color: var(--ds-red-text); }
+html body.sb-app .sb-utab[aria-selected="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--ds-red); }
+html body.sb-app .sb-utab:focus-visible { outline: 3px solid var(--ds-focus); outline-offset: -3px; border-radius: 10px; }
+html body.sb-app .sb-upanel[hidden] { display: none; }
+html body.sb-app .sb-upanel > .card:last-child { margin-bottom: 0; }

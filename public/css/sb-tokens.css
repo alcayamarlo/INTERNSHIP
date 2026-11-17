@@ -193,6 +193,93 @@ html:root:root:root:root body {
     --sb-delay-level: var(--stagger);
 }
 
+/* =========================================================================================
+   Design tokens (--ds-*): the single source of truth for the signed-in app.
+   Spacing, radius, shadow, type, status and brand values live here once.
+   Page and component CSS should use these names; the older variables above are mapped onto them
+   inside the app (body.sb-app) so existing pages follow without edits. The public landing site
+   and the Sign-in modal do not use body.sb-app, so they are not affected.
+   ========================================================================================= */
+html:root:root:root:root {
+    /* brand */
+    --ds-red: #7A0013;            /* fills: the one primary button, active nav/tab, progress */
+    --ds-red-hover: #5C000F;
+    --ds-red-text: #7A0013;       /* red used as text or an outline */
+    --ds-red-tint: #F6E7EA;       /* icon tiles, soft chips, table header rows */
+    --ds-ring: rgba(122, 0, 19, .18);
+    /* surfaces and text */
+    --ds-bg: #F8F6F7;             /* page background */
+    --ds-surface: #FFFFFF;        /* cards, modals, inputs */
+    --ds-surface-soft: #FBF9FA;   /* footers, inner panels */
+    --ds-ink: #16161A;
+    --ds-muted: #4A4A52;
+    --ds-label: #5B5B63;
+    --ds-placeholder: #6B6B73;
+    --ds-hair: #E6E1E3;
+    --ds-input-border: #D7D0D3;
+    --ds-focus: #111111;
+    /* status pairs (always shown with a text label) */
+    --ds-error: #B42318;
+    --ds-error-bg: #FDECEA;
+    --ds-warn-bg: #FFF1CC;
+    --ds-warn-fg: #6B4A00;
+    --ds-ok-bg: #111111;          /* success / Accepted / Approved: black pill */
+    --ds-ok-fg: #FFFFFF;
+    --ds-verified: #166534;       /* the one documented exception: Verified company badge */
+    --ds-info-bg: #E4EEFF;
+    --ds-info-fg: #1B3A73;
+    /* spacing scale (4px base) */
+    --ds-sp-1: 4px; --ds-sp-2: 8px; --ds-sp-3: 12px; --ds-sp-4: 16px; --ds-sp-5: 20px; --ds-sp-6: 24px; --ds-sp-7: 32px;
+    /* radius */
+    --ds-r-input: 12px; --ds-r-card: 20px; --ds-r-pill: 999px;
+    /* shadow */
+    --ds-sh-card: 0 10px 30px rgba(0, 0, 0, .04);
+    --ds-sh-modal: 0 24px 64px rgba(0, 0, 0, .28);
+    /* control and icon sizes */
+    --ds-control-h: 46px; --ds-hit-min: 44px; --ds-icon: 18px; --ds-icon-nav: 20px;
+    /* type scale (the app font is unchanged) */
+    --ds-fs-title: 36px; --ds-fs-section: 18px; --ds-fs-body: 15px; --ds-fs-small: 13px; --ds-fs-label: 11px; --ds-ls-label: .1em;
+    /* shell sizes (wired in the shell phase) */
+    --ds-sidebar-w: 260px; --ds-topbar-h: 72px; --ds-content-max: 1440px;
+}
+html:root:root:root:root[data-theme="dark"] {
+    --ds-red-text: #DA5C70;
+    --ds-red-tint: #2A0F14;
+    --ds-ring: rgba(218, 92, 112, .3);
+    --ds-bg: #0A0A0B;
+    --ds-surface: #141416;
+    --ds-surface-soft: #1B1B1E;
+    --ds-ink: #F4F4F5;
+    --ds-muted: #B4B4BA;
+    --ds-label: #A0A0A6;
+    --ds-placeholder: #8A8A92;
+    --ds-hair: #26262A;
+    --ds-input-border: #3A3A40;
+    --ds-focus: #F4F4F5;
+    --ds-error: #F97066;
+    --ds-error-bg: #2A0F14;
+    --ds-warn-bg: #3A2E0A;
+    --ds-warn-fg: #FFD97A;
+    --ds-ok-bg: #000000;
+    --ds-ok-fg: #FFFFFF;
+    --ds-info-bg: #14233F;
+    --ds-info-fg: #9DBDF5;
+    --ds-sh-card: 0 10px 30px rgba(0, 0, 0, .35);
+}
+
+/* Inside the app, the older brand variables read from the design tokens (light and dark). */
+html:root:root:root:root body.sb-app {
+    --burgundy: var(--ds-red);
+    --burgundy-hover: var(--ds-red-hover);
+    --burgundy-tint: var(--ds-red-tint);
+    --text: var(--ds-ink);
+    --muted: var(--ds-muted);
+    --line: var(--ds-hair);
+}
+html:root:root:root:root[data-theme="dark"] body.sb-app {
+    --burgundy-hover: #940214;
+}
+
 /* About section (landing page). Scoped names so the global --black / --bg / --line tokens stay as they are. */
 :root {
     --red-900: #7A0013;

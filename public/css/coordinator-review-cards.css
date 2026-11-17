@@ -1,0 +1,31 @@
+/* Coordinator report reviews: one clean card per item (header, label/value body, action footer). */
+html body.sb-app .rv-card { display: flex; flex-direction: column; padding: 0; overflow: hidden; margin: 0 0 16px; }
+html body.sb-app .rv-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 8px 16px; padding: 20px 24px 16px; border-bottom: 1px solid var(--ds-hair); }
+html body.sb-app .rv-head__main { min-width: 0; flex: 1 1 320px; }
+html body.sb-app .rv-title { margin: 0 0 4px; font-size: 20px; font-weight: 800; line-height: 1.25; color: var(--ds-ink); overflow-wrap: anywhere; }
+html body.sb-app .rv-meta { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ds-muted); }
+html body.sb-app .rv-meta a { color: var(--ds-red-text); font-weight: 700; text-decoration: none; }
+html body.sb-app .rv-meta a:hover { text-decoration: underline; }
+html body.sb-app .rv-dot { margin: 0 4px; }
+html body.sb-app .rv-score { flex: none; white-space: nowrap; }
+html body.sb-app .rv-body { display: grid; gap: 0; margin: 0; padding: 4px 24px; }
+html body.sb-app .rv-row { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 4px 24px; padding: 14px 0; }
+html body.sb-app .rv-row + .rv-row { border-top: 1px solid var(--ds-hair); }
+html body.sb-app .rv-row dt { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--ds-label); line-height: 1.6; }
+html body.sb-app .rv-row dd { margin: 0; font-size: 15px; line-height: 1.55; color: var(--ds-ink); overflow-wrap: anywhere; white-space: pre-line; }
+html body.sb-app .rv-foot { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px; padding: 16px 24px 20px; border-top: 1px solid var(--ds-hair); background: var(--ds-surface-soft); }
+html body.sb-app .rv-return { flex: 1 1 360px; min-width: 0; margin: 0; }
+html body.sb-app .rv-label { display: block; margin: 0 0 6px; font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--ds-label); }
+html body.sb-app .rv-label span { font-weight: 600; letter-spacing: .04em; text-transform: none; }
+html body.sb-app .rv-return__row { display: flex; gap: 12px; align-items: center; }
+html body.sb-app .rv-return__row .form-control { flex: 1 1 auto; min-width: 0; height: 44px; border-radius: 12px; border: 1.5px solid var(--ds-input-border); background: #fff; }
+html body.sb-app .rv-approve { flex: 0 0 auto; margin: 0; }
+html body.sb-app .rv-btn { height: 44px; min-width: 120px; padding: 0 22px; border-radius: 999px; font-weight: 700; white-space: nowrap; }
+html body.sb-app .rv-card :is(a, button, input):focus-visible { outline: 3px solid #111; outline-offset: 2px; }
+@media (max-width: 719.98px) {
+    html body.sb-app .rv-head, html body.sb-app .rv-body, html body.sb-app .rv-foot { padding-left: 16px; padding-right: 16px; }
+    html body.sb-app .rv-row { grid-template-columns: 1fr; gap: 2px; }
+    html body.sb-app .rv-return__row { flex-wrap: wrap; }
+    html body.sb-app .rv-return__row .form-control { flex-basis: 100%; }
+    html body.sb-app .rv-return__row .rv-btn, html body.sb-app .rv-approve, html body.sb-app .rv-approve .rv-btn { flex: 1 1 100%; width: 100%; }
+}

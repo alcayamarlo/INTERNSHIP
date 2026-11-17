@@ -1,0 +1,92 @@
+/* Profile pages (Company, Coordinator, Admin): summary card + grouped form cards + sticky save bar. Scoped to .cp-page; tokens only. */
+html body.sb-app .cp-page {
+    --cp-red: var(--ds-red); --cp-red-hover: var(--ds-red-hover); --cp-ink: var(--ds-ink); --cp-muted: var(--ds-muted); --cp-label: var(--ds-label);
+    --cp-hair: var(--ds-hair); --cp-border: var(--ds-input-border); --cp-tint: var(--ds-red-tint); --cp-surface: var(--ds-surface); --cp-soft: var(--ds-bg); --cp-error: var(--ds-error); --cp-placeholder: var(--ds-placeholder);
+    --cp-red-text: var(--ds-red-text);
+}
+
+/* Header: bigger title, badge aligned to the bottom of the title block */
+html body.sb-app .cp-page .sb-page-header { align-items: flex-end; }
+html body.sb-app .cp-page .sb-page-header h1 { font-size: 36px; line-height: 1.1; }
+html body.sb-app .cp-page .sb-page-actions .badge { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; background: var(--ds-verified) !important; color: #fff !important; font-size: 14px; font-weight: 700; }
+html[data-theme="dark"] body.sb-app .cp-page .sb-page-actions .badge { background: var(--ds-verified) !important; color: #fff !important; }
+
+/* Two columns */
+html body.sb-app .cp-grid { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 24px; align-items: start; }
+@media (max-width: 1099.98px) { html body.sb-app .cp-grid { grid-template-columns: minmax(0, 1fr); } html body.sb-app .cp-summary { position: static !important; } }
+
+/* Summary card */
+html body.sb-app .cp-summary { position: sticky; top: calc(var(--sb-topbar-height, 72px) + 16px); padding: 24px; text-align: center; background: var(--cp-surface); border: 1px solid var(--cp-hair); border-radius: 20px; }
+html body.sb-app .cp-logo { display: grid; place-items: center; width: 96px; height: 96px; margin: 0 auto 16px; border-radius: 24px; background: var(--cp-soft); border: 1px solid var(--cp-hair); overflow: hidden; }
+html body.sb-app .cp-logo img { width: 100%; height: 100%; object-fit: cover; }
+html body.sb-app .cp-logo img[hidden], html body.sb-app .cp-logo span[hidden] { display: none; }
+html body.sb-app .cp-logo span { font-size: 34px; font-weight: 800; color: var(--cp-red-text); line-height: 1; }
+html body.sb-app .cp-name { margin: 0; font-size: 20px; font-weight: 800; line-height: 1.25; color: var(--cp-ink); overflow-wrap: anywhere; }
+html body.sb-app .cp-industry { margin: 4px 0 0; font-size: 14px; color: var(--cp-muted); overflow-wrap: anywhere; }
+html body.sb-app .cp-upload { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 44px; margin-top: 16px; border-radius: 999px; background: var(--cp-surface); border: 1.5px solid var(--cp-red-text); color: var(--cp-red-text); font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer; }
+html body.sb-app .cp-upload:hover { background: var(--cp-tint); }
+html body.sb-app .cp-upload:disabled { opacity: .7; cursor: wait; }
+html body.sb-app .cp-note { margin: 8px 0 0; font-size: 12.5px; color: var(--cp-muted); }
+html body.sb-app .cp-complete { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--cp-hair); text-align: left; }
+html body.sb-app .cp-complete__head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: var(--cp-ink); }
+html body.sb-app .cp-meter { height: 8px; border-radius: 999px; background: var(--cp-hair); overflow: hidden; }
+html body.sb-app .cp-meter__fill { display: block; height: 100%; border-radius: inherit; background: #7A0013; }
+html body.sb-app .cp-checklist { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 10px; }
+html body.sb-app .cp-checklist li { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--cp-muted); }
+html body.sb-app .cp-checklist li.is-done { color: var(--cp-ink); }
+html body.sb-app .cp-check { flex: none; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--cp-border); box-sizing: border-box; }
+html body.sb-app .cp-checklist li.is-done .cp-check { background: #7A0013; border-color: #7A0013; box-shadow: inset 0 0 0 3px var(--cp-surface); }
+
+/* Form cards */
+html body.sb-app .cp-form { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+html body.sb-app .cp-card { margin: 0; padding: 0; background: var(--cp-surface); border: 1px solid var(--cp-hair); border-radius: 20px; overflow: hidden; }
+html body.sb-app .cp-card__head { display: flex; align-items: center; gap: 14px; padding: 18px 24px; border-bottom: 1px solid var(--cp-hair); }
+html body.sb-app .cp-card__icon { flex: none; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: var(--cp-tint); color: var(--cp-red-text); font-size: 18px; }
+html body.sb-app .cp-card__title { margin: 0; font-size: 17px; font-weight: 800; line-height: 1.25; color: var(--cp-ink); }
+html body.sb-app .cp-card__sub { margin: 2px 0 0; font-size: 13px; color: var(--cp-muted); }
+html body.sb-app .cp-card__body { display: grid; gap: 18px; padding: 22px 24px; }
+html body.sb-app .cp-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 16px; align-items: start; }
+@media (max-width: 639.98px) { html body.sb-app .cp-row { grid-template-columns: minmax(0, 1fr); } }
+html body.sb-app .cp-field { min-width: 0; }
+
+/* Controls */
+html body.sb-app .cp-page .form-label { display: block; margin: 0 0 6px; font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--cp-label); }
+html body.sb-app .cp-page .form-label .text-danger { color: var(--cp-error) !important; }
+html body.sb-app .cp-page .form-control, html body.sb-app .cp-page .form-select { height: 46px; min-height: 46px; padding: 0 14px; border-radius: 12px; border: 1.5px solid var(--cp-border); background-color: var(--cp-surface); color: var(--cp-ink); font-size: 15px; }
+html body.sb-app .cp-page textarea.form-control { height: auto; min-height: 110px; padding: 12px 14px; line-height: 1.5; resize: vertical; }
+html body.sb-app .cp-page .form-control::placeholder { color: var(--cp-placeholder); opacity: 1; }
+html body.sb-app .cp-page .form-control:focus, html body.sb-app .cp-page .form-select:focus { border-color: #7A0013; box-shadow: 0 0 0 3px rgba(122, 0, 19, .18); outline: 0; }
+html body.sb-app .cp-page .form-control.is-invalid, html body.sb-app .cp-page .form-select.is-invalid { border-color: var(--cp-error); background-image: none; }
+html body.sb-app .cp-page .invalid-feedback { color: var(--cp-error); font-size: 12.5px; margin-top: 6px; }
+html body.sb-app .cp-page .form-text { margin: 6px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--cp-muted); }
+html body.sb-app .cp-feedback { min-height: 0; margin: 0; }
+
+/* Sticky save bar */
+html body.sb-app .cp-savebar { position: sticky; bottom: 0; z-index: 5; display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin: 24px -36px -28px; padding: 14px 36px; background: color-mix(in srgb, var(--cp-surface) 96%, transparent); border-top: 1px solid var(--cp-hair); }
+html body.sb-app .cp-savebar__hint { margin: 0 auto 0 0; font-size: 14px; color: var(--cp-muted); }
+html body.sb-app .cp-savebar__hint[hidden] { display: none; }
+html body.sb-app .cp-discard { height: 46px; padding: 0 22px; border-radius: 999px; background: var(--cp-surface); border: 1.5px solid var(--cp-border); color: var(--cp-ink); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+html body.sb-app .cp-discard:hover { background: var(--cp-soft); }
+html body.sb-app .cp-save { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 46px; padding: 0 22px; border-radius: 999px; border: 1.5px solid #7A0013; background: #7A0013; color: #fff; font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer; }
+html body.sb-app .cp-save:hover { background: #5C000F; border-color: #5C000F; color: #fff; }
+html body.sb-app .cp-page :is(a, button, input, select, textarea):focus-visible { outline: 3px solid var(--cp-ink); outline-offset: 3px; }
+html body.sb-app .cp-page .form-control:focus-visible, html body.sb-app .cp-page .form-select:focus-visible { outline: 0; }
+@media (max-width: 991.98px) { html body.sb-app .cp-savebar { margin: 24px -20px -24px; padding: 14px 20px; } }
+@media (max-width: 639.98px) {
+    html body.sb-app .cp-savebar { flex-wrap: wrap; }
+    html body.sb-app .cp-savebar__hint { flex: 1 1 100%; margin: 0; }
+    html body.sb-app .cp-discard, html body.sb-app .cp-save { flex: 1 1 0; }
+}
+
+/* People photos are round (company logos stay a rounded square) */
+html body.sb-app .cp-logo--round { width: 112px; height: 112px; border-radius: 50%; }
+html body.sb-app .cp-logo--round span { font-size: 38px; }
+html body.sb-app .cp-role { margin: 4px 0 0; font-size: 14px; color: var(--cp-muted); overflow-wrap: anywhere; }
+html body.sb-app .cp-remove { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 44px; margin-top: 10px; border-radius: 999px; background: var(--cp-surface); border: 1.5px solid var(--cp-border); color: var(--cp-red-text); font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+html body.sb-app .cp-remove:hover { background: var(--cp-tint); }
+html body.sb-app .cp-actions-inline { margin: 0; }
+html body.sb-app .cp-card--single { max-width: 720px; }
+html body.sb-app .cp-card__footer { display: flex; justify-content: flex-end; padding: 16px 24px 20px; border-top: 1px solid var(--cp-hair); }
+
+/* Read-only value in a profile card */
+html body.sb-app .cp-value { margin: 0; font-size: 15px; line-height: 1.5; color: var(--cp-ink); overflow-wrap: anywhere; }

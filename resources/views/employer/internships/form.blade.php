@@ -14,7 +14,7 @@
 
     @include('employer.internships.partials.fields')
 
-    <div class="sb-form-actions">
+    <div class="sb-form-actions ei-actions">
         <a href="{{ route('employer.internships.index') }}" class="btn btn-outline-secondary">Cancel</a>
         <button type="submit" class="btn btn-primary"><i class="bi bi-save" aria-hidden="true"></i> {{ $internship->exists ? 'Update' : 'Post' }} Internship</button>
     </div>

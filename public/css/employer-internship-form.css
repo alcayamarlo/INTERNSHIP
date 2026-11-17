@@ -1,0 +1,52 @@
+/* Post / edit internship form: sectioned cards with a clear header per section. */
+html body.sb-app .ei-form .sb-form-section { padding: 0; overflow: hidden; }
+html body.sb-app .ei-head { display: flex; align-items: center; gap: 12px; padding: 18px 24px; border-bottom: 1px solid var(--line); background: var(--surface-alt); }
+html body.sb-app .ei-head-icon { flex: 0 0 auto; width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--burgundy-tint); color: var(--burgundy-text, var(--burgundy)); font-size: 17px; }
+html body.sb-app .ei-head-text { min-width: 0; flex: 1 1 auto; }
+html body.sb-app .ei-title { margin: 0; font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--text); }
+html body.sb-app .ei-sub { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
+html body.sb-app .ei-head .btn { flex: 0 0 auto; }
+html body.sb-app .ei-body { padding: 22px 24px; }
+@media (max-width: 639.98px) {
+    html body.sb-app .ei-head { padding: 14px 16px; }
+    html body.sb-app .ei-body { padding: 16px; }
+}
+
+/* Field labels and helper text */
+html body.sb-app .ei-form .form-label { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+html body.sb-app .ei-form .form-text { font-size: 12.5px; margin-top: 6px; }
+html body.sb-app .ei-form .ei-count { display: flex; justify-content: flex-end; font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+/* Group divider inside a card body */
+html body.sb-app .ei-divider { height: 1px; background: var(--line); margin: 22px 0; border: 0; }
+html body.sb-app .ei-group-title { margin: 0 0 4px; font-size: 13px; font-weight: 700; color: var(--text); }
+html body.sb-app .ei-group-hint { margin: 0 0 12px; font-size: 12.5px; color: var(--muted); }
+
+/* Program picker: selected count */
+html body.sb-app .ei-programs-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+html body.sb-app .ei-programs-top .form-label { margin: 0; }
+html body.sb-app .ei-selected { font-size: 12px; color: var(--muted); }
+
+/* Competency requirements */
+html body.sb-app .ei-form .sb-repeat-row.requirement-row { padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); margin-bottom: 10px; }
+html body.sb-app .ei-form .sb-repeat-row + .sb-repeat-row { padding-top: 10px; border-top: 1px solid var(--line); }
+html body.sb-app .ei-req-hint { font-size: 12.5px; color: var(--muted); margin: 0 0 12px; }
+
+/* Applicant document checklist */
+html body.sb-app .ei-docs { display: grid; gap: 8px; }
+html body.sb-app .ei-docs .form-check { display: flex; align-items: center; gap: 10px; margin: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+html body.sb-app .ei-docs .form-check:has(.form-check-input:checked) { border-color: var(--burgundy-border); background: var(--burgundy-tint); }
+html body.sb-app .ei-docs .form-check-input { float: none; margin: 0; flex-shrink: 0; }
+html body.sb-app .ei-docs .form-check-label { font-size: 13.5px; font-weight: 500; }
+
+/* Action bar */
+html body.sb-app .ei-actions { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+
+/* Full-width "add" button under the requirement rows */
+html body.sb-app .ei-add { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 44px; margin-top: 4px; border: 1.5px dashed var(--burgundy-border, var(--line)); border-radius: 12px; background: transparent; color: var(--burgundy-text, var(--burgundy)); font-size: 13.5px; font-weight: 600; transition: background .15s, border-color .15s; }
+html body.sb-app .ei-add:hover, html body.sb-app .ei-add:focus-visible { background: var(--burgundy-tint); border-color: var(--burgundy); }
+
+/* Keep the side cards in view while the long left column scrolls (wide screens only) */
+@media (min-width: 1200px) {
+    html body.sb-app .ei-form > .sb-form-col:last-child { position: sticky; top: 16px; }
+}

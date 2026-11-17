@@ -3,6 +3,7 @@
 @section('title', 'My Profile')
 
 @section('content')
+<link rel="stylesheet" href="{{ asset('css/student-profile-layout.css') }}?v={{ @filemtime(public_path('css/student-profile-layout.css')) }}">
 @php
     $tabErrorFields = [
         'personal' => ['first_name', 'middle_name', 'last_name', 'suffix', 'gender', 'date_of_birth', 'place_of_birth', 'citizenship', 'languages', 'civil_status', 'religion', 'height_feet', 'height_inches', 'weight_kg', 'about_me', 'profile_picture'],
@@ -32,6 +33,7 @@
     data-error-fields="{{ json_encode($errors->keys()) }}"
     data-tab-error-fields="{{ json_encode($tabErrorFields) }}"
     data-flash-success="{{ session('success') }}">
+    <div class="sp-grid">
     <header class="profile-header">
         <div class="identity">
             <div class="avatar-wrap">
@@ -39,6 +41,8 @@
                     <x-avatar :avatar="$profileAvatar" :alt="$user->name" />
                 </div>
                 <button type="button" class="avatar-action" data-photo-pick>{{ $profileAvatar['url'] ? 'Change photo' : 'Upload photo' }}</button>
+                <button type="button" class="avatar-remove" data-photo-remove @unless($profileAvatar['url']) hidden @endunless>Remove photo</button>
+                <div class="invalid-feedback d-block avatar-error" data-photo-error role="alert">@error('profile_picture'){{ $message }}@enderror</div>
                 <form method="POST" action="{{ route('student.profile.update-picture') }}" enctype="multipart/form-data" class="visually-hidden" id="profilePictureForm">
                     @csrf
                     <input type="file" name="profile_picture" id="profilePictureInput" accept="image/jpeg,image/png,image/webp" aria-label="Profile photo">
@@ -53,6 +57,13 @@
                 <p class="profile-subline">Student · <span id="profileDisplayProgram">{{ $student->program ?: 'Program not set' }}</span></p>
                 @error('profile_picture')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
+        </div>
+        <div class="resume-actions">
+            <a href="{{ route('student.resume.index') }}" class="btn-profile"><i class="bi bi-file-earmark-person" aria-hidden="true"></i> View resume</a>
+            <form method="POST" action="{{ route('student.resume.generate') }}">
+                @csrf
+                <button type="submit" class="btn-primary-profile" title="Only your 3 latest resumes are kept. Generating a new one removes the oldest."><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Generate resume</button>
+            </form>
         </div>
         <div class="completion">
             <div class="completion-line">
@@ -78,15 +89,10 @@
                     Program not set
                 @endif
             </div>
-            <div class="resume-actions">
-                <a href="{{ route('student.resume.index') }}" class="btn-profile"><i class="bi bi-file-earmark-person" aria-hidden="true"></i> View resume</a>
-                <form method="POST" action="{{ route('student.resume.generate') }}">
-                    @csrf
-                    <button type="submit" class="btn-primary-profile" title="Only your 3 latest resumes are kept. Generating a new one removes the oldest."><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Generate resume</button>
-                </form>
-            </div>
         </div>
     </header>
+
+    <div class="sp-main">
 
     @unless($hasPrivacyConsent)
         <section class="privacy-consent-card" id="privacyConsentCard" aria-labelledby="privacyConsentHeading">
@@ -124,6 +130,8 @@
     @include('student.profile.tabs.portfolio')
     @include('student.profile.tabs.references')
     @include('student.profile.tabs.documents')
+    </div>{{-- /.sp-main --}}
+    </div>{{-- /.sp-grid --}}
 
     @if($profileVerified)
         <dialog class="file-preview-modal" id="studentChangeRequestModal" aria-labelledby="studentChangeRequestTitle" @if($errors->has('requested_value') || $errors->has('field')) open @endif>

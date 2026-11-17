@@ -3,6 +3,7 @@
 @section('title', 'Report Reviews')
 
 @section('content')
+<link rel="stylesheet" href="{{ asset('css/coordinator-review-cards.css') }}?v={{ @filemtime(public_path('css/coordinator-review-cards.css')) }}">
 <div class="sb-dash">
 <x-page-header title="Report reviews" subtitle="Your second review after the company supervisor: weekly reports, evaluations, and recent attendance." />
 
@@ -45,48 +46,49 @@
             $isReport = $tab === 'reports';
             $placement = $item->placement;
         @endphp
-        <article class="card" data-review-item>
-            <div class="card-body">
-                <div class="d-flex justify-content-between flex-wrap gap-2 mb-2">
-                    <div>
-                        <h2 class="sb-card-title mb-1">{{ $isReport ? $item->title : 'Evaluation of '.($placement?->student?->user?->name ?? 'intern') }}</h2>
-                        <small class="text-muted">
-                            <a href="{{ route('coordinator.placements.show', $placement) }}">{{ $placement?->student?->user?->name }}</a> · {{ $placement?->employer?->company_name }}
-                            · {{ $isReport ? 'Week of '.$item->week_start?->format('M d, Y') : 'Submitted '.$item->submitted_at?->format('M d, Y') }}
-                        </small>
-                    </div>
-                    @unless($isReport)<span class="sb-status sb-status--neutral">Average {{ number_format((float) $item->average_score, 2) }} / 5</span>@endunless
+        <article class="card rv-card" data-review-item aria-labelledby="rv-title-{{ $item->id }}">
+            <header class="rv-head">
+                <div class="rv-head__main">
+                    <h2 class="rv-title" id="rv-title-{{ $item->id }}">{{ $isReport ? $item->title : 'Evaluation of '.($placement?->student?->user?->name ?? 'intern') }}</h2>
+                    <p class="rv-meta">
+                        <a href="{{ route('coordinator.placements.show', $placement) }}">{{ $placement?->student?->user?->name }}</a>
+                        <span class="rv-dot" aria-hidden="true">·</span> {{ $placement?->employer?->company_name }}
+                        <span class="rv-dot" aria-hidden="true">·</span> {{ $isReport ? 'Week of '.$item->week_start?->format('M d, Y') : 'Submitted '.$item->submitted_at?->format('M d, Y') }}
+                    </p>
                 </div>
+                @unless($isReport)<span class="sb-status sb-status--neutral rv-score">Average {{ number_format((float) $item->average_score, 2) }} / 5</span>@endunless
+            </header>
+            <dl class="rv-body">
                 @if($isReport)
                     {{-- Weekly narrative report sections; older reports only have accomplishments. --}}
                     @foreach(['accomplishments' => 'Accomplishments', 'challenges' => 'Difficulties encountered', 'actions_taken' => 'Actions taken', 'learnings' => 'Learning insights'] as $field => $label)
-                        @if(filled($item->{$field}))<p class="small mb-1"><strong>{{ $label }}:</strong> {{ \Illuminate\Support\Str::limit($item->{$field}, 400) }}</p>@endif
+                        @if(filled($item->{$field}))<div class="rv-row"><dt>{{ $label }}:</dt><dd>{{ \Illuminate\Support\Str::limit($item->{$field}, 400) }}</dd></div>@endif
                     @endforeach
-                    @if($item->supervisor_comment)<p class="small mb-2"><strong>Supervisor:</strong> {{ $item->supervisor_comment }}</p>@endif
+                    @if($item->supervisor_comment)<div class="rv-row"><dt>Supervisor:</dt><dd>{{ $item->supervisor_comment }}</dd></div>@endif
                 @else
-                    @if($item->strengths)<p class="small mb-1"><strong>Strengths:</strong> {{ $item->strengths }}</p>@endif
-                    @if($item->improvements)<p class="small mb-1"><strong>To improve:</strong> {{ $item->improvements }}</p>@endif
-                    @if($item->comments)<p class="small mb-2"><strong>Comments:</strong> {{ $item->comments }}</p>@endif
+                    @if($item->strengths)<div class="rv-row"><dt>Strengths:</dt><dd>{{ $item->strengths }}</dd></div>@endif
+                    @if($item->improvements)<div class="rv-row"><dt>To improve:</dt><dd>{{ $item->improvements }}</dd></div>@endif
+                    @if($item->comments)<div class="rv-row"><dt>Comments:</dt><dd>{{ $item->comments }}</dd></div>@endif
                 @endif
-                @php($reviewUrl = $isReport ? route('coordinator.reviews.journals', $item) : route('coordinator.reviews.evaluations', $item))
-                {{-- One form per decision: the decision travels in a hidden field, not on the (auto-disabled) button. --}}
-                <div class="row g-2 align-items-end">
-                    <form method="POST" action="{{ $reviewUrl }}" class="col-md-9 row g-2 align-items-end m-0 p-0">
-                        @csrf
-                        <input type="hidden" name="decision" value="returned">
-                        <div class="col">
-                            <label class="form-label small" for="comment{{ $item->id }}">Comment <span class="text-muted">(required to return)</span></label>
-                            <input id="comment{{ $item->id }}" type="text" name="comment" maxlength="1000" class="form-control form-control-sm" required>
-                        </div>
-                        <div class="col-auto"><button type="submit" class="btn btn-sm btn-outline-danger">Return</button></div>
-                    </form>
-                    <form method="POST" action="{{ $reviewUrl }}" class="col-md-3 m-0">
-                        @csrf
-                        <input type="hidden" name="decision" value="reviewed">
-                        <button type="submit" class="btn btn-sm btn-success w-100">Mark reviewed</button>
-                    </form>
-                </div>
-            </div>
+            </dl>
+            @php($reviewUrl = $isReport ? route('coordinator.reviews.journals', $item) : route('coordinator.reviews.evaluations', $item))
+            {{-- One form per decision: the decision travels in a hidden field, not on the (auto-disabled) button. --}}
+            <footer class="rv-foot">
+                <form method="POST" action="{{ $reviewUrl }}" class="rv-return">
+                    @csrf
+                    <input type="hidden" name="decision" value="returned">
+                    <label class="rv-label" for="comment{{ $item->id }}">Comment <span>(required to return)</span></label>
+                    <div class="rv-return__row">
+                        <input id="comment{{ $item->id }}" type="text" name="comment" maxlength="1000" class="form-control" required>
+                        <button type="submit" class="btn btn-outline-danger rv-btn">Return</button>
+                    </div>
+                </form>
+                <form method="POST" action="{{ $reviewUrl }}" class="rv-approve">
+                    @csrf
+                    <input type="hidden" name="decision" value="reviewed">
+                    <button type="submit" class="btn btn-success rv-btn">Mark reviewed</button>
+                </form>
+            </footer>
         </article>
     @empty
         <div class="card"><x-empty-state icon="bi-check2-circle" title="Nothing waiting for your review." /></div>

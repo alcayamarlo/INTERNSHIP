@@ -4,9 +4,11 @@
     $pending = $placement->pendingHours();
     $percent = $placement->progressPercent();
     $statusKey = $placement->statusKey();
+    // 'ojt-record' (coordinator OJT record): the identity block lives in the page header, so it is not repeated here.
+    $compact = ($layout ?? null) === 'ojt-record';
 @endphp
 
-<div class="card mb-4" data-ojt-progress data-live-region="ojt-progress-{{ $placement->id }}" data-live-topics="placements">
+<div class="card mb-4 {{ $compact ? 'ojt-progress--record' : '' }}" data-ojt-progress data-live-region="ojt-progress-{{ $placement->id }}" data-live-topics="placements">
     <div class="card-body">
         @if($placement->isPendingValidation())
             <div class="sb-callout mt-0 mb-3" role="status" data-pending-validation>
@@ -19,6 +21,7 @@
         @elseif($risk = $placement->riskReason())
             <div class="sb-callout mt-0 mb-3" role="status" data-at-risk><p><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> At risk: {{ $risk }}.</p></div>
         @endif
+        @unless($compact)
         <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
             <div>
                 <h2 class="h5 mb-1">{{ $placement->internship?->title ?? 'Internship' }}</h2>
@@ -44,6 +47,7 @@
                 @endif
             </div>
         </div>
+        @endunless
 
         <div class="d-flex justify-content-between small mb-1">
             <span><strong>{{ number_format($approved, 2) }}</strong> of {{ $placement->required_hours }} required hours approved</span>

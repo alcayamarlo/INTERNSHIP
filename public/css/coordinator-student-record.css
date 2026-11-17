@@ -1,0 +1,10 @@
+/* Coordinator > student profile (header + underline tabs). Scoped to .student-record; tokens only. */
+html body.sb-app .student-record .sb-pheader__sep { margin: 0 8px; color: var(--ds-label); }
+html body.sb-app .student-record .sb-pheader__meta .sb-tag { margin-left: 6px; }
+html body.sb-app .student-record .student-record__kpis { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--ds-sp-4); }
+html body.sb-app .student-record .student-record__kpis .sb-kpi { display: flex; flex-direction: column; justify-content: center; min-height: 96px; padding: 14px 18px; border: 1px solid var(--ds-hair); border-radius: 16px; background: var(--ds-bg); box-shadow: none; }
+html body.sb-app .student-record .student-record__kpis .sb-kpi-label { font-size: var(--ds-fs-label); font-weight: 800; letter-spacing: var(--ds-ls-label); text-transform: uppercase; color: var(--ds-label); }
+html body.sb-app .student-record .student-record__kpis .sb-kpi-value { margin-top: 4px; font-size: 24px; font-weight: 800; line-height: 1.15; color: var(--ds-ink); }
+@media (max-width: 1199.98px) { html body.sb-app .student-record .student-record__kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 639.98px) { html body.sb-app .student-record .student-record__kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+html body.sb-app .student-record .sb-upanel > .card, html body.sb-app .student-record .sb-upanel .sb-stack > .card { border: 1px solid var(--ds-hair); border-radius: var(--ds-r-card); }

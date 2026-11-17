@@ -22,9 +22,16 @@
         $activeTab = 'evaluation';
     }
 @endphp
-<x-page-header :title="$profile['name'] ?? 'Intern'" subtitle="OJT supervision record">
-    <a href="{{ route('employer.interns.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back</a>
-</x-page-header>
+<link rel="stylesheet" href="{{ asset('css/sb-ojt-record.css') }}?v={{ @filemtime(public_path('css/sb-ojt-record.css')) }}">
+<div class="ojt-intern-record">
+<x-profile-header :name="$profile['name'] ?? 'Intern'" :avatar="\App\Support\Avatar::for($placement->student?->user)" eyebrow="OJT supervision record">
+    <x-slot:badge><x-status-badge :status="$placement->statusKey()" :label="$placement->statusLabel()" /></x-slot:badge>
+    <span class="sb-pheader__strong">{{ $placement->internship?->title ?? 'Internship' }}</span>
+    <span><i class="bi bi-calendar-event" aria-hidden="true"></i>{{ $placement->start_date?->format('M d, Y') }} – {{ $placement->end_date?->format('M d, Y') ?? 'ongoing' }}</span>
+    <x-slot:actions>
+        <a href="{{ route('employer.interns.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back</a>
+    </x-slot:actions>
+</x-profile-header>
 
 <div class="sb-tabbar">
     <div class="sb-section-tabs" role="tablist" aria-label="OJT sections" data-ojt-tabs>
@@ -37,6 +44,7 @@
         @endforeach
     </div>
 </div>
+</div>{{-- /.ojt-intern-record --}}
 
 {{-- Progress: hours, coordinator, emergency contact and the OJT schedule --}}
 <section id="ojt-panel-progress" class="sb-tab-panel" role="tabpanel" aria-labelledby="ojt-tab-progress" @if($activeTab !== 'progress') hidden @endif>
