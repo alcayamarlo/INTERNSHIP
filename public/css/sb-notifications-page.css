@@ -1,0 +1,230 @@
+/* Notifications page: one card that fits the screen, compact rows, actions revealed on hover.
+   Overrides the inline rules in notifications/index.blade.php. Frontend only. */
+html body.sb-app {
+    --nt-brand: var(--ds-red-text, #7A0013);
+    --nt-hair: var(--ds-hair, #E6E1E3);
+    --nt-tint: #F6E7EA;
+    --nt-hover: #FBF7F8;
+    --nt-unread: #FBF1F3;
+    --nt-danger: #B42318;
+    --nt-danger-tint: #FDECEA;
+    --nt-muted: #4A4A52;
+    --nt-soft: #6B6B73;
+    --nt-field: #D7D0D3;
+}
+:root[data-theme="dark"] body.sb-app {
+    --nt-tint: rgba(122, 0, 19, .28); --nt-hover: rgba(255, 255, 255, .04); --nt-unread: rgba(122, 0, 19, .16);
+    --nt-danger: #F2877D; --nt-danger-tint: rgba(180, 35, 24, .22); --nt-muted: #C9C5C8; --nt-soft: #A8A3A7; --nt-field: #4A4A52;
+}
+
+/* ---------- Page frame: card with margins, only the list scrolls ---------- */
+html body.sb-app .sb-main:has(.nt-card) > .sb-content { padding: 24px; }
+html body.sb-app .sb-content > .nt-card {
+    flex: 1 1 auto; min-height: 0; margin: 0; display: flex; flex-direction: column; overflow: hidden;
+    background: var(--ds-surface, #fff); border: 1px solid var(--nt-hair); border-radius: 20px; box-shadow: none;
+}
+html body.sb-app .nt-card > * { flex: 0 0 auto; }
+html body.sb-app .nt-card > .nt-list { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+
+/* ---------- Header ---------- */
+html body.sb-app .nt-card .nt-head { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; padding: 16px 24px; border-bottom: 1px solid var(--nt-hair); }
+html body.sb-app .nt-card .nt-headtext { min-width: 0; }
+html body.sb-app .nt-card .nt-head h1 { margin: 0; font-size: 1.65rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; color: var(--ds-ink, #1a1517); }
+html body.sb-app .nt-card .nt-head p { margin: 4px 0 0; font-size: .875rem; color: var(--nt-soft); }
+html body.sb-app .nt-card .nt-tools { display: flex; align-items: center; gap: 10px; min-width: 0; }
+html body.sb-app .nt-card .nt-tabs { display: flex; align-items: center; gap: 8px; min-width: 0; }
+html body.sb-app .nt-card .nt-tab {
+    display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; border: 1px solid var(--nt-field); border-radius: 999px;
+    background: var(--ds-surface, #fff); color: var(--nt-brand); font-size: .875rem; font-weight: 700; text-decoration: none; white-space: nowrap;
+}
+html body.sb-app .nt-card .nt-tab:hover { background: var(--nt-tint); }
+html body.sb-app .nt-card .nt-tab .nt-count { min-width: 1.7em; padding: .1em .5em; border-radius: 999px; background: var(--nt-tint); color: var(--nt-brand); font-size: .72rem; font-weight: 800; text-align: center; }
+html body.sb-app .nt-card .nt-tab.is-active { background: var(--nt-brand); border-color: var(--nt-brand); color: #fff; }
+html body.sb-app .nt-card .nt-tab.is-active .nt-count { background: rgba(255, 255, 255, .24); color: #fff; }
+html body.sb-app .nt-card .nt-tab:focus-visible, html body.sb-app .nt-card .nt-pill:focus-visible, html body.sb-app .nt-card .nt-more-toggle:focus-visible, html body.sb-app .nt-card .nt-ib:focus-visible, html body.sb-app .nt-card .nt-toast-x:focus-visible { outline: 3px solid rgba(122, 0, 19, .45); outline-offset: 2px; }
+
+html body.sb-app .nt-card .nt-more { position: relative; display: flex; }
+html body.sb-app .nt-card .nt-more-menu { display: flex; align-items: center; gap: 10px; }
+html body.sb-app .nt-card .nt-more-menu form { margin: 0; }
+html body.sb-app .nt-card .nt-more-menu form[hidden] { display: none; }
+html body.sb-app .nt-card .nt-more-toggle { display: none; place-items: center; width: 40px; height: 40px; border: 1.5px solid var(--nt-field); border-radius: 999px; background: var(--ds-surface, #fff); color: var(--ds-ink, #1a1517); font-size: 18px; cursor: pointer; }
+html body.sb-app .nt-card .nt-pill { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; border: 1.5px solid var(--nt-field); border-radius: 999px; background: var(--ds-surface, #fff); color: var(--ds-ink, #1a1517); font: inherit; font-size: .875rem; font-weight: 700; white-space: nowrap; cursor: pointer; }
+html body.sb-app .nt-card .nt-pill .bi { font-size: 18px; line-height: 1; }
+html body.sb-app .nt-card .nt-pill:hover { background: var(--nt-tint); border-color: var(--nt-brand); color: var(--nt-brand); }
+
+/* ---------- Toolbar (selection) ---------- */
+html body.sb-app .nt-card .nt-bulk { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 24px; border-bottom: 1px solid var(--nt-hair); }
+html body.sb-app .nt-card .nt-bulk label { display: inline-flex; align-items: center; gap: 12px; margin: 0 4px 0 0; color: var(--nt-muted); font-size: .875rem; font-weight: 600; }
+html body.sb-app .nt-card .form-check-input { width: 20px; height: 20px; margin: 0; border: 1.5px solid var(--nt-field); border-radius: 6px; cursor: pointer; }
+html body.sb-app .nt-card .form-check-input:checked, html body.sb-app .nt-card .form-check-input:indeterminate { background-color: var(--nt-brand); border-color: var(--nt-brand); }
+html body.sb-app .nt-card .nt-selcount { min-width: 92px; font-size: .8125rem; font-weight: 700; color: var(--nt-brand); }
+html body.sb-app .nt-card .nt-bulk .btn { min-height: 36px; padding: 0 14px; border: 1.5px solid var(--nt-field); border-radius: 999px; background: var(--ds-surface, #fff); color: var(--ds-ink, #1a1517); font-size: .8125rem; font-weight: 700; box-shadow: none; }
+html body.sb-app .nt-card .nt-bulk .btn:disabled { opacity: .4; cursor: not-allowed; }
+html body.sb-app .nt-card .nt-bulk .btn:not(:disabled):hover { background: var(--nt-tint); border-color: var(--nt-brand); color: var(--nt-brand); }
+html body.sb-app .nt-card .nt-bulk .btn.btn-outline-danger { color: var(--nt-danger); }
+html body.sb-app .nt-card .nt-bulk .btn.btn-outline-danger:not(:disabled):hover { background: var(--nt-danger-tint); border-color: var(--nt-danger); color: var(--nt-danger); }
+
+/* ---------- Toast (the existing feedback line, shown as a floating card) ---------- */
+html body.sb-app .nt-toast {
+    position: fixed; top: calc(var(--sb-topbar-height, 72px) + 16px); right: 24px; z-index: 1080; display: none; align-items: center; gap: 10px;
+    max-width: min(420px, calc(100vw - 24px)); padding: 12px 10px 12px 14px; background: var(--ds-surface, #fff); border: 1px solid var(--nt-hair); border-radius: 14px;
+    box-shadow: 0 12px 32px rgba(22, 22, 26, .18); animation: nt-toast-in .18s ease-out both;
+}
+html body.sb-app .nt-toast:has(.nt-feedback:not([hidden])) { display: flex; }
+html body.sb-app .nt-toast-icon { display: grid; place-items: center; flex: none; color: #1F7A4D; font-size: 20px; }
+html body.sb-app .nt-toast:has(.nt-feedback.is-error) .nt-toast-icon { color: var(--nt-danger); }
+html body.sb-app .nt-card .nt-toast .nt-feedback { margin: 0; padding: 0; border: 0; background: transparent; font-size: .875rem; font-weight: 600; color: var(--ds-ink, #1a1517); }
+html body.sb-app .nt-toast-x { display: grid; place-items: center; flex: none; width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; color: var(--nt-soft); cursor: pointer; }
+html body.sb-app .nt-toast-x:hover { background: var(--nt-hover); color: var(--ds-ink, #1a1517); }
+@keyframes nt-toast-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+
+/* ---------- List: compact rows ---------- */
+html body.sb-app .nt-card .nt-list { padding: 0; scrollbar-width: thin; scrollbar-color: #D7D0D3 transparent; }
+html body.sb-app .nt-card .nt-list::-webkit-scrollbar { width: 4px; }
+html body.sb-app .nt-card .nt-list::-webkit-scrollbar-thumb { background: #D7D0D3; border-radius: 4px; }
+html body.sb-app .nt-card .nt-list::-webkit-scrollbar-track { background: transparent; }
+html body.sb-app .nt-card .nt-list::-webkit-scrollbar-button { display: none; }
+
+html body.sb-app .nt-card .nt-item {
+    position: relative; display: grid; grid-template-columns: 20px 40px minmax(0, 1fr) 168px; align-items: center; gap: 14px;
+    min-height: 72px; margin: 0; padding: 12px 24px; background: transparent; border: 0; border-radius: 0;
+    transition: background-color .12s ease;
+}
+html body.sb-app .nt-card .nt-item + .nt-item { border-top: 1px solid var(--nt-hair); }
+html body.sb-app .nt-card .nt-item:hover, html body.sb-app .nt-card .nt-item:focus-within { background: var(--nt-hover); box-shadow: none; }
+html body.sb-app .nt-card .nt-item:has(.notification-open-link) { cursor: pointer; }
+html body.sb-app .nt-card .nt-item.is-unread { background: var(--nt-unread); }
+html body.sb-app .nt-card .nt-item.is-unread:hover, html body.sb-app .nt-card .nt-item.is-unread:focus-within { background: color-mix(in srgb, var(--nt-unread) 80%, var(--nt-brand) 8%); }
+html body.sb-app .nt-card .nt-item:has(.nt-select:checked) { background: var(--nt-tint); }
+html body.sb-app .nt-card .nt-item:has(.nt-select:checked)::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--nt-brand); }
+html body.sb-app .nt-card .nt-select { margin: 0; }
+html body.sb-app .nt-card .nt-icon { position: relative; display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--nt-tint); color: var(--nt-brand); font-size: 18px; }
+html body.sb-app .nt-card .nt-item.is-unread .nt-icon::after { content: none; }
+
+html body.sb-app .nt-card .nt-main { min-width: 0; }
+html body.sb-app .nt-card .nt-open { display: block; min-width: 0; color: inherit; text-decoration: none; }
+html body.sb-app .nt-card .nt-title { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .9375rem; font-weight: 600; line-height: 1.35; color: var(--ds-ink, #1a1517); }
+html body.sb-app .nt-card .nt-item.is-unread .nt-title { font-weight: 800; }
+html body.sb-app .nt-card .nt-item.is-unread .nt-title::before { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 8px; border-radius: 50%; background: var(--nt-brand); vertical-align: 0; }
+html body.sb-app .nt-card .nt-item:hover .nt-title, html body.sb-app .nt-card .nt-item:focus-within .nt-title { color: var(--nt-brand); }
+html body.sb-app .nt-card .nt-msg { display: block; margin: 2px 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .875rem; line-height: 1.4; color: var(--nt-muted); }
+html body.sb-app .nt-card .nt-open:focus-visible { outline: 3px solid rgba(122, 0, 19, .45); outline-offset: 2px; border-radius: 6px; }
+
+/* right cell: the time by default, the actions on hover or focus (same place, nothing jumps) */
+html body.sb-app .nt-card .nt-side { position: relative; display: flex; align-items: center; justify-content: flex-end; min-height: 40px; }
+html body.sb-app .nt-card .nt-time { padding: 0; font-size: .8125rem; color: var(--nt-soft); white-space: nowrap; transition: opacity .12s ease; }
+html body.sb-app .nt-card .nt-actions { position: absolute; right: 0; top: 50%; display: flex; align-items: center; gap: 6px; margin: 0; opacity: 0; pointer-events: none; transform: translateY(-50%); transition: opacity .12s ease; }
+html body.sb-app .nt-card .nt-actions form { margin: 0; }
+html body.sb-app .nt-card .nt-item:hover .nt-time, html body.sb-app .nt-card .nt-item:focus-within .nt-time { opacity: 0; }
+html body.sb-app .nt-card .nt-item:hover .nt-actions, html body.sb-app .nt-card .nt-item:focus-within .nt-actions { opacity: 1; pointer-events: auto; }
+html body.sb-app .nt-card .nt-ib { display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 1.5px solid var(--nt-field); border-radius: 50%; background: var(--ds-surface, #fff); color: var(--ds-ink, #1a1517); font-size: 17px; line-height: 1; cursor: pointer; transition: background-color .12s, border-color .12s, color .12s; }
+html body.sb-app .nt-card .nt-ib:hover { background: var(--nt-tint); border-color: var(--nt-brand); color: var(--nt-brand); }
+html body.sb-app .nt-card .nt-ib--danger:hover { background: var(--nt-danger-tint); border-color: var(--nt-danger); color: var(--nt-danger); }
+html body.sb-app .nt-card .nt-ib:disabled { opacity: .5; cursor: progress; }
+
+/* ---------- Footer (pagination) ---------- */
+html body.sb-app .nt-card .nt-foot { display: flex; align-items: center; justify-content: center; min-height: 56px; padding: 8px 24px; border-top: 1px solid var(--nt-hair); }
+html body.sb-app .nt-card .nt-foot nav { margin: 0; }
+html body.sb-app .nt-card .nt-foot .pagination { margin: 0; }
+
+/* ---------- Empty state ---------- */
+html body.sb-app .nt-card .nt-list > .sb-empty, html body.sb-app .nt-card .nt-list > * > .sb-empty { margin: auto; }
+
+/* ---------- Tablets, phones and touch: no hover, so actions are always visible ---------- */
+@media (max-width: 899.98px), (hover: none) {
+    html body.sb-app .nt-card .nt-item { grid-template-columns: 20px 40px minmax(0, 1fr); row-gap: 6px; align-items: start; }
+    html body.sb-app .nt-card .nt-select { margin-top: 12px; }
+    html body.sb-app .nt-card .nt-msg { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+    html body.sb-app .nt-card .nt-side { grid-column: 3; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    html body.sb-app .nt-card .nt-time { opacity: 1 !important; }
+    html body.sb-app .nt-card .nt-actions { position: static; opacity: 1; pointer-events: auto; transform: none; }
+    html body.sb-app .nt-card .nt-ib { width: 44px; height: 44px; }
+}
+@media (max-width: 899.98px) {
+    html body.sb-app .nt-card .nt-head { flex-wrap: wrap; padding: 14px 16px; }
+    html body.sb-app .nt-card .nt-tools { width: 100%; }
+    html body.sb-app .nt-card .nt-tabs { flex: 1 1 auto; overflow-x: auto; scrollbar-width: none; }
+    html body.sb-app .nt-card .nt-tabs::-webkit-scrollbar { display: none; }
+    html body.sb-app .nt-card .nt-more-toggle { display: grid; }
+    html body.sb-app .nt-card .nt-more-menu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 20; display: none; flex-direction: column; align-items: stretch; gap: 8px; min-width: 200px; padding: 10px; background: var(--ds-surface, #fff); border: 1px solid var(--nt-hair); border-radius: 16px; box-shadow: 0 12px 32px rgba(22, 22, 26, .18); }
+    html body.sb-app .nt-card .nt-more.is-open .nt-more-menu { display: flex; }
+    html body.sb-app .nt-card .nt-bulk { flex-wrap: wrap; padding: 8px 16px; }
+    html body.sb-app .nt-card .nt-item { padding: 12px 16px; }
+    html body.sb-app .nt-card .nt-foot { padding: 8px 16px; }
+    html body.sb-app .nt-toast { right: 12px; }
+}
+@media (max-width: 639.98px) {
+    html body.sb-app .sb-main:has(.nt-card) > .sb-content { padding: 0; }
+    html body.sb-app .sb-content > .nt-card { border-radius: 0; border-left: 0; border-right: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    html body.sb-app .nt-card .nt-time, html body.sb-app .nt-card .nt-actions, html body.sb-app .nt-card .nt-item, html body.sb-app .nt-card .nt-ib { transition: none; }
+    html body.sb-app .nt-toast { animation: none; }
+}
+
+/* ---------- Fixes: softer active tab, no hover overlap, tighter frame ---------- */
+html body.sb-app .nt-card a.nt-tab { color: var(--nt-brand); }
+html body.sb-app .nt-card a.nt-tab.is-active,
+html body.sb-app .nt-card a.nt-tab.is-active:hover,
+html body.sb-app .nt-card a.nt-tab.is-active:visited { background: var(--nt-tint); border-color: var(--nt-brand); color: var(--nt-brand); box-shadow: none; }
+html body.sb-app .nt-card a.nt-tab.is-active .nt-count { background: var(--nt-brand); color: #fff; }
+html body.sb-app .nt-card a.nt-tab:not(.is-active) .nt-count { background: #F2EDEF; color: var(--nt-muted); }
+
+/* time and actions swap instantly (never both visible) and the title never underlines */
+html body.sb-app .nt-card .nt-time, html body.sb-app .nt-card .nt-actions { transition: none; }
+html body.sb-app .nt-card .nt-item:hover .nt-time, html body.sb-app .nt-card .nt-item:focus-within .nt-time { visibility: hidden; }
+html body.sb-app .nt-card .nt-item:hover .nt-actions, html body.sb-app .nt-card .nt-item:focus-within .nt-actions { visibility: visible; }
+html body.sb-app .nt-card .nt-actions { visibility: hidden; }
+html body.sb-app .nt-card .nt-open, html body.sb-app .nt-card .nt-open:hover, html body.sb-app .nt-card .nt-open:hover * { text-decoration: none; }
+@media (max-width: 899.98px), (hover: none) {
+    html body.sb-app .nt-card .nt-actions { visibility: visible; }
+    html body.sb-app .nt-card .nt-time { visibility: visible !important; }
+}
+
+/* a little more room for rows */
+html body.sb-app .sb-main:has(.nt-card) > .sb-content { padding: 16px 20px; }
+html body.sb-app .nt-card .nt-head { padding: 12px 20px; }
+html body.sb-app .nt-card .nt-head h1 { font-size: 1.5rem; }
+html body.sb-app .nt-card .nt-head p { margin-top: 2px; }
+html body.sb-app .nt-card .nt-bulk { min-height: 48px; padding: 4px 20px; }
+html body.sb-app .nt-card .nt-item { padding: 10px 20px; min-height: 68px; }
+html body.sb-app .nt-card .nt-foot { min-height: 52px; }
+
+/* ---------- Edge to edge, like the notification detail page ---------- */
+html body.sb-app .sb-main:has(.nt-card) > .sb-content { padding: 0; }
+html body.sb-app .sb-content > .nt-card { border: 0; border-radius: 0; }
+html body.sb-app .nt-card .nt-head { padding: 14px 24px; }
+html body.sb-app .nt-card .nt-bulk, html body.sb-app .nt-card .nt-item, html body.sb-app .nt-card .nt-foot { padding-left: 24px; padding-right: 24px; }
+@media (max-width: 899.98px) {
+    html body.sb-app .nt-card .nt-head, html body.sb-app .nt-card .nt-bulk, html body.sb-app .nt-card .nt-item, html body.sb-app .nt-card .nt-foot { padding-left: 16px; padding-right: 16px; }
+}
+
+/* ---------- Dark theme ---------- */
+html:root:root:root:root[data-theme="dark"] body.sb-app {
+    --nt-brand: #F08A9B; --nt-tint: rgba(218, 92, 112, .2); --nt-hover: rgba(255, 255, 255, .05); --nt-unread: rgba(218, 92, 112, .12);
+    --nt-muted: #C9C5C8; --nt-soft: #A8A3A7; --nt-field: #3A3A40; --nt-danger: #F2877D; --nt-danger-tint: rgba(242, 135, 125, .16);
+}
+html:root:root:root:root[data-theme="dark"] body.sb-app .nt-card a.nt-tab:not(.is-active) .nt-count { background: rgba(255, 255, 255, .08); color: #C9C5C8; }
+html:root:root:root:root[data-theme="dark"] body.sb-app .nt-card a.nt-tab.is-active .nt-count { background: #DA5C70; color: #fff; }
+html:root:root:root:root[data-theme="dark"] body.sb-app .nt-card .nt-item.is-unread:hover, html:root:root:root:root[data-theme="dark"] body.sb-app .nt-card .nt-item.is-unread:focus-within { background: rgba(218, 92, 112, .2); }
+html:root:root:root:root[data-theme="dark"] body.sb-app .nt-card .nt-list { scrollbar-color: #3A3A40 transparent; }
+html:root:root:root:root[data-theme="dark"] body.sb-app .nt-card .nt-list::-webkit-scrollbar-thumb { background: #3A3A40; }
+html:root:root:root:root[data-theme="dark"] body.sb-app .nt-card .nt-item:has(.nt-select:checked)::before { background: #DA5C70; }
+html:root:root:root:root[data-theme="dark"] body.sb-app .nt-toast { box-shadow: 0 12px 32px rgba(0, 0, 0, .55); }
+html:root:root:root:root[data-theme="dark"] body.sb-app .nt-card .nt-more-menu { box-shadow: 0 12px 32px rgba(0, 0, 0, .55); }
+
+/* ---------- Pagination: same accent treatment as the active tab (soft tint + brand ring, no solid red block) ---------- */
+html body.sb-app .nt-card .nt-foot { flex-direction: column; gap: 8px; padding-top: 10px; padding-bottom: 12px; }
+html body.sb-app .nt-card .nt-foot nav { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+html body.sb-app .nt-card .nt-foot p, html body.sb-app .nt-card .nt-foot .small, html body.sb-app .nt-card .nt-foot .text-muted { margin: 0; font-size: .8125rem; color: var(--nt-soft) !important; }
+html body.sb-app .nt-card .nt-foot .pagination { display: flex; align-items: center; gap: 6px; margin: 0; }
+html body.sb-app .nt-card .nt-foot .page-link {
+    display: grid; place-items: center; min-width: 38px; height: 38px; padding: 0 10px; border: 1.5px solid var(--nt-field); border-radius: 999px !important;
+    background: var(--ds-surface, #fff); color: var(--ds-ink, #1a1517); font-size: .875rem; font-weight: 700; box-shadow: none;
+}
+html body.sb-app .nt-card .nt-foot .page-link:hover { background: var(--nt-tint); border-color: var(--nt-brand); color: var(--nt-brand); }
+html body.sb-app .nt-card .nt-foot .page-item.active .page-link,
+html body.sb-app .nt-card .nt-foot .page-link[aria-current="page"] { background: var(--nt-tint); border-color: var(--nt-brand); color: var(--nt-brand); }
+html body.sb-app .nt-card .nt-foot .page-item.disabled .page-link { opacity: .45; background: transparent; }
+html body.sb-app .nt-card .nt-foot .page-link:focus-visible { outline: 3px solid rgba(122, 0, 19, .45); outline-offset: 2px; box-shadow: none; }
+html:root:root:root:root[data-theme="dark"] body.sb-app .nt-card .nt-foot .page-link:focus-visible { outline-color: rgba(240, 138, 155, .6); }

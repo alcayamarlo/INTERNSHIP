@@ -51,6 +51,7 @@
         .nt-row { flex-direction: column; gap: 2px; }
     }
 </style>
+<link rel="stylesheet" href="{{ asset('css/sb-notifications-page.css') }}?v={{ @filemtime(public_path('css/sb-notifications-page.css')) }}">
 @endpush
 
 @section('content')
@@ -59,6 +60,7 @@
     $ntIcon = function (string $type): string {
         $type = strtolower($type);
         return match (true) {
+            str_contains($type, 'company'), str_contains($type, 'employer') => 'bi-building',
             str_contains($type, 'message') => 'bi-chat-dots',
             str_contains($type, 'application') => 'bi-briefcase',
             str_contains($type, 'invit') => 'bi-envelope-paper',
@@ -66,6 +68,7 @@
             str_contains($type, 'announce') => 'bi-megaphone',
             str_contains($type, 'ojt'), str_contains($type, 'placement'), str_contains($type, 'journal') => 'bi-clock-history',
             str_contains($type, 'reject'), str_contains($type, 'warn'), str_contains($type, 'suspend') => 'bi-exclamation-triangle',
+            str_contains($type, 'student'), str_contains($type, 'profile'), str_contains($type, 'validation') => 'bi-person',
             default => 'bi-bell',
         };
     };
@@ -92,7 +95,7 @@
 {{-- Live region: new notifications appear in the list without a reload (resources/js/app.js). --}}
 <section class="card nt-card" aria-labelledby="nt-title" data-notification-page data-view="{{ $view }}" data-live-region="notifications" data-live-topics="notifications">
     <header class="nt-head">
-        <div>
+        <div class="nt-headtext">
             <h1 id="nt-title">Notifications</h1>
             <p data-notification-summary>
                 @if($view === 'archived')
@@ -107,22 +110,27 @@
             </p>
         </div>
         <div class="nt-tools">
-            <div class="btn-group" role="group" aria-label="Notification folders">
+            <div class="nt-tabs" role="group" aria-label="Notification folders">
                 @foreach($tabs as $key => $label)
-                    <a href="{{ route('notifications.index', ['view' => $key]) }}" class="btn btn-sm {{ $view === $key ? 'btn-primary' : 'btn-outline-primary' }}" @if($view === $key) aria-current="true" @endif>
+                    <a href="{{ route('notifications.index', ['view' => $key]) }}" class="nt-tab {{ $view === $key ? 'is-active' : '' }}" @if($view === $key) aria-current="true" @endif>
                         {{ $label }} <span class="nt-count" data-notification-count="{{ $key }}">{{ $counts[$key] }}</span>
                     </a>
                 @endforeach
             </div>
             @if($view === 'active')
-                <form action="{{ route('notifications.read-all') }}" method="POST" data-ajax-notification="read-all">
-                    @csrf
-                    <button type="submit" class="btn btn-outline-primary btn-sm"><i class="bi bi-check-all" aria-hidden="true"></i> Mark all read</button>
-                </form>
-                <form action="{{ route('notifications.archive-all-read') }}" method="POST" data-ajax-notification="archive-all-read">
-                    @csrf
-                    <button type="submit" class="btn btn-outline-secondary btn-sm">Archive all read</button>
-                </form>
+                <div class="nt-more" data-nt-more>
+                    <button type="button" class="nt-more-toggle" data-nt-more-toggle aria-haspopup="menu" aria-expanded="false" aria-label="More actions"><i class="bi bi-three-dots" aria-hidden="true"></i></button>
+                    <div class="nt-more-menu" data-nt-more-menu>
+                        <form action="{{ route('notifications.read-all') }}" method="POST" data-ajax-notification="read-all" data-nt-readall @if($unread_count < 1) hidden @endif>
+                            @csrf
+                            <button type="submit" class="nt-pill"><i class="bi bi-check-all" aria-hidden="true"></i> Mark all read</button>
+                        </form>
+                        <form action="{{ route('notifications.archive-all-read') }}" method="POST" data-ajax-notification="archive-all-read">
+                            @csrf
+                            <button type="submit" class="nt-pill"><i class="bi bi-archive" aria-hidden="true"></i> Archive all read</button>
+                        </form>
+                    </div>
+                </div>
             @endif
         </div>
     </header>
@@ -132,6 +140,7 @@
         <form id="ntBulkForm" class="nt-bulk" action="{{ route('notifications.bulk') }}" method="POST" data-ajax-notification="bulk">
             @csrf
             <label><input type="checkbox" class="form-check-input" data-notification-select-all> Select all on this page</label>
+            <span class="nt-selcount" data-nt-selcount aria-live="polite"></span>
             @foreach($bulkActions as [$action, $label, $confirm, $confirmLabel])
                 <button type="submit" name="action" value="{{ $action }}" disabled data-bulk-action
                         class="btn {{ in_array($action, ['delete', 'force-delete'], true) ? 'btn-outline-danger' : 'btn-outline-secondary' }}"
@@ -142,15 +151,19 @@
         </form>
     @endif
 
-    {{-- Success and error messages for every action on this page. --}}
-    <p class="nt-feedback" role="status" aria-live="polite" data-notification-feedback hidden></p>
+    <div class="nt-toast" data-nt-toast>
+        <span class="nt-toast-icon" aria-hidden="true"><i class="bi bi-check-circle-fill"></i></span>
+        {{-- Success and error messages for every action on this page (text written by resources/js/app.js). --}}
+        <p class="nt-feedback" role="status" aria-live="polite" data-notification-feedback hidden></p>
+        <button type="button" class="nt-toast-x" data-nt-toast-close aria-label="Dismiss message"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+    </div>
 
     <div class="nt-list" data-notification-list>
         @forelse($notifications as $notification)
             <div class="nt-item {{ $notification->read_at ? '' : 'is-unread' }}" data-notification-item data-notification-id="{{ $notification->id }}">
                 <input type="checkbox" class="form-check-input nt-select" name="ids[]" value="{{ $notification->id }}" form="ntBulkForm" data-notification-select aria-label="Select: {{ $notification->title }}">
                 <span class="nt-icon" aria-hidden="true"><i class="bi {{ $ntIcon((string) $notification->type) }}"></i></span>
-                <div class="min-w-0 flex-grow-1">
+                <div class="nt-main">
                     @if($view === 'trash')
                         {{-- A deleted notification cannot be opened until it is restored. --}}
                         <div class="nt-open">
@@ -160,50 +173,47 @@
                            data-notification-open
                            data-read-url="{{ route('notifications.read', $notification) }}">
                     @endif
-                        <div class="nt-row">
-                            <span class="nt-title">
-                                {{ $notification->title }}
-                                @if(!$notification->read_at)<span class="badge bg-primary">New</span>@endif
-                            </span>
-                            <time class="nt-time" datetime="{{ $notification->created_at->toIso8601String() }}" title="{{ $notification->created_at->format('M d, Y h:i A') }}">{{ $notification->created_at->diffForHumans() }}</time>
-                        </div>
-                        <p class="nt-msg">{{ $notification->message }}</p>
+                        <span class="nt-title">{{ $notification->title }}</span>
+                        <span class="nt-msg" title="{{ $notification->message }}">{{ $notification->message }}</span>
                     @if($view === 'trash')
                         </div>
                     @else
                         </a>
                     @endif
+                </div>
+                <div class="nt-side">
+                    <time class="nt-time" datetime="{{ $notification->created_at->toIso8601String() }}" title="{{ $notification->created_at->format('M d, Y h:i A') }}">{{ $notification->created_at->diffForHumans() }}</time>
                     <div class="nt-actions">
                         @if($view === 'trash')
                             <form action="{{ route('notifications.restore-deleted', $notification) }}" method="POST" data-ajax-notification="restore-deleted">
                                 @csrf
-                                <button type="submit" class="btn btn-outline-secondary">Restore</button>
+                                <button type="submit" class="nt-ib" title="Restore" aria-label="Restore"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i></button>
                             </form>
                             <form action="{{ route('notifications.force-destroy', $notification) }}" method="POST" data-ajax-notification="force-delete" data-confirm="Permanently delete this notification? This cannot be undone." data-confirm-title="Delete forever" data-confirm-label="Delete forever">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-outline-danger">Delete forever</button>
+                                <button type="submit" class="nt-ib nt-ib--danger" title="Delete permanently" aria-label="Delete permanently"><i class="bi bi-trash3" aria-hidden="true"></i></button>
                             </form>
                         @else
                             @if(!$notification->read_at)
                                 <form action="{{ route('notifications.read', $notification) }}" method="POST" data-ajax-notification="read">
                                     @csrf
-                                    <button type="submit" class="btn btn-outline-primary">Mark read</button>
+                                    <button type="submit" class="nt-ib" title="Mark read" aria-label="Mark read"><i class="bi bi-envelope-open" aria-hidden="true"></i></button>
                                 </form>
                             @endif
                             @if($notification->archived_at)
                                 <form action="{{ route('notifications.restore', $notification) }}" method="POST" data-ajax-notification="unarchive">
                                     @csrf
-                                    <button type="submit" class="btn btn-outline-secondary">Unarchive</button>
+                                    <button type="submit" class="nt-ib" title="Unarchive" aria-label="Unarchive"><i class="bi bi-box-arrow-up" aria-hidden="true"></i></button>
                                 </form>
                             @else
                                 <form action="{{ route('notifications.archive', $notification) }}" method="POST" data-ajax-notification="archive">
                                     @csrf
-                                    <button type="submit" class="btn btn-outline-secondary">Archive</button>
+                                    <button type="submit" class="nt-ib" title="Archive" aria-label="Archive"><i class="bi bi-archive" aria-hidden="true"></i></button>
                                 </form>
                             @endif
                             <form action="{{ route('notifications.destroy', $notification) }}" method="POST" data-ajax-notification="delete" data-confirm="Move this notification to Trash? You can restore it from the Trash tab." data-confirm-title="Delete notification" data-confirm-label="Delete">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-outline-danger">Delete</button>
+                                <button type="submit" class="nt-ib nt-ib--danger" title="Delete" aria-label="Delete"><i class="bi bi-trash3" aria-hidden="true"></i></button>
                             </form>
                         @endif
                     </div>
@@ -220,3 +230,6 @@
     @if($notifications->hasPages())<div class="nt-foot">{{ $notifications->links() }}</div>@endif
 </section>
 @endsection
+@push('scripts')
+<script src="{{ asset('js/sb-notif-page.js') }}?v={{ @filemtime(public_path('js/sb-notif-page.js')) }}" defer></script>
+@endpush

@@ -4,7 +4,7 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
     <meta
         name="csrf-token"
@@ -865,6 +865,7 @@
 
     @stack('styles')
     @include('partials.theme-init')
+    <link rel="stylesheet" href="{{ asset('css/sb-foundation.css') }}?v={{ @filemtime(public_path('css/sb-foundation.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}?v={{ @filemtime(public_path('css/skillbridge-ui.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-eye-comfort.css') }}?v={{ @filemtime(public_path('css/sb-eye-comfort.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/auth-photo.css') }}?v={{ @filemtime(public_path('css/auth-photo.css')) }}">

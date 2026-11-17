@@ -29,7 +29,7 @@
 <html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>SkillBridge — St. Cecilia's College</title>
     <meta name="description" content="SkillBridge connects students, coordinators, and employers around internship readiness and verified competencies.">
     <meta name="theme-color" content="#7A010E">
@@ -40,6 +40,7 @@
     <meta name="twitter:card" content="summary">
     <link rel="icon" type="image/png" href="{{ asset('images/brand/stcc-logo.png') }}?v=1">
     <link rel="apple-touch-icon" href="{{ asset('images/brand/stcc-logo.png') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/sb-foundation.css') }}?v={{ @filemtime(public_path('css/sb-foundation.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/skillbridge-ui.css') }}?v={{ @filemtime(public_path('css/skillbridge-ui.css')) }}">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}?v={{ @filemtime(public_path('js/skillbridge-ui.js')) }}"></script>
     <link rel="stylesheet" href="{{ asset('css/skillbridge-public.css') }}?v=15">
