@@ -1,4 +1,6 @@
 {{-- Popup shown over the landing page. Needs $invitation and $token. --}}
+{{-- The landing page only ships inline SVGs, so load the icon font these popups use. --}}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/sb-invite.css') }}?v={{ @filemtime(public_path('css/sb-invite.css')) }}">
 <div class="inv-overlay" data-inv-overlay>
 <div class="inv-backdrop" aria-hidden="true"></div>
@@ -47,7 +49,7 @@
                         </div>
                         <div class="inv-f">
                             <label class="form-label" for="ciAddress">Address <span aria-hidden="true">*</span></label>
-                            <textarea id="ciAddress" name="address" rows="2" class="form-control @error('address') is-invalid @enderror" required maxlength="500">{{ old('address', $invitation->address) }}</textarea>
+                            <textarea id="ciAddress" name="address" rows="1" class="form-control @error('address') is-invalid @enderror" required maxlength="500">{{ old('address', $invitation->address) }}</textarea>
                             @error('address')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                         <div class="inv-f">

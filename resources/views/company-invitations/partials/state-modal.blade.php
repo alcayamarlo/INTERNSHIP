@@ -12,6 +12,8 @@
         default => 'bi-link-45deg',
     };
 @endphp
+{{-- The landing page only ships inline SVGs, so load the icon font these popups use. --}}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/sb-invite.css') }}?v={{ @filemtime(public_path('css/sb-invite.css')) }}">
 <div class="inv-overlay" data-inv-overlay>
 <div class="inv-backdrop" aria-hidden="true"></div>

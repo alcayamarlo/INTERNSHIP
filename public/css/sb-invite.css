@@ -146,3 +146,14 @@ html body.sb-glass.skillbridge-public .inv-card { max-height: calc(100svh - 32px
 @keyframes inv-pop { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { html body.sb-glass.skillbridge-public .inv-card { animation: none; } }
 @media (max-width: 639.98px) { html body.sb-glass.skillbridge-public .inv-card { max-height: none; } html body.skillbridge-public .inv-page { align-items: flex-start; padding: 12px; } }
+
+/* ---------- Polish: legend inside the box, even field heights, icons ---------- */
+html body.sb-glass.skillbridge-public .inv-section legend { float: left; width: 100%; margin: 0 0 12px; padding: 0; line-height: 1.2; }
+html body.sb-glass.skillbridge-public .inv-section legend + .inv-grid, html body.sb-glass.skillbridge-public .inv-section legend + * { clear: both; }
+html body.sb-glass.skillbridge-public .inv-section .inv-grid { clear: both; }
+html body.sb-glass.skillbridge-public .inv-card textarea.form-control[rows="1"] { height: 42px; min-height: 42px; max-height: 120px; }
+html body.sb-glass.skillbridge-public .inv-chip .bi, html body.sb-glass.skillbridge-public .inv-btn .bi, html body.sb-glass.skillbridge-public .inv-edit .bi, html body.sb-glass.skillbridge-public .inv-eye .bi, html body.sb-glass.skillbridge-public .inv-state-icon .bi { display: inline-block; line-height: 1; font-style: normal; }
+html body.sb-glass.skillbridge-public .inv-chip .bi { font-size: 16px; }
+html body.sb-glass.skillbridge-public .inv-dot .bi { font-size: 14px; line-height: 1; }
+html body.sb-glass.skillbridge-public .inv-btn--primary .bi { font-size: 16px; }
+html body.sb-glass.skillbridge-public .inv-section { padding: 16px 18px 18px; }
