@@ -164,7 +164,6 @@ class ProfileController extends Controller
             'profileCompletion' => $profileCompletion,
             'hasPrivacyConsent' => $student->hasPrivacyConsent(),
             'privacyStatement' => PrivacyConsent::STATEMENT,
-            'civilStatuses' => StudentProfileRequest::CIVIL_STATUSES,
             'studentSkills' => $student->studentSkills()->with('skill')->orderBy('id')->get(),
             'certifiedSkillNames' => $student->certifiedCompetencyNames(),
             'maxSkills' => StudentSkill::MAX_PER_STUDENT,
@@ -427,16 +426,7 @@ class ProfileController extends Controller
             'place_of_birth' => $validated['place_of_birth'] ?? null,
             'citizenship' => $validated['citizenship'] ?? null,
             'languages' => $validated['languages'] ?? null,
-            'civil_status' => $validated['civil_status'] ?? null,
-            'religion' => $validated['religion'] ?? null,
-            'height_feet' => $validated['height_feet'] ?? null,
-            'height_inches' => isset($validated['height_feet']) ? (int) ($validated['height_inches'] ?? 0) : null,
             'about_me' => $validated['about_me'] ?? null,
-            'weight_kg' => $validated['weight_kg'] ?? null,
-            'show_civil_status' => $request->boolean('show_civil_status'),
-            'show_religion' => $request->boolean('show_religion'),
-            'show_height' => $request->boolean('show_height'),
-            'show_weight' => $request->boolean('show_weight'),
         ];
     }
 

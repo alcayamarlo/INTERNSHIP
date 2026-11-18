@@ -212,10 +212,11 @@ it('saves one tab at a time and validates only that tab', function () {
         'last_name' => 'Cruz',
         'gender' => 'Female',
         'date_of_birth' => '2003-01-01',
+        // The sensitive details are gone from the form: sent anyway, they are ignored.
         'civil_status' => 'Single',
         'show_civil_status' => '1',
     ])->assertRedirect(route('student.profile.edit').'#personal');
-    expect($student->fresh()->show_civil_status)->toBeTrue();
+    expect($student->fresh()->show_civil_status)->toBeFalse()->and($student->fresh()->civil_status)->toBeNull();
 });
 
 it('adds, edits, and removes optional experience entries', function () {
@@ -393,20 +394,18 @@ it('lets an employer request IDs, and no longer offers a reference requirement',
 
 // ---------- Company-visible profile ----------
 
-it('hides sensitive fields from companies unless the student shows them', function () {
+it('never shows civil status, religion, height or weight to companies, even if they were shown before', function () {
     $student = bioDataStudent(['civil_status' => 'Single', 'religion' => 'Catholic', 'height_feet' => 5, 'height_inches' => 3, 'weight_kg' => 52.5, 'show_religion' => true]);
     [$employerUser, $employer] = bioDataEmployer();
     bioDataApply($student, bioDataInternship($employer));
 
     $profile = app(CompanyVisibleProfile::class)->for($student, $employerUser);
 
-    expect($profile['personal'])->toHaveKey('Religion', 'Catholic')
-        ->and($profile['personal'])->not->toHaveKeys(['Civil status', 'Height', 'Weight']);
+    expect($profile['personal'])->not->toHaveKeys(['Civil status', 'Religion', 'Height', 'Weight']);
 
-    $student->update(['show_height' => true, 'show_weight' => true]);
+    $student->update(['show_civil_status' => true, 'show_height' => true, 'show_weight' => true]);
     $profile = app(CompanyVisibleProfile::class)->for($student->fresh(), $employerUser);
-    expect($profile['personal']['Height'])->toBe('5 ft 3 in')
-        ->and($profile['personal']['Weight'])->toBe('52.5 kg');
+    expect($profile['personal'])->not->toHaveKeys(['Civil status', 'Religion', 'Height', 'Weight']);
 });
 
 it('hides contact details, references, and documents unless the student has an active application to that company', function () {
@@ -599,4 +598,16 @@ it('shows skills and competencies as separate sections to coordinators and emplo
         ->assertOk()
         ->assertSeeInOrder(['<h2>Certificates</h2>', 'Network Setup', '<h2>Skills</h2>', 'Dancing'], false)
         ->assertSee('Not part of the match score.');
+});
+
+it('no longer asks for civil status, religion, height or weight on the profile', function () {
+    $student = bioDataStudent(['civil_status' => 'Single', 'religion' => 'Catholic']);
+    $this->actingAs($student->user);
+
+    $this->get(route('student.profile.edit'))->assertOk()
+        ->assertDontSee('Sensitive details')->assertDontSee('Show to companies')
+        ->assertDontSee('name="civil_status"', false)->assertDontSee('name="religion"', false)
+        ->assertDontSee('name="height_feet"', false)->assertDontSee('name="weight_kg"', false)
+        // The rest of the personal tab is still there.
+        ->assertSee('name="citizenship"', false)->assertSee('name="about_me"', false);
 });

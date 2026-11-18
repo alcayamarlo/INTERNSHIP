@@ -19,7 +19,7 @@ use Illuminate\Support\Str;
 /**
  * The only view of a student that company-facing pages may use (RA 10173).
  *
- * - Sensitive personal fields appear only when the student turned on "Show to companies".
+ * - Civil status, religion, height and weight are no longer collected on the profile and are never shown.
  * - Mobile, email, addresses, references, and documents appear only while the student has an
  *   active (non-withdrawn) application to one of the company's internships.
  * - The emergency contact appears only once the student is placed with the company.
@@ -339,7 +339,7 @@ class CompanyVisibleProfile
             ->get(['id', 'title', 'requested_documents']);
     }
 
-    /** Personal details a company may see; sensitive ones only when the student turned on "Show to companies". */
+    /** Personal details a company may see. */
     private function personalRows(Student $student): array
     {
         return array_filter([
@@ -348,10 +348,6 @@ class CompanyVisibleProfile
             'Place of birth' => $student->place_of_birth,
             'Citizenship' => $student->citizenship,
             'Languages / dialects' => $student->languages,
-            'Civil status' => $student->show_civil_status ? $student->civil_status : null,
-            'Religion' => $student->show_religion ? $student->religion : null,
-            'Height' => $student->show_height && $student->height_feet ? $student->height_feet.' ft '.(int) $student->height_inches.' in' : null,
-            'Weight' => $student->show_weight && $student->weight_kg ? ((float) $student->weight_kg).' kg' : null,
         ], 'filled');
     }
 

@@ -36,42 +36,7 @@
         </div>
 
         <hr class="section-divider">
-        <h2 class="panel-heading">Sensitive details <span class="panel-tag">Optional</span></h2>
-        <p class="portfolio-description">These are hidden from companies by default. Turn on "Show to companies" only for the details you want to share.</p>
         <div class="profile-field-grid">
-            <div>
-                <label class="form-label" for="civil_status">Civil status</label>
-                <select id="civil_status" class="form-select @error('civil_status') is-invalid @enderror" name="civil_status">
-                    <option value="">Select...</option>
-                    @foreach($civilStatuses as $civilStatus)
-                        <option value="{{ $civilStatus }}" @selected(old('civil_status', $student->civil_status) === $civilStatus)>{{ $civilStatus }}</option>
-                    @endforeach
-                </select>
-                @error('civil_status')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                @include('student.profile.partials.visibility-toggle', ['name' => 'show_civil_status'])
-            </div>
-            <div>
-                @include('student.profile.partials.field', ['name' => 'religion', 'label' => 'Religion', 'value' => $student->religion])
-                @include('student.profile.partials.visibility-toggle', ['name' => 'show_religion'])
-            </div>
-            <div>
-                <fieldset class="sb-height">
-                    <legend class="form-label">Height</legend>
-                    <div class="input-group">
-                        <input type="number" id="height_feet" class="form-control @error('height_feet') is-invalid @enderror" name="height_feet" min="3" max="8" step="1" inputmode="numeric" value="{{ old('height_feet', $student->height_feet) }}" aria-label="Height, feet" placeholder="5">
-                        <span class="input-group-text">ft</span>
-                        <input type="number" id="height_inches" class="form-control @error('height_inches') is-invalid @enderror" name="height_inches" min="0" max="11" step="1" inputmode="numeric" value="{{ old('height_inches', $student->height_inches) }}" aria-label="Height, inches" placeholder="7">
-                        <span class="input-group-text">in</span>
-                    </div>
-                    @error('height_feet')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
-                    @error('height_inches')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
-                </fieldset>
-                @include('student.profile.partials.visibility-toggle', ['name' => 'show_height'])
-            </div>
-            <div>
-                @include('student.profile.partials.field', ['name' => 'weight_kg', 'label' => 'Weight (kg)', 'type' => 'number', 'value' => $student->weight_kg, 'extra' => 'step="0.1" min="20" max="300" inputmode="decimal"'])
-                @include('student.profile.partials.visibility-toggle', ['name' => 'show_weight'])
-            </div>
             <div class="field-wide">
                 <label class="form-label" for="about_me">About me</label>
                 <textarea id="about_me" class="form-control @error('about_me') is-invalid @enderror" name="about_me" rows="4" maxlength="1000" placeholder="A short introduction: who you are, what you are good at and what you want to learn">{{ old('about_me', $student->about_me) }}</textarea>

@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="{{ asset('css/student-profile-layout.css') }}?v={{ @filemtime(public_path('css/student-profile-layout.css')) }}">
 @php
     $tabErrorFields = [
-        'personal' => ['first_name', 'middle_name', 'last_name', 'suffix', 'gender', 'date_of_birth', 'place_of_birth', 'citizenship', 'languages', 'civil_status', 'religion', 'height_feet', 'height_inches', 'weight_kg', 'about_me', 'profile_picture'],
+        'personal' => ['first_name', 'middle_name', 'last_name', 'suffix', 'gender', 'date_of_birth', 'place_of_birth', 'citizenship', 'languages', 'about_me', 'profile_picture'],
         'contact' => ['email', 'phone', 'address', 'city', 'province', 'zip_code', 'provincial_address', 'linkedin_url', 'facebook_url', 'github_url', 'emergency_contact_name', 'emergency_contact_relationship', 'emergency_contact_address', 'emergency_contact_phone'],
         'academic' => ['student_number', 'program_id', 'major_id', 'department', 'year_level', 'section', 'school_year', 'semester', 'expected_graduation', 'enrollment_status', 'gwa', 'elementary_school', 'elementary_year_graduated', 'high_school', 'high_school_year_graduated', 'senior_high_school', 'senior_high_year_graduated'],
         'portfolio' => ['title', 'type', 'tools_used', 'project_url', 'achievements'],
@@ -97,7 +97,7 @@
     @unless($hasPrivacyConsent)
         <section class="privacy-consent-card" id="privacyConsentCard" aria-labelledby="privacyConsentHeading">
             <h2 class="panel-heading" id="privacyConsentHeading"><i class="bi bi-shield-lock" aria-hidden="true"></i> Your privacy</h2>
-            <p class="portfolio-description">Before you save your profile, let us know you agree to how SkillBridge uses your information. Sensitive details stay hidden from companies unless you choose to show them.</p>
+            <p class="portfolio-description">Before you save your profile, let us know you agree to how SkillBridge uses your information.</p>
             <form method="POST" action="{{ route('student.profile.consent') }}" id="privacyConsentForm" novalidate>
                 @csrf
                 <div class="form-check">

@@ -57,7 +57,6 @@ class StudentProfileRequest extends FormRequest
 
     public const SECTIONS = ['personal', 'contact', 'academic'];
 
-    public const CIVIL_STATUSES = ['Single', 'Married', 'Widowed', 'Separated'];
 
     private const PHONE_REGEX = 'regex:/^(\+?\d{1,3}[-.\s]?)?\d{7,14}$/';
 
@@ -102,16 +101,7 @@ class StudentProfileRequest extends FormRequest
             'place_of_birth' => ['nullable', 'string', 'max:150'],
             'citizenship' => ['nullable', 'string', 'max:100'],
             'languages' => ['nullable', 'string', 'max:255'],
-            'civil_status' => ['nullable', Rule::in(self::CIVIL_STATUSES)],
-            'religion' => ['nullable', 'string', 'max:100'],
-            'height_feet' => ['nullable', 'required_with:height_inches', 'integer', 'between:3,8'],
-            'height_inches' => ['nullable', 'integer', 'between:0,11'],
             'about_me' => ['nullable', 'string', 'max:1000'],
-            'weight_kg' => ['nullable', 'numeric', 'between:20,300'],
-            'show_civil_status' => ['nullable', 'boolean'],
-            'show_religion' => ['nullable', 'boolean'],
-            'show_height' => ['nullable', 'boolean'],
-            'show_weight' => ['nullable', 'boolean'],
             'profile_picture' => ImageProcessor::rules(required: false),
         ];
     }
@@ -293,8 +283,6 @@ class StudentProfileRequest extends FormRequest
             'elementary_year_graduated.regex' => 'Enter a school year such as 2016-2017.',
             'high_school_year_graduated.regex' => 'Enter a school year such as 2020-2021.',
             'senior_high_year_graduated.regex' => 'Enter a school year such as 2022-2023.',
-            'height_feet.between' => 'Enter feet between 3 and 8.',
-            'height_inches.between' => 'Enter inches between 0 and 11.',
             'linkedin_url.url' => 'Enter a full link starting with https://.',
             'facebook_url.url' => 'Enter a full link starting with https://.',
             'github_url.url' => 'Enter a full link starting with https://.',
