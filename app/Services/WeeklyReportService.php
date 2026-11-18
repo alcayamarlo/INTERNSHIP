@@ -34,7 +34,10 @@ class WeeklyReportService
         $live['week_no'] = $entry->week_number ?? $live['week_no'];
         $live['period_of_evaluation'] = $this->periodLabel($entry);
 
-        return OjtDocumentData::withSnapshot($live, $entry->header_snapshot);
+        $header = OjtDocumentData::withSnapshot($live, $entry->header_snapshot);
+
+        // Until it is certified the report names the supervisor assigned to the student now; a certified one keeps its certifier.
+        return $entry->isCertified() ? $header : $this->documents->withCurrentSupervisor($header, $entry->placement);
     }
 
     /**
@@ -98,8 +101,8 @@ class WeeklyReportService
             'header' => $header,
             'rows' => $rows,
             'fontSize' => $fontSize,
-            // The name under the signature line appears only once the supervisor certified in the system.
-            'certifiedBy' => $entry->isCertified() ? ($header['supervisor_name'] ?: $entry->reviewer?->name) : '',
+            // The supervisor's name is printed under "Certified True and Correct"; the date only once it is certified.
+            'certifiedBy' => $header['supervisor_name'] ?: ($entry->reviewer?->name ?? ''),
             'certifiedOn' => $entry->isCertified() ? $entry->reviewed_at?->timezone('Asia/Manila')->format('F j, Y') : '',
         ];
     }

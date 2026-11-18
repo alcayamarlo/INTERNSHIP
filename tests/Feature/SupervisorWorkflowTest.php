@@ -98,6 +98,30 @@ it('prints the assigned supervisor\'s name and job title on the forms, and keeps
     expect($docs->values($f['mine']->fresh())['supervisor_name'])->toBe('Workflow Co HR');
 });
 
+it('names the supervisor assigned to the student on a report that is not certified yet, and keeps the certifier once it is', function () {
+    $f = swSetup();
+    $service = app(\App\Services\WeeklyReportService::class);
+    $placement = $f['free']; // no supervisor yet: HR covers
+    $submittedBeforeAssignment = ['supervisor_name' => 'Workflow Co HR', 'supervisor_title' => 'HR Manager'];
+    $entry = \App\Models\JournalEntry::create([
+        'placement_id' => $placement->id, 'week_start' => '2026-02-09', 'week_number' => 2, 'title' => 'Week 2', 'accomplishments' => 'x',
+        'challenges' => 'x', 'actions_taken' => 'x', 'learnings' => 'x', 'status' => \App\Models\JournalEntry::STATUS_SUBMITTED, 'header_snapshot' => $submittedBeforeAssignment,
+    ]);
+    expect($service->printData($entry)['header']['supervisor_name'])->toBe('Workflow Co HR');
+
+    // HR assigns Sam after the student submitted: the printed report now names Sam in both places.
+    $placement->update(['supervisor_user_id' => $f['sam']->id]);
+    $data = $service->printData($entry->fresh());
+    expect($data['header']['supervisor_name'])->toBe('Sam Supervisor')->and($data['header']['supervisor_title'])->toBe('QA Lead')
+        ->and($data['certifiedBy'])->toBe('Sam Supervisor')->and($data['certifiedOn'])->toBe('');
+
+    // Certified by Sam: the form keeps him, even if the intern gets another supervisor later.
+    $entry->update(['status' => \App\Models\JournalEntry::STATUS_ACKNOWLEDGED, 'reviewed_by_user_id' => $f['sam']->id, 'reviewed_at' => now(), 'header_snapshot' => [...$submittedBeforeAssignment, 'supervisor_name' => 'Sam Supervisor', 'supervisor_title' => 'QA Lead']]);
+    $kim = svSupervisor($f['employer'], 'Kim Newsupervisor');
+    $placement->update(['supervisor_user_id' => $kim->id]);
+    expect($service->printData($entry->fresh())['header']['supervisor_name'])->toBe('Sam Supervisor')
+        ->and($service->printData($entry->fresh())['certifiedBy'])->toBe('Sam Supervisor');
+});
 it('lets only an assigned supervisor decide the printed name; the student cannot change it', function () {
     $f = swSetup();
     $student = $f['mine']->student->user;

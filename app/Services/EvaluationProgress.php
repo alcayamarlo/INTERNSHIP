@@ -7,7 +7,6 @@ use App\Models\Coordinator;
 use App\Models\Placement;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * What the coordinator sees on Reviews > Evaluations: every monthly and final evaluation that was
@@ -111,10 +110,10 @@ class EvaluationProgress
     }
 
     /**
-     * Reminds whoever's turn it is, at most once a day for the same evaluation.
+     * Reminds whoever's turn it is, as often as the coordinator clicks (the route only guards against floods).
      *
-     * @return string|null the name of the person reminded, or null when nobody was (already reminded today,
-     *                     or it is the coordinator's own turn)
+     * @return string|null the name of the person reminded, or null when nobody was (it is the coordinator's own
+     *                     turn, or the evaluation is complete)
      */
     public function remind(string $type, int $id, Coordinator $coordinator): ?string
     {
@@ -127,7 +126,7 @@ class EvaluationProgress
             self::WAITING_SUPERVISOR => $placement->supervisingUser(),
             default => null,
         };
-        if (! $recipient || ! Cache::add("evaluation-remind:{$type}:{$id}", true, now()->addDay())) {
+        if (! $recipient) {
             return null;
         }
 

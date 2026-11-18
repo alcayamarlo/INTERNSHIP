@@ -141,7 +141,7 @@ it('keeps the progress list to coordinators', function () {
     }
 });
 
-it('reminds whoever\'s turn it is, once a day, and only for the coordinator\'s own department', function () {
+it('reminds whoever\'s turn it is, every time it is clicked, and only for the coordinator\'s own department', function () {
     $f = epSetup();
     $studentTurn = epAppraisal($f['mine']['placement'], '2026-02');
     $supervisorTurn = epAppraisal($f['mine']['placement'], '2026-03', ['self_submitted_at' => now()]);
@@ -158,8 +158,9 @@ it('reminds whoever\'s turn it is, once a day, and only for the coordinator\'s o
         ->assertRedirect(route('student.ojt.index', ['placement' => $f['mine']['placement']->id, 'tab' => 'monthly-evaluation']).'#ojtDetails');
     $this->actingAs($f['coordinatorUser']);
 
-    // The same evaluation again today: refused. Another evaluation: fine.
-    $remind($studentTurn->id)->assertSessionHas('error');
+    // No daily limit: the same evaluation again sends another reminder. So does another evaluation.
+    $remind($studentTurn->id)->assertSessionHas('success', 'Reminder sent to Ana Cruz.');
+    expect(AppNotification::where('user_id', $f['mine']['studentUser']->id)->where('title', 'like', 'Reminder:%')->count())->toBe(2);
     $remind($supervisorTurn->id)->assertSessionHas('success');
     expect(AppNotification::where('user_id', $f['mine']['employerUser']->id)->where('title', 'like', 'Reminder:%')->count())->toBe(1);
 

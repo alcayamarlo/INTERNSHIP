@@ -60,7 +60,7 @@ class AppraisalController extends Controller
         $month = CarbonImmutable::createFromFormat('Y-m-d', $validated['period_month'].'-01');
         $result = $this->appraisals->bulkRequest(Auth::user(), $month, CarbonImmutable::parse($validated['due_on']));
 
-        return back()->with('success', "Monthly evaluation for {$month->format('F Y')} requested for {$result['created']} placement(s). Skipped {$result['skipped']} (already requested, or the month is outside the OJT dates).");
+        return back()->with('success', "Monthly evaluation for {$month->format('F Y')} requested for {$result['created']} placement(s).".($result['skipped'] ? " Skipped {$result['skipped']} (the month is outside the OJT dates)." : ''));
     }
 
     public function submitSelf(Request $request, Appraisal $appraisal)
@@ -152,7 +152,10 @@ class AppraisalController extends Controller
     /** The trainee details printed on the form: frozen when the student submitted, otherwise the current ones. */
     private function info(Appraisal $appraisal): array
     {
-        return OjtDocumentData::withSnapshot($this->documents->values($appraisal->placement), $appraisal->header_snapshot);
+        $info = OjtDocumentData::withSnapshot($this->documents->values($appraisal->placement), $appraisal->header_snapshot);
+
+        // Until the supervisor certifies it, the form names the supervisor assigned to the student now.
+        return $appraisal->supervisor_submitted_at ? $info : $this->documents->withCurrentSupervisor($info, $appraisal->placement);
     }
 
     /** Runs a step; a stage problem comes back as a flash error instead of a form error. */

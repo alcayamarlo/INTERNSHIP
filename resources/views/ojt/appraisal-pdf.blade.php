@@ -111,7 +111,7 @@
 <table class="certify">
     <tr>
         <td style="width: 140px;">Certified True and Correct&nbsp;&nbsp;:</td>
-        <td style="width: 230px;"><div class="sign-line"></div><div class="sign-name">{{ $appraisal->supervisor_submitted_at ? ($supervisorName ?: $appraisal->supervisor?->name) : '' }}</div>@if($appraisal->supervisor_submitted_at && filled($info['supervisor_title'] ?? null))<div class="sign-title">{{ $info['supervisor_title'] }}</div>@endif</td>
+        <td style="width: 230px;"><div class="sign-line"></div><div class="sign-name">{{ $supervisorName ?: $appraisal->supervisor?->name }}</div>@if(filled($info['supervisor_title'] ?? null))<div class="sign-title">{{ $info['supervisor_title'] }}</div>@endif</td>
         <td style="width: 40px;"></td>
         <td>Date&nbsp;&nbsp;: {{ $appraisal->supervisor_submitted_at?->timezone('Asia/Manila')->format('F j, Y') }}</td>
     </tr>

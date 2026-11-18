@@ -143,13 +143,12 @@ it('lets the coordinator reopen only the latest submitted step, one at a time', 
         ->and($appraisal->stage())->toBe(Appraisal::STAGE_AWAITING_STUDENT_COMMENT);
 });
 
-it('rejects a duplicate month, months outside the OJT, and placements that are not active', function () {
+it('rejects months outside the OJT and placements that are not active, but not a month that was requested before', function () {
     $f = mePlacement('2026-02-02');
     meRequest($f, '2026-02');
     $due = now()->addWeek()->toDateString();
     $this->actingAs($f['coordinatorUser']);
 
-    $this->post(route('coordinator.placements.appraisals.store', $f['placement']), ['period_month' => '2026-02', 'due_on' => $due])->assertSessionHasErrors(['period_month']);
     $this->post(route('coordinator.placements.appraisals.store', $f['placement']), ['period_month' => '2026-01', 'due_on' => $due])->assertSessionHasErrors(['period_month']); // before start
     $this->post(route('coordinator.placements.appraisals.store', $f['placement']), ['period_month' => '2026-04', 'due_on' => $due])->assertSessionHasErrors(['period_month']); // future month
     $this->post(route('coordinator.placements.appraisals.store', $f['placement']), ['period_month' => '2026-03', 'due_on' => now()->subDay()->toDateString()])->assertSessionHasErrors(['due_on']);
@@ -161,6 +160,25 @@ it('rejects a duplicate month, months outside the OJT, and placements that are n
             ->assertSessionHasErrors(['period_month' => 'Monthly evaluations can only be requested while the OJT is active.']);
     }
     expect(Appraisal::count())->toBe(1);
+});
+
+it('has no limit on requests: the same month can be requested again for the same placement', function () {
+    $f = mePlacement('2026-02-02');
+    $due = now()->addWeek()->toDateString();
+    $first = meRequest($f, '2026-02');
+    $this->actingAs($f['coordinatorUser']);
+
+    foreach ([1, 2] as $again) {
+        $this->post(route('coordinator.placements.appraisals.store', $f['placement']), ['period_month' => '2026-02', 'due_on' => $due])->assertSessionHasNoErrors();
+    }
+
+    // Three separate evaluations of February, each rated on its own; the first is untouched.
+    expect($f['placement']->appraisals()->count())->toBe(3)
+        ->and($first->fresh()->self_submitted_at)->toBeNull()
+        ->and($f['placement']->appraisals()->pluck('period_month')->map(fn ($m) => $m->format('Y-m'))->unique()->all())->toBe(['2026-02']);
+    // The month is still offered on the request form, and the student is told each time.
+    $this->get(route('coordinator.placements.show', $f['placement']))->assertOk()->assertSee('February 2026');
+    expect(\App\Models\AppNotification::where('user_id', $f['studentUser']->id)->where('title', 'Monthly evaluation requested')->count())->toBe(3);
 });
 
 it('clips the period to the OJT start and end and keeps custom dates inside it', function () {
@@ -202,7 +220,7 @@ it('bulk-requests a month for every active placement the coordinator manages, sk
     $late = mePlacement('2026-03-02', null, Placement::STATUS_ACTIVE, $institution); // starts after February
     $pending = mePlacement('2026-02-02', null, Placement::STATUS_PENDING_VALIDATION, $institution);
     $elsewhere = mePlacement('2026-02-02'); // another institution
-    meRequest($b, '2026-02'); // already requested
+    meRequest($b, '2026-02'); // already requested: requested again (no limit)
     // The same coordinator handles a, b, late and pending: put those students in a's department.
     foreach ([$b, $late, $pending] as $other) {
         $other['placement']->student->update(['program_id' => $a['placement']->student->program_id]);
@@ -210,10 +228,10 @@ it('bulk-requests a month for every active placement the coordinator manages, sk
 
     $this->actingAs($a['coordinatorUser'])
         ->post(route('coordinator.appraisals.bulk'), ['period_month' => '2026-02', 'due_on' => now()->addWeek()->toDateString()])
-        ->assertSessionHas('success', 'Monthly evaluation for February 2026 requested for 1 placement(s). Skipped 2 (already requested, or the month is outside the OJT dates).');
+        ->assertSessionHas('success', 'Monthly evaluation for February 2026 requested for 2 placement(s). Skipped 1 (the month is outside the OJT dates).');
 
     expect($a['placement']->appraisals()->count())->toBe(1)
-        ->and($b['placement']->appraisals()->count())->toBe(1)
+        ->and($b['placement']->appraisals()->count())->toBe(2)
         ->and($late['placement']->appraisals()->count())->toBe(0)
         ->and($pending['placement']->appraisals()->count())->toBe(0)
         ->and($elsewhere['placement']->appraisals()->count())->toBe(0);
@@ -251,7 +269,7 @@ it('shows the Monthly Evaluation on each role\'s OJT page with the form only on 
 
     $this->actingAs($f['coordinatorUser'])->get(route('coordinator.placements.show', $f['placement']))->assertOk()
         ->assertSee('Request a monthly evaluation')->assertSee('Monthly Evaluation: Midterm · February 2026')
-        ->assertSee('<option value="2026-03"', false)->assertDontSee('<option value="2026-02"', false);
+        ->assertSee('<option value="2026-03"', false)->assertSee('<option value="2026-02"', false); // a requested month can be requested again
     $this->actingAs($f['studentUser'])->get(route('student.ojt.index', ['tab' => 'monthly-evaluation']))->assertOk()
         ->assertSee('Monthly Evaluation')->assertSee(route('student.ojt.appraisals.self', $appraisal), false);
     $this->actingAs($f['employerUser'])->get(route('employer.interns.show', $f['placement']))->assertOk()

@@ -70,7 +70,7 @@ class ReviewController extends Controller
         ]);
     }
 
-    /** "Remind": nudges whoever's turn it is on one evaluation, at most once a day. */
+    /** "Remind": nudges whoever's turn it is on one evaluation, each time it is clicked. */
     public function remind(Request $request): RedirectResponse
     {
         $coordinator = Auth::user()->coordinator;
@@ -84,7 +84,7 @@ class ReviewController extends Controller
 
         return back()->with($name ? 'success' : 'error', $name
             ? "Reminder sent to {$name}."
-            : 'No reminder sent: it was already sent today, or it is not their turn.');
+            : 'No reminder sent: it is not the student\'s or supervisor\'s turn on this evaluation.');
     }
 
     public function reviewJournal(Request $request, JournalEntry $journalEntry): RedirectResponse

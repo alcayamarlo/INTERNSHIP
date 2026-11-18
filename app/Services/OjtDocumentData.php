@@ -195,6 +195,20 @@ class OjtDocumentData
         ];
     }
 
+    /**
+     * A form that the supervisor has not certified yet always names the supervisor who supervises that student now
+     * (an intern may have been assigned a supervisor after the student submitted). With none assigned the name on the
+     * form stays. A certified form keeps the name of whoever certified it.
+     */
+    public function withCurrentSupervisor(array $info, Placement $placement): array
+    {
+        if (! $placement->activeSupervisor()) {
+            return $info;
+        }
+
+        return [...$info, 'supervisor_name' => $this->defaultSupervisor($placement), 'supervisor_title' => $this->supervisorTitle($placement)];
+    }
+
     /** A document's frozen details over the live ones; a detail that was blank when frozen falls back to the live value. */
     public static function withSnapshot(array $live, ?array $snapshot): array
     {

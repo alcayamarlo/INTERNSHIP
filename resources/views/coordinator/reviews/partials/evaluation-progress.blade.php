@@ -65,7 +65,7 @@
                             @if($isFinal)
                                 Final evaluation
                             @else
-                                {{ $row->period_label }}<small class="sb-row-sub">{{ $row->period_month?->format('F Y') }}</small>
+                                {{ $row->period_label }}<small class="sb-row-sub">{{ $row->period_month?->format('F Y') }} · requested {{ $row->created_at?->timezone('Asia/Manila')->format('M j') }}</small>
                             @endif
                         </td>
 

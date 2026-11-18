@@ -79,11 +79,8 @@ class PlacementController extends Controller
         ]);
 
         $validationChecks = $placement->isPendingValidation() ? app(PlacementValidation::class)->checks($placement) : [];
-        // Months that can still be requested: within the OJT dates, up to now, not yet requested.
-        $requested = $placement->appraisals->map(fn ($appraisal) => $appraisal->period_month->format('Y-m'))->all();
-        $requestMonths = $placement->isActive()
-            ? app(AppraisalService::class)->monthsFor($placement)->reject(fn ($month) => in_array($month->format('Y-m'), $requested, true))->values()
-            : collect();
+        // Months that can be requested: within the OJT dates, up to now. A month may be requested again.
+        $requestMonths = $placement->isActive() ? app(AppraisalService::class)->monthsFor($placement)->values() : collect();
 
         return view('coordinator.placements.show', compact('placement', 'validationChecks', 'requestMonths'));
     }

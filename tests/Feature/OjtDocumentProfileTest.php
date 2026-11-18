@@ -314,8 +314,8 @@ it('prints the official layout with no placeholder text and a filled Designation
     expect(substr_count($html, '<td class="center nowrap">'))->toBe(5)
         ->and(substr_count($html, '<td class="center nowrap"></td>'))->toBe(3)
         ->and($html)->not->toContain('<td class="center nowrap">-</td>');
-    // Not certified yet: no name under the signature line.
-    expect($html)->toContain('<div class="sign-name"></div>');
+    // Not certified yet: the signature line already names the student's supervisor, but has no date.
+    expect($html)->toContain('<div class="sign-name">Maria L. Santos</div>');
 });
 
 it('prints the report on one Letter page, shrinking long text to fit (test 8)', function () {
