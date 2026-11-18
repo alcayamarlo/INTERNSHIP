@@ -115,9 +115,15 @@ class ResumeController extends Controller
         $this->resumeBuilder->updateContent($resume, $content);
         $profileUpdated = $this->updateProfileSummary($request, $resume, $content);
 
+        $message = $profileUpdated ? 'Changes saved. Your profile summary was updated too.' : 'Changes saved.';
+
+        // After saving, the editor goes back to the resume list, which shows this message.
+        session()->flash('success', $message);
+
         return response()->json([
-            'message' => $profileUpdated ? 'Changes saved. Your profile summary was updated too.' : 'Changes saved.',
+            'message' => $message,
             'saved_at' => now('Asia/Manila')->format('M d, Y h:i A'),
+            'redirect_url' => route('student.resume.index'),
         ]);
     }
 

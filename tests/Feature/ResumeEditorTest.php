@@ -102,7 +102,10 @@ it('saves edits to that resume only, re-renders its PDF, and leaves the profile 
             'id_photo_path' => 'someone-elses/photo.jpg', // not editable: ignored
         ]))
         ->assertOk()
-        ->assertJsonPath('message', 'Changes saved.');
+        ->assertJsonPath('message', 'Changes saved.')
+        // After saving, the editor goes back to the resume list, which shows the saved message.
+        ->assertJsonPath('redirect_url', route('student.resume.index'))
+        ->assertSessionHas('success', 'Changes saved.');
 
     $resume->refresh();
     expect($resume->content['name'])->toBe('Ana B. Cruz')

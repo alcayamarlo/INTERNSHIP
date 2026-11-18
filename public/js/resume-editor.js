@@ -491,6 +491,12 @@
                 window.location.assign(url.toString());
                 return;
             }
+            if (intent === 'save' && payload.redirect_url) {
+                // Saved: back to the resume list, which shows the saved message.
+                leaving = true;
+                window.location.assign(payload.redirect_url);
+                return;
+            }
             setSaveStatus(`${payload.message} ${payload.saved_at ? `(${payload.saved_at})` : ''}`.trim(), 'ok');
         } catch (error) {
             showSummary(error.message);
