@@ -125,7 +125,9 @@
                                 <button type="button" class="inv-eye" data-inv-eye="ciPasswordConfirm" aria-label="Show password" aria-pressed="false"><i class="bi bi-eye" aria-hidden="true"></i></button>
                             </div>
                         </div>
-                        <small id="ciPasswordHint" class="form-text inv-f--full">8 to 64 characters with an uppercase letter, a lowercase letter, a number, and a special character.</small>
+                        <div class="inv-f--full">
+                            @include('partials.password-rules', ['password' => 'ciPassword', 'confirm' => 'ciPasswordConfirm', 'id' => 'ciPasswordHint'])
+                        </div>
                     </div>
                 </fieldset>
 

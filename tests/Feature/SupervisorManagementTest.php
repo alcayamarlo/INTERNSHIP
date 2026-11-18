@@ -79,6 +79,10 @@ it('lets the supervisor set a password once from the link, then sign in', functi
     $this->post(route('logout'));
 
     $this->get($url)->assertOk()->assertSee('Set your password')->assertSee('sam@applus.test')->assertSee('Sam Supervisor');
+    // Every password rule is listed, so the supervisor sees what is still missing while typing.
+    $this->get($url)->assertSee('data-pw-rules', false)->assertSee('8 to 64 characters')->assertSee('An uppercase letter (A-Z)')
+        ->assertSee('A lowercase letter (a-z)')->assertSee('A number (0-9)')->assertSee('A special character (! @ # $ %)')->assertSee('Both passwords match')
+        ->assertSee('js/sb-password-rules.js', false);
 
     // A weak password or a mismatch changes nothing.
     $this->post(route('supervisor.setup.store', basename(parse_url($url, PHP_URL_PATH))), ['email' => 'sam@applus.test', 'password' => 'weak', 'password_confirmation' => 'weak'])->assertSessionHasErrors('password');

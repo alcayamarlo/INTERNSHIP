@@ -29,17 +29,27 @@
                         </div>
                         <div class="inv-f">
                             <label class="form-label" for="svPassword">Password <span aria-hidden="true">*</span></label>
-                            <input id="svPassword" type="password" name="password" class="form-control @error('password') is-invalid @enderror" required autocomplete="new-password" autofocus>
+                            <div class="inv-pw">
+                                <input id="svPassword" type="password" name="password" class="form-control @error('password') is-invalid @enderror" required autocomplete="new-password" autofocus aria-describedby="svPasswordRules">
+                                <button type="button" class="inv-eye" data-pw-eye="svPassword" aria-label="Show password" aria-pressed="false"><i class="bi bi-eye" aria-hidden="true"></i></button>
+                            </div>
+                            <div class="inv-strength" data-pw-strength="svPassword" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
                             @error('password')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
                         <div class="inv-f">
                             <label class="form-label" for="svPasswordConfirm">Confirm password <span aria-hidden="true">*</span></label>
-                            <input id="svPasswordConfirm" type="password" name="password_confirmation" class="form-control" required autocomplete="new-password">
+                            <div class="inv-pw">
+                                <input id="svPasswordConfirm" type="password" name="password_confirmation" class="form-control" required autocomplete="new-password">
+                                <button type="button" class="inv-eye" data-pw-eye="svPasswordConfirm" aria-label="Show password" aria-pressed="false"><i class="bi bi-eye" aria-hidden="true"></i></button>
+                            </div>
+                        </div>
+                        <div class="inv-f inv-f--full">
+                            @include('partials.password-rules', ['password' => 'svPassword', 'confirm' => 'svPasswordConfirm', 'id' => 'svPasswordRules'])
                         </div>
                     </div>
                 </div>
                 <footer class="inv-foot">
-                    <p class="inv-note">Use at least 8 characters, with upper and lower case letters, a number and a symbol.</p>
+                    <p class="inv-note">Your password must meet every requirement above.</p>
                     <div class="inv-actions"><button type="submit" class="inv-btn inv-btn--primary">Set password</button></div>
                 </footer>
             </form>
