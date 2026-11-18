@@ -324,3 +324,15 @@ it('restores archived notifications and can archive all read notifications', fun
     expect($second->fresh()->archived_at)->toBeNull();
     expect($user->appNotifications()->whereNull('read_at')->whereNull('archived_at')->count())->toBe(1);
 });
+
+it('opens notices that are not about one record on the list they belong to, and leaves announcements as they are', function () {
+    $student = User::factory()->create(['role' => UserRole::Student]);
+    $send = fn (string $type, array $data = []) => app(NotificationService::class)->send($student, $type, 'Title', 'Message', $data, email: false);
+    $this->actingAs($student);
+
+    $this->get(route('notifications.show', $send('eligibility_decision')))->assertRedirect(route('student.internships.index'));
+    $this->get(route('notifications.show', $send('verification', ['verification_type' => 'portfolio', 'status' => 'approved'])))->assertRedirect(route('student.portfolio.index'));
+    $this->get(route('notifications.show', $send('verification', ['verification_type' => 'competencies', 'status' => 'verified'])))->assertRedirect(route('student.competencies.index'));
+    // An announcement has no page behind it: the notification itself is shown.
+    $this->get(route('notifications.show', $send('announcement')))->assertOk();
+});

@@ -158,8 +158,12 @@ class SupervisorService
     {
         $supervisor = $this->companySupervisor($employer, $supervisorUserId);
         $changed = 0;
+        $lastId = null;
         foreach ($employer->placements()->whereIn('id', $placementIds)->get() as $placement) {
-            $changed += (int) $this->assign($employer, $placement, $supervisorUserId, $actor, notify: false);
+            if ($this->assign($employer, $placement, $supervisorUserId, $actor, notify: false)) {
+                $changed++;
+                $lastId = $placement->id;
+            }
         }
         if ($changed > 0) {
             $this->notifications->send(
@@ -167,6 +171,8 @@ class SupervisorService
                 'ojt_update',
                 'New interns assigned',
                 $changed === 1 ? 'An intern was assigned to you.' : "{$changed} interns were assigned to you.",
+                // One intern opens that intern; several open the supervisor's intern list (NotificationTarget).
+                $changed === 1 ? ['placement_id' => $lastId] : [],
             );
         }
 

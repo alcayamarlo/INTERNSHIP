@@ -65,7 +65,8 @@ class NotificationTarget
             ?? $this->certificate($data, $viewer)
             ?? $this->company($data, $viewer)
             ?? $this->student($data, $viewer)
-            ?? $this->conversation($data, $viewer);
+            ?? $this->conversation($data, $viewer)
+            ?? $this->list($data, $notification, $viewer);
     }
 
     private function id(array $data, string $key): ?int
@@ -209,6 +210,26 @@ class NotificationTarget
             $student === null => null,
             $viewer->isRole(UserRole::Coordinator) && (bool) $viewer->coordinator?->canAccessStudent($student) => route('coordinator.students.show', $student),
             $viewer->isRole(UserRole::Student) && $student->user_id === $viewer->id => route('student.profile.edit'),
+            default => null,
+        };
+    }
+
+    /**
+     * Notices that are not about one record (several interns assigned, an eligibility decision, a reviewed
+     * submission) open the list they belong to, so a click always goes somewhere useful.
+     */
+    private function list(array $data, AppNotification $notification, User $viewer): ?string
+    {
+        return match (true) {
+            // The intern list of a supervisor or of the company's HR account. A notice about one specific intern the
+            // viewer may not open is left alone (it shows the notification itself).
+            $notification->type === 'ojt_update' && $this->id($data, 'placement_id') === null && $viewer->isRole(UserRole::Supervisor) => route('supervisor.interns.index'),
+            $notification->type === 'ojt_update' && $this->id($data, 'placement_id') === null && $viewer->isRole(UserRole::Employer) => route('employer.interns.index'),
+            // Eligibility decides which internships the student may apply for.
+            $notification->type === 'eligibility_decision' && $viewer->isRole(UserRole::Student) => route('student.internships.index'),
+            // A coordinator's review of a portfolio file or a competency.
+            $notification->type === 'verification' && $viewer->isRole(UserRole::Student) && ($data['verification_type'] ?? null) === 'competencies' => route('student.competencies.index'),
+            $notification->type === 'verification' && $viewer->isRole(UserRole::Student) => route('student.portfolio.index'),
             default => null,
         };
     }

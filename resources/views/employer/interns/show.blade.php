@@ -42,17 +42,18 @@
     <div class="sb-callout mb-3" role="status"><i class="bi bi-person-gear" aria-hidden="true"></i> <strong>{{ $supervisorUser->name }}</strong> supervises this intern: they approve the time records, certify the weekly reports and submit the evaluations. You can follow the progress here. To change the supervisor, use <a href="{{ route('employer.interns.index') }}">Interns</a>.</div>
 @endif
 
-<div class="sb-tabbar">
-    <div class="sb-section-tabs" role="tablist" aria-label="OJT sections" data-ojt-tabs>
+{{-- The OJT sections are in the sidebar, under "My Interns" / "Interns", instead of a tab strip on the page. --}}
+@push('sidebar_subnav')
+    <div class="sb-subnav" role="tablist" aria-label="OJT sections" data-ojt-tabs>
         @foreach($tabs as $key => [$label, $icon])
-            <button type="button" role="tab" id="ojt-tab-{{ $key }}" class="sb-section-tab" data-tab="{{ $key }}"
-                    aria-controls="ojt-panel-{{ $key }}" aria-selected="{{ $key === $activeTab ? 'true' : 'false' }}"
-                    tabindex="{{ $key === $activeTab ? '0' : '-1' }}">
-                <i class="bi {{ $icon }}" aria-hidden="true"></i> {{ $label }}
-            </button>
+            <a href="{{ request()->fullUrlWithQuery(['tab' => $key]) }}" role="tab" id="ojt-tab-{{ $key }}" class="sb-subnav-link" data-tab="{{ $key }}"
+               aria-controls="ojt-panel-{{ $key }}" aria-selected="{{ $key === $activeTab ? 'true' : 'false' }}"
+               tabindex="{{ $key === $activeTab ? '0' : '-1' }}">
+                <i class="bi {{ $icon }}" aria-hidden="true"></i> <span>{{ $label }}</span>
+            </a>
         @endforeach
     </div>
-</div>
+@endpush
 </div>{{-- /.ojt-intern-record --}}
 
 {{-- Progress: hours, coordinator, emergency contact and the OJT schedule --}}
@@ -266,7 +267,11 @@
             try { history.replaceState(null, '', url); } catch (_) {}
         }
         tabs.forEach(function (t, i) {
-            t.addEventListener('click', function () { select(t.dataset.tab, false); });
+            t.addEventListener('click', function (e) {
+                e.preventDefault(); // the links work without JavaScript; here the page just switches section
+                select(t.dataset.tab, false);
+                if (document.body.classList.contains('sb-drawer-open')) document.querySelector('.sb-sidebar-close')?.click(); // phone: close the menu
+            });
             t.addEventListener('keydown', function (e) {
                 var next = e.key === 'ArrowRight' ? i + 1 : e.key === 'ArrowLeft' ? i - 1 : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : null;
                 if (next === null) return;

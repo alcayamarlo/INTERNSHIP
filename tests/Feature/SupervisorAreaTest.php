@@ -134,6 +134,26 @@ it('opens a supervisor\'s notification on the right tab of their own intern page
         ->assertRedirect(route('supervisor.interns.show', ['placement' => $id, 'tab' => 'weekly-journal']));
     // Another company's intern never opens from a notification.
     $this->get(route('notifications.show', $send(['placement_id' => $f['other']->id, 'section' => 'evaluation'])))->assertOk();
+
+    // A notice about several interns (no single record) opens the supervisor's intern list.
+    $this->get(route('notifications.show', $send([])))->assertRedirect(route('supervisor.interns.index'));
+});
+
+it('links the "interns assigned" notice to the intern, or to the list when several were assigned', function () {
+    $f = saSetup();
+    $employer = $f['mine']->employer;
+    $service = app(\App\Services\SupervisorService::class);
+    $hr = $employer->user;
+    [$first, $second, $third] = [svPlacement($employer), svPlacement($employer), svPlacement($employer)]; // not assigned yet
+
+    $service->assignMany($employer, [$first->id], $f['sam']->id, $hr);
+    $one = \App\Models\AppNotification::where('user_id', $f['sam']->id)->where('title', 'New interns assigned')->latest('id')->firstOrFail();
+    $this->actingAs($f['sam'])->get(route('notifications.show', $one))
+        ->assertRedirect(route('supervisor.interns.show', ['placement' => $first->id, 'tab' => 'progress']));
+
+    $service->assignMany($employer, [$second->id, $third->id], $f['sam']->id, $hr);
+    $many = \App\Models\AppNotification::where('user_id', $f['sam']->id)->where('title', 'New interns assigned')->latest('id')->firstOrFail();
+    $this->get(route('notifications.show', $many))->assertRedirect(route('supervisor.interns.index'));
 });
 
 it('shows the supervisor the emergency contact of an intern the company placed, like the HR account', function () {
@@ -141,4 +161,27 @@ it('shows the supervisor the emergency contact of an intern the company placed, 
     $f['mine']->student->update(['emergency_contact_name' => 'Maria Emergency', 'emergency_contact_phone' => '09175550000']);
 
     $this->actingAs($f['sam'])->get(route('supervisor.interns.show', $f['mine']))->assertOk()->assertSee('Maria Emergency')->assertSee('09175550000');
+});
+
+it('lists the OJT sections of an intern in the sidebar instead of a tab strip on the page', function () {
+    $f = saSetup();
+    $id = $f['mine']->id;
+
+    $html = $this->actingAs($f['sam'])->get(route('supervisor.interns.show', ['placement' => $id, 'tab' => 'weekly-journal']))->assertOk()->getContent();
+
+    // Five links under "My Interns", each opening its own section; the open one is selected.
+    foreach (['progress' => 'Progress', 'time-record' => 'Time Record', 'weekly-journal' => 'Weekly Report', 'monthly-evaluation' => 'Monthly Evaluation', 'evaluation' => 'Final Evaluation'] as $key => $label) {
+        expect($html)->toContain('id="ojt-tab-'.$key.'" class="sb-subnav-link"')
+            ->and($html)->toContain('tab='.$key)->and($html)->toContain($label);
+    }
+    expect($html)->toMatch('/id="ojt-tab-weekly-journal"[^>]*aria-selected="true"/')
+        ->and($html)->toMatch('/id="ojt-tab-time-record"[^>]*aria-selected="false"/')
+        // The sidebar list sits right after the active "My Interns" link, and the page no longer has its own tab bar.
+        ->and(strpos($html, 'class="sb-subnav"'))->toBeGreaterThan(strpos($html, 'My Interns'))
+        ->and($html)->not->toContain('class="sb-tabbar"')
+        ->and($html)->toContain('id="ojt-panel-evaluation"');
+
+    // The HR account gets the same list under "Interns" for an intern it covers.
+    $company = $f['mine']->employer;
+    $this->actingAs($company->user)->get(route('employer.interns.show', ['placement' => $id]))->assertOk()->assertSee('class="sb-subnav-link"', false);
 });

@@ -293,6 +293,12 @@
                     @endif
                 </a>
 
+                {{-- A page can list its own sections under its menu item (@push('sidebar_subnav')), e.g. the OJT tabs of one intern. --}}
+                @if($isActive && empty($subnavShown))
+                    @php $subnavShown = true; @endphp
+                    @stack('sidebar_subnav')
+                @endif
+
             @endforeach
 
         @endforeach
