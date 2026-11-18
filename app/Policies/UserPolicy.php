@@ -31,6 +31,12 @@ class UserPolicy
             && $model->archived_at !== null;
     }
 
+    /** The Delete button on the Active list: any account but your own (the controller adds the record checks). */
+    public function deleteNow(User $user, User $model): bool
+    {
+        return $user->isRole(UserRole::Admin) && $user->id !== $model->id;
+    }
+
     public function forceDelete(User $user, User $model): bool
     {
         return $user->isRole(UserRole::Admin)

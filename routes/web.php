@@ -432,6 +432,7 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             Route::post('/users/{user}/verify-company', [AdminUserController::class, 'verifyCompany'])->name('users.verify-company');
             Route::post('/users/{user}/unverify-company', [AdminUserController::class, 'unverifyCompany'])->name('users.unverify-company');
             Route::delete('/users/{user}/permanent', [AdminUserController::class, 'forceDelete'])->name('users.force-delete');
+            Route::delete('/users/{user}/delete-now', [AdminUserController::class, 'deleteNow'])->name('users.delete-now');
             Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
             Route::get('/announcements', [AdminAnnouncementController::class, 'index'])->name('announcements.index');
             Route::post('/announcements', [AdminAnnouncementController::class, 'store'])->name('announcements.store');

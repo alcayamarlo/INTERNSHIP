@@ -174,6 +174,39 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(Coordinator::class);
     }
 
+    /**
+     * What ties this account to OJT records. An account with any of these is archived, never deleted outright,
+     * so a placement, evaluation or application is never lost with it.
+     *
+     * @return list<string>
+     */
+    public function deletionBlockers(): array
+    {
+        $found = [];
+        $add = function (string $label, int $count) use (&$found): void {
+            if ($count > 0) {
+                $found[] = "{$count} {$label}";
+            }
+        };
+
+        if ($this->student) {
+            $add('OJT placement(s)', $this->student->placements()->count());
+            $add('internship application(s)', $this->student->applications()->count());
+            $add('internship invitation(s)', $this->student->invitations()->count());
+        }
+        if ($this->employer) {
+            $add('OJT placement(s)', $this->employer->placements()->count());
+            $add('internship posting(s)', $this->employer->internships()->count());
+            $add('supervisor account(s)', $this->employer->supervisors()->count());
+            $add('internship invitation(s)', $this->employer->invitations()->count());
+        }
+        $add('supervised intern(s)', \App\Models\Placement::query()->where('supervisor_user_id', $this->id)->count());
+        $add('placement(s) validated', \App\Models\Placement::query()->where('validated_by_user_id', $this->id)->count());
+        $add('company invitation(s) sent', \App\Models\CompanyInvitation::query()->where('invited_by_user_id', $this->id)->count());
+
+        return $found;
+    }
+
     /** The supervisor profile (company link and job title) of a supervisor account. */
     public function supervisor(): HasOne
     {

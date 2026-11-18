@@ -341,6 +341,48 @@ class UserController extends Controller
         return back()->with('success', 'User restored successfully.');
     }
 
+    /**
+     * Delete from the Active list, in one step. Refused (with the reasons) for an account that has OJT records,
+     * for your own account and for the last active administrator; those are archived instead.
+     */
+    public function deleteNow(User $user)
+    {
+        $this->authorize('deleteNow', $user);
+
+        $actor = Auth::user();
+        $blocked = DB::transaction(function () use ($user, $actor): ?string {
+            $user = User::query()->lockForUpdate()->findOrFail($user->id);
+
+            if ($user->role === UserRole::Admin && $user->is_active && $user->archived_at === null) {
+                $activeAdmins = User::query()
+                    ->where('role', UserRole::Admin->value)
+                    ->where('is_active', true)
+                    ->whereNull('archived_at')
+                    ->lockForUpdate()
+                    ->count();
+
+                if ($activeAdmins <= 1) {
+                    return 'The last active administrator cannot be deleted.';
+                }
+            }
+
+            $blockers = $user->deletionBlockers();
+            if ($blockers !== []) {
+                return "{$user->name} cannot be deleted because the account has ".implode(', ', $blockers).'. Archive the account instead.';
+            }
+
+            $userId = $user->id;
+            $user->forceDelete();
+            $this->activityLog->log($actor, 'admin_permanently_delete_user', ['user_id' => $userId]);
+
+            return null;
+        });
+
+        return $blocked === null
+            ? back()->with('success', 'User permanently deleted.')
+            : back()->with('error', $blocked);
+    }
+
     public function forceDelete(User $user)
     {
         $this->authorize('forceDelete', $user);

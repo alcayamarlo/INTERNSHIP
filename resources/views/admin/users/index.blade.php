@@ -175,6 +175,12 @@
                                                     <i class="bi bi-archive" aria-hidden="true"></i>
                                                 </button>
                                             </form>
+                                            <form action="{{ route('admin.users.delete-now', $user) }}" method="POST" class="d-inline" data-confirm="Permanently delete {{ $user->name }}? This cannot be undone. An account that has OJT records (placements, applications, invitations) cannot be deleted; archive it instead." data-confirm-title="Delete user" data-confirm-label="Delete permanently">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Delete user" aria-label="Delete {{ $user->name }}">
+                                                    <i class="bi bi-trash" aria-hidden="true"></i>
+                                                </button>
+                                            </form>
                                         @endif
                                     @endif
                                 </span>
