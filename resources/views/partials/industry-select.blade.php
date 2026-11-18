@@ -1,6 +1,6 @@
 {{-- Industry dropdown with search, used by the company invite form and the company profile.
      Props: $id (id of the select), $stored (the industry saved now, or null).
-     Sends `industry` (a listed sector, or "Other") and `industry_other` (typed text for "Other").
+     Sends `industry` (a listed industry, or "Other") and `industry_other` (typed text for "Other").
      Works without JavaScript as a plain select; Tom Select (loaded with SRI) adds the search box. --}}
 @php
     $catalog = app(\App\Services\IndustryCatalog::class);
@@ -16,9 +16,17 @@
 <select id="{{ $id }}" name="industry" class="form-select form-control @error('industry') is-invalid @enderror" required
         data-industry-select data-other-input="{{ $id }}Other" data-other-value="{{ $other }}" aria-describedby="{{ $id }}Other">
     <option value="" @selected($choice === '')>Search or choose an industry</option>
-    @foreach($catalog->sectors() as $sector)
-        <option value="{{ $sector }}" @selected($choice === $sector)>{{ $sector }}</option>
-    @endforeach
+    @php $groups = $catalog->groups(); @endphp
+    <optgroup label="Main sectors">
+        @foreach($groups['sectors'] as $industry)
+            <option value="{{ $industry }}" @selected($choice === $industry)>{{ $industry }}</option>
+        @endforeach
+    </optgroup>
+    <optgroup label="All industries (A to Z)">
+        @foreach($groups['more'] as $industry)
+            <option value="{{ $industry }}" @selected($choice === $industry)>{{ $industry }}</option>
+        @endforeach
+    </optgroup>
     <option value="{{ $other }}" @selected($choice === $other)>{{ \App\Services\IndustryCatalog::OTHER_LABEL }}</option>
 </select>
 <input id="{{ $id }}Other" type="text" name="industry_other" class="form-control mt-2 @error('industry_other') is-invalid @enderror"

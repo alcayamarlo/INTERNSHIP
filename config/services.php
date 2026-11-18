@@ -23,6 +23,10 @@ return [
     'industry' => [
         'key' => env('INDUSTRY_API_KEY'),
         'url' => env('INDUSTRY_API_URL', 'https://api.oanor.com/naics-api/v1/naicsx/sectors-list'),
+        // Every other level (subsectors down to national industries), 100 titles a call.
+        'search_url' => env('INDUSTRY_API_SEARCH_URL', 'https://api.oanor.com/naics-api/v1/search'),
+        // Pause before each call, in milliseconds: the free plan allows 2 calls a second.
+        'pause_ms' => 600,
     ],
 
     'resend' => [

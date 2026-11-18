@@ -9,7 +9,7 @@ class RefreshIndustries extends Command
 {
     protected $signature = 'industries:refresh';
 
-    protected $description = 'Reload the industry list for the company forms from the API now';
+    protected $description = 'Reload the full industry list (all NAICS levels) for the company forms from the API now; takes about 3 minutes';
 
     public function handle(IndustryCatalog $catalog): int
     {
@@ -20,7 +20,7 @@ class RefreshIndustries extends Command
             return self::FAILURE;
         }
 
-        $this->info('Industry list reloaded from the API ('.count($catalog->sectors()).' sectors).');
+        $this->info('Industry list reloaded from the API ('.count($catalog->all()).' industries).');
 
         return self::SUCCESS;
     }

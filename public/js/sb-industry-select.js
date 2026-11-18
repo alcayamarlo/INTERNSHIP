@@ -23,7 +23,8 @@
             new window.TomSelect(select, {
                 allowEmptyOption: true,
                 create: false,
-                maxOptions: 60,
+                maxOptions: 120,
+                lockOptgroupOrder: true, /* main sectors first, then A to Z */
                 closeAfterSelect: true,
                 placeholder: 'Search or choose an industry'
             });
