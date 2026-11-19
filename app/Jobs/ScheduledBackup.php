@@ -2,43 +2,28 @@
 
 namespace App\Jobs;
 
-use App\Services\DatabaseBackup;
+use App\Services\BackupArchive;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
+/** The nightly backup: database and uploaded files in one encrypted archive (App\Services\BackupArchive). */
 class ScheduledBackup implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $timeout = 300;
 
-    public function handle(DatabaseBackup $backup): void
+    public function handle(BackupArchive $backups): void
     {
-        $filename = 'backups/backup_'.now()->format('Y-m-d_His').'.sql';
+        $result = $backups->create();
 
-        $backup->dumpTo(Storage::disk('local')->path($filename));
-
-        $this->cleanOldBackups();
-
-        Log::info('Database backup completed successfully', ['filename' => $filename]);
-    }
-
-    private function cleanOldBackups(): void
-    {
-        $disk = Storage::disk('local');
-        $maxBackups = 30;
-
-        $files = collect($disk->files('backups'))
-            ->filter(fn (string $file) => str_ends_with($file, '.sql'))
-            ->sortBy(fn (string $file) => $disk->lastModified($file))
-            ->values();
-
-        $files->take(max(0, $files->count() - $maxBackups))
-            ->each(fn (string $file) => $disk->delete($file));
+        Log::info('Encrypted backup completed', ['filename' => $result['name'], 'size' => $result['size'], 'files' => $result['files'], 'copied' => $result['copied_to'] !== null]);
+        if ($result['copy_error']) {
+            Log::warning('The extra copy of the backup was not made', ['reason' => $result['copy_error']]);
+        }
     }
 }

@@ -64,10 +64,18 @@ it('logs in each role to its own dashboard and keeps the session authenticated o
         $this->get(route('admin.dashboard'))
             ->assertRedirect(route('login'));
 
-        $this->post(route('login'), [
+        $response = $this->post(route('login'), [
             'login' => $user->email,
             'password' => 'TestPassword#2026',
-        ])->assertRedirect($dashboard);
+        ]);
+        if ($role === UserRole::Admin) {
+            // Admins have a second step. This address (.test) cannot receive email, so a recovery code gets in.
+            $response->assertRedirect(route('two-factor.challenge'));
+            $codes = app(\App\Services\TwoFactor::class)->generateRecoveryCodes($user);
+            $this->post(route('two-factor.verify'), ['code' => $codes[0]])->assertRedirect(route('account.security'));
+        } else {
+            $response->assertRedirect($dashboard);
+        }
 
         $this->get($dashboard)->assertOk();
         $this->get($dashboard)->assertOk();

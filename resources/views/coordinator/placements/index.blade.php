@@ -15,29 +15,7 @@
 </div>
 
 @if($summary['ongoing'] > 0)
-    <details class="card" @if($errors->hasAny(['period_month', 'due_on'])) open @endif>
-        <summary class="card-header"><strong class="h6"><i class="bi bi-calendar-plus" aria-hidden="true"></i> Request a monthly evaluation for all ongoing OJTs</strong></summary>
-        <form method="POST" action="{{ route('coordinator.appraisals.bulk') }}" class="card-body row g-3 align-items-end" novalidate>
-            @csrf
-            <div class="col-md-4">
-                <label class="form-label" for="bulkMonth">Month</label>
-                <select id="bulkMonth" name="period_month" class="form-select @error('period_month') is-invalid @enderror" required>
-                    @foreach(range(0, 5) as $back)
-                        @php $month = now()->startOfMonth()->subMonths($back); @endphp
-                        <option value="{{ $month->format('Y-m') }}" @selected(old('period_month') === $month->format('Y-m'))>{{ $month->format('F Y') }}</option>
-                    @endforeach
-                </select>
-                @error('period_month')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
-            <div class="col-md-4">
-                <label class="form-label" for="bulkDue">Due date</label>
-                <input id="bulkDue" type="date" name="due_on" class="form-control @error('due_on') is-invalid @enderror" required min="{{ now()->toDateString() }}" value="{{ old('due_on', now()->addDays(7)->toDateString()) }}">
-                @error('due_on')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
-            <div class="col-md-4"><button type="submit" class="btn btn-primary w-100">Request for all ongoing OJTs</button></div>
-            <p class="col-12 small text-muted mb-0">Each active placement you manage gets this month's evaluation, with dates trimmed to its OJT start and end. Placements that already have this month, or whose OJT doesn't cover it, are skipped.</p>
-        </form>
-    </details>
+    @include('coordinator.placements.partials.requests-panel', ['panel' => $panel])
 @endif
 
 <form method="GET" class="card sb-filterbar" role="search" aria-label="Filter placements">
@@ -61,6 +39,6 @@
     </div>
 </form>
 
-@include('ojt.partials.placement-table', ['placements' => $placements, 'showRoute' => 'coordinator.placements.show', 'deadlines' => $deadlines])
+@include('ojt.partials.placement-table', ['placements' => $placements, 'showRoute' => 'coordinator.placements.show', 'deadlines' => $deadlines, 'dailyLog' => $dailyLog])
 </div>
 @endsection

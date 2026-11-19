@@ -25,10 +25,30 @@ class Program extends Model
         return $this->hasMany(Major::class);
     }
 
-    /** The department's one coordinator (coordinators.program_id is unique). */
+    /** The department's first coordinator (a department has up to 2: see coordinators()). */
     public function coordinator(): HasOne
     {
-        return $this->hasOne(Coordinator::class);
+        return $this->hasOne(Coordinator::class)->oldestOfMany();
+    }
+
+    /** Every coordinator of the department, at most Coordinator::MAX_PER_DEPARTMENT. */
+    public function coordinators(): HasMany
+    {
+        return $this->hasMany(Coordinator::class);
+    }
+
+    /** Names of the department's coordinators, "A and B", or null when there is none (needs coordinators.user loaded). */
+    public function coordinatorNames(): ?string
+    {
+        $names = $this->coordinators->map(fn (Coordinator $coordinator) => $coordinator->user?->name)->filter()->values();
+
+        return $names->isEmpty() ? null : $names->join(', ', ' and ');
+    }
+
+    /** Departments that can still take a coordinator. */
+    public function scopeAcceptingCoordinators($query)
+    {
+        return $query->has('coordinators', '<', Coordinator::MAX_PER_DEPARTMENT);
     }
 
     public function students(): HasMany

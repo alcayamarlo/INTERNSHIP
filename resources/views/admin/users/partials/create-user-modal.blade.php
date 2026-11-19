@@ -3,7 +3,7 @@
     $createRoles = \App\Enums\UserRole::assignable();
     $createInstitutions = \App\Models\Institution::query()->whereNotNull('verified_at')->orderBy('name')->get();
     // Coordinators only: departments that still need a coordinator.
-    $createDepartments = \App\Models\Program::query()->whereDoesntHave('coordinator')->orderBy('code')->get();
+    $createDepartments = \App\Models\Program::query()->acceptingCoordinators()->orderBy('code')->get();
     // The Edit User forms on this page also send "role", but they always send "is_active" too, so a create attempt is told apart by its absence.
     $reopenCreateUser = $errors->any() && old('role') !== null && old('is_active') === null;
 @endphp

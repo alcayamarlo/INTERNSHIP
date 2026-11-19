@@ -26,13 +26,17 @@ class UpdateUserRequest extends FormRequest
             'role' => ['required', Rule::enum(UserRole::class)],
             'is_active' => ['required', 'boolean'],
             'password' => ['nullable', 'confirmed', Password::defaults()],
-            // Coordinators only: one department each, and one coordinator per department.
+            // Coordinators only: one department each, and at most 2 coordinators per department.
             'program_id' => [
                 'exclude_unless:role,coordinator',
                 'required',
                 'integer',
                 'exists:programs,id',
-                Rule::unique('coordinators', 'program_id')->ignore($user?->coordinator?->id),
+                function (string $attribute, mixed $value, \Closure $fail) use ($user) {
+                    if (! \App\Models\Coordinator::departmentHasRoom((int) $value, $user?->coordinator?->id)) {
+                        $fail(\App\Models\Coordinator::DEPARTMENT_TAKEN);
+                    }
+                },
             ],
             'student_id_number' => [
                 $isStudent ? 'required' : 'nullable',
@@ -58,7 +62,6 @@ class UpdateUserRequest extends FormRequest
             'student_id_number.required' => 'Student ID number is required.',
             'student_id_number.unique' => 'This student ID is already in use.',
             'program_id.required' => 'Choose the department this coordinator will handle.',
-            'program_id.unique' => \App\Models\Coordinator::DEPARTMENT_TAKEN,
         ];
     }
 }

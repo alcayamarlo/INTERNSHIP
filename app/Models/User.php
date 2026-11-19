@@ -43,6 +43,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'remember_token',
         'verification_code',
+        'two_factor_recovery_codes',
+        'two_factor_code_hash',
     ];
 
     // Mirrors the column default so a just-created user is active in memory too.
@@ -63,7 +65,14 @@ class User extends Authenticatable implements MustVerifyEmail
             'must_change_password' => 'boolean',
             'suspended_at' => 'datetime',
             'suspended_until' => 'datetime',
+            'last_failed_login_at' => 'datetime',
+            'locked_until' => 'datetime',
+            'two_factor_enabled' => 'boolean',
+            'two_factor_code_expires_at' => 'datetime',
+            'two_factor_skip_once' => 'boolean',
+            'demo_account' => 'boolean',
             'role' => UserRole::class,
+            'phone' => 'encrypted', // stored encrypted; not searchable in SQL (App\Support\SensitiveColumns)
         ];
     }
 
@@ -103,6 +112,24 @@ class User extends Authenticatable implements MustVerifyEmail
 
     protected static function booted(): void
     {
+        // A new password, however it was set (reset, first-login change, admin, supervisor setup), ends every other
+        // signed-in session of this account. The browser that made the change stays signed in.
+        static::updated(function (User $user): void {
+            if (! $user->wasChanged('password')) {
+                return;
+            }
+            // A new password also ends every "trust this browser" for the second sign-in step.
+            \Illuminate\Support\Facades\DB::table('two_factor_trusted_browsers')->where('user_id', $user->id)->delete();
+            if (config('session.driver') !== 'database') {
+                return;
+            }
+            $current = auth()->id() === $user->id && request()->hasSession() ? request()->session()->getId() : null;
+            \Illuminate\Support\Facades\DB::table(config('session.table', 'sessions'))
+                ->where('user_id', $user->id)
+                ->when($current, fn ($query) => $query->where('id', '<>', $current))
+                ->delete();
+        });
+
         // A student who switches to a DIFFERENT email must verify the new one: whoever saves it
         // (student profile, admin edit, anything else) drops the old verification and any
         // pending code. Saving the same address (any casing/spacing) changes nothing.

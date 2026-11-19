@@ -1,0 +1,23 @@
+/* Idle sign-out warning (public/js/idle-timeout.js). */
+.sb-idle-warning {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 1090;
+    width: min(340px, calc(100vw - 32px));
+    padding: 16px;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 12px;
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    box-shadow: 0 12px 32px rgba(10, 10, 10, 0.18);
+}
+
+.sb-idle-warning[hidden] {
+    display: none;
+}
+
+.sb-idle-warning strong {
+    display: block;
+    margin-bottom: 4px;
+}

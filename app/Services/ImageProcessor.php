@@ -101,6 +101,44 @@ class ImageProcessor
         return $jpeg;
     }
 
+    /** Larger images are stored as uploaded: decoding them would need too much memory. */
+    public const MAX_STRIP_PIXELS = 40_000_000;
+
+    /**
+     * The same JPEG or PNG at its original size, re-encoded so that nothing but the pixels survives: EXIF (camera,
+     * GPS location, date), XMP and text chunks are gone. JPEGs are turned upright first, because their orientation
+     * lived in the EXIF data. Returns null when the bytes cannot be decoded safely; the caller keeps the original.
+     */
+    public function withoutMetadata(string $bytes): ?string
+    {
+        if (! extension_loaded('gd') || $bytes === '') {
+            return null;
+        }
+        $mime = (new \finfo(FILEINFO_MIME_TYPE))->buffer($bytes);
+        $size = @getimagesizefromstring($bytes);
+        if (! in_array($mime, ['image/jpeg', 'image/png'], true) || $size === false || $size[0] * $size[1] > self::MAX_STRIP_PIXELS) {
+            return null;
+        }
+        $image = @imagecreatefromstring($bytes);
+        if ($image === false) {
+            return null;
+        }
+
+        ob_start();
+        if ($mime === 'image/jpeg') {
+            $image = $this->upright($image, $bytes);
+            imagejpeg($image, null, 92);
+        } else {
+            imagealphablending($image, false);
+            imagesavealpha($image, true);
+            imagepng($image, null, 6);
+        }
+        $clean = (string) ob_get_clean();
+        imagedestroy($image);
+
+        return $clean !== '' ? $clean : null;
+    }
+
     /** Applies the EXIF orientation that phone cameras record instead of rotating the pixels. */
     private function upright(\GdImage $image, string $bytes): \GdImage
     {

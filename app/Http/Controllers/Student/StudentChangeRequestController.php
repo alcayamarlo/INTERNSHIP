@@ -52,8 +52,8 @@ class StudentChangeRequestController extends Controller
             return back()->with('error', 'You already have a pending request for this field.')->withFragment('academic');
         }
 
-        $coordinatorUser = $student->academicProgram()->with('coordinator.user')->first()?->coordinator?->user;
-        if (! $coordinatorUser) {
+        $coordinatorUsers = $student->academicProgram()->with('coordinators.user')->first()?->coordinators->map(fn (\App\Models\Coordinator $coordinator) => $coordinator->user)->filter()->values() ?? collect();
+        if ($coordinatorUsers->isEmpty()) {
             return back()->with('error', 'No coordinator is assigned to your program yet.')->withFragment('academic');
         }
 
@@ -69,13 +69,15 @@ class StudentChangeRequestController extends Controller
             'program_id' => 'Program',
             'year_level' => 'Year level',
         };
-        $notifications->send(
-            $coordinatorUser,
-            'profile_change_request',
-            'Student profile change request',
-            $student->user->name.' requested a change to '.$label.'.',
-            ['student_id' => $student->id, 'change_request_id' => $changeRequest->id]
-        );
+        foreach ($coordinatorUsers as $coordinatorUser) {
+            $notifications->send(
+                $coordinatorUser,
+                'profile_change_request',
+                'Student profile change request',
+                $student->user->name.' requested a change to '.$label.'.',
+                ['student_id' => $student->id, 'change_request_id' => $changeRequest->id]
+            );
+        }
 
         return back()->with('success', 'Change request sent to your coordinator.')->withFragment('academic');
     }

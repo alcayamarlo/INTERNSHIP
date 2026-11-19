@@ -21,6 +21,8 @@ Schedule::command('logs:prune')->dailyAt('03:00');
 // Weekly reports, monthly and final evaluations: remind whoever's turn it is (Philippine time).
 // The industry list is about 115 API calls; once a week is plenty (the free plan allows 5,000 a month).
 Schedule::command('industries:refresh')->weeklyOn(0, '03:30')->withoutOverlapping();
+// Students with no time logged today, 8 hours into the work day (the command waits until 16:00 Manila).
+Schedule::command('ojt:remind-daily-logs')->timezone('Asia/Manila')->hourly()->withoutOverlapping();
 Schedule::command('ojt:remind-documents')->timezone('Asia/Manila')->dailyAt('08:00')->withoutOverlapping();
 // Heartbeat for the admin health page ("scheduler last ran").
 Schedule::call(fn () => cache()->forever('scheduler:last_run', now()->toIso8601String()))->everyMinute()->name('scheduler-heartbeat');

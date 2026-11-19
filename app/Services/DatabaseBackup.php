@@ -30,6 +30,9 @@ class DatabaseBackup
             $process = new Process([
                 config('database.mysqldump_path'),
                 '--defaults-extra-file='.$credentials,
+                '--single-transaction', // a consistent snapshot without locking the tables
+                '--routines',
+                '--default-character-set=utf8mb4',
                 '--result-file='.$path,
                 $config['database'],
             ]);

@@ -187,6 +187,7 @@ class DashboardController extends Controller
             'id' => $student->id,
             'name' => $student->user->name,
             'email' => $student->user->email,
+            'avatar' => \App\Support\Avatar::url($student->profile_picture),
             'student_id_number' => $student->student_id_number,
             'student_id_needs_correction' => $student->studentIdNeedsCorrection($studentIdPattern),
             'program' => $student->program,

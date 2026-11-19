@@ -119,7 +119,11 @@ it('previews private certificate images and PDFs inline only for the owning stud
         ->assertOk()
         ->assertHeader('Content-Type', 'image/png')
         ->assertHeader('Content-Disposition', 'inline; filename="Image Certificate.png"')
-        ->assertHeaderMissing('X-Frame-Options');
+        // Shown inside the site's own preview frame: same-site framing is allowed, other sites are not.
+        ->assertHeader('X-Frame-Options', 'SAMEORIGIN')
+        ->assertHeader('X-Content-Type-Options', 'nosniff')
+        ->assertHeaderMissing('Content-Security-Policy')
+        ->assertHeaderMissing('Content-Security-Policy-Report-Only');
 
     // Certificates are listed on My Certificates, which opens the private preview route.
     $this->get(route('student.competencies.index'))
@@ -137,7 +141,8 @@ it('previews private certificate images and PDFs inline only for the owning stud
         ->assertOk()
         ->assertHeader('Content-Type', 'application/pdf')
         ->assertHeader('Content-Disposition', 'inline; filename="PDF Certificate.pdf"')
-        ->assertHeaderMissing('X-Frame-Options');
+        ->assertHeader('X-Frame-Options', 'SAMEORIGIN')
+        ->assertHeaderMissing('Content-Security-Policy');
 
     $this->actingAs($otherStudent)
         ->get(route('student.certificates.preview', $imageCertificate))

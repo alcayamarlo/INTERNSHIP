@@ -84,6 +84,11 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'login'])
         ->middleware('throttle:login');
 
+    // Second step of sign-in (emailed code or recovery code); the password was already accepted.
+    Route::get('/two-factor', [App\Http\Controllers\Auth\TwoFactorChallengeController::class, 'show'])->name('two-factor.challenge');
+    Route::post('/two-factor', [App\Http\Controllers\Auth\TwoFactorChallengeController::class, 'verify'])->middleware('throttle:two-factor-verify')->name('two-factor.verify');
+    Route::post('/two-factor/resend', [App\Http\Controllers\Auth\TwoFactorChallengeController::class, 'resend'])->middleware('throttle:two-factor-resend')->name('two-factor.resend');
+
     Route::get('/forgot-password', [ForgotPasswordController::class, 'showResetForm'])->name('password.request');
     Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetCode'])->name('password.email')->middleware('throttle:password-reset-request');
     Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update')->middleware('throttle:password-reset-submit');
@@ -125,6 +130,13 @@ Route::middleware(['auth', 'active'])->group(function () {
         ->middleware('throttle:1,1')
         ->name('verification.resend');
 
+    // Idle sign-out (App\Http\Middleware\EndIdleSession): the page asks how long is left, and "Stay signed in".
+    Route::get('/session/idle-status', fn (\Illuminate\Http\Request $request) => response()->json(['seconds_left' => \App\Http\Middleware\EndIdleSession::secondsLeft($request)]))
+        ->name('session.idle-status');
+    Route::post('/session/keep-alive', fn (\Illuminate\Http\Request $request) => response()->json(['seconds_left' => \App\Http\Middleware\EndIdleSession::secondsLeft($request)]))
+        ->middleware('throttle:session-keep-alive')
+        ->name('session.keep-alive');
+
     Route::get('/password/force-change', [ForcePasswordChangeController::class, 'edit'])
         ->name('password.force-change');
     Route::put('/password/force-change', [ForcePasswordChangeController::class, 'update'])
@@ -138,6 +150,15 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
 
     Route::middleware('verified')->group(function () {
         Route::get('/search', [SearchController::class, 'index'])->name('search');
+        // Where this account is signed in; sign out everywhere else (asks for the password).
+        Route::get('/account/devices', [App\Http\Controllers\AccountDevicesController::class, 'index'])->name('account.devices');
+        Route::delete('/account/devices', [App\Http\Controllers\AccountDevicesController::class, 'destroyOthers'])->middleware('throttle:account-security')->name('account.devices.destroy-others');
+        // Two-factor sign-in: status, recovery codes (shown once), on/off for non-admins, trusted browsers.
+        Route::get('/account/security', [App\Http\Controllers\AccountSecurityController::class, 'index'])->name('account.security');
+        Route::post('/account/security/enable', [App\Http\Controllers\AccountSecurityController::class, 'enable'])->middleware('throttle:account-security')->name('account.security.enable');
+        Route::post('/account/security/disable', [App\Http\Controllers\AccountSecurityController::class, 'disable'])->middleware('throttle:account-security')->name('account.security.disable');
+        Route::post('/account/security/recovery-codes', [App\Http\Controllers\AccountSecurityController::class, 'recoveryCodes'])->middleware('throttle:account-security')->name('account.security.recovery-codes');
+        Route::post('/account/security/forget-browsers', [App\Http\Controllers\AccountSecurityController::class, 'forgetBrowsers'])->middleware('throttle:account-security')->name('account.security.forget-browsers');
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::get('/notifications/{notification}', [NotificationController::class, 'show'])->name('notifications.show');
         Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
@@ -301,6 +322,8 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
 
             // OJT supervision
             Route::get('/interns', [EmployerInternController::class, 'index'])->name('interns.index');
+            Route::get('/ojt/{section}', [App\Http\Controllers\Employer\OjtOverviewController::class, 'show'])
+                ->where('section', 'progress|time-records|weekly-reports|monthly-evaluations|final-evaluations')->name('ojt.overview');
             Route::get('/interns/{placement}', [EmployerInternController::class, 'show'])->name('interns.show');
             Route::put('/interns/{placement}/schedule', [EmployerInternController::class, 'updateSchedule'])->name('interns.schedule');
             Route::patch('/interns/{placement}/attendance/{attendanceLog}', [EmployerInternController::class, 'reviewAttendance'])->name('interns.attendance.review');
@@ -319,6 +342,8 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             Route::post('/profile-picture', [App\Http\Controllers\Supervisor\ProfileController::class, 'updatePicture'])->name('profile.update-picture');
             Route::delete('/profile-picture', [App\Http\Controllers\Supervisor\ProfileController::class, 'deletePicture'])->name('profile.delete-picture');
             Route::get('/interns', [EmployerInternController::class, 'index'])->name('interns.index');
+            Route::get('/ojt/{section}', [App\Http\Controllers\Employer\OjtOverviewController::class, 'show'])
+                ->where('section', 'progress|time-records|weekly-reports|monthly-evaluations|final-evaluations')->name('ojt.overview');
             Route::get('/interns/{placement}', [EmployerInternController::class, 'show'])->name('interns.show');
             Route::put('/interns/{placement}/schedule', [EmployerInternController::class, 'updateSchedule'])->name('interns.schedule');
             Route::patch('/interns/{placement}/attendance/{attendanceLog}', [EmployerInternController::class, 'reviewAttendance'])->name('interns.attendance.review');
@@ -374,6 +399,10 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             // Monthly Evaluations: request (one placement or all active ones), adviser rating, reopen the latest step.
             Route::post('/placements/{placement}/appraisals', [AppraisalController::class, 'store'])->name('placements.appraisals.store');
             Route::post('/appraisals/bulk', [AppraisalController::class, 'bulkStore'])->name('appraisals.bulk');
+            // OJT Monitoring > Requests and reminders: request once per period, remind with no limit (flood guard only).
+            Route::post('/ojt/requests', [App\Http\Controllers\Coordinator\OjtRequestController::class, 'request'])->name('ojt.requests');
+            Route::post('/ojt/reminders', [App\Http\Controllers\Coordinator\OjtRequestController::class, 'remindAll'])->middleware('throttle:20,1')->name('ojt.reminders');
+            Route::post('/placements/{placement}/remind-daily-log', [App\Http\Controllers\Coordinator\OjtRequestController::class, 'remindDailyLog'])->middleware('throttle:30,1')->name('placements.remind-daily-log');
             Route::post('/appraisals/{appraisal}/adviser', [AppraisalController::class, 'submitAdviser'])->name('appraisals.adviser');
             Route::post('/appraisals/{appraisal}/reopen', [AppraisalController::class, 'reopen'])->name('appraisals.reopen');
 
@@ -450,6 +479,10 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             // Audit and security log (kept 1 year).
             Route::get('/logs', [AuditLogController::class, 'index'])->name('logs');
             Route::get('/logs/export', [AuditLogController::class, 'export'])->name('logs.export');
+            // Who opened which student's data (kept 1 year).
+            Route::get('/data-access', [App\Http\Controllers\Admin\DataAccessController::class, 'index'])->name('data-access');
+            // End a lock after too many wrong passwords (also: php artisan user:unlock {email}).
+            Route::post('/users/{user}/unlock', [AdminUserController::class, 'unlock'])->name('users.unlock');
             // Account suspension.
             Route::post('/users/{user}/suspend', [AdminUserController::class, 'suspend'])->name('users.suspend');
             Route::post('/users/{user}/lift-suspension', [AdminUserController::class, 'liftSuspension'])->name('users.lift-suspension');

@@ -50,10 +50,65 @@ class Student extends Model
         'privacy_consent', 'privacy_consent_at', 'discoverable',
     ];
 
+    /**
+     * Encryption makes a new random ciphertext every time, so saving the same birth date again would look like a
+     * change (a pointless UPDATE, and "date_of_birth changed" for anything that watches dirty fields). Compare the
+     * dates instead. The `encrypted` cast already does this for the text columns.
+     */
+    public function originalIsEquivalent($key)
+    {
+        if ($key === 'date_of_birth' && array_key_exists($key, $this->original)) {
+            $new = $this->attributes[$key] ?? null;
+            $old = $this->original[$key] ?? null;
+            if ($new === $old) {
+                return true;
+            }
+            if ($new === null || $old === null) {
+                return false;
+            }
+
+            // Read both values straight from the cast: castAttribute() would return the first one it cached for both.
+            $cast = new \App\Casts\EncryptedDate;
+            $newDate = $cast->get($this, $key, $new, $this->attributes);
+            $oldDate = $cast->get($this, $key, $old, $this->attributes);
+
+            return $newDate !== null && $oldDate !== null && $newDate->isSameDay($oldDate);
+        }
+
+        return parent::originalIsEquivalent($key);
+    }
+
+    /**
+     * A date object given for the birth date is stored as plain "Y-m-d" text. (A class cast keeps the object it was given
+     * and returns it as is until the model is reloaded, which would not be a Carbon date like the old `date` cast gave.)
+     */
+    public function setAttribute($key, $value)
+    {
+        if ($key === 'date_of_birth' && $value instanceof \DateTimeInterface) {
+            $value = $value->format('Y-m-d');
+        }
+
+        return parent::setAttribute($key, $value);
+    }
+
     protected function casts(): array
     {
         return [
-            'date_of_birth' => 'date',
+            // Personal data, stored encrypted (see App\Support\SensitiveColumns). Read and write through the model only:
+            // these columns cannot be searched, sorted or filtered in SQL.
+            'date_of_birth' => \App\Casts\EncryptedDate::class,
+            'place_of_birth' => 'encrypted',
+            'address' => 'encrypted',
+            'city' => 'encrypted',
+            'province' => 'encrypted',
+            'zip_code' => 'encrypted',
+            'provincial_address' => 'encrypted',
+            'emergency_contact_name' => 'encrypted',
+            'emergency_contact_relationship' => 'encrypted',
+            'emergency_contact_address' => 'encrypted',
+            'emergency_contact_phone' => 'encrypted',
+            'religion' => 'encrypted',
+            'civil_status' => 'encrypted',
             'expected_graduation' => 'date',
             'gwa' => 'decimal:2',
             'profile_verified_at' => 'datetime',
@@ -147,6 +202,12 @@ class Student extends Model
     public function certificates(): HasMany
     {
         return $this->hasMany(Certificate::class);
+    }
+
+    /** The student's 0-100 % scores for the competencies the school rates (shown on the profile and to companies). */
+    public function competencyScores(): HasMany
+    {
+        return $this->hasMany(StudentCompetencyScore::class);
     }
 
     public function portfolios(): HasMany

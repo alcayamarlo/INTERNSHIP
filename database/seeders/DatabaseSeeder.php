@@ -341,6 +341,9 @@ class DatabaseSeeder extends Seeder
 
         $this->call(InternshipCatalogSeeder::class);
         $this->call(OjtDemoSeeder::class);
+
+        // Presentation data: 10 students, 10 IT companies, coordinators, certificates, scores and OJT records.
+        $this->call(PresentationDataSeeder::class);
     }
     private function placeholderPdf(): string
     {

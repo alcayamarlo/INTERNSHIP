@@ -86,6 +86,14 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
+        // Named limiters keep their own counter. (A plain throttle:N,M shares one counter per IP or user with every
+        // other plain throttle, so a busy route would use up another route's allowance.)
+        $pendingTwoFactor = fn (Request $request) => $request->session()->get('two_factor.pending.user_id') ?: \App\Support\IpHash::limiterKey($request->ip());
+        RateLimiter::for('two-factor-verify', fn (Request $request) => Limit::perMinute(10)->by('verify|'.$pendingTwoFactor($request)));
+        RateLimiter::for('two-factor-resend', fn (Request $request) => Limit::perMinute(3)->by('resend|'.$pendingTwoFactor($request)));
+        RateLimiter::for('account-security', fn (Request $request) => Limit::perMinute(5)->by('security|'.($request->user()?->id ?: \App\Support\IpHash::limiterKey($request->ip()))));
+        RateLimiter::for('session-keep-alive', fn (Request $request) => Limit::perMinute(30)->by('keep-alive|'.($request->user()?->id ?: \App\Support\IpHash::limiterKey($request->ip()))));
+
         RateLimiter::for('content-reports', fn (Request $request) => Limit::perHour(20)->by('content-reports:'.($request->user()?->id ?: \App\Support\IpHash::limiterKey($request->ip()))));
 
         RateLimiter::for('photo-uploads', fn (Request $request) => Limit::perMinute(10)->by('photo-uploads:'.($request->user()?->id ?: \App\Support\IpHash::limiterKey($request->ip()))));

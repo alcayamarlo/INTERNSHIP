@@ -7,13 +7,15 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\ActivityLogService;
+use App\Services\LoginLockout;
+use App\Services\TwoFactor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
-    public function __construct(private ActivityLogService $activityLog) {}
+    public function __construct(private ActivityLogService $activityLog, private LoginLockout $lockout) {}
 
     public function showLoginForm()
     {
@@ -36,8 +38,20 @@ class LoginController extends Controller
             return $this->failed();
         }
 
+        // A locked account is refused even with the right password, until the lock ends or an admin unlocks it.
+        if ($until = $this->lockout->lockedUntil($user)) {
+            Hash::check($credentials['password'], self::timingHash());
+            $this->activityLog->log($user, 'login_blocked', ['reason' => 'locked', 'until' => $until->toIso8601String()]);
+
+            return back()->withErrors(['login' => LoginLockout::message($until)])->onlyInput('login');
+        }
+
         if (! Hash::check($credentials['password'], $user->password)) {
             $this->activityLog->log($user, 'login_failed', ['login' => mb_substr($login, 0, 120), 'reason' => 'wrong_password']);
+
+            if ($until = $this->lockout->recordFailure($user)) {
+                return back()->withErrors(['login' => LoginLockout::message($until)])->onlyInput('login');
+            }
 
             return $this->failed();
         }
@@ -54,10 +68,45 @@ class LoginController extends Controller
             return back()->withErrors(['login' => $blocked[1]])->onlyInput('login');
         }
 
+        $this->lockout->clear($user);
+
+        // Second step: an emailed code (admins always; others who switched it on). A browser the person chose to
+        // trust, a development machine (APP_ENV=local) and the one-time pass after `user:reset-2fa` skip it.
+        $twoFactor = app(TwoFactor::class);
+        if ($twoFactor->isActiveFor($user) && $user->two_factor_skip_once && $twoFactor->isRequiredFor($user)) {
+            $user->forceFill(['two_factor_skip_once' => false])->saveQuietly();
+            $this->activityLog->log($user, 'two_factor_skipped', ['reason' => 'reset']);
+
+            return $this->completeSignIn($request, $user, ['account.security', 'Your two-factor settings were reset. Make new recovery codes now.']);
+        }
+        if ($twoFactor->challengeNeeded($user)) {
+            if ($twoFactor->isTrusted($request, $user)) {
+                $this->activityLog->log($user, 'two_factor_skipped', ['reason' => 'trusted_browser']);
+            } else {
+                $request->session()->put(TwoFactorChallengeController::SESSION_KEY, ['user_id' => $user->id, 'at' => now()->getTimestamp()]);
+
+                return redirect()->route('two-factor.challenge')->with('two_factor_sent', $twoFactor->sendCode($user));
+            }
+        }
+
+        return $this->completeSignIn($request, $user);
+    }
+
+    /**
+     * Signs the user in and sends them where they belong. Used right after the password, or after the second step.
+     *
+     * @param  array{0: string, 1: string}|null  $landing  a route and a message that replace the usual destination
+     */
+    public function completeSignIn(Request $request, User $user, ?array $landing = null)
+    {
         Auth::login($user);
         $request->session()->regenerate();
         $user->forceFill(['last_login_at' => now()])->saveQuietly();
         $this->activityLog->log($user, 'login');
+
+        if ($landing) {
+            return redirect()->route($landing[0])->with('status', $landing[1]);
+        }
 
         // First login: add and verify the email, then set the new password.
         if ($user->must_change_password && $user->hasVerifiedEmail()) {

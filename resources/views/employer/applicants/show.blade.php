@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="{{ asset('css/employer-applicant-review-dark.css') }}?v={{ @filemtime(public_path('css/employer-applicant-review-dark.css')) }}">
 @endpush
 @php
-    $hasSkillsTab = (bool) ($profile['competencies'] || $profile['certificates'] || $profile['skills']);
+    $hasSkillsTab = (bool) ($profile['competencies'] || $profile['certificates'] || $profile['skills'] || $profile['competency_scores']);
     $hasExperienceTab = (bool) ($profile['experiences'] || $profile['references']);
     $hasFilesTab = (bool) ($profile['projects'] || $profile['documents']);
 @endphp
@@ -224,6 +224,7 @@
 
                 @if($hasSkillsTab)
                 <div class="sb-tab-panel" role="tabpanel" id="arPanelSkills" aria-labelledby="arTabSkills" data-ar-panel="skills" hidden>
+                    @include('partials.competency-scores', ['scores' => $profile['competency_scores']])
                     @if($profile['competencies'])
                         <section class="sb-block">
                             <h2>Certificates</h2>

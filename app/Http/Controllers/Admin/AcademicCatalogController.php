@@ -23,7 +23,7 @@ class AcademicCatalogController extends Controller
 
         return view('admin.academics.index', [
             'academicsRoute' => $this->routePrefix(),
-            'programs' => Program::with(['coordinator.user', 'majors'])->withCount(['students', 'majors'])
+            'programs' => Program::with(['coordinators.user', 'majors'])->withCount(['students', 'majors'])
                 // A coordinator sees only their own department.
                 ->when($this->isCoordinator(), fn ($query) => $query->whereKey(Auth::user()->coordinator?->program_id ?? 0))
                 ->orderBy('code')->get(),
@@ -111,7 +111,7 @@ class AcademicCatalogController extends Controller
     {
         return view('admin.academics.program-form', [
             'academicsRoute' => $this->routePrefix(),
-            'program' => $program->load(['majors', 'coordinator.user']),
+            'program' => $program->load(['majors', 'coordinators.user']),
         ]);
     }
 

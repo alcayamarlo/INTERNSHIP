@@ -157,6 +157,11 @@
             'OJT' => [
                 ['employer.interns.index', 'employer.interns.*', 'bi-person-workspace', 'Interns'],
                 ['employer.supervisors.index', 'employer.supervisors.*', 'bi-person-gear', 'Supervisors'],
+                ['employer.ojt.overview', 'employer.ojt.overview', 'bi-speedometer2', 'Progress', ['section' => 'progress']],
+                ['employer.ojt.overview', 'employer.ojt.overview', 'bi-clock-history', 'Time Records', ['section' => 'time-records']],
+                ['employer.ojt.overview', 'employer.ojt.overview', 'bi-journal-text', 'Weekly Reports', ['section' => 'weekly-reports']],
+                ['employer.ojt.overview', 'employer.ojt.overview', 'bi-clipboard-data', 'Monthly Evaluations', ['section' => 'monthly-evaluations']],
+                ['employer.ojt.overview', 'employer.ojt.overview', 'bi-clipboard-check', 'Final Evaluations', ['section' => 'final-evaluations']],
             ],
         ],
         (bool) $currentUser?->isRole(UserRole::Supervisor) => [
@@ -165,6 +170,11 @@
             ],
             'OJT' => [
                 ['supervisor.interns.index', 'supervisor.interns.*', 'bi-person-workspace', 'My Interns'],
+                ['supervisor.ojt.overview', 'supervisor.ojt.overview', 'bi-speedometer2', 'Progress', ['section' => 'progress']],
+                ['supervisor.ojt.overview', 'supervisor.ojt.overview', 'bi-clock-history', 'Time Records', ['section' => 'time-records']],
+                ['supervisor.ojt.overview', 'supervisor.ojt.overview', 'bi-journal-text', 'Weekly Reports', ['section' => 'weekly-reports']],
+                ['supervisor.ojt.overview', 'supervisor.ojt.overview', 'bi-clipboard-data', 'Monthly Evaluations', ['section' => 'monthly-evaluations']],
+                ['supervisor.ojt.overview', 'supervisor.ojt.overview', 'bi-clipboard-check', 'Final Evaluations', ['section' => 'final-evaluations']],
             ],
         ],
         (bool) $currentUser?->isRole(UserRole::Coordinator) => [
@@ -200,6 +210,7 @@
             'System' => [
                 ['admin.moderation.index', 'admin.moderation.*', 'bi-flag', 'Reported Content'],
                 ['admin.logs', 'admin.logs*', 'bi-journal-text', 'Audit & Security Log'],
+                ['admin.data-access', 'admin.data-access', 'bi-eye', 'Data Access'],
                 ['admin.health', 'admin.health', 'bi-activity', 'Usage & Health'],
                 ['admin.reports', 'admin.reports', 'bi-file-earmark-bar-graph', 'Reports'],
             ],
@@ -278,13 +289,20 @@
 
             <div class="sb-nav-label">{{ $groupLabel }}</div>
 
-            @foreach($groupItems as [$routeName, $routePattern, $icon, $label])
+            @foreach($groupItems as $navItem)
 
-                @php $isActive = request()->routeIs(...(array) $routePattern); @endphp
+                @php
+                    // [route, active pattern, icon, label, optional route parameters]; with parameters (a page section)
+                    // the item is active only for those values, so Progress and Time Records do not light up together.
+                    [$routeName, $routePattern, $icon, $label] = $navItem;
+                    $routeParams = $navItem[4] ?? [];
+                    $isActive = request()->routeIs(...(array) $routePattern)
+                        && collect($routeParams)->every(fn ($value, $key) => (string) request()->route($key) === (string) $value);
+                @endphp
 
                 <a
                     class="sb-nav-link {{ $isActive ? 'active' : '' }}"
-                    href="{{ route($routeName) }}"
+                    href="{{ route($routeName, $routeParams) }}"
                     @if($isActive) aria-current="page" @endif
                 >
                     <i class="bi {{ $icon }}" aria-hidden="true"></i>
@@ -295,12 +313,6 @@
                         <span class="sb-nav-badge" aria-label="{{ $unread }} unread">{{ $unread > 99 ? '99+' : $unread }}</span>
                     @endif
                 </a>
-
-                {{-- A page can list its own sections under its menu item (@push('sidebar_subnav')), e.g. the OJT tabs of one intern. --}}
-                @if($isActive && empty($subnavShown))
-                    @php $subnavShown = true; @endphp
-                    @stack('sidebar_subnav')
-                @endif
 
             @endforeach
 
@@ -561,6 +573,21 @@
 
                     @endif
 
+                    @if($currentUser)
+                        <li>
+                            <a class="dropdown-item" href="{{ route('account.security') }}">
+                                <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                                Two-factor sign-in
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('account.devices') }}">
+                                <i class="bi bi-laptop" aria-hidden="true"></i>
+                                Your devices
+                            </a>
+                        </li>
+                    @endif
+
                     <li>
                         <button type="button" class="dropdown-item" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false">
                             <i class="bi bi-moon-stars" aria-hidden="true"></i>
@@ -594,6 +621,10 @@
     ====================================================== --}}
 
     <main class="sb-content" id="sbContent">
+
+        @auth
+            @include('partials.two-factor-banner')
+        @endauth
 
 
         {{-- =================================================
@@ -1277,6 +1308,9 @@
 @stack('scripts')
 
 @auth
+    @if(config('security.idle_timeout'))
+        @include('partials.idle-timeout')
+    @endif
     @unless(auth()->user()->isRole(\App\Enums\UserRole::Admin))
         @include('partials.report-modal')
     @endunless

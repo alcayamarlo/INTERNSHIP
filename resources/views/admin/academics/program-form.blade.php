@@ -37,8 +37,8 @@
                 </div>
                 <div class="col-12">
                     <span class="form-label d-block">Assigned coordinator</span>
-                    <p class="mb-1" data-assigned-coordinator>{{ $program->coordinator?->user?->name ?? 'No coordinator assigned' }}</p>
-                    <div class="form-text">Each department has one coordinator. An admin assigns it from Users when creating or editing the coordinator's account.</div>
+                    <p class="mb-1" data-assigned-coordinator>{{ $program->coordinatorNames() ?? 'No coordinator assigned' }}</p>
+                    <div class="form-text">Each department has up to 2 coordinators. An admin assigns them from Users when creating or editing the coordinator's account.</div>
                 </div>
                 <div class="col-12">
                     <label class="form-label" for="majors">Majors</label>

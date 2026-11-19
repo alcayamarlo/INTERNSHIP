@@ -76,6 +76,12 @@ class Employer extends Model
         return $this->belongsTo(User::class);
     }
 
+    /** Office and building pictures shown as a gallery on the company's pages. */
+    public function photos(): HasMany
+    {
+        return $this->hasMany(CompanyPhoto::class)->orderBy('id');
+    }
+
     public function placements(): HasMany
     {
         return $this->hasMany(Placement::class);

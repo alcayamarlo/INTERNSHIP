@@ -48,7 +48,7 @@ it('reports a failed dump and leaves no partial file', function () {
 });
 
 it('shows an error on the admin backup action when mysqldump fails', function () {
-    config(['database.connections.mysql.database' => 'nexus', 'database.mysqldump_path' => base_path('no-such-mysqldump')]);
+    config(['database.connections.mysql.database' => 'nexus', 'database.mysqldump_path' => base_path('no-such-mysqldump'), 'backup.password' => 'a-long-backup-password-for-tests-0123']);
 
     $this->actingAs(User::factory()->create(['role' => UserRole::Admin]))
         ->post(route('admin.backup'))
@@ -81,11 +81,14 @@ it('shows recent errors from dated daily log files on the health page', function
 
 it('keeps only the newest 30 backups in the folder it writes to', function () {
     Storage::fake('local');
+    Storage::fake('public');
+    Storage::fake('private');
+    config(['backup.password' => 'a-long-backup-password-for-tests-0123', 'backup.copy_path' => null, 'backup.keep' => 30]);
     $disk = Storage::disk('local');
 
     foreach (range(1, 31) as $day) {
-        $file = sprintf('backups/backup_old_%02d.sql', $day);
-        $disk->put($file, 'dump');
+        $file = sprintf('backups/backup_old_%02d.zip', $day);
+        $disk->put($file, 'archive');
         touch($disk->path($file), now()->subDays(40 - $day)->getTimestamp());
     }
 
@@ -97,6 +100,6 @@ it('keeps only the newest 30 backups in the folder it writes to', function () {
 
     $files = $disk->files('backups');
     expect($files)->toHaveCount(30)
-        ->and($files)->not->toContain('backups/backup_old_01.sql', 'backups/backup_old_02.sql')
-        ->and($files)->toContain('backups/backup_old_31.sql');
+        ->and($files)->not->toContain('backups/backup_old_01.zip', 'backups/backup_old_02.zip', 'backups/backup_old_03.zip')
+        ->and($files)->toContain('backups/backup_old_31.zip');
 });

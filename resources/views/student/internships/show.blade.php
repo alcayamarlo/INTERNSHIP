@@ -114,6 +114,8 @@
                 @endif
             </div>
         </article>
+
+        @include('partials.company-gallery', ['employer' => $internship->employer->loadMissing('photos'), 'heading' => 'About the company: '.$internship->employer->company_name])
     </div>
 
     <aside class="sb-stack" aria-label="Your match and application">

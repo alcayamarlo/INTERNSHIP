@@ -60,7 +60,7 @@ class AppraisalController extends Controller
         $month = CarbonImmutable::createFromFormat('Y-m-d', $validated['period_month'].'-01');
         $result = $this->appraisals->bulkRequest(Auth::user(), $month, CarbonImmutable::parse($validated['due_on']));
 
-        return back()->with('success', "Monthly evaluation for {$month->format('F Y')} requested for {$result['created']} placement(s).".($result['skipped'] ? " Skipped {$result['skipped']} (the month is outside the OJT dates)." : ''));
+        return back()->with('success', "Monthly evaluation for {$month->format('F Y')} requested for {$result['created']} placement(s). Skipped {$result['skipped']} (already requested, or the month is outside the OJT dates).");
     }
 
     public function submitSelf(Request $request, Appraisal $appraisal)

@@ -150,6 +150,9 @@
         <div data-ajax-feedback class="small cp-feedback" role="status" aria-live="polite"></div>
     </form>
 
+    {{-- Company photos (gallery): a separate form from the profile above. --}}
+    @include('partials.company-gallery', ['employer' => $employer->loadMissing('photos')])
+
 {{-- Sticky save bar. The submit button sits outside the form tag and points to it with form="...", so the existing ajax save works unchanged. --}}
 <div class="cp-savebar">
     <p class="cp-savebar__hint" data-cp-unsaved hidden>You have unsaved changes.</p>

@@ -163,25 +163,21 @@ it('shows the supervisor the emergency contact of an intern the company placed, 
     $this->actingAs($f['sam'])->get(route('supervisor.interns.show', $f['mine']))->assertOk()->assertSee('Maria Emergency')->assertSee('09175550000');
 });
 
-it('lists the OJT sections of an intern in the sidebar instead of a tab strip on the page', function () {
+it('keeps the OJT sections of an intern as a tab strip on the page, with nothing nested under My Interns in the sidebar', function () {
     $f = saSetup();
     $id = $f['mine']->id;
 
     $html = $this->actingAs($f['sam'])->get(route('supervisor.interns.show', ['placement' => $id, 'tab' => 'weekly-journal']))->assertOk()->getContent();
 
-    // Five links under "My Interns", each opening its own section; the open one is selected.
-    foreach (['progress' => 'Progress', 'time-record' => 'Time Record', 'weekly-journal' => 'Weekly Report', 'monthly-evaluation' => 'Monthly Evaluation', 'evaluation' => 'Final Evaluation'] as $key => $label) {
-        expect($html)->toContain('id="ojt-tab-'.$key.'" class="sb-subnav-link"')
-            ->and($html)->toContain('tab='.$key)->and($html)->toContain($label);
+    foreach (['progress', 'time-record', 'weekly-journal', 'monthly-evaluation', 'evaluation'] as $key) {
+        expect($html)->toContain('id="ojt-tab-'.$key.'" class="sb-section-tab"');
     }
     expect($html)->toMatch('/id="ojt-tab-weekly-journal"[^>]*aria-selected="true"/')
-        ->and($html)->toMatch('/id="ojt-tab-time-record"[^>]*aria-selected="false"/')
-        // The sidebar list sits right after the active "My Interns" link, and the page no longer has its own tab bar.
-        ->and(strpos($html, 'class="sb-subnav"'))->toBeGreaterThan(strpos($html, 'My Interns'))
-        ->and($html)->not->toContain('class="sb-tabbar"')
-        ->and($html)->toContain('id="ojt-panel-evaluation"');
+        ->and($html)->toContain('class="sb-tabbar"')
+        ->and($html)->not->toContain('sb-subnav')
+        // The sidebar's own pages (Progress, Time Records, ...) are still there.
+        ->and($html)->toContain('href="'.route('supervisor.ojt.overview', 'progress').'"');
 
-    // The HR account gets the same list under "Interns" for an intern it covers.
-    $company = $f['mine']->employer;
-    $this->actingAs($company->user)->get(route('employer.interns.show', ['placement' => $id]))->assertOk()->assertSee('class="sb-subnav-link"', false);
+    // The HR account gets the same page for an intern it covers.
+    $this->actingAs($f['mine']->employer->user)->get(route('employer.interns.show', ['placement' => $id]))->assertOk()->assertSee('class="sb-tabbar"', false);
 });

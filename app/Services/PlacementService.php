@@ -192,6 +192,57 @@ class PlacementService
             ));
     }
 
+    /**
+     * The coordinator asks the company for the Final Performance Evaluation: due in a week unless a date is given.
+     * Resets the scheduled reminders for it and tells the supervisor assigned to the intern (HR when none).
+     */
+    public function requestFinalEvaluation(Placement $placement, User $coordinator, ?string $dueOn = null): Placement
+    {
+        $placement->update([
+            'rating_requested_at' => now(),
+            'rating_requested_by_user_id' => $coordinator->id,
+            'rating_due_on' => $dueOn ?? now()->addDays(7)->toDateString(),
+        ]);
+        // A new request (or due date) can be reminded again.
+        DB::table('ojt_reminders')->where('placement_id', $placement->id)->where('kind', OjtDeadlineService::FINAL_EVALUATION)->delete();
+
+        $placement->loadMissing('employer.user', 'student.user');
+        if ($supervisor = $placement->supervisingUser()) {
+            $this->notificationService->send(
+                $supervisor,
+                'ojt_update',
+                'Rating requested',
+                'Your coordinator requested the Final Performance Evaluation for '.($placement->student?->user?->name ?? 'this intern').'. Due '.$placement->rating_due_on->format('M d, Y').'.',
+                ['placement_id' => $placement->id, 'section' => NotificationTarget::FINAL_EVALUATION]
+            );
+        }
+
+        return $placement;
+    }
+
+    /**
+     * Requests the final evaluation for every ongoing OJT the coordinator manages, once: placements already
+     * requested or already evaluated are skipped (Remind is for nudging them).
+     *
+     * @return array{created: int, skipped: int}
+     */
+    public function requestFinalForAll(User $coordinator, string $dueOn): array
+    {
+        $created = 0;
+        $skipped = 0;
+        foreach (app(AppraisalService::class)->managedActivePlacements($coordinator) as $placement) {
+            if ($placement->rating_requested_at || $placement->evaluation()->exists()) {
+                $skipped++;
+
+                continue;
+            }
+            $this->requestFinalEvaluation($placement, $coordinator, $dueOn);
+            $created++;
+        }
+
+        return ['created' => $created, 'skipped' => $skipped];
+    }
+
     private function certificateNumber(Placement $placement): string
     {
         return 'OJT-'.now()->format('Y').'-'.str_pad((string) $placement->id, 5, '0', STR_PAD_LEFT);

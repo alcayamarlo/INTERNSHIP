@@ -28,6 +28,8 @@
     </ul>
     <p class="portfolio-description" data-skill-empty @if($studentSkills->isNotEmpty()) hidden @endif>No skills yet. Add your first one above.</p>
 
+    @include('partials.competency-scores', ['scores' => \App\Models\StudentCompetencyScore::forDisplay($student->competencyScores), 'note' => 'Rated by the school and your supervisors. These scores are read-only and companies you apply to can see them.'])
+
     <template id="skillChipTemplate">
         @include('student.profile.partials.skill-chip', ['chip' => ['id' => '__ID__', 'name' => '', 'level' => null, 'level_label' => null, 'has_certificate' => false]])
     </template>

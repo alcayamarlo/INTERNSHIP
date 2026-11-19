@@ -73,7 +73,7 @@
                                     <span class="badge bg-warning">To be confirmed</span>
                                 @endunless
                             </td>
-                            <td>{{ $program->coordinator?->user?->name ?? 'No coordinator assigned' }}</td>
+                            <td>{{ $program->coordinatorNames() ?? 'No coordinator assigned' }}</td>
                             <td>{{ $program->students_count }}</td>
                             <td class="text-end text-nowrap" style="width:1%"><a class="btn btn-sm btn-outline-primary text-nowrap" href="{{ route($academicsRoute.'programs.edit', $program) }}"
                                 data-open="program-edit-modal" aria-haspopup="dialog" data-program-edit

@@ -104,6 +104,10 @@
                                 @elseif(! $user->hasVerifiedEmail())
                                     <x-status-badge status="warning" label="Email unverified" />
                                 @endif
+                                @if($user->locked_until?->isFuture())
+                                    <x-status-badge status="warning" label="Locked" />
+                                    <small class="sb-row-sub" data-locked>Too many wrong passwords · until {{ $user->locked_until->timezone('Asia/Manila')->format('h:i A') }}</small>
+                                @endif
                                 @if($user->isSuspended())
                                     <x-status-badge status="inactive" label="Suspended" />
                                     <small class="sb-row-sub" data-suspension>{{ $user->suspended_until ? 'Until '.$user->suspended_until->timezone('Asia/Manila')->format('M d, Y h:i A') : 'Until lifted' }} · {{ $user->suspension_reason }}</small>
@@ -154,6 +158,12 @@
                                                     </button>
                                                 </form>
                                             @endif
+                                        @endif
+                                        @if($user->locked_until?->isFuture())
+                                            <form action="{{ route('admin.users.unlock', $user) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Unlock account" aria-label="Unlock {{ $user->name }}"><i class="bi bi-key" aria-hidden="true"></i> Unlock</button>
+                                            </form>
                                         @endif
                                         @if($user->id !== auth()->id())
                                             @if($user->isSuspended())
@@ -278,11 +288,11 @@
                             <label class="form-label" for="editDepartment{{ $user->id }}">Department <span class="text-danger" aria-hidden="true">*</span></label>
                             <select id="editDepartment{{ $user->id }}" class="form-select" name="program_id">
                                 <option value="">Select department</option>
-                                @foreach($departments->filter(fn ($department) => ! $department->coordinator || (int) $department->id === (int) $currentDepartmentId) as $department)
+                                @foreach($departments->filter(fn ($department) => $department->coordinators_count < \App\Models\Coordinator::MAX_PER_DEPARTMENT || (int) $department->id === (int) $currentDepartmentId) as $department)
                                     <option value="{{ $department->id }}" @selected((int) $currentDepartmentId === (int) $department->id)>{{ $department->display_name }}</option>
                                 @endforeach
                             </select>
-                            <small class="form-text text-muted">Only free departments are listed. The coordinator cannot change this.</small>
+                            <small class="form-text text-muted">Only departments with room (up to 2 coordinators each) are listed. The coordinator cannot change this.</small>
                         </div>
                         <div class="mb-3" data-student-id-field @unless($user->role === \App\Enums\UserRole::Student) hidden @endunless>
                             <label class="form-label" for="editStudentId{{ $user->id }}">Student ID Number</label>

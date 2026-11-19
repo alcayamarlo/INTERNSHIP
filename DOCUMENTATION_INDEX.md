@@ -15,6 +15,8 @@ This index lists documentation files currently maintained in the repository.
 
 - [BACKEND_AUDIT.md](BACKEND_AUDIT.md) - resolved backend reliability areas
   and known test/deployment gaps.
+- [GOING_LIVE.md](GOING_LIVE.md) - security checklist before real students use a server
+  (production settings, HTTPS, keys, CSP, backups).
 - [COMMANDS_REFERENCE.md](COMMANDS_REFERENCE.md) - additional Laravel,
   frontend, testing, and maintenance commands.
 

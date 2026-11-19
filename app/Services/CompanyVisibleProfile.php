@@ -10,6 +10,7 @@ use App\Models\InternshipApplication;
 use App\Models\Placement;
 use App\Models\Portfolio;
 use App\Models\Student;
+use App\Models\StudentCompetencyScore;
 use App\Models\StudentAward;
 use App\Models\User;
 use App\Support\PublicFileUrl;
@@ -61,10 +62,11 @@ class CompanyVisibleProfile
      */
     public function browseProfile(Student $student): array
     {
-        $student->loadMissing(['user', 'major', 'studentSkills.skill', 'experiences', 'competencies.learnedSkills']);
+        $student->loadMissing(['user', 'major', 'studentSkills.skill', 'experiences', 'competencies.learnedSkills', 'competencyScores']);
 
         return [
             ...$this->summary($student),
+            'competency_scores' => StudentCompetencyScore::forDisplay($student->competencyScores),
             'about_me' => $student->about_me,
             'academic' => array_filter([
                 'College' => $student->department,
@@ -104,12 +106,14 @@ class CompanyVisibleProfile
             ->where('student_id', $student->id)
             ->where('employer_id', $viewer->companyId())
             ->exists();
-        $student->loadMissing(['user', 'major', 'studentSkills.skill', 'experiences', 'competencies.learnedSkills']);
+        $student->loadMissing(['user', 'major', 'studentSkills.skill', 'experiences', 'competencies.learnedSkills', 'competencyScores']);
         $certifiedNames = $student->certifiedCompetencyNames();
 
         return [
             ...$this->summary($student),
             'has_applied' => $hasApplied,
+            // 0-100 % scores per competency (App\Models\StudentCompetencyScore), shown as progress bars.
+            'competency_scores' => StudentCompetencyScore::forDisplay($student->competencyScores),
             'personal' => $this->personalRows($student),
             'contact' => $hasApplied ? array_filter([
                 'Email' => $student->user?->email,

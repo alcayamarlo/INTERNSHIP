@@ -24,6 +24,15 @@ class PruneAuditLogs extends Command
 
         $this->info("Removed {$deleted} log entr".($deleted === 1 ? 'y' : 'ies').' older than '.$cutoff->toDateString().'.');
 
+        // Data access records (who opened which student's data).
+        $accessCutoff = now()->subDays((int) config('security.access_log.keep_days', 365));
+        $accessDeleted = 0;
+        do {
+            $batch = \App\Models\DataAccessLog::query()->where('created_at', '<', $accessCutoff)->limit(1000)->delete();
+            $accessDeleted += $batch;
+        } while ($batch > 0);
+        $this->info("Removed {$accessDeleted} data access entr".($accessDeleted === 1 ? 'y' : 'ies').' older than '.$accessCutoff->toDateString().'.');
+
         return self::SUCCESS;
     }
 }

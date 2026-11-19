@@ -7,6 +7,7 @@ use App\Models\Placement;
 use App\Services\AppraisalService;
 use App\Services\NotificationService;
 use App\Services\OjtDeadlineService;
+use App\Services\OjtReminderService;
 use App\Services\PlacementService;
 use App\Services\PlacementValidation;
 use App\Services\ActivityLogService;
@@ -58,7 +59,17 @@ class PlacementController extends Controller
             ->mapWithKeys(fn (Placement $placement) => [$placement->id => $deadlineService->pendingFor($placement)])
             ->all();
 
-        return view('coordinator.placements.index', compact('placements', 'summary', 'filter', 'search', 'deadlines'));
+        // Requests and reminders panel + the "Remind to log time" button of each row (ongoing OJTs only).
+        $reminders = app(OjtReminderService::class);
+        $dailyLog = $reminders->dailyLogState($placements->getCollection());
+        $notLogged = $reminders->notLoggedToday(Auth::user());
+        $panel = [
+            'not_logged' => $notLogged->count(),
+            // Of those, how many were reminded within the wait and cannot be reminded again yet.
+            'waiting' => collect($reminders->dailyLogState($notLogged))->filter(fn (array $state) => $state['next'] !== null)->count(),
+        ];
+
+        return view('coordinator.placements.index', compact('placements', 'summary', 'filter', 'search', 'deadlines', 'dailyLog', 'panel'));
     }
 
     public function show(Placement $placement)
@@ -79,8 +90,11 @@ class PlacementController extends Controller
         ]);
 
         $validationChecks = $placement->isPendingValidation() ? app(PlacementValidation::class)->checks($placement) : [];
-        // Months that can be requested: within the OJT dates, up to now. A month may be requested again.
-        $requestMonths = $placement->isActive() ? app(AppraisalService::class)->monthsFor($placement)->values() : collect();
+        // Months that can still be requested: within the OJT dates, up to now, not yet requested (once per month).
+        $requested = $placement->appraisals->map(fn ($appraisal) => $appraisal->period_month->format('Y-m'))->all();
+        $requestMonths = $placement->isActive()
+            ? app(AppraisalService::class)->monthsFor($placement)->reject(fn ($month) => in_array($month->format('Y-m'), $requested, true))->values()
+            : collect();
 
         return view('coordinator.placements.show', compact('placement', 'validationChecks', 'requestMonths'));
     }
@@ -112,26 +126,8 @@ class PlacementController extends Controller
             'rating_due_on.after_or_equal' => 'The due date cannot be in the past.',
         ]);
 
-        $placement->update([
-            'rating_requested_at' => now(),
-            'rating_requested_by_user_id' => Auth::id(),
-            // A week by default when no date is chosen.
-            'rating_due_on' => $validated['rating_due_on'] ?? now()->addDays(7)->toDateString(),
-        ]);
-        // A new request (or due date) can be reminded again.
-        DB::table('ojt_reminders')->where('placement_id', $placement->id)->where('kind', OjtDeadlineService::FINAL_EVALUATION)->delete();
-
-        $placement->loadMissing('employer.user', 'student.user');
-        // The supervisor assigned to this intern, or the company's HR account when there is none.
-        if ($employerUser = $placement->supervisingUser()) {
-            $this->notificationService->send(
-                $employerUser,
-                'ojt_update',
-                'Rating requested',
-                'Your coordinator requested the Final Performance Evaluation for '.($placement->student?->user?->name ?? 'this intern').'. Due '.$placement->rating_due_on->format('M d, Y').'.',
-                ['placement_id' => $placement->id, 'section' => \App\Services\NotificationTarget::FINAL_EVALUATION]
-            );
-        }
+        // Fields, reminder reset and the supervisor's notification: shared with the bulk request.
+        $this->placementService->requestFinalEvaluation($placement, Auth::user(), $validated['rating_due_on'] ?? null);
 
         return back()->with('success', 'Final evaluation requested from the company. Due '.$placement->rating_due_on->format('M d, Y').'.');
     }

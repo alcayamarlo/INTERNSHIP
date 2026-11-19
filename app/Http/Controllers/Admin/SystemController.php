@@ -7,7 +7,7 @@ use App\Http\Requests\Report\GenerateReportRequest;
 use App\Models\Report;
 use App\Models\SystemLog;
 use App\Services\ActivityLogService;
-use App\Services\DatabaseBackup;
+use App\Services\BackupArchive;
 use App\Services\ReportExportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -50,25 +50,30 @@ class SystemController extends Controller
         ]);
     }
 
-    public function backup(DatabaseBackup $backups)
+    /** An encrypted backup of the whole database and every uploaded file, downloaded and kept in storage/app/backups. */
+    public function backup(BackupArchive $backups)
     {
         if (empty(config('database.connections.mysql.database'))) {
-            return back()->with('error', 'Database backup is unavailable because the MySQL configuration is missing.');
+            return back()->with('error', 'Backup is unavailable because the MySQL configuration is missing.');
         }
 
-        $filename = 'backups/backup_'.now()->format('Y_m_d_His').'.sql';
-        $path = Storage::disk('local')->path($filename);
-
         try {
-            $backups->dumpTo($path);
+            $result = $backups->create();
+        } catch (\RuntimeException $exception) {
+            report($exception);
+
+            // The messages of BackupArchive are written for admins (a missing password, a failed check).
+            return back()->with('error', str_starts_with($exception->getMessage(), 'mysqldump')
+                ? 'Backup failed. Check MYSQLDUMP_PATH in the environment settings and the database connection.'
+                : $exception->getMessage());
         } catch (\Throwable $exception) {
             report($exception);
 
-            return back()->with('error', 'Database backup failed. Check MYSQLDUMP_PATH in the environment settings and the database connection.');
+            return back()->with('error', 'Backup failed. See the log for details.');
         }
 
-        $this->activityLog->log(Auth::user(), 'database_backup', ['filename' => $filename]);
+        $this->activityLog->log(Auth::user(), 'database_backup', ['filename' => $result['name'], 'files' => $result['files'], 'encrypted' => true]);
 
-        return response()->download($path)->deleteFileAfterSend(true);
+        return response()->download($result['path'], $result['name']);
     }
 }

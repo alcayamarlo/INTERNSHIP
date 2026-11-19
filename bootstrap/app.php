@@ -20,6 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
         $middleware->web(append: [
             \App\Http\Middleware\NormalizeEmailInput::class,
+            \App\Http\Middleware\SecurityHeaders::class,
+            \App\Http\Middleware\EndIdleSession::class,
+            \App\Http\Middleware\RecordDataAccess::class,
         ]);
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
