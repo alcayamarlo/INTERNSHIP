@@ -177,7 +177,7 @@
                 ['coordinator.academics.index', 'coordinator.academics.*', 'bi-mortarboard', 'Academic settings'],
                 ['coordinator.applications.index', 'coordinator.applications.*', 'bi-kanban', 'Applications'],
                 ['coordinator.companies.index', 'coordinator.companies.*', 'bi-buildings', 'Partner Companies'],
-                ['coordinator.reviews.index', 'coordinator.reviews.*', 'bi-journal-check', 'Report Reviews'],
+                ['coordinator.reviews.index', 'coordinator.reviews.*', 'bi-journal-check', 'Evaluation Reports'],
                 ['coordinator.statistics.index', 'coordinator.statistics.*', 'bi-pie-chart', 'Statistics & Reports'],
                 ['coordinator.verification.index', 'coordinator.verification.*', 'bi-shield-check', 'Verification'],
                 ['coordinator.placements.index', 'coordinator.placements.*', 'bi-clock-history', 'OJT Monitoring'],
@@ -571,7 +571,7 @@
                     <li><hr class="dropdown-divider"></li>
 
                     <li>
-                        <form action="{{ route('logout') }}" method="POST">
+                        <form action="{{ route('logout') }}" method="POST" data-no-loading="true">
                             @csrf
                             <button type="submit" class="dropdown-item">
                                 <i class="bi bi-box-arrow-right" aria-hidden="true"></i>

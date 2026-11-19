@@ -396,8 +396,8 @@
                 [].forEach.call(document.querySelectorAll('.public-hero, .public-cta, .public-footer'), function (el) { guard.observe(el); });
             }
 
-            // Scroll reveal + count-up (skipped when the visitor prefers reduced motion).
-            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            // No scroll-reveal fade or count-up: the page shows its final content straight away, with no loading effect.
+            return;
             document.documentElement.classList.add('js');
             var fmt = new Intl.NumberFormat();
             function count(el) {

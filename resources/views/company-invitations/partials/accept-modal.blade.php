@@ -27,7 +27,7 @@
             <div class="alert alert-danger" role="alert">Please fix the highlighted fields.</div>
         @endif
 
-        <form method="POST" action="{{ route('company-invitations.accept', $token) }}" novalidate data-inv-form class="inv-form">
+        <form method="POST" action="{{ route('company-invitations.accept', $token) }}" novalidate data-no-loading="true" data-inv-form class="inv-form">
             @csrf
 
             <div class="inv-body">

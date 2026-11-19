@@ -29,3 +29,24 @@ html body.sb-app .rv-card :is(a, button, input):focus-visible { outline: 3px sol
     html body.sb-app .rv-return__row .form-control { flex-basis: 100%; }
     html body.sb-app .rv-return__row .rv-btn, html body.sb-app .rv-approve, html body.sb-app .rv-approve .rv-btn { flex: 1 1 100%; width: 100%; }
 }
+
+/* ===== Polish: review cards (presentation only) ===== */
+html body.sb-app .rv-card { border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow-card); margin-bottom: 18px; }
+html body.sb-app .rv-head { align-items: center; padding: 20px 26px 18px; background: var(--surface-alt); border-bottom: 1px solid var(--line); }
+html body.sb-app .rv-head__side { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; flex: none; }
+html body.sb-app .rv-title { font-size: 19px; font-weight: 700; }
+html body.sb-app .rv-meta { font-size: 13.5px; }
+html body.sb-app .rv-body { padding: 6px 26px; }
+html body.sb-app .rv-row { grid-template-columns: 190px minmax(0, 1fr); padding: 16px 0; }
+html body.sb-app .rv-row + .rv-row { border-top: 1px solid var(--line); }
+html body.sb-app .rv-row dt { font-size: 11px; font-weight: 700; letter-spacing: .1em; color: var(--muted); padding-top: 3px; }
+html body.sb-app .rv-row dd { font-size: 15px; line-height: 1.6; color: var(--text); }
+html body.sb-app .rv-foot { padding: 18px 26px 22px; background: var(--surface-alt); border-top: 1px solid var(--line); gap: 14px 20px; align-items: flex-end; }
+html body.sb-app .rv-label { font-size: 11px; font-weight: 700; letter-spacing: .1em; color: var(--muted); }
+html body.sb-app .rv-return__row .form-control { background: var(--surface); border-color: var(--line); }
+html body.sb-app .rv-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 44px; border-radius: 999px; }
+@media (max-width: 719.98px) {
+    html body.sb-app .rv-head { padding: 16px; }
+    html body.sb-app .rv-row { grid-template-columns: 1fr; padding: 12px 0; }
+    html body.sb-app .rv-foot { padding: 16px; }
+}

@@ -13,16 +13,27 @@
 <div class="sb-kpis">
     <x-dashboard-stat-card title="Enrolled" :value="$stats['totals']['enrolled']" icon="bi-people" tone="info" />
     <x-dashboard-stat-card title="Placed" :value="$stats['totals']['placed']" icon="bi-briefcase" tone="primary" />
-    <x-dashboard-stat-card title="Placement rate" :value="$stats['rates']['placement'].'%'" icon="bi-graph-up" tone="success" />
-    <x-dashboard-stat-card title="Completion rate" :value="$stats['rates']['completion'].'%'" icon="bi-patch-check" tone="success" />
+    @foreach(['placement' => ['Placement rate', 'bi-graph-up'], 'completion' => ['Completion rate', 'bi-patch-check']] as $rateKey => [$rateTitle, $rateIcon])
+        <div class="sb-stat">
+            <span class="sb-stat-icon" aria-hidden="true"><i class="bi {{ $rateIcon }}"></i></span>
+            <div class="sb-stat-body">
+                <div class="sb-stat-label">{{ $rateTitle }}</div>
+                <div class="sb-stat-value" data-rate="{{ $rateKey }}">{{ $stats['rates'][$rateKey] }}%</div>
+                <div class="progress" role="progressbar" aria-label="{{ $rateTitle }}" aria-valuenow="{{ (int) $stats['rates'][$rateKey] }}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar" style="width: {{ max(0, min(100, (int) $stats['rates'][$rateKey])) }}%"></div>
+                </div>
+            </div>
+        </div>
+    @endforeach
 </div>
 
-<div class="card mb-4"><div class="card-body">
-    @include('coordinator.statistics.partials.tables')
-</div></div>
+@include('coordinator.statistics.partials.tables', ['twoCol' => true])
 
-<h2 class="h5 mb-3">Reports</h2>
-<div class="row g-4">
+<div class="st-section-head">
+    <h2 class="st-section-title">Reports</h2>
+    <p class="st-section-hint">Generate a downloadable report, or find one you made earlier.</p>
+</div>
+<div class="row g-4 st-reports">
 
     <div class="col-lg-4">
         <div class="card" id="generate-report">

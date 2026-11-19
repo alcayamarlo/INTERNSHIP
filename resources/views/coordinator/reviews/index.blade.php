@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Report Reviews')
+@section('title', 'Evaluation Reports')
 
 @section('content')
 <link rel="stylesheet" href="{{ asset('css/coordinator-review-cards.css') }}?v={{ @filemtime(public_path('css/coordinator-review-cards.css')) }}">
 <div class="sb-dash">
-<x-page-header title="Report reviews" subtitle="Your second review after the company supervisor: weekly reports, evaluations, and recent attendance." />
+<x-page-header title="Evaluation reports" subtitle="Your second review after the company supervisor: weekly reports, evaluations, and recent attendance." />
 
 <nav class="sb-section-tabs mb-0" aria-label="Review lists">
     @foreach(['reports' => 'Weekly reports', 'evaluations' => 'Evaluations', 'attendance' => 'Attendance (last 14 days)'] as $key => $label)
@@ -60,7 +60,10 @@
                         <span class="rv-dot" aria-hidden="true">·</span> {{ $isReport ? 'Week of '.$item->week_start?->format('M d, Y') : 'Submitted '.$item->submitted_at?->format('M d, Y') }}
                     </p>
                 </div>
-                @unless($isReport)<span class="sb-status sb-status--neutral rv-score">Average {{ number_format((float) $item->average_score, 2) }} / 5</span>@endunless
+                <div class="rv-head__side">
+                    <span class="sb-status sb-status--warning"><i class="bi bi-hourglass-split" aria-hidden="true"></i> Needs your review</span>
+                    @unless($isReport)<span class="sb-status sb-status--neutral rv-score">Average {{ number_format((float) $item->average_score, 2) }} / 5</span>@endunless
+                </div>
             </header>
             <dl class="rv-body">
                 @if($isReport)
@@ -83,14 +86,14 @@
                     <input type="hidden" name="decision" value="returned">
                     <label class="rv-label" for="comment{{ $item->id }}">Comment <span>(required to return)</span></label>
                     <div class="rv-return__row">
-                        <input id="comment{{ $item->id }}" type="text" name="comment" maxlength="1000" class="form-control" required>
-                        <button type="submit" class="btn btn-outline-danger rv-btn">Return</button>
+                        <input id="comment{{ $item->id }}" type="text" name="comment" maxlength="1000" class="form-control" placeholder="Write a reason if you are returning this" required>
+                        <button type="submit" class="btn btn-outline-danger rv-btn"><i class="bi bi-arrow-return-left" aria-hidden="true"></i> Return</button>
                     </div>
                 </form>
                 <form method="POST" action="{{ $reviewUrl }}" class="rv-approve">
                     @csrf
                     <input type="hidden" name="decision" value="reviewed">
-                    <button type="submit" class="btn btn-success rv-btn">Mark reviewed</button>
+                    <button type="submit" class="btn btn-success rv-btn"><i class="bi bi-check2-circle" aria-hidden="true"></i> Mark reviewed</button>
                 </form>
             </footer>
         </article>

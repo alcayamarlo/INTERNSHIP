@@ -304,7 +304,7 @@
                 @if (Auth::user()?->email !== null)
                     <p class="lm-back"><a href="{{ route('verification.notice') }}" class="lm-link">Back to entering the code</a></p>
                 @endif
-                <form method="POST" action="{{ route('logout') }}" class="lm-back">
+                <form method="POST" action="{{ route('logout') }}" class="lm-back" data-no-loading="true">
                     @csrf
                     <button type="submit" class="lm-link">Sign Out</button>
                 </form>
@@ -350,7 +350,7 @@
                 @if ($canChangeEmail ?? false)
                     <p class="lm-back"><a href="{{ route('verification.notice', ['change' => 1]) }}" class="lm-link">Wrong email? Use a different one</a></p>
                 @endif
-                <form method="POST" action="{{ route('logout') }}" class="lm-back">
+                <form method="POST" action="{{ route('logout') }}" class="lm-back" data-no-loading="true">
                     @csrf
                     <button type="submit" class="lm-link">Sign Out</button>
                 </form>
@@ -418,7 +418,7 @@
                     <p class="lm-trust">{!! $icoShield !!} Secure account</p>
                 </form>
 
-                <form method="POST" action="{{ route('logout') }}" class="lm-back">
+                <form method="POST" action="{{ route('logout') }}" class="lm-back" data-no-loading="true">
                     @csrf
                     <button type="submit" class="lm-link">Sign Out</button>
                 </form>
