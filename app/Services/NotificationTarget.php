@@ -221,6 +221,9 @@ class NotificationTarget
     private function list(array $data, AppNotification $notification, User $viewer): ?string
     {
         return match (true) {
+            // A reminder about several interns opens the sidebar page for that document (Weekly Reports, ...).
+            is_string($data['overview'] ?? null) && array_key_exists($data['overview'], OjtOverview::SECTIONS)
+                && $viewer->isRole(UserRole::Supervisor, UserRole::Employer) => route($viewer->role->ojtRoutePrefix().'.ojt.overview', $data['overview']),
             // The intern list of a supervisor or of the company's HR account. A notice about one specific intern the
             // viewer may not open is left alone (it shows the notification itself).
             $notification->type === 'ojt_update' && $this->id($data, 'placement_id') === null && $viewer->isRole(UserRole::Supervisor) => route('supervisor.interns.index'),

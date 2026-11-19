@@ -113,6 +113,24 @@ class FileUploadService
     private function storeFile(UploadedFile $file, string $directory, string $prefix, string $extension, string $disk): string
     {
         $filename = trim($prefix, '_').'_'.now()->timestamp.'_'.Str::random(8).'.'.$extension;
+
+        // Photos of certificates and IDs taken on a phone carry the camera, the date and often the GPS location.
+        // JPEG and PNG files are stored re-encoded without that data; PDFs and Word files are stored as uploaded.
+        if (in_array($extension, ['jpg', 'jpeg', 'png'], true)) {
+            $source = $file->getRealPath();
+            $clean = $source !== false && is_readable($source)
+                ? app(ImageProcessor::class)->withoutMetadata((string) file_get_contents($source))
+                : null;
+            if ($clean !== null) {
+                $path = trim($directory, '/').'/'.$filename;
+                if (! Storage::disk($disk)->put($path, $clean)) {
+                    throw new \RuntimeException("Failed to store uploaded file on the [$disk] disk.");
+                }
+
+                return $path;
+            }
+        }
+
         $path = $file->storeAs(trim($directory, '/'), $filename, $disk);
 
         if (! $path) {

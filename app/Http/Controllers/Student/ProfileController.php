@@ -56,7 +56,7 @@ class ProfileController extends Controller
         }
         $user = Auth::user();
         $profileCompletion = $student->profileCompletionSummary();
-        $programs = Program::with(['majors', 'coordinator.user'])->orderBy('code')->get();
+        $programs = Program::with(['majors', 'coordinators.user'])->orderBy('code')->get();
         $academicSettings = AcademicSetting::current();
         $academicCalendar = app(AcademicCalendar::class);
         $academicDefaults = $academicCalendar->defaults(settings: $academicSettings);

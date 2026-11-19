@@ -129,3 +129,21 @@ function svPlacement(\App\Models\Employer $employer, ?\App\Models\User $supervis
         'start_date' => '2026-02-02', 'required_hours' => 500, 'status' => \App\Models\Placement::STATUS_ACTIVE, 'supervisor_user_id' => $supervisor?->id,
     ]);
 }
+
+/**
+ * Every value in the personal-data columns, as it sits in the tables, is encrypted: nothing is stored as plain text.
+ * Used after the seeders and imports, which must write through the models (a raw insert would skip the encrypted cast).
+ */
+function expectPersonalDataStoredEncrypted(): void
+{
+    $checked = 0;
+    foreach (\App\Support\SensitiveColumns::COLUMNS as $table => $columns) {
+        foreach ($columns as $column) {
+            $values = \Illuminate\Support\Facades\DB::table($table)->whereNotNull($column)->pluck($column, 'id');
+            $checked += $values->count();
+            $plain = $values->reject(fn ($value) => \App\Support\SensitiveColumns::looksEncrypted($value));
+            expect($plain->keys()->all())->toBe([], "{$table}.{$column} holds plain-text values (row ids shown)");
+        }
+    }
+    expect($checked)->toBeGreaterThan(0); // the check must not pass on empty tables
+}

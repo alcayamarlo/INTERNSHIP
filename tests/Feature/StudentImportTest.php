@@ -71,6 +71,10 @@ it('imports valid rows, updates existing students by school ID, and reports inva
     $response->assertViewHas('summary', fn ($summary) => $summary['created'] === 1
         && $summary['updated'] === 1
         && $summary['error'] === 2);
+
+    // The import writes through the models: the birth dates it saved are encrypted in the table, and read back correctly.
+    expectPersonalDataStoredEncrypted();
+    expect(Student::where('student_id_number', 'SCC-26-00000001')->firstOrFail()->date_of_birth->toDateString())->toBe('2003-05-14');
 });
 
 it('stores registrar semester names the way the profile form does and rejects unreadable ones', function () {

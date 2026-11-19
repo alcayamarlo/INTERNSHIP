@@ -4,20 +4,20 @@
 <meta charset="utf-8">
 <title>Performance Evaluation Report</title>
 <style>
-    @page { margin: 20px 38px 18px; } /* Letter (short bond) */
+    @page { margin: 16px 38px 14px; } /* Letter (short bond); the 70px seals in the header need this room */
     body { font-family: DejaVu Sans, sans-serif; font-size: 9.5px; color: #111827; }
     .titles { text-align: center; margin: 6px 0 2px; line-height: 1.3; }
     .titles .college { font-size: 13px; font-weight: bold; }
     .titles .form { font-size: 12px; font-weight: bold; }
     .titles .company { margin-top: 5px; font-size: 12px; font-weight: bold; text-transform: uppercase; text-decoration: underline; }
-    .part { font-weight: bold; text-transform: uppercase; margin: 5px 0 2px; }
+    .part { font-weight: bold; text-transform: uppercase; margin: 4px 0 1px; }
     .info { border-collapse: collapse; margin-left: 18px; }
     .info td { padding: 0.5px 0; vertical-align: top; }
     .info .label { width: 200px; }
     .info .value { text-transform: uppercase; font-weight: bold; }
-    .sign { display: inline-block; border-bottom: 1px solid #111827; width: 220px; height: 14px; }
+    .sign { display: inline-block; border-bottom: 1px solid #111827; width: 220px; height: 12px; }
     table.grid { width: 100%; border-collapse: collapse; margin-bottom: 3px; page-break-inside: avoid; }
-    table.grid th, table.grid td { border: 1px solid #111827; padding: 2px 5px; vertical-align: top; }
+    table.grid th, table.grid td { border: 1px solid #111827; padding: 1.5px 5px; vertical-align: top; }
     table.grid th { font-size: 10px; text-transform: uppercase; }
     .group td { font-weight: bold; text-transform: uppercase; }
     .num { text-align: center; width: 80px; }

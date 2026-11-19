@@ -19,6 +19,8 @@
                 <section class="card"><div class="card-header"><h2>About me</h2></div><div class="card-body"><p class="mb-0">{{ $profile['about_me'] }}</p></div></section>
             @endif
 
+            @include('partials.competency-scores', ['scores' => $profile['competency_scores']])
+
             @if($profile['certificates'])
                 <section class="card">
                     <div class="card-header"><h2>Certificates</h2></div>

@@ -44,7 +44,19 @@
     const renderStudent = (student) => {
         const row = node('article', 'card sb-entity');
         const identity = node('div', 'sb-person');
-        const avatar = node('span', 'sb-initials sb-initials--lg', initials(student.name));
+        // The student's profile picture when there is one, otherwise their initials.
+        let avatar;
+        if (student.avatar) {
+            avatar = node('span', 'sb-initials sb-initials--lg');
+            const picture = document.createElement('img');
+            picture.src = student.avatar;
+            picture.alt = '';
+            picture.loading = 'lazy';
+            picture.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+            avatar.append(picture);
+        } else {
+            avatar = node('span', 'sb-initials sb-initials--lg', initials(student.name));
+        }
         avatar.setAttribute('aria-hidden', 'true');
         identity.append(avatar);
 

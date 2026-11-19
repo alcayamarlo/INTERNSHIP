@@ -11,6 +11,12 @@ class CharacterReference extends Model
 
     protected $fillable = ['student_id', 'name', 'position', 'organization', 'contact_number'];
 
+    protected function casts(): array
+    {
+        // The referee's phone number: stored encrypted (App\Support\SensitiveColumns).
+        return ['contact_number' => 'encrypted'];
+    }
+
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);

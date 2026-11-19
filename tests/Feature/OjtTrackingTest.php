@@ -499,7 +499,9 @@ it('seeds demo OJT data that renders for every role', function () {
     $cleared = User::where('email', 'student3@skillbridge.test')->first();
     $clearedPlacement = $cleared->student->placements()->first();
 
-    expect(Placement::count())->toBe(2)
+    // The demo accounts (@skillbridge.test) have 2 placements; the presentation data adds 10 more.
+    expect(Placement::whereHas('student.user', fn ($query) => $query->where('email', 'like', '%@skillbridge.test'))->count())->toBe(2)
+        ->and(Placement::count())->toBe(12)
         ->and($ongoing->student->placements()->first()->isActive())->toBeTrue()
         ->and($clearedPlacement->isCleared())->toBeTrue()
         ->and($clearedPlacement->hasMetRequiredHours())->toBeTrue();

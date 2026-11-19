@@ -101,9 +101,8 @@ class AppraisalService
     }
 
     /**
-     * Requests a month for every active placement the coordinator manages. There is no limit: a month that was
-     * already requested is requested again (a new evaluation). Only placements whose dates do not cover the
-     * month are skipped.
+     * Requests a month for every active placement the coordinator manages, once: placements that already have
+     * that month, or whose dates do not cover it, are skipped. (Reminders, not requests, can be repeated.)
      *
      * @return array{created: int, skipped: int}
      */
@@ -115,7 +114,8 @@ class AppraisalService
 
         foreach ($this->managedActivePlacements($coordinator) as $placement) {
             $covered = $this->monthsFor($placement)->contains(fn (CarbonImmutable $m) => $m->equalTo($month));
-            if (! $covered) {
+            $exists = $placement->appraisals()->whereDate('period_month', $month->toDateString())->exists();
+            if (! $covered || $exists) {
                 $skipped++;
 
                 continue;
@@ -312,6 +312,9 @@ class AppraisalService
         }
         if (! $this->monthsFor($placement)->contains(fn (CarbonImmutable $m) => $m->equalTo($month))) {
             throw ValidationException::withMessages(['period_month' => 'Choose a month within the OJT dates, up to the current month.']);
+        }
+        if ($placement->appraisals()->whereDate('period_month', $month->toDateString())->exists()) {
+            throw ValidationException::withMessages(['period_month' => 'This month already has a monthly evaluation. Use Remind to nudge whoever has not finished it.']);
         }
     }
 

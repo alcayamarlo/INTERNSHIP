@@ -4,10 +4,10 @@
 
 @section('content')
 <div class="sb-dash">
-<x-page-header title="System Reports" subtitle="Generate platform-wide reports and backups">
+<x-page-header title="System Reports" subtitle="Generate platform-wide reports and an encrypted backup of all data and files">
     <form action="{{ route('admin.backup') }}" method="POST">
         @csrf
-        <button type="submit" class="btn btn-outline-secondary"><i class="bi bi-database-down" aria-hidden="true"></i> Database Backup</button>
+        <button type="submit" class="btn btn-outline-secondary"><i class="bi bi-database-down" aria-hidden="true"></i> Encrypted Backup</button>
     </form>
 </x-page-header>
 

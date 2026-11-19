@@ -195,6 +195,32 @@ php artisan tinker
 >>> User::where('email', 'test@example.com')->delete();
 ```
 
+### Personal data encryption
+```bash
+# Report only (changes nothing): per column, how many values are encrypted, plain text, or unreadable with this APP_KEY.
+# Exits with an error if any value is plain or unreadable. Run after a restore or an import.
+php artisan data:reencrypt --check
+
+# Rewrite every value with the current APP_KEY (after rotating the key: see GOING_LIVE.md). Also encrypts any value
+# found in plain text. Values that cannot be decrypted are reported and left alone.
+php artisan data:reencrypt
+```
+These columns cannot be searched, sorted or filtered in SQL: read them through the models.
+
+### Locked out or cannot get the sign-in code
+```bash
+# An account locked after 10 wrong passwords (also: the Unlock button on the Users page). Takes an email or a school ID.
+php artisan user:unlock someone@school.edu.ph
+
+# Two-factor sign-in cannot be used (email down, mailbox lost, recovery codes gone).
+# Removes the account's recovery codes, pending code and trusted browsers; switches optional 2FA off.
+# An ADMIN's next password sign-in then goes through without a code, once, and lands on the
+# Two-factor sign-in page to make new recovery codes. Needs access to the server, so it cannot be abused remotely.
+php artisan user:reset-2fa admin@school.edu.ph
+
+# Without server access: use one of the 8 recovery codes in place of the emailed code (each works once).
+```
+
 ---
 
 ## 🔐 Authentication Testing

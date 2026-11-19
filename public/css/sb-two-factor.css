@@ -1,0 +1,41 @@
+/* Recovery codes (resources/views/account/security.blade.php) and the two-factor reminder banner. */
+.sb-recovery-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+    gap: 8px 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.sb-recovery-list code {
+    font-size: 1.05rem;
+    letter-spacing: 0.04em;
+}
+
+.sb-two-factor-banner[hidden] {
+    display: none;
+}
+
+/* Print only the codes. */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    [data-recovery-codes],
+    [data-recovery-codes] * {
+        visibility: visible;
+    }
+
+    [data-recovery-codes] {
+        position: absolute;
+        inset: 0 auto auto 0;
+        width: 100%;
+        border: 0;
+    }
+
+    .sb-no-print {
+        display: none !important;
+    }
+}

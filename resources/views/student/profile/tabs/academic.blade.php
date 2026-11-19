@@ -75,7 +75,7 @@
                 <select id="program_id" class="form-select @error('program_id') is-invalid @enderror" @unless($profileVerified) name="program_id" @endunless @disabled($profileVerified) required>
                     <option value="">Select...</option>
                     @foreach($programs as $program)
-                        <option value="{{ $program->id }}" data-coordinator="{{ $program->coordinator?->user?->name ?? '' }}" {{ (string) old('program_id', $profileVerified ? $student->program_id : $selectedProgramId) === (string) $program->id ? 'selected' : '' }}>{{ $program->display_name }}</option>
+                        <option value="{{ $program->id }}" data-coordinator="{{ $program->coordinatorNames() ?? '' }}" {{ (string) old('program_id', $profileVerified ? $student->program_id : $selectedProgramId) === (string) $program->id ? 'selected' : '' }}>{{ $program->display_name }}</option>
                     @endforeach
                 </select>
                 @if($profileVerified)
@@ -145,8 +145,8 @@
             </div>
             @include('student.profile.partials.field', ['name' => 'gwa', 'label' => 'GWA (optional)', 'type' => 'number', 'value' => $student->gwa, 'extra' => 'step="0.01"'])
             <div>
-                <label class="form-label" for="assigned_coordinator">Assigned coordinator</label>
-                <input id="assigned_coordinator" type="text" class="form-control" value="{{ $programs->firstWhere('id', (int) old('program_id', $selectedProgramId))?->coordinator?->user?->name ?? 'Not assigned' }}" readonly>
+                <label class="form-label" for="assigned_coordinator">Assigned coordinator(s)</label>
+                <input id="assigned_coordinator" type="text" class="form-control" value="{{ $programs->firstWhere('id', (int) old('program_id', $selectedProgramId))?->coordinatorNames() ?? 'Not assigned' }}" readonly>
             </div>
         </div>
 

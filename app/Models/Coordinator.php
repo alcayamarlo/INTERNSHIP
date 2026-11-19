@@ -9,12 +9,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Coordinator extends Model
 {
-    public const DEPARTMENT_TAKEN = 'This department already has a coordinator.';
+    /** A department has at most this many coordinators (both see the same students). */
+    public const MAX_PER_DEPARTMENT = 2;
+
+    public const DEPARTMENT_TAKEN = 'This department already has 2 coordinators.';
 
     protected $fillable = [
         'user_id',
         'institution_id',
-        // The one department (program) this coordinator handles. Only an admin sets it.
+        // The one department (program) this coordinator handles; a department has up to 2 coordinators. Only an admin sets it.
         'program_id',
         'office_address',
         'profile_picture',
@@ -60,6 +63,14 @@ class Coordinator extends Model
         return Student::query()
             ->where('institution_id', $this->institution_id)
             ->where('program_id', $this->program_id);
+    }
+
+    /** Whether the department can take (another) coordinator; $except is a coordinator who already has it (an edit). */
+    public static function departmentHasRoom(int $programId, ?int $except = null): bool
+    {
+        return static::query()->where('program_id', $programId)
+            ->when($except !== null, fn (Builder $query) => $query->whereKeyNot($except))
+            ->count() < self::MAX_PER_DEPARTMENT;
     }
 
     public function canAccessStudent(Student $student): bool

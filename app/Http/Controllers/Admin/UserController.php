@@ -51,7 +51,7 @@ class UserController extends Controller
             'assignableRoles' => UserRole::assignable(),
             'studentIdPattern' => StudentIdFormat::pattern(),
             // For the edit modal: a coordinator may keep their department or move to a free one.
-            'departments' => Program::with('coordinator')->orderBy('code')->get(),
+            'departments' => Program::withCount('coordinators')->orderBy('code')->get(),
         ]);
     }
 
@@ -61,7 +61,7 @@ class UserController extends Controller
             'institutions' => Institution::query()->whereNotNull('verified_at')->orderBy('name')->get(),
             'roles' => UserRole::assignable(),
             // Only departments that still need a coordinator.
-            'departments' => Program::query()->whereDoesntHave('coordinator')->orderBy('code')->get(),
+            'departments' => Program::query()->acceptingCoordinators()->orderBy('code')->get(),
         ]);
     }
 
@@ -88,6 +88,7 @@ class UserController extends Controller
                     'contact_person' => $validated['name'],
                 ]);
             } elseif ($validated['role'] === UserRole::Coordinator->value) {
+                $this->assertDepartmentHasRoom((int) $validated['program_id']);
                 Coordinator::create([
                     'user_id' => $user->id,
                     'institution_id' => $validated['institution_id'],
@@ -169,6 +170,7 @@ class UserController extends Controller
             if ($newRole === UserRole::Coordinator) {
                 $coordinator = $user->coordinator()->firstOrCreate([]);
                 if ((int) $coordinator->program_id !== (int) $validated['program_id']) {
+                    $this->assertDepartmentHasRoom((int) $validated['program_id'], $coordinator->id);
                     $coordinator->update(['program_id' => $validated['program_id']]);
                     $this->activityLog->log($actor, 'coordinator_department_assigned', ['user_id' => $user->id, 'program_id' => (int) $validated['program_id']]);
                 }
@@ -228,6 +230,15 @@ class UserController extends Controller
         }
 
         return back()->with('success', "{$user->name} is suspended ".($user->suspended_until ? 'until '.$user->suspended_until->timezone('Asia/Manila')->format('M d, Y h:i A') : 'until you lift it').'.');
+    }
+
+    /** Ends a lock after too many wrong passwords (App\Services\LoginLockout). */
+    public function unlock(User $user)
+    {
+        $this->authorize('update', $user);
+        app(\App\Services\LoginLockout::class)->unlock($user, Auth::user());
+
+        return back()->with('success', "{$user->name} is unlocked and can sign in now.");
     }
 
     public function liftSuspension(User $user)
@@ -400,20 +411,23 @@ class UserController extends Controller
     }
 
     /**
-     * The UNIQUE key on coordinators.program_id is the last line of defence: if two admins give the
-     * same department to two coordinators at the same moment, the second save fails here.
+     * A department has at most Coordinator::MAX_PER_DEPARTMENT coordinators. The department row is locked while
+     * we count, so two admins adding the 2nd and 3rd coordinator at the same moment cannot both succeed.
+     * Call it inside the transaction, right before saving.
      */
-    private function guardDepartment(\Closure $save): mixed
+    private function assertDepartmentHasRoom(int $programId, ?int $exceptCoordinatorId = null): void
     {
-        try {
-            return $save();
-        } catch (UniqueConstraintViolationException $exception) {
-            if (! str_contains($exception->getMessage(), 'program_id')) {
-                throw $exception;
-            }
+        Program::query()->whereKey($programId)->lockForUpdate()->first();
 
+        if (! Coordinator::departmentHasRoom($programId, $exceptCoordinatorId)) {
             throw ValidationException::withMessages(['program_id' => Coordinator::DEPARTMENT_TAKEN]);
         }
+    }
+
+    /** Kept for the callers that wrap the save; the department limit is checked by assertDepartmentHasRoom(). */
+    private function guardDepartment(\Closure $save): mixed
+    {
+        return $save();
     }
 
     private function ensureRoleProfile(User $user, UserRole $role): void

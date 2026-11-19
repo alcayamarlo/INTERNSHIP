@@ -21,7 +21,7 @@
         <div class="card-header"><h2 class="h6 mb-0" id="appraisalRequestHeading-{{ $placement->id }}"><i class="bi bi-calendar-plus" aria-hidden="true"></i> Request a monthly evaluation</h2></div>
         <div class="card-body">
             @if($requestMonths->isEmpty())
-                <p class="text-muted small mb-0">This OJT has no month to evaluate yet.</p>
+                <p class="text-muted small mb-0">Every month of this OJT so far already has a monthly evaluation.</p>
             @else
                 <form method="POST" action="{{ route('coordinator.placements.appraisals.store', $placement) }}" class="row g-3 align-items-end" novalidate>
                     @csrf

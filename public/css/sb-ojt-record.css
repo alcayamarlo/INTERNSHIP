@@ -61,14 +61,3 @@ html body.sb-app .ojt-progress--record .sb-tile::before { content: ""; position:
 html body.sb-app .ojt-progress--record .progress { height: 10px; border-radius: 999px; }
 html body.sb-app .ojt-progress--record .progress-bar { border-radius: 999px; }
 @media (max-width: 767px) { html body.sb-app .ojt-ring { width: 100%; } }
-
-/* The OJT sections of one intern, listed in the sidebar under the active menu item (employer/interns/show). */
-html body.sb-app .sb-subnav { display: grid; gap: 2px; margin: 2px 0 6px 22px; padding-left: 10px; border-left: 2px solid var(--line); }
-html body.sb-app .sb-subnav-link { display: flex; align-items: center; gap: 10px; min-height: 38px; padding: 8px 12px; border-radius: 10px;
-    color: var(--text); font-size: 13.5px; font-weight: 500; text-decoration: none; }
-html body.sb-app .sb-subnav-link > .bi { font-size: 16px; width: 16px; color: var(--muted); }
-html body.sb-app .sb-subnav-link:hover { background: var(--surface-alt); color: var(--text); }
-html body.sb-app .sb-subnav-link:hover > .bi { color: var(--burgundy-text); }
-html body.sb-app .sb-subnav-link[aria-selected="true"] { background: var(--burgundy-soft, rgba(122, 1, 14, .1)); color: var(--burgundy-text, var(--burgundy)); font-weight: 600; }
-html body.sb-app .sb-subnav-link[aria-selected="true"] > .bi { color: var(--burgundy-text, var(--burgundy)); }
-html body.sb-app .sb-subnav-link:focus-visible { outline: 2px solid var(--burgundy); outline-offset: 2px; }

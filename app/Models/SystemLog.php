@@ -29,6 +29,19 @@ class SystemLog extends Model
         'account_deactivated',
         'account_suspended',
         'account_suspension_lifted',
+        'account_locked',
+        'account_unlocked',
+        'sessions_revoked',
+        'logout_idle',
+        'two_factor_sent',
+        'two_factor_passed',
+        'two_factor_failed',
+        'two_factor_skipped',
+        'two_factor_recovery_used',
+        'two_factor_codes_generated',
+        'two_factor_enabled',
+        'two_factor_disabled',
+        'two_factor_reset',
     ];
 
     /** Failed sign-ins from one account or IP within this window count as repeated. */
