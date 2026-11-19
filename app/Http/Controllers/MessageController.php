@@ -140,12 +140,22 @@ class MessageController extends Controller
             }
         }
 
+        // Photo: stored on the private disk under a random name; only the two people in this chat can open it.
+        $attachmentPath = null;
+        $attachmentName = null;
+        if ($photo = $request->file('attachment')) {
+            $attachmentPath = $photo->store('message-attachments', 'local');
+            $attachmentName = \Illuminate\Support\Str::limit(basename(str_replace('\\', '/', (string) $photo->getClientOriginalName())), 140, '');
+        }
+
         try {
-            $message = DB::transaction(function () use ($request, $user, $replyTo) {
+            $message = DB::transaction(function () use ($request, $user, $replyTo, $attachmentPath, $attachmentName) {
                 $message = Message::create([
                     'sender_id' => Auth::id(),
                     'receiver_id' => $user->id,
-                    'body' => $request->validated('body'),
+                    'body' => (string) $request->validated('body'),
+                    'attachment_path' => $attachmentPath,
+                    'attachment_name' => $attachmentName,
                     'reply_to_id' => $replyTo?->id,
                 ]);
 
@@ -155,6 +165,9 @@ class MessageController extends Controller
             });
         } catch (\Throwable $exception) {
             Cache::forget($cacheKey);
+            if ($attachmentPath) {
+                \Illuminate\Support\Facades\Storage::disk('local')->delete($attachmentPath);
+            }
             throw $exception;
         }
 
@@ -173,7 +186,7 @@ class MessageController extends Controller
                 'update_url' => route('messages.update', $message),
                 'unsend_url' => route('messages.unsend', $message),
                 'remove_url' => route('messages.remove', $message),
-                'message' => $request->validated('body'),
+                'message' => (string) $request->validated('body'),
                 'created_at' => now()->format('M d, h:i A'),
                 'submission_id' => (string) Str::uuid(),
                 // The rendered message (reply quote, actions) for the open chat to append.
@@ -241,6 +254,24 @@ class MessageController extends Controller
         return response()->json($this->rowPayload($message));
     }
 
+    /** The photo of a message. Only the two people in the chat can open it, and not once it is unsent, removed for them or hidden by an admin. */
+    public function attachment(Message $message)
+    {
+        abort_unless($message->isParticipant(Auth::id()), 403);
+        abort_unless(Message::whereKey($message->id)->visibleTo(Auth::id())->exists(), 404);
+        abort_if($message->isGone() || ! $message->hasAttachment(), 404);
+
+        $disk = \Illuminate\Support\Facades\Storage::disk('local');
+        abort_unless($disk->exists($message->attachment_path), 404);
+
+        return $disk->response($message->attachment_path, $message->attachment_name ?: 'photo', [
+            'Content-Disposition' => 'inline',
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'private, max-age=3600',
+            'Content-Security-Policy' => "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox",
+        ]);
+    }
+
     /** React with an emoji. Picking your current reaction again removes it; a new one replaces it. */
     public function react(Request $request, Message $message)
     {
@@ -284,10 +315,19 @@ class MessageController extends Controller
         $target = User::findOrFail($targetId);
         Gate::authorize('message.send', $target);
 
+        // A forwarded photo gets its own copy of the file, so unsending the original never breaks the forward.
+        $copiedPath = null;
+        if ($message->hasAttachment() && \Illuminate\Support\Facades\Storage::disk('local')->exists($message->attachment_path)) {
+            $copiedPath = 'message-attachments/'.\Illuminate\Support\Str::random(40).'.'.pathinfo($message->attachment_path, PATHINFO_EXTENSION);
+            \Illuminate\Support\Facades\Storage::disk('local')->copy($message->attachment_path, $copiedPath);
+        }
+
         $copy = Message::create([
             'sender_id' => Auth::id(),
             'receiver_id' => $target->id,
             'body' => $message->body,
+            'attachment_path' => $copiedPath,
+            'attachment_name' => $copiedPath ? $message->attachment_name : null,
             'forwarded_at' => now(),
         ]);
         $this->activityLog->log(Auth::user(), 'message_forward', ['message_id' => $message->id, 'receiver_id' => $target->id]);

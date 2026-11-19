@@ -19,7 +19,7 @@
                     <option value="{{ $case->value }}" @selected($status === $case)>{{ $case->label() }}</option>
                 @endforeach
             </select>
-            <noscript><button type="submit" class="btn btn-sm btn-outline-primary">Filter</button></noscript>
+            <noscript><button type="submit" class="btn btn-sm btn-outline-primary">Search</button></noscript>
         </form>
     </div>
     <div class="table-responsive">

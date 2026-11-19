@@ -13,7 +13,21 @@
         var target = dialog.querySelector('.is-invalid') || dialog.querySelector('.sb-modal__body :is(input, select, textarea):not([type="hidden"]):not([readonly]):not([disabled])');
         if (target) target.focus({ preventScroll: true });
     }
-    function close(dialog) { if (dialog && dialog.open) dialog.close(); }
+    // Close with a short fade/scale-out first (skipped when the user prefers reduced motion), then really close.
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)');
+    function close(dialog) {
+        if (!dialog || !dialog.open) return;
+        if ((reduce && reduce.matches) || dialog.classList.contains('is-closing')) { if (!dialog.classList.contains('is-closing')) dialog.close(); return; }
+        dialog.classList.add('is-closing');
+        setTimeout(function () { dialog.classList.remove('is-closing'); if (dialog.open) dialog.close(); }, 180);
+    }
+    // Esc closes with the same animation instead of snapping shut.
+    document.addEventListener('cancel', function (e) {
+        var d = e.target;
+        if (!d.matches || !d.matches('dialog[data-sb-modal]')) return;
+        e.preventDefault();
+        close(d);
+    }, true);
 
     document.addEventListener('click', function (e) {
         var opener = e.target.closest && e.target.closest('[data-open]');
@@ -73,4 +87,20 @@
             btn.disabled = false; btn.innerHTML = btn.dataset.original; delete btn.dataset.loading;
         });
     });
+})();
+
+/* No layout jump when a pop-up opens: the page scrollbar disappears while the page is locked, which pushed everything behind the pop-up
+   to the side. The scrollbar width is measured while the page is free and added back as padding while a pop-up is open. */
+(function () {
+    var root = document.documentElement;
+    function locked() { return root.classList.contains('sb-modal-open') || root.classList.contains('applicant-modal-open'); }
+    function measure() {
+        if (locked()) return;
+        var width = window.innerWidth - root.clientWidth;
+        root.style.setProperty('--sb-sbw', (width > 0 ? width : 0) + 'px');
+    }
+    measure();
+    window.addEventListener('load', measure);
+    window.addEventListener('resize', measure);
+    new MutationObserver(measure).observe(root, { attributes: true, attributeFilter: ['class'] });
 })();

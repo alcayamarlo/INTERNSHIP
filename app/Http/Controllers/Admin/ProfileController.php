@@ -44,4 +44,19 @@ class ProfileController extends Controller
 
         return redirect()->route('admin.profile.edit')->with('success', 'Profile picture updated.');
     }
+
+    public function deletePicture(FileUploadService $fileUpload)
+    {
+        $user = Auth::user();
+        $previousAvatar = $user->avatar;
+
+        if (! $previousAvatar) {
+            return redirect()->route('admin.profile.edit')->with('error', 'No profile picture to remove.');
+        }
+
+        $user->update(['avatar' => null]);
+        $fileUpload->delete($previousAvatar);
+
+        return redirect()->route('admin.profile.edit')->with('success', 'Profile picture removed.');
+    }
 }

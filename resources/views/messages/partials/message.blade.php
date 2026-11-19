@@ -47,8 +47,16 @@
             <div class="msgr-forwarded"><i class="bi bi-forward-fill" aria-hidden="true"></i> Forwarded</div>
         @endif
 
-        <div class="messenger-bubble" tabindex="0" title="Click to show the date and time">
-            <p class="messenger-message {{ $gone ? 'fst-italic text-muted' : '' }}">{{ $message->displayBody($me) }}</p>
+        @php $hasPhoto = $message->hasAttachment() && ! $gone; $hasText = $message->body !== '' || $gone; @endphp
+        <div class="messenger-bubble {{ $hasPhoto ? 'has-photo' : '' }} {{ $hasPhoto && ! $hasText ? 'is-photo-only' : '' }}" tabindex="0" title="Click to show the date and time">
+            @if($hasPhoto)
+                <a href="{{ route('messages.attachment', $message) }}" target="_blank" rel="noopener" class="msgr-photo" aria-label="Open photo{{ $message->attachment_name ? ': '.$message->attachment_name : '' }}">
+                    <img src="{{ route('messages.attachment', $message) }}" alt="Photo sent by {{ $mine ? 'you' : $contact->name }}" loading="lazy" decoding="async">
+                </a>
+            @endif
+            @if($hasText)
+                <p class="messenger-message {{ $gone ? 'fst-italic text-muted' : '' }}">{{ $message->displayBody($me) }}</p>
+            @endif
             <span class="messenger-time">
                 {{ $message->created_at->format('M d, h:i A') }}
                 <span data-edited-label>@if($message->isEdited() && ! $gone) &middot; edited @endif</span>
@@ -91,7 +99,7 @@
         <div class="dropdown msgr-actions">
             <button type="button" class="msgr-tool msgr-more" data-bs-toggle="dropdown" aria-expanded="false" aria-label="More options"><i class="bi bi-three-dots-vertical" aria-hidden="true"></i></button>
             <ul class="dropdown-menu {{ $mine ? 'dropdown-menu-end' : '' }}">
-                @if($mine && ! $gone)
+                @if($mine && ! $gone && $message->body !== '')
                     <li><button type="button" class="dropdown-item" data-msg-edit><i class="bi bi-pencil" aria-hidden="true"></i> Edit</button></li>
                 @endif
                 <li><button type="button" class="dropdown-item" data-msg-remove><i class="bi bi-eye-slash" aria-hidden="true"></i> Remove for you</button></li>

@@ -14,7 +14,7 @@
     <form method="GET" class="public-filter" role="search" aria-label="Filter internships">
         <input type="search" name="search" value="{{ request('search') }}" placeholder="Search title or company" aria-label="Search title or company">
         <input type="text" name="location" value="{{ request('location') }}" placeholder="Location" aria-label="Location">
-        <button type="submit" class="public-button public-button-primary">Filter</button>
+        <button type="submit" class="public-button public-button-primary">Search</button>
         <a href="{{ route('internships.index') }}" class="public-button">Clear</a>
     </form>
     </div>

@@ -68,3 +68,14 @@ html body:is(.skillbridge-public, .skillbridge-guest) { overflow-x: clip; }
         animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important;
     }
 }
+
+/* =====================================================================
+   One focus ring for every text field, everywhere.
+   Many pages drew the browser outline on top of the field's own border and glow, which looked like a double line.
+   - the outline is removed on text-type fields (high specificity, so no page can bring the second line back);
+   - a single maroon border + soft glow is the default focus look (low specificity, so a component with its own focus style keeps it).
+   Checkboxes, radios, buttons and links keep their normal focus outline.
+   ===================================================================== */
+html body :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]), textarea, select):focus-visible { outline: 0 !important; outline-offset: 0 !important; }
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]), textarea, select):focus-visible { border-color: #7f0019; box-shadow: 0 0 0 4px rgba(127, 0, 25, .16); }
+:root[data-theme="dark"] :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]), textarea, select):focus-visible { border-color: #e79aa8; box-shadow: 0 0 0 4px rgba(231, 154, 168, .2); }

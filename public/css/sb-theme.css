@@ -213,8 +213,8 @@ html body.sb-app :is(.sb-status, .table-badge, .status-badge, .sb-tag--brand),
 html body.sb-app .badge:not([class*="text-bg-"]):not([class*=" bg-"]) {
     background: var(--burgundy-tint) !important; color: var(--burgundy-tint-text) !important; border: 1px solid transparent !important;
 }
-/* solid: black, for Ongoing / Active / Accepted */
-html body.sb-app :is(.sb-status--success, .sb-status--active) { background: var(--solid-bg) !important; color: var(--solid-text) !important; }
+/* solid green: Ongoing / Active / Accepted / Verified (every success status) */
+html body.sb-app :is(.sb-status--success, .sb-status--active) { background: #1f7a3d !important; color: #fff !important; }
 /* outline: neutral info and dates */
 html body.sb-app :is(.sb-status--neutral, .sb-tag) { background: var(--surface) !important; color: var(--text) !important; border: 1px solid var(--line) !important; }
 /* outlined burgundy: rejected / closed */
@@ -1368,3 +1368,73 @@ html body.sb-app .sb-cell-score { min-width: 96px; width: 120px; }
 
 /* Verified company badge: always green, in every page and theme. */
 html body.sb-app .badge.sb-verified-badge, html[data-theme="dark"] body.sb-app .badge.sb-verified-badge { background: var(--ds-verified) !important; color: #fff !important; border: 0; }
+
+/* "Profile verified" badge: green (the only place the system uses green) */
+html body.sb-app .sb-status.sb-status--verified { background: #1f7a3d !important; color: #fff !important; }
+
+/* =====================================================================
+   Dark theme: tables and status badges (one look for every list in the system)
+   Header = quiet surface with muted labels (no loud pink). Selected / hovered row = a soft lift with a thin accent bar.
+   Badges = soft tinted pills with readable text, instead of solid bright fills.
+   ===================================================================== */
+html[data-theme="dark"] body.sb-app .table > thead > tr > th,
+html[data-theme="dark"] body.sb-app .table > thead th { background: var(--surface-alt) !important; color: var(--muted) !important; border-color: var(--line) !important; }
+html[data-theme="dark"] body.sb-app .table > tbody > tr > td { border-color: var(--line); }
+html[data-theme="dark"] body.sb-app .table-hover > tbody > tr:hover > td { background: color-mix(in srgb, var(--text) 5%, var(--surface)) !important; }
+html[data-theme="dark"] body.sb-app .sb-select-row.is-selected > td,
+html[data-theme="dark"] body.sb-app .sb-select-row[aria-selected="true"] > td { background: color-mix(in srgb, var(--text) 7%, var(--surface)) !important; }
+html[data-theme="dark"] body.sb-app .sb-select-row.is-selected > td:first-child,
+html[data-theme="dark"] body.sb-app .sb-select-row[aria-selected="true"] > td:first-child { box-shadow: inset 3px 0 0 var(--burgundy-text); }
+
+/* Status badges */
+html[data-theme="dark"] body.sb-app :is(.sb-status, .table-badge, .status-badge) { background: var(--burgundy-tint) !important; color: var(--burgundy-tint-text) !important; border: 1px solid var(--burgundy-border) !important; }
+html[data-theme="dark"] body.sb-app :is(.sb-status--success, .sb-status--active, .sb-status.sb-status--verified) { background: rgba(70, 170, 110, .16) !important; color: #86d4a3 !important; border: 1px solid rgba(70, 170, 110, .32) !important; }
+html[data-theme="dark"] body.sb-app .sb-status--warning { background: rgba(217, 166, 64, .14) !important; color: #e6c27a !important; border: 1px solid rgba(217, 166, 64, .3) !important; }
+html[data-theme="dark"] body.sb-app :is(.sb-status--neutral, .sb-tag) { background: var(--surface-alt) !important; color: var(--text) !important; border: 1px solid var(--line) !important; }
+html[data-theme="dark"] body.sb-app .sb-status--danger { background: transparent !important; color: var(--burgundy-text) !important; border: 1px solid var(--burgundy-border) !important; }
+
+
+/* =====================================================================
+   Student lists (Applicants, Sent Invitations): filter bar, quota chip, table columns, empty state
+   ===================================================================== */
+/* Filter bar: four equal fields and the buttons on one line, all aligned to the same bottom edge */
+html body.sb-app .sb-filterbar .sb-filter-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) auto; gap: 16px; align-items: end; }
+html body.sb-app .sb-filterbar .sb-filter-field { min-width: 0; flex: none; }
+html body.sb-app .sb-filterbar .sb-filter-actions { align-self: end; flex-wrap: nowrap; }
+html body.sb-app .sb-filterbar .sb-filter-actions .btn { min-height: 48px; white-space: nowrap; border-radius: 999px; }
+html body.sb-app .sb-filterbar .form-control,
+html body.sb-app .sb-filterbar .form-select { min-height: 48px; }
+/* "Showing 0 of 0" lines up with the first field (a generic card rule indented it) */
+html body.sb-app .sb-filterbar > .sb-note { margin: 14px 0 0 !important; padding: 0 !important; }
+/* Clear Filters reads as a real button, dimmed only when there is nothing to clear */
+html body.sb-app .sb-filterbar [data-tf-clear] { border: 1.5px solid var(--line); background: transparent; color: var(--text); }
+html body.sb-app .sb-filterbar [data-tf-clear]:hover { background: var(--surface-alt); }
+html body.sb-app .sb-filterbar [data-tf-clear][aria-disabled="true"] { opacity: .55; pointer-events: none; }
+@media (max-width: 1199.98px) { html body.sb-app .sb-filterbar .sb-filter-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } html body.sb-app .sb-filterbar .sb-filter-actions { grid-column: 1 / -1; } }
+@media (max-width: 639.98px) { html body.sb-app .sb-filterbar .sb-filter-row { grid-template-columns: 1fr; } html body.sb-app .sb-filterbar .sb-filter-actions { width: 100%; } html body.sb-app .sb-filterbar .sb-filter-actions .btn { flex: 1 1 auto; } }
+
+/* Daily quota: a small chip instead of loose text */
+html body.sb-app .sb-quota { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 16px; padding: 7px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--muted); font-size: 13px; font-weight: 500; }
+html body.sb-app .sb-quota .bi { color: var(--burgundy-text); }
+html body.sb-app .sb-quota strong { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* Sent Invitations table: columns spread across the whole card (they were bunched on the left) */
+html body.sb-app .table.sb-cols-invitations { table-layout: fixed; width: 100%; }
+html body.sb-app .sb-cols-invitations th:nth-child(1) { width: 22%; }
+html body.sb-app .sb-cols-invitations th:nth-child(2) { width: 20%; }
+html body.sb-app .sb-cols-invitations th:nth-child(3) { width: 13%; }
+html body.sb-app .sb-cols-invitations th:nth-child(4) { width: 16%; }
+html body.sb-app .sb-cols-invitations th:nth-child(5) { width: 16%; }
+html body.sb-app .sb-cols-invitations th:nth-child(6) { width: 13%; }
+html body.sb-app .sb-cols-invitations td:last-child { text-align: right; }
+@media (max-width: 899.98px) { html body.sb-app .table.sb-cols-invitations { table-layout: auto; } }
+
+/* Empty state inside a table: one clean block (no second dashed frame inside the card) */
+html body.sb-app .table > tbody > tr > td.sb-table-empty { padding: 0 !important; background: transparent; }
+html body.sb-app .table > tbody > tr > td.sb-table-empty .sb-empty { margin: 0; padding: 56px 16px 60px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+
+/* Top-bar search: one focus ring on the pill only. The inner input draws no ring of its own (it was showing a second, offset outline). */
+html body.sb-app .sb-search .form-control:focus,
+html body.sb-app .sb-search .form-control:focus-visible,
+html body.sb-app .sb-search input:focus-visible { outline: 0 !important; outline-offset: 0 !important; border: 0 !important; box-shadow: none !important; }
+html body.sb-app .sb-search .input-group:focus-within { border-color: var(--burgundy); box-shadow: 0 0 0 3px color-mix(in srgb, var(--burgundy) 18%, transparent); }

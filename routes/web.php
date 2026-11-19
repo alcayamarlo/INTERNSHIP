@@ -164,6 +164,7 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         Route::delete('/messages/{message}', [MessageController::class, 'unsend'])->whereNumber('message')->middleware('throttle:30,1')->name('messages.unsend');
         // Messenger actions: re-render one message (live updates), react, pin, forward.
         Route::get('/messages/{message}/row', [MessageController::class, 'row'])->whereNumber('message')->name('messages.row');
+        Route::get('/messages/{message}/attachment', [MessageController::class, 'attachment'])->whereNumber('message')->name('messages.attachment');
         Route::post('/messages/{message}/react', [MessageController::class, 'react'])->whereNumber('message')->middleware('throttle:60,1')->name('messages.react');
         Route::post('/messages/{message}/pin', [MessageController::class, 'pin'])->whereNumber('message')->middleware('throttle:30,1')->name('messages.pin');
         Route::post('/messages/{message}/forward', [MessageController::class, 'forward'])->whereNumber('message')->middleware('throttle:30,1')->name('messages.forward');
@@ -314,6 +315,9 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
         // unassigned interns, limited by PlacementPolicy::supervise to the interns assigned to them.
         Route::prefix('supervisor')->name('supervisor.')->middleware('role:supervisor')->group(function () {
             Route::get('/dashboard', [App\Http\Controllers\Supervisor\DashboardController::class, 'index'])->name('dashboard');
+            Route::get('/profile', [App\Http\Controllers\Supervisor\ProfileController::class, 'edit'])->name('profile.edit');
+            Route::post('/profile-picture', [App\Http\Controllers\Supervisor\ProfileController::class, 'updatePicture'])->name('profile.update-picture');
+            Route::delete('/profile-picture', [App\Http\Controllers\Supervisor\ProfileController::class, 'deletePicture'])->name('profile.delete-picture');
             Route::get('/interns', [EmployerInternController::class, 'index'])->name('interns.index');
             Route::get('/interns/{placement}', [EmployerInternController::class, 'show'])->name('interns.show');
             Route::put('/interns/{placement}/schedule', [EmployerInternController::class, 'updateSchedule'])->name('interns.schedule');
@@ -405,6 +409,7 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
             Route::get('/profile', [AdminProfileController::class, 'edit'])->name('profile.edit');
             Route::post('/profile-picture', [AdminProfileController::class, 'updatePicture'])->name('profile.update-picture');
+            Route::delete('/profile-picture', [AdminProfileController::class, 'deletePicture'])->name('profile.delete-picture');
             // Academic Settings, shared with coordinators (routes/academics.php).
             require __DIR__.'/academics.php';
             Route::get('/criteria', [EligibilityCriteriaController::class, 'index'])->name('criteria.index');

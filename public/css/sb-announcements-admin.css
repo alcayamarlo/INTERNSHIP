@@ -20,3 +20,17 @@ html body.sb-app .ann-item__actions { flex: none; display: flex; gap: 6px; }
     html body.sb-app .ann-item { flex-wrap: wrap; }
     html body.sb-app .ann-item__actions { margin-left: 60px; }
 }
+
+/* Dark theme: the hover row and icon tiles were hard-coded light colors, which made the title and text vanish on hover. */
+html[data-theme="dark"] body.sb-app .ann-item:hover { background: rgba(255, 255, 255, .045); }
+html[data-theme="dark"] body.sb-app .ann-stat__icon,
+html[data-theme="dark"] body.sb-app .ann-item__icon { background: var(--burgundy-tint); color: var(--burgundy-text); }
+html[data-theme="dark"] body.sb-app .ann-item__meta .bi { color: var(--burgundy-text); }
+html[data-theme="dark"] body.sb-app .ann-item__title,
+html[data-theme="dark"] body.sb-app .ann-stat__value { color: var(--text); }
+html[data-theme="dark"] body.sb-app .ann-item__excerpt,
+html[data-theme="dark"] body.sb-app .ann-item__meta,
+html[data-theme="dark"] body.sb-app .ann-stat__label { color: var(--muted); }
+html[data-theme="dark"] body.sb-app .ann-item + .ann-item { border-top-color: rgba(255, 255, 255, .08); }
+/* Smooth hover everywhere */
+html body.sb-app .ann-item { transition: background-color 180ms ease; }

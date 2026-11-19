@@ -8,7 +8,7 @@
 <div class="sb-dash student-record">
 <x-profile-header :name="$student->user->name" :avatar="$studentAvatar" eyebrow="Student profile">
     @if($student->profile_verified_at)
-        <x-slot:badge><x-status-badge status="verified" label="Profile verified" /></x-slot:badge>
+        <x-slot:badge><x-status-badge status="verified" label="Profile verified" class="sb-status--verified" /></x-slot:badge>
     @endif
     <span class="sb-pheader__strong">{{ ($student->program ?: 'Program not set').' · '.($student->year_level ?: 'Year level not set') }}</span>
     <span><i class="bi bi-building" aria-hidden="true"></i>{{ $student->institution?->name ?? 'Institution not set' }}</span>
@@ -108,7 +108,7 @@
                 <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
                     <h2>Academic progress and profile verification</h2>
                     @if($student->profile_verified_at)
-                        <x-status-badge status="verified" label="Profile verified" />
+                        <x-status-badge status="verified" label="Profile verified" class="sb-status--verified" />
                     @else
                         <form method="POST" action="{{ route('coordinator.students.verify-profile', $student) }}">
                             @csrf

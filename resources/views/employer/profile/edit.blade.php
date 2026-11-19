@@ -24,49 +24,55 @@
     $completeCount = count(array_filter($completeness));
     $completePercent = (int) round($completeCount / count($completeness) * 100);
 @endphp
-<div class="sb-dash cp-page">
-<x-page-header title="Company Profile" subtitle="Update your company information and contact details">
-    @if($employer->isVerified())
-        <x-verified-badge :employer="$employer" />
-    @else
-        <x-status-badge status="warning" label="Pending admin verification" data-company-pending />
-    @endif
-</x-page-header>
-
-<div class="cp-grid">
-
-    {{-- ===== Left: company summary ===== --}}
-    <aside class="card cp-summary" aria-label="Company summary">
-        <div class="cp-logo">
-            <img data-company-logo src="{{ $employerLogoUrl ?? '' }}" alt="{{ $employer->company_name }} logo" @if(!$employerLogoUrl) hidden @endif onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
-            <span data-company-initials @if($employerLogoUrl) hidden @endif>{{ strtoupper($employerInitials ?: 'C') }}</span>
-        </div>
-
+@php
+    $roleLine = ($employer->position ?: 'Company representative').' at '.$employer->company_name;
+    $editFirst = $errors->any();
+@endphp
+<x-profile.page
+    :name="$user->name"
+    :subtitle="$roleLine"
+    :meta="$employer->industry ?: 'Industry not set'"
+    meta-icon="bi-building"
+    :tabs="[
+        ['label' => 'Overview', 'panel' => 'pfOverview', 'active' => ! $editFirst],
+        ['label' => 'Company profile', 'panel' => 'pfEdit', 'active' => $editFirst],
+    ]">
+    <x-slot:photo>
+        <img data-company-logo src="{{ $employerLogoUrl ?? '' }}" alt="{{ $employer->company_name }} logo" @if(!$employerLogoUrl) hidden @endif onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+        <span data-company-initials @if($employerLogoUrl) hidden @endif>{{ strtoupper($employerInitials ?: 'C') }}</span>
+    </x-slot:photo>
+    <x-slot:actions>
         <form method="POST" action="{{ route('employer.profile.update-logo') }}" enctype="multipart/form-data" id="logoForm" class="d-none">
             @csrf
             <input type="file" name="company_logo" id="logoInput" accept="image/jpeg,image/jpg,image/png">
         </form>
+        <button type="button" class="pf-btn" id="uploadCompanyLogo"><i class="bi bi-camera" aria-hidden="true"></i> {{ $employer->logo ? 'Change photo' : 'Upload photo' }}</button>
+        <x-profile.remove-photo :action="route('employer.profile.delete-logo')" :has-photo="(bool) $employer->logo" label="Remove photo" />
+        <div data-employer-feedback class="pf-feedback" role="status" aria-live="polite"></div>
+    </x-slot:actions>
 
-        <p class="cp-name">{{ $employer->company_name }}</p>
-        @if($employer->industry)<p class="cp-industry">{{ $employer->industry }}</p>@endif
+    <x-profile.panel id="pfOverview">
+        <div class="pf-cols">
+            <x-profile.details-card :user="$user" :role-line="$roleLine" note="Use the Company profile tab to update these details.">
+                <x-profile.detail-row icon="bi-building">{{ $employer->company_name }}@if($employer->company_size) &middot; {{ $employer->company_size }} employees @endif</x-profile.detail-row>
+                @if($employer->website)<x-profile.detail-row icon="bi-globe">{{ $employer->website }}</x-profile.detail-row>@endif
+                <x-profile.detail-row icon="bi-patch-check">@if($employer->isVerified())<b>Verified</b> company @else Pending admin verification @endif</x-profile.detail-row>
+            </x-profile.details-card>
 
-        <button type="button" class="cp-upload" id="uploadCompanyLogo">
-            <i class="bi bi-cloud-upload" aria-hidden="true"></i> {{ $employer->logo ? 'Change Logo' : 'Upload Logo' }}
-        </button>
-        <p class="cp-note">JPG or PNG</p>
-        <div data-employer-feedback class="small mt-2" role="status" aria-live="polite"></div>
-
-        <div class="cp-complete">
-            <div class="cp-complete__head"><span>Profile completeness</span><strong>{{ $completePercent }}%</strong></div>
-            <div class="cp-meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $completePercent }}" aria-label="Profile completeness"><span class="cp-meter__fill" style="width: {{ $completePercent }}%"></span></div>
-            <ul class="cp-checklist">
-                @foreach($completeness as $item => $done)
-                    <li class="{{ $done ? 'is-done' : '' }}"><span class="cp-check" aria-hidden="true"></span>{{ $item }}<span class="visually-hidden"> {{ $done ? '(done)' : '(missing)' }}</span></li>
-                @endforeach
-            </ul>
+            {{-- TODO: "Internship postings" needs a list the controller does not pass yet; the saved completeness checklist is shown instead. --}}
+            <x-profile.card title="Profile completeness" :subtitle="$completePercent.'% complete'">
+                <div class="pf-meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $completePercent }}" aria-label="Profile completeness"><span style="width: {{ $completePercent }}%"></span></div>
+                <ul class="pf-check">
+                    @foreach($completeness as $item => $done)
+                        <li class="{{ $done ? 'is-done' : '' }}"><i class="bi {{ $done ? 'bi-check-circle-fill' : 'bi-circle' }}" aria-hidden="true"></i>{{ $item }}<span class="visually-hidden"> {{ $done ? '(done)' : '(missing)' }}</span></li>
+                    @endforeach
+                </ul>
+            </x-profile.card>
         </div>
-    </aside>
+    </x-profile.panel>
 
+    <x-profile.panel id="pfEdit">
+    <div class="cp-page">
     {{-- ===== Right: grouped form cards (one form) ===== --}}
     <form method="POST" action="{{ route('employer.profile.update') }}" enctype="multipart/form-data" data-ajax-form id="employerProfileForm" class="cp-form">
         @csrf
@@ -143,7 +149,6 @@
 
         <div data-ajax-feedback class="small cp-feedback" role="status" aria-live="polite"></div>
     </form>
-</div>
 
 {{-- Sticky save bar. The submit button sits outside the form tag and points to it with form="...", so the existing ajax save works unchanged. --}}
 <div class="cp-savebar">
@@ -153,7 +158,9 @@
         <i class="bi bi-check-circle" aria-hidden="true"></i> Save Changes
     </button>
 </div>
-</div>
+    </div>
+    </x-profile.panel>
+</x-profile.page>
 @endsection
 
 @push('scripts')
@@ -192,6 +199,7 @@
             image.src = payload.logo_url;
             image.hidden = false;
             document.querySelector('[data-company-initials]').hidden = true;
+            document.querySelector('[data-remove-photo]')?.removeAttribute('disabled');
             feedback.textContent = payload.message;
             feedback.classList.add('text-success');
         } catch (error) {

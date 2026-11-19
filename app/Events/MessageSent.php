@@ -34,7 +34,7 @@ class MessageSent implements ShouldBroadcastNow
             'id' => $this->message->id,
             'sender_id' => $this->message->sender_id,
             'sender_name' => $this->message->sender->name,
-            'body' => $this->message->body,
+            'body' => $this->message->body !== '' ? $this->message->body : 'Sent a photo.',
             'created_at' => $this->message->created_at->format('M d, h:i A'),
             'thread_url' => route('messages.show', $this->message->sender_id),
             // The open chat fetches the rendered message (avatar, reply quote, actions) from here.

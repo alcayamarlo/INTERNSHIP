@@ -1,7 +1,7 @@
         <nav class="public-nav" aria-label="Main navigation">
             <div class="public-nav-inner d-flex align-items-center justify-content-between">
                 <a class="public-brand" href="{{ route('home') }}" aria-label="SkillBridge home">
-                    <span class="public-brand-mark" aria-hidden="true"><img class="sb-seal" src="{{ asset('images/brand/stcc-logo.png') }}?v=1" alt="St. Cecilia's College-Cebu logo" width="42" height="42"></span>
+                    <span class="public-brand-mark" aria-hidden="true"><img class="sb-seal" src="{{ asset('images/brand/ojt-seal-160.png') }}?v=1" alt="St. Cecilia's College-Cebu logo" width="42" height="42"></span>
                     <span class="public-brand-copy"><strong>SkillBridge</strong><small>St. Cecilia's College</small></span>
                 </a>
                 <button class="public-nav-toggle" type="button" data-public-nav-toggle aria-controls="publicNavigation" aria-expanded="false" aria-label="Toggle navigation">

@@ -75,7 +75,7 @@
         </div>
         <div class="sb-filter-actions">
             {{-- Filters apply as you type or choose; this button stays for browsers without JavaScript --}}
-            <button type="submit" class="btn btn-primary" data-filter-submit><i class="bi bi-search" aria-hidden="true"></i> Filter</button>
+            <button type="submit" class="btn btn-primary" data-filter-submit><i class="bi bi-search" aria-hidden="true"></i> Search</button>
             <a href="{{ route('student.internships.index') }}" class="btn btn-outline-secondary" data-filter-clear>Clear</a>
         </div>
     </div>

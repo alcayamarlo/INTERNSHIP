@@ -25,7 +25,8 @@
     <section class="msgr-chat messenger-shell" aria-label="Chat with {{ $contact->name }}">
         <div class="messenger-header">
             <div class="messenger-contact">
-                <a href="{{ route('messages.index') }}" class="msgr-back" aria-label="Back to conversations"><i class="bi bi-arrow-left" aria-hidden="true"></i></a>
+                {{-- Back goes to the page you opened this chat from (applicants, invitations, ...); with no known page it goes to the chat list. --}}
+                <a href="{{ route('messages.index') }}" class="msgr-back" data-chat-back aria-label="Go back" title="Back"><i class="bi bi-arrow-left" aria-hidden="true"></i></a>
                 <span class="msgr-avatar" aria-hidden="true"><x-avatar :avatar="$contactAvatar" /></span>
                 <div>
                     <div class="messenger-name">{{ $contact->name }}</div>
@@ -54,7 +55,7 @@
         {{-- Locked chats keep old messages read-only. The form stays hidden until the chat opens
              (live, when the application is marked Reviewed); the server checks every send anyway. --}}
         <p class="text-muted small mb-0" role="status" data-chat-lock-note @if($canSend) hidden @endif><i class="bi bi-lock" aria-hidden="true"></i> {{ $sendBlockedReason }}</p>
-        <form method="POST" action="{{ route('messages.store', $contact) }}" class="messenger-form" data-no-loading="true" data-chat-contact-id="{{ $contact->id }}" @unless($canSend) hidden @endunless>
+        <form method="POST" action="{{ route('messages.store', $contact) }}" class="messenger-form" enctype="multipart/form-data" data-no-loading="true" data-chat-contact-id="{{ $contact->id }}" @unless($canSend) hidden @endunless>
             @csrf
             <input type="hidden" name="submission_id" value="{{ $submissionId }}">
             <input type="hidden" name="reply_to_id" value="">
@@ -66,7 +67,15 @@
                 </div>
                 <button type="button" class="msgr-replying-cancel" data-replying-cancel aria-label="Cancel reply"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
             </div>
-            <textarea class="messenger-input @error('body') is-invalid @enderror" name="body" rows="1" placeholder="Type your message..." aria-label="Message" required>{{ old('body', \Illuminate\Support\Str::limit((string) request('draft'), 1000, '')) }}</textarea>
+            {{-- Photo preview: shown after choosing, pasting or dropping a photo --}}
+            <div class="msgr-attach-preview w-100" data-attach-preview hidden>
+                <img src="" alt="" data-attach-thumb>
+                <div class="msgr-attach-meta"><strong data-attach-name></strong><span data-attach-size></span></div>
+                <button type="button" class="msgr-attach-remove" data-attach-remove aria-label="Remove photo"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+            </div>
+            <input type="file" name="attachment" accept="image/jpeg,image/png,image/webp,image/gif" data-attach-input hidden>
+            <button type="button" class="msgr-attach-btn" data-attach-open aria-label="Attach a photo" title="Attach a photo"><i class="bi bi-image" aria-hidden="true"></i></button>
+            <textarea class="messenger-input @error('body') is-invalid @enderror" name="body" rows="1" placeholder="Type your message..." aria-label="Message">{{ old('body', \Illuminate\Support\Str::limit((string) request('draft'), 1000, '')) }}</textarea>
             <button type="submit" class="messenger-send"><i class="bi bi-send-fill"></i> Send</button>
             <div class="messenger-feedback w-100" role="status" aria-live="polite"></div>
             @error('body')
@@ -408,7 +417,8 @@
             const feedback = messageForm.querySelector('.messenger-feedback');
             const originalButton = sendButton.innerHTML;
             const body = input.value.trim();
-            if (!body) {
+            const hasPhoto = !!(messageForm.querySelector('[data-attach-input]')?.files.length);
+            if (!body && !hasPhoto) {
                 messageForm.dataset.submitting = 'false';
                 return;
             }
@@ -436,11 +446,13 @@
                 if (payload.duplicate) {
                     feedback.textContent = 'This message was already sent.';
                     input.value = '';
+                    messageForm.dispatchEvent(new CustomEvent('attach:clear'));
                     return;
                 }
 
                 if (payload.html) window.sbChat.append(payload.html);
                 input.value = '';
+                messageForm.dispatchEvent(new CustomEvent('attach:clear'));
                 cancelReply();
             } catch (error) {
                 feedback.classList.add('text-danger');
@@ -456,5 +468,89 @@
             }
         });
     }
+    // Photo attach: choose, paste or drop a photo; preview it; remove it before sending.
+    (function () {
+        const form = document.querySelector('.messenger-form');
+        if (!form) return;
+        const fileInput = form.querySelector('[data-attach-input]');
+        const openBtn = form.querySelector('[data-attach-open]');
+        const preview = form.querySelector('[data-attach-preview]');
+        const thumb = form.querySelector('[data-attach-thumb]');
+        const nameEl = form.querySelector('[data-attach-name]');
+        const sizeEl = form.querySelector('[data-attach-size]');
+        const feedback = form.querySelector('.messenger-feedback');
+        const textarea = form.querySelector('textarea[name="body"]');
+        const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        const maxBytes = 5 * 1024 * 1024;
+        let url = null;
+
+        const clear = () => {
+            if (url) URL.revokeObjectURL(url);
+            url = null;
+            fileInput.value = '';
+            thumb.removeAttribute('src');
+            preview.hidden = true;
+            form.classList.remove('has-attachment');
+        };
+        const error = (text) => { feedback.classList.add('text-danger'); feedback.textContent = text; };
+        const show = (file) => {
+            if (!allowed.includes(file.type)) { clear(); error('Only photos can be sent (JPG, PNG, WEBP or GIF).'); return; }
+            if (file.size > maxBytes) { clear(); error('The photo must be 5 MB or smaller.'); return; }
+            if (url) URL.revokeObjectURL(url);
+            url = URL.createObjectURL(file);
+            thumb.src = url;
+            nameEl.textContent = file.name || 'Pasted photo';
+            sizeEl.textContent = file.size >= 1048576 ? (file.size / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(file.size / 1024)) + ' KB';
+            preview.hidden = false;
+            form.classList.add('has-attachment');
+            feedback.textContent = '';
+            feedback.classList.remove('text-danger');
+        };
+        const take = (file) => {
+            const transfer = new DataTransfer();
+            transfer.items.add(file);
+            fileInput.files = transfer.files;
+            show(file);
+        };
+
+        openBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', () => { if (fileInput.files[0]) show(fileInput.files[0]); else clear(); });
+        form.querySelector('[data-attach-remove]').addEventListener('click', () => { clear(); textarea.focus(); });
+        form.addEventListener('attach:clear', clear);
+        textarea.addEventListener('paste', (event) => {
+            const file = [...(event.clipboardData?.files || [])].find((f) => f.type.startsWith('image/'));
+            if (file) { event.preventDefault(); take(file); }
+        });
+        const composer = form.closest('.messenger-composer') || form;
+        ['dragenter', 'dragover'].forEach((type) => composer.addEventListener(type, (event) => { if (event.dataTransfer?.types?.includes('Files')) { event.preventDefault(); composer.classList.add('is-dragging'); } }));
+        ['dragleave', 'drop'].forEach((type) => composer.addEventListener(type, () => composer.classList.remove('is-dragging')));
+        composer.addEventListener('drop', (event) => {
+            const file = [...(event.dataTransfer?.files || [])].find((f) => f.type.startsWith('image/'));
+            if (file) { event.preventDefault(); take(file); }
+        });
+    })();
+    // Back button: returns to the page this chat was opened from (e.g. the applicant's page). The origin is remembered for this tab,
+    // so switching between chats keeps the same way back. Opening the Messages page itself clears it.
+    (function () {
+        const back = document.querySelector('[data-chat-back]');
+        if (!back) return;
+        const KEY = 'sb-chat-origin';
+        const here = location.origin;
+        const isChatPage = (u) => { try { return new URL(u).pathname.startsWith('/messages'); } catch (e) { return true; } };
+        const sameSite = (u) => { try { return new URL(u).origin === here; } catch (e) { return false; } };
+        let origin = null;
+        try { origin = sessionStorage.getItem(KEY); } catch (e) {}
+        const ref = document.referrer;
+        if (ref && sameSite(ref) && !isChatPage(ref)) {
+            origin = ref;
+            try { sessionStorage.setItem(KEY, ref); } catch (e) {}
+        }
+        // On phones the chat list is hidden while a chat is open, so Back keeps going to the list there.
+        const phone = window.matchMedia('(max-width: 767.98px)').matches;
+        if (!phone && origin && sameSite(origin) && !isChatPage(origin)) {
+            back.href = origin;
+            try { back.title = 'Back to ' + (new URL(origin).pathname.split('/').filter(Boolean).pop() || 'previous page').replace(/-/g, ' '); } catch (e) {}
+        }
+    })();
 </script>
 @endpush

@@ -21,7 +21,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&family=Manrope:wght@800&display=swap" rel="stylesheet">
 
     {{-- Bootstrap --}}
     <link
@@ -873,6 +873,7 @@
     <link rel="stylesheet" href="{{ asset('css/sb-icons.css') }}?v={{ @filemtime(public_path('css/sb-icons.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-tokens.css') }}?v={{ @filemtime(public_path('css/sb-tokens.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-theme.css') }}?v={{ @filemtime(public_path('css/sb-theme.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/sb-wordmark.css') }}?v={{ @filemtime(public_path('css/sb-wordmark.css')) }}">
     <script defer src="{{ asset('js/skillbridge-ui.js') }}?v={{ @filemtime(public_path('js/skillbridge-ui.js')) }}"></script>
 
 </head>
@@ -896,7 +897,7 @@
 
                 <div class="auth-brand">
 
-                    <img class="auth-brand-logo sb-seal" src="{{ asset('images/brand/stcc-logo.png') }}?v=1" width="48" height="48" alt="St. Cecilia's College-Cebu logo">
+                    <img class="auth-brand-logo sb-seal" src="{{ asset('images/brand/ojt-seal-160.png') }}?v=1" width="48" height="48" alt="St. Cecilia's College-Cebu logo">
 
                     <div class="auth-brand-name">
 
@@ -1052,7 +1053,7 @@
 
         <main class="auth-right">
 
-            <img class="sb-seal sb-auth-seal" src="{{ asset('images/brand/stcc-logo.png') }}?v=1" width="96" height="96" alt="St. Cecilia's College-Cebu logo">
+            <img class="sb-seal sb-auth-seal" src="{{ asset('images/brand/ojt-seal-160.png') }}?v=1" width="96" height="96" alt="St. Cecilia's College-Cebu logo">
 
             @yield('content')
 

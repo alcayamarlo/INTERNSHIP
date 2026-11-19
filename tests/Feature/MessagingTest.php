@@ -235,3 +235,48 @@ it('allows non-student roles to message every other role', function () {
 
     expect(Message::count())->toBe(9);
 });
+
+/** A 1x1 PNG, so the test does not need the GD extension. */
+function tinyPng(): \Illuminate\Http\UploadedFile
+{
+    return \Illuminate\Http\UploadedFile::fake()->createWithContent('pic.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='));
+}
+
+it('sends a photo, shows it only to the two people in the chat, and hides it once unsent', function () {
+    \Illuminate\Support\Facades\Storage::fake('local');
+    Cache::flush();
+    $sender = User::factory()->create(['role' => UserRole::Student]);
+    $recipient = User::factory()->create(['role' => UserRole::Coordinator]);
+    $outsider = User::factory()->create(['role' => UserRole::Student]);
+    assignCoordinator($recipient, $sender);
+
+    $this->actingAs($sender)
+        ->post(route('messages.store', $recipient), ['attachment' => tinyPng(), 'submission_id' => (string) Str::uuid()], ['Accept' => 'application/json'])
+        ->assertOk()->assertJson(['success' => true]);
+
+    $message = Message::latest('id')->first();
+    expect($message->body)->toBe('')->and($message->hasAttachment())->toBeTrue();
+    \Illuminate\Support\Facades\Storage::disk('local')->assertExists($message->attachment_path);
+
+    $this->actingAs($sender)->get(route('messages.attachment', $message))->assertOk();
+    $this->actingAs($recipient)->get(route('messages.attachment', $message))->assertOk();
+    $this->actingAs($outsider)->get(route('messages.attachment', $message))->assertForbidden();
+
+    $message->forceFill(['unsent_at' => now()])->save();
+    $this->actingAs($recipient)->get(route('messages.attachment', $message))->assertNotFound();
+});
+
+it('rejects files that are not photos and empty messages', function () {
+    \Illuminate\Support\Facades\Storage::fake('local');
+    Cache::flush();
+    $sender = User::factory()->create(['role' => UserRole::Student]);
+    $recipient = User::factory()->create(['role' => UserRole::Coordinator]);
+    assignCoordinator($recipient, $sender);
+
+    $this->actingAs($sender)
+        ->post(route('messages.store', $recipient), ['attachment' => \Illuminate\Http\UploadedFile::fake()->create('run.php', 5, 'application/x-php'), 'submission_id' => (string) Str::uuid()], ['Accept' => 'application/json'])
+        ->assertStatus(422)->assertJsonValidationErrors('attachment');
+
+    $this->post(route('messages.store', $recipient), ['submission_id' => (string) Str::uuid()], ['Accept' => 'application/json'])
+        ->assertStatus(422)->assertJsonValidationErrors('body');
+});

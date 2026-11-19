@@ -4,6 +4,8 @@
 <head>
     <link rel="icon" type="image/png" href="{{ asset('images/brand/stcc-logo.png') }}?v=1">
     <link rel="apple-touch-icon" href="{{ asset('images/brand/stcc-logo.png') }}?v=1">
+    {{-- The sidebar logo is on every page: fetch it first so it never pops in after a click. --}}
+    <link rel="preload" as="image" href="{{ asset('images/brand/ojt-seal-160.png') }}?v=1">
     <meta name="theme-color" content="#7A010E">
 
     <meta charset="UTF-8">
@@ -30,7 +32,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&family=Manrope:wght@800&display=swap" rel="stylesheet">
 
 
     {{-- =========================================================
@@ -96,6 +98,7 @@
     <link rel="stylesheet" href="{{ asset('css/sb-icons.css') }}?v={{ @filemtime(public_path('css/sb-icons.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-tokens.css') }}?v={{ @filemtime(public_path('css/sb-tokens.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-theme.css') }}?v={{ @filemtime(public_path('css/sb-theme.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/sb-wordmark.css') }}?v={{ @filemtime(public_path('css/sb-wordmark.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-modal.css') }}?v={{ @filemtime(public_path('css/sb-modal.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-responsive-v2.css') }}?v={{ @filemtime(public_path('css/sb-responsive-v2.css')) }}">
     <link rel="stylesheet" href="{{ asset('css/sb-notifications-panel.css') }}?v={{ @filemtime(public_path('css/sb-notifications-panel.css')) }}">
@@ -232,7 +235,7 @@
 
     <div class="sb-brand">
 
-        <img class="sb-brand-logo sb-seal" src="{{ asset('images/brand/stcc-logo.png') }}?v=1" width="48" height="48" alt="St. Cecilia's College-Cebu logo">
+        <img class="sb-brand-logo sb-seal" src="{{ asset('images/brand/ojt-seal-160.png') }}?v=1" width="48" height="48" decoding="sync" fetchpriority="high" alt="St. Cecilia's College-Cebu logo">
 
         <div class="sb-brand-text">
             <span class="sb-brand-title">SkillBridge</span>
@@ -412,8 +415,12 @@
 
             {{-- MESSAGES --}}
 
-            <a href="{{ route('messages.index') }}" class="sb-top-action" aria-label="Messages" title="Messages">
+            @php $unreadMessages = $currentUser ? \App\Models\Message::where('receiver_id', $currentUser->id)->whereNull('read_at')->count() : 0; @endphp
+            <a href="{{ route('messages.index') }}" class="sb-top-action sb-top-action--messages" data-msg-link aria-label="Messages{{ $unreadMessages ? ', '.$unreadMessages.' unread' : '' }}" title="Messages">
                 <i class="bi bi-chat-dots" aria-hidden="true"></i>
+                @if($unreadMessages > 0)
+                    <span class="sb-notification-badge" data-msg-badge>{{ $unreadMessages > 9 ? '9+' : $unreadMessages }}</span>
+                @endif
             </a>
 
             {{-- NOTIFICATIONS --}}
@@ -531,6 +538,15 @@
                             <a class="dropdown-item" href="{{ route('coordinator.profile.edit') }}">
                                 <i class="bi bi-person-badge" aria-hidden="true"></i>
                                 Coordinator Profile
+                            </a>
+                        </li>
+
+                    @elseif($currentUser && $currentUser->isRole(UserRole::Supervisor))
+
+                        <li>
+                            <a class="dropdown-item" href="{{ route('supervisor.profile.edit') }}">
+                                <i class="bi bi-person" aria-hidden="true"></i>
+                                My Profile
                             </a>
                         </li>
 

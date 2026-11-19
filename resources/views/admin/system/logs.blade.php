@@ -41,7 +41,7 @@
             @error('to')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div class="sb-filter-actions">
-            <button type="submit" class="btn btn-primary">Filter</button>
+            <button type="submit" class="btn btn-primary">Search</button>
             <a href="{{ route('admin.logs', ['type' => $filters['type']]) }}" class="btn btn-outline-secondary">Clear</a>
         </div>
     </div>

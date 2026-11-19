@@ -33,64 +33,70 @@
     data-error-fields="{{ json_encode($errors->keys()) }}"
     data-tab-error-fields="{{ json_encode($tabErrorFields) }}"
     data-flash-success="{{ session('success') }}">
-    <div class="sp-grid">
-    <header class="profile-header">
-        <div class="identity">
-            <div class="avatar-wrap">
-                <div class="avatar" data-avatar>
-                    <x-avatar :avatar="$profileAvatar" :alt="$user->name" />
+<x-profile.page
+    :name="$user->name"
+    name-id="profileDisplayName"
+    meta-icon="bi-clock-history"
+    :meta="$requiredInternshipHours ? 'Internship hours: '.number_format($renderedInternshipHours).' / '.number_format($requiredInternshipHours) : 'Internship hours: program not set'"
+    :avatar="$profileAvatar">
+    <x-slot:subline>Student &middot; <span id="profileDisplayProgram">{{ $student->program ?: 'Program not set' }}</span></x-slot:subline>
+
+    <x-slot:actions>
+        <button type="button" class="pf-btn" data-photo-pick><i class="bi bi-camera" aria-hidden="true"></i> {{ $profileAvatar['url'] ? 'Change photo' : 'Upload photo' }}</button>
+        <button type="button" class="pf-btn pf-btn--ghost" data-photo-remove @unless($profileAvatar['url']) hidden @endunless><i class="bi bi-trash" aria-hidden="true"></i> Remove photo</button>
+        <div class="invalid-feedback d-block avatar-error" data-photo-error role="alert">@error('profile_picture'){{ $message }}@enderror</div>
+        <form method="POST" action="{{ route('student.profile.update-picture') }}" enctype="multipart/form-data" class="visually-hidden" id="profilePictureForm">
+            @csrf
+            <input type="file" name="profile_picture" id="profilePictureInput" accept="image/jpeg,image/png,image/webp" aria-label="Profile photo">
+        </form>
+        <form method="POST" action="{{ route('student.profile.delete-picture') }}" class="visually-hidden" id="profilePictureRemoveForm">
+            @csrf
+            @method('DELETE')
+        </form>
+    </x-slot:actions>
+
+    <x-slot:tabsnav>
+        <div class="pf-tabs" role="tablist" aria-label="Profile sections">
+            @foreach($tabs as $key => $label)
+                <button type="button" class="tab pf-tab {{ $errorTab === $key ? 'has-error' : '' }} {{ $completedSections->contains($key) ? 'is-complete' : '' }}" id="tab-{{ $key }}" role="tab" aria-controls="panel-{{ $key }}" aria-selected="{{ $activeTab === $key ? 'true' : 'false' }}" data-tab="{{ $key }}" tabindex="{{ $activeTab === $key ? '0' : '-1' }}">
+                    {{ $label }}
+                    @if($key === 'experience')<span class="tab-optional">Optional</span>@endif
+                    <i class="bi bi-check-circle-fill tab-complete-icon" aria-hidden="true"></i>
+                    <span class="visually-hidden tab-complete-text">(complete)</span>
+                    <span class="tab-error-dot" aria-label="Has validation errors"></span>
+                </button>
+            @endforeach
+        </div>
+    </x-slot:tabsnav>
+
+    <div class="pf-cols pf-cols--student">
+        <section class="pf-card pf-body" aria-label="Profile completion">
+            <div class="completion">
+                <div class="completion-line">
+                    <strong>Profile completion</strong>
+                    <span><span id="completionValue">{{ $profileCompletion['percentage'] }}</span>%</span>
                 </div>
-                <button type="button" class="avatar-action" data-photo-pick>{{ $profileAvatar['url'] ? 'Change photo' : 'Upload photo' }}</button>
-                <button type="button" class="avatar-remove" data-photo-remove @unless($profileAvatar['url']) hidden @endunless>Remove photo</button>
-                <div class="invalid-feedback d-block avatar-error" data-photo-error role="alert">@error('profile_picture'){{ $message }}@enderror</div>
-                <form method="POST" action="{{ route('student.profile.update-picture') }}" enctype="multipart/form-data" class="visually-hidden" id="profilePictureForm">
+                <div class="completion-track" role="progressbar" aria-label="Profile completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $profileCompletion['percentage'] }}">
+                    <div class="completion-fill" id="completionFill" style="width: {{ $profileCompletion['percentage'] }}%"></div>
+                </div>
+                <details class="completion-steps" id="completionSteps" @if($profileCompletion['remaining_steps'] === 0) hidden @endif>
+                    <summary id="completionStepsSummary">{{ $profileCompletion['remaining_steps'] }} {{ \Illuminate\Support\Str::plural('step', $profileCompletion['remaining_steps']) }} left</summary>
+                    <ul id="completionMissingSteps">
+                        @foreach($profileCompletion['missing_steps'] as $step)
+                            <li>{{ $step }}</li>
+                        @endforeach
+                    </ul>
+                </details>
+            </div>
+            <div class="pf-actions-row">
+                <a href="{{ route('student.resume.index') }}" class="pf-btn pf-btn--ghost"><i class="bi bi-file-earmark-person" aria-hidden="true"></i> View resume</a>
+                <form method="POST" action="{{ route('student.resume.generate') }}">
                     @csrf
-                    <input type="file" name="profile_picture" id="profilePictureInput" accept="image/jpeg,image/png,image/webp" aria-label="Profile photo">
-                </form>
-                <form method="POST" action="{{ route('student.profile.delete-picture') }}" class="visually-hidden" id="profilePictureRemoveForm">
-                    @csrf
-                    @method('DELETE')
+                    <button type="submit" class="pf-btn" title="Only your 3 latest resumes are kept. Generating a new one removes the oldest."><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Generate resume</button>
                 </form>
             </div>
-            <div>
-                <h1 class="profile-name" id="profileDisplayName">{{ $user->name }}</h1>
-                <p class="profile-subline">Student · <span id="profileDisplayProgram">{{ $student->program ?: 'Program not set' }}</span></p>
-                @error('profile_picture')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
-        </div>
-        <div class="resume-actions">
-            <a href="{{ route('student.resume.index') }}" class="btn-profile"><i class="bi bi-file-earmark-person" aria-hidden="true"></i> View resume</a>
-            <form method="POST" action="{{ route('student.resume.generate') }}">
-                @csrf
-                <button type="submit" class="btn-primary-profile" title="Only your 3 latest resumes are kept. Generating a new one removes the oldest."><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Generate resume</button>
-            </form>
-        </div>
-        <div class="completion">
-            <div class="completion-line">
-                <strong>Profile completion</strong>
-                <span><span id="completionValue">{{ $profileCompletion['percentage'] }}</span>%</span>
-            </div>
-            <div class="completion-track" role="progressbar" aria-label="Profile completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $profileCompletion['percentage'] }}">
-                <div class="completion-fill" id="completionFill" style="width: {{ $profileCompletion['percentage'] }}%"></div>
-            </div>
-            <details class="completion-steps" id="completionSteps" @if($profileCompletion['remaining_steps'] === 0) hidden @endif>
-                <summary id="completionStepsSummary">{{ $profileCompletion['remaining_steps'] }} {{ \Illuminate\Support\Str::plural('step', $profileCompletion['remaining_steps']) }} left</summary>
-                <ul id="completionMissingSteps">
-                    @foreach($profileCompletion['missing_steps'] as $step)
-                        <li>{{ $step }}</li>
-                    @endforeach
-                </ul>
-            </details>
-            <div class="small text-muted mt-2">
-                Internship hours:
-                @if($requiredInternshipHours)
-                    {{ number_format($renderedInternshipHours) }} / {{ number_format($requiredInternshipHours) }}
-                @else
-                    Program not set
-                @endif
-            </div>
-        </div>
-    </header>
+        </section>
+    </div>
 
     <div class="sp-main">
 
@@ -110,17 +116,6 @@
         </section>
     @endunless
 
-    <div class="tabs" role="tablist" aria-label="Profile sections">
-        @foreach($tabs as $key => $label)
-            <button type="button" class="tab {{ $errorTab === $key ? 'has-error' : '' }} {{ $completedSections->contains($key) ? 'is-complete' : '' }}" id="tab-{{ $key }}" role="tab" aria-controls="panel-{{ $key }}" aria-selected="{{ $activeTab === $key ? 'true' : 'false' }}" data-tab="{{ $key }}" tabindex="{{ $activeTab === $key ? '0' : '-1' }}">
-                {{ $label }}
-                @if($key === 'experience')<span class="tab-optional">Optional</span>@endif
-                <i class="bi bi-check-circle-fill tab-complete-icon" aria-hidden="true"></i>
-                <span class="visually-hidden tab-complete-text">(complete)</span>
-                <span class="tab-error-dot" aria-label="Has validation errors"></span>
-            </button>
-        @endforeach
-    </div>
 
     @include('student.profile.tabs.personal')
     @include('student.profile.tabs.contact')
@@ -131,8 +126,7 @@
     @include('student.profile.tabs.references')
     @include('student.profile.tabs.documents')
     </div>{{-- /.sp-main --}}
-    </div>{{-- /.sp-grid --}}
-
+</x-profile.page>
     @if($profileVerified)
         <dialog class="file-preview-modal" id="studentChangeRequestModal" aria-labelledby="studentChangeRequestTitle" @if($errors->has('requested_value') || $errors->has('field')) open @endif>
             <div class="preview-heading">

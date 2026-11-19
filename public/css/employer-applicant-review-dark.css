@@ -1,0 +1,75 @@
+/* Applicant page, dark theme: easy on the eyes.
+   Neutral charcoal surfaces, one muted maroon (no bright red), soft rose for links and accents, warm off-white text,
+   gentle borders. Light mode is untouched. */
+html[data-theme="dark"] body.sb-app .ap-page,
+html[data-theme="dark"] .applicant-modal,
+html[data-theme="dark"] #employerFilePreview {
+    --ap-red: #7a010e; --ap-red-text: var(--burgundy-text); --ap-bg: var(--bg); --ap-ink: var(--text); --ap-muted: var(--muted); --ap-label: var(--muted);
+    --ap-hair: var(--line); --ap-border: color-mix(in srgb, var(--text) 18%, var(--surface)); --ap-tint: var(--burgundy-tint); --ap-surface: var(--surface); --ap-soft: color-mix(in srgb, var(--text) 8%, var(--surface)); --ap-chip: var(--surface-alt);
+    --ds-red-tint: var(--burgundy-tint); --ds-hair: var(--line); --ds-surface: var(--surface); --ds-surface-soft: var(--surface-alt); --ds-ink: var(--text); --ds-muted: var(--muted); --ds-label: var(--muted);
+}
+
+/* Page */
+html[data-theme="dark"] body.sb-app .sb-main:has(.ap-page) > .sb-content,
+html[data-theme="dark"] body.sb-app .sb-content > .ap-page,
+html[data-theme="dark"] body.sb-app .ap-page { background: var(--bg) !important; }
+html[data-theme="dark"] body.sb-app .ap-back { color: var(--ap-red-text); }
+html[data-theme="dark"] body.sb-app .ap-top .btn { background: var(--surface); border-color: color-mix(in srgb, var(--text) 18%, var(--surface)); color: var(--ap-ink); }
+html[data-theme="dark"] body.sb-app .ap-card,
+html[data-theme="dark"] body.sb-app .ap-profile { background: var(--surface); border-color: var(--line); box-shadow: none; }
+
+/* Profile card */
+html[data-theme="dark"] body.sb-app .ap-band { background: #7a010e; }
+html[data-theme="dark"] body.sb-app .ap-avatar { background: var(--surface-alt); color: var(--text); border-color: var(--surface); }
+html[data-theme="dark"] body.sb-app .ap-name { color: var(--text); }
+html[data-theme="dark"] body.sb-app .ap-hr { border-color: var(--line); }
+html[data-theme="dark"] body.sb-app .ap-profile .badge,
+html[data-theme="dark"] body.sb-app .ap-profile .badge[class] { background: rgba(217, 166, 64, .16) !important; color: #e6c27a !important; }
+html[data-theme="dark"] body.sb-app .ap-profile .badge.bg-primary { background: rgba(120, 160, 230, .16) !important; color: #aac4f0 !important; }
+html[data-theme="dark"] body.sb-app .ap-profile .badge.bg-success { background: rgba(70, 170, 110, .18) !important; color: #86d4a3 !important; }
+html[data-theme="dark"] body.sb-app .ap-profile .badge.bg-danger { background: rgba(231, 154, 168, .14) !important; color: var(--burgundy-text) !important; }
+html[data-theme="dark"] body.sb-app .ap-meter { background: var(--line); }
+html[data-theme="dark"] body.sb-app .ap-meter > span { background: var(--burgundy-text); }
+html[data-theme="dark"] body.sb-app .ap-btn { background: transparent; border-color: color-mix(in srgb, var(--text) 18%, var(--surface)); color: var(--text); }
+html[data-theme="dark"] body.sb-app .ap-btn--primary { border-color: color-mix(in srgb, var(--text) 18%, var(--surface)); }
+html[data-theme="dark"] body.sb-app .ap-btn:not(.ap-btn--primary) { color: var(--ap-red-text); }
+html[data-theme="dark"] body.sb-app .ap-btn:hover { background: color-mix(in srgb, var(--text) 8%, var(--surface)); border-color: color-mix(in srgb, var(--text) 18%, var(--surface)); }
+
+/* Status bar */
+html[data-theme="dark"] body.sb-app .ap-statusbar .form-select,
+html[data-theme="dark"] body.sb-app .ap-statusbar .form-control { background-color: var(--surface-alt); border-color: color-mix(in srgb, var(--text) 18%, var(--surface)); color: var(--text); }
+html[data-theme="dark"] body.sb-app .ap-statusbar input[type="datetime-local"] { color-scheme: dark; }
+html[data-theme="dark"] body.sb-app .ap-update { background: #7a010e; border-color: #7a010e; color: #ffffff; }
+html[data-theme="dark"] body.sb-app .ap-update:hover { background: #940214; border-color: #940214; color: #ffffff; }
+
+/* Overview */
+html[data-theme="dark"] body.sb-app .ap-overview__icon,
+html[data-theme="dark"] body.sb-app .applicant__tile-icon { background: var(--burgundy-tint); color: var(--burgundy-text); }
+html[data-theme="dark"] body.sb-app .ap-ov-group__title::before { background: var(--burgundy-text); }
+html[data-theme="dark"] body.sb-app .ap-overview__btn { background: transparent; border-color: color-mix(in srgb, var(--text) 18%, var(--surface)); color: var(--text); }
+html[data-theme="dark"] body.sb-app .ap-overview__btn:hover { background: color-mix(in srgb, var(--text) 8%, var(--surface)); border-color: color-mix(in srgb, var(--text) 18%, var(--surface)); color: var(--burgundy-tint-text); }
+html[data-theme="dark"] body.sb-app .ap-page :is(a, button, select, input, textarea):focus-visible { outline-color: rgba(218, 92, 112, .75); }
+
+/* Full profile pop-up */
+html[data-theme="dark"] .applicant-modal,
+html[data-theme="dark"] #employerFilePreview { background: var(--surface); color: var(--text); box-shadow: 0 24px 64px rgba(0, 0, 0, .6); }
+html[data-theme="dark"] .applicant-modal__avatar { background: var(--surface-alt); color: var(--text); }
+html[data-theme="dark"] .applicant-modal__close:hover { background: color-mix(in srgb, var(--text) 8%, var(--surface)); color: var(--burgundy-text); }
+html[data-theme="dark"] .applicant-modal__tab[aria-selected="true"] { color: var(--burgundy-text); border-bottom-color: var(--burgundy-text); }
+html[data-theme="dark"] .applicant-modal__body { background: var(--surface); scrollbar-color: color-mix(in srgb, var(--text) 18%, var(--surface)) transparent; }
+html[data-theme="dark"] .applicant-modal__body::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--text) 18%, var(--surface)); }
+html[data-theme="dark"] body.sb-app .applicant-modal .sb-grid--2 > .sb-block,
+html[data-theme="dark"] body.sb-app .applicant-modal .sb-tab-panel > .sb-block { background: var(--surface-alt); border-color: var(--line); }
+html[data-theme="dark"] body.sb-app .applicant-modal .sb-block > h2::before { background: var(--burgundy-text); }
+html[data-theme="dark"] .applicant-modal .ap-award-level__head { background: color-mix(in srgb, var(--text) 8%, var(--surface)); }
+html[data-theme="dark"] .applicant-modal .ap-award-level,
+html[data-theme="dark"] .applicant-modal .ap-award-level__count { background: var(--surface); border-color: var(--line); }
+html[data-theme="dark"] .applicant-modal .ap-award__title::before { background: var(--burgundy-text); }
+
+/* Resume / file preview pop-up */
+html[data-theme="dark"] #employerFilePreview .sb-file-preview { background: var(--surface-alt); border-color: var(--line); }
+html[data-theme="dark"] #employerFilePreview .sb-dialog-body > dl { background: var(--surface); border-color: var(--line); }
+html[data-theme="dark"] #employerFilePreview dd { border-bottom-color: var(--line); }
+html[data-theme="dark"] #employerFilePreview #employerPreviewDownload { background: #7a010e; border-color: #7a010e; color: #ffffff; }
+html[data-theme="dark"] #employerFilePreview .btn-close { filter: invert(1) grayscale(1) brightness(1.6); }
+html[data-theme="dark"] #employerFilePreview .btn-close:hover { background-color: color-mix(in srgb, var(--text) 8%, var(--surface)); }

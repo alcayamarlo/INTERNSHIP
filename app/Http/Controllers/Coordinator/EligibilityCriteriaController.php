@@ -39,6 +39,7 @@ class EligibilityCriteriaController extends Controller
             'programs' => $programs,
             'schoolYear' => $schoolYear,
             'term' => $term,
+            'documents' => $this->documentChoices(),
             ...$this->termChoices(),
             'routePrefix' => $this->routePrefix(),
             'globalRules' => $this->criteria->globalRules(),

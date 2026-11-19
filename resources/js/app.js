@@ -627,6 +627,22 @@ const showLiveToast = (title, body, href) => {
     toast.show();
 };
 
+// Unread-message badge on the Messages icon in the top bar: +1 for every message that arrives in a chat that is not open.
+const bumpMessageBadge = () => {
+    const link = document.querySelector('[data-msg-link]');
+    if (!link) return;
+    let badge = link.querySelector('[data-msg-badge]');
+    if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'sb-notification-badge';
+        badge.setAttribute('data-msg-badge', '');
+        link.append(badge);
+    }
+    const next = (Number(badge.textContent === '9+' ? 10 : badge.textContent) || 0) + 1;
+    badge.textContent = next > 9 ? '9+' : String(next);
+    link.setAttribute('aria-label', `Messages, ${next} unread`);
+};
+
 const currentUserId = document.querySelector('meta[name="current-user-id"]')?.content;
 
 if (window.Echo && currentUserId) {
@@ -716,6 +732,7 @@ if (window.Echo && currentUserId) {
             window.sbChat.load(payload.row_url, 'append');
         } else if (!onThisThread) {
             showLiveToast(`New message from ${payload.sender_name}`, payload.body, payload.thread_url);
+            bumpMessageBadge();
         }
     });
 

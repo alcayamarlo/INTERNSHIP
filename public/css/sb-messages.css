@@ -1,0 +1,274 @@
+/* Messages: calmer chat list (search, cleaner rows, thin scrollbar) and a friendlier empty state.
+   Uses the theme tokens, so light and dark both work. */
+html body.sb-app .msgr {
+    --m-line: var(--line, var(--sb-border, #eadfe2));
+    --m-ink: var(--text, var(--sb-ink, #2a2125));
+    --m-muted: var(--muted, var(--sb-muted, #695f63));
+    --m-tint: var(--burgundy-tint, var(--sb-red-soft, #f8e4e8));
+    --m-brand: var(--burgundy, var(--sb-brand, #7f0019));
+    --m-brand-text: var(--burgundy-text, var(--sb-brand-content, #7f0019));
+}
+
+/* ---------- List header + search ---------- */
+html body.sb-app .msgr-list { border-right: 1px solid var(--m-line); }
+html body.sb-app .msgr-list-head { display: grid; gap: 12px; padding: 22px 18px 12px; }
+html body.sb-app .msgr-list-head h2 { font-size: 1.5rem; font-weight: 700; letter-spacing: -.02em; color: var(--m-ink); }
+html body.sb-app .msgr-search { position: relative; display: block; margin: 0; }
+html body.sb-app .msgr-search i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--m-muted); font-size: 15px; pointer-events: none; }
+html body.sb-app .msgr-search input {
+    width: 100%; min-height: 44px; padding: 0 16px 0 40px; border: 1.5px solid transparent; border-radius: 999px;
+    background: var(--m-tint); color: var(--m-ink); font-size: .9rem; transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+}
+html body.sb-app .msgr-search input::placeholder { color: var(--m-muted); }
+html body.sb-app .msgr-search input::-webkit-search-cancel-button { cursor: pointer; }
+html body.sb-app .msgr-search input:focus { outline: 0; background: var(--surface, #fff); border-color: var(--m-brand); box-shadow: 0 0 0 4px color-mix(in srgb, var(--m-brand) 16%, transparent); }
+
+/* ---------- Rows ---------- */
+html body.sb-app .msgr-list-body { padding: 4px 10px 16px; scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--m-ink) 22%, transparent) transparent; }
+html body.sb-app .msgr-list-body::-webkit-scrollbar { width: 8px; }
+html body.sb-app .msgr-list-body::-webkit-scrollbar-thumb { border-radius: 8px; background: color-mix(in srgb, var(--m-ink) 22%, transparent); }
+html body.sb-app .msgr-list-body::-webkit-scrollbar-button { display: none; }
+html body.sb-app .msgr-item { gap: 14px; padding: 12px; border-radius: 16px; transition: background-color 180ms ease; }
+html body.sb-app .msgr-item[hidden], html body.sb-app .msgr-section[hidden] { display: none; }
+html body.sb-app .msgr-item + .msgr-item { margin-top: 2px; }
+html body.sb-app a.msgr-item:hover { background: color-mix(in srgb, var(--m-tint) 60%, transparent); }
+html body.sb-app .msgr-item.is-active { background: var(--m-tint); }
+html body.sb-app .msgr-item.is-active::before { content: ""; position: absolute; left: -2px; top: 18%; bottom: 18%; width: 4px; border-radius: 4px; background: var(--m-brand); }
+html body.sb-app .msgr-avatar { width: 50px; height: 50px; border: 1px solid var(--m-line); }
+html body.sb-app .msgr-item-main { gap: 3px; }
+html body.sb-app .msgr-item-top strong { color: var(--m-ink); font-size: .95rem; font-weight: 600; }
+html body.sb-app .msgr-item-top time { color: var(--m-muted); font-size: .75rem; font-variant-numeric: tabular-nums; }
+html body.sb-app .msgr-item-preview { color: var(--m-muted); font-size: .84rem; }
+html body.sb-app .msgr-item.is-unread .msgr-item-top strong { font-weight: 700; }
+html body.sb-app .msgr-item.is-unread .msgr-item-preview { color: var(--m-ink); font-weight: 600; }
+html body.sb-app .msgr-item.is-unread .msgr-item-top time { color: var(--m-brand-text); font-weight: 700; }
+html body.sb-app .msgr-unread { min-width: 22px; height: 22px; background: var(--m-brand); color: #fff; box-shadow: 0 4px 10px -4px color-mix(in srgb, var(--m-brand) 70%, transparent); }
+html body.sb-app .msgr-section { padding: 18px 12px 8px; color: var(--m-muted); font-size: .72rem; letter-spacing: .12em; }
+html body.sb-app .msgr-nomatch { margin: 24px 12px; color: var(--m-muted); font-size: .9rem; text-align: center; }
+html body.sb-app .msgr-nomatch[hidden] { display: none; }
+
+/* ---------- Empty state ---------- */
+html body.sb-app .msgr-chat--empty { background: color-mix(in srgb, var(--m-tint) 35%, var(--surface, #fff)); }
+html body.sb-app .msgr-chat--empty .sb-empty { max-width: 420px; border: 0 !important; background: transparent !important; box-shadow: none !important; text-align: center; }
+html body.sb-app .msgr-chat--empty .sb-empty-icon { display: inline-grid; place-items: center; width: 76px; height: 76px; margin-bottom: 8px; border-radius: 50%; background: var(--surface, #fff); color: var(--m-brand); font-size: 30px; box-shadow: 0 1px 2px rgba(60, 30, 40, .06), 0 16px 32px -20px rgba(60, 30, 40, .35); }
+html body.sb-app .msgr-chat--empty .sb-empty h3 { color: var(--m-ink); font-size: 1.2rem; font-weight: 700; }
+html body.sb-app .msgr-chat--empty .sb-empty p { color: var(--m-muted); font-size: .92rem; }
+
+@media (prefers-reduced-motion: reduce) { html body.sb-app .msgr-item, html body.sb-app .msgr-search input { transition: none; } }
+
+/* =====================================================================
+   Chat window: header, thread, bubbles, inline editor, composer
+   ===================================================================== */
+html body.sb-app .messenger-header { padding: 14px 22px; border-bottom: 1px solid var(--m-line); background: var(--surface, #fff); }
+html body.sb-app .messenger-header .msgr-avatar { width: 44px; height: 44px; }
+html body.sb-app .messenger-name { color: var(--m-ink); font-size: 1rem; font-weight: 700; letter-spacing: -.01em; }
+html body.sb-app .messenger-role { color: var(--m-muted); font-size: .8rem; }
+
+/* Thread */
+html body.sb-app .messenger-thread { padding: 20px clamp(16px, 3vw, 36px); background: color-mix(in srgb, var(--m-tint) 28%, var(--surface, #fff)); scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--m-ink) 22%, transparent) transparent; }
+html body.sb-app .messenger-thread::-webkit-scrollbar { width: 8px; }
+html body.sb-app .messenger-thread::-webkit-scrollbar-thumb { border-radius: 8px; background: color-mix(in srgb, var(--m-ink) 22%, transparent); }
+html body.sb-app .messenger-thread::-webkit-scrollbar-button { display: none; }
+html body.sb-app .messenger-divider { margin: 24px 0 14px; }
+html body.sb-app .messenger-divider time { padding: 5px 14px; border-radius: 999px; background: color-mix(in srgb, var(--m-ink) 7%, transparent); color: var(--m-muted); font-size: .72rem; font-weight: 600; letter-spacing: .02em; }
+
+/* Bubbles */
+html body.sb-app .messenger-bubble { padding: 10px 16px; border-radius: 20px; line-height: 1.5; }
+html body.sb-app .messenger-row.incoming .messenger-bubble { border: 1px solid var(--m-line); border-bottom-left-radius: 6px; border-top-left-radius: 20px; background: var(--surface, #fff); color: var(--m-ink); box-shadow: 0 1px 2px rgba(60, 30, 40, .04); }
+html body.sb-app .messenger-row.outgoing .messenger-bubble { border-bottom-right-radius: 6px; border-top-right-radius: 20px; background: var(--m-brand); color: #fff; box-shadow: 0 8px 18px -12px color-mix(in srgb, var(--m-brand) 80%, transparent); }
+html body.sb-app .messenger-message { font-size: .94rem; }
+html body.sb-app .messenger-time { font-size: .72rem; }
+
+/* Inline editor (Edit message): the bubble turns into a clean white card so the field, Cancel and Save are all readable */
+html body.sb-app .messenger-bubble:has(.msgr-edit) { padding: 12px; background: var(--surface, #fff) !important; color: var(--m-ink) !important; border: 1.5px solid var(--m-brand); border-radius: 18px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--m-brand) 12%, transparent); }
+html body.sb-app .msgr-edit { gap: 10px; min-width: min(360px, 62vw); }
+html body.sb-app .msgr-edit textarea { min-height: 84px; padding: 10px 12px; border: 1.5px solid var(--m-line); border-radius: 12px; background: var(--m-tint); color: var(--m-ink); font-size: .94rem; line-height: 1.5; resize: vertical; transition: border-color 160ms ease, background-color 160ms ease; }
+html body.sb-app .msgr-edit textarea:focus { outline: 0; border-color: var(--m-brand); background: var(--surface, #fff); box-shadow: none; }
+html body.sb-app .msgr-edit-buttons { gap: 8px; }
+html body.sb-app .msgr-edit-buttons .btn { min-height: 38px; padding: 0 18px; border-radius: 999px; font-size: .85rem; font-weight: 600; }
+html body.sb-app .msgr-edit-buttons .btn-light { border: 1.5px solid var(--m-line); background: transparent; color: var(--m-ink); }
+html body.sb-app .msgr-edit-buttons .btn-light:hover { background: var(--m-tint); }
+html body.sb-app .msgr-edit-buttons .btn-primary { border: 0; background: var(--m-brand); color: #fff; }
+html body.sb-app .msgr-edit-buttons .btn-primary:hover { filter: brightness(1.12); }
+html body.sb-app .msgr-edit-error { min-height: 0; }
+html body.sb-app .msgr-edit-error:empty { display: none; }
+
+/* Composer */
+html body.sb-app .messenger-composer { padding: 14px clamp(16px, 3vw, 28px) 18px; border-top: 1px solid var(--m-line); background: var(--surface, #fff); }
+html body.sb-app .messenger-form { align-items: center; gap: 12px; }
+html body.sb-app .messenger-input { min-height: 50px; padding: 13px 20px; border: 1.5px solid transparent; border-radius: 26px; background: var(--m-tint); color: var(--m-ink); font-size: .94rem; transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease; }
+html body.sb-app .messenger-input:focus { border-color: var(--m-brand); background: var(--surface, #fff); box-shadow: 0 0 0 4px color-mix(in srgb, var(--m-brand) 14%, transparent); }
+html body.sb-app .messenger-send { min-width: 110px; min-height: 50px; border-radius: 999px; background: var(--m-brand); font-weight: 700; box-shadow: 0 10px 20px -12px color-mix(in srgb, var(--m-brand) 80%, transparent); transition: background-color 180ms ease, transform 180ms ease, box-shadow 180ms ease; }
+html body.sb-app .messenger-send:hover:not(:disabled) { transform: translateY(-1px); }
+html body.sb-app .messenger-send:active:not(:disabled) { transform: translateY(0); }
+html body.sb-app .messenger-send:focus-visible { outline: 3px solid color-mix(in srgb, var(--m-brand) 45%, transparent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { html body.sb-app .messenger-send, html body.sb-app .messenger-input, html body.sb-app .msgr-edit textarea { transition: none; } html body.sb-app .messenger-send:hover:not(:disabled) { transform: none; } }
+
+/* One focus ring only: the global :focus-visible outline was drawing a second line around the border */
+html body.sb-app .messenger-input,
+html body.sb-app .messenger-input:focus,
+html body.sb-app .messenger-input:focus-visible,
+html body.sb-app .msgr-edit textarea:focus-visible,
+html body.sb-app .msgr-search input:focus-visible { outline: 0 !important; outline-offset: 0 !important; }
+html body.sb-app .messenger-input:focus-visible { border-color: var(--m-brand); background: var(--surface, #fff); box-shadow: 0 0 0 4px color-mix(in srgb, var(--m-brand) 14%, transparent); }
+
+/* =====================================================================
+   Dark theme: easy on the eyes. Neutral charcoal surfaces (no saturated maroon fills), a muted maroon only for
+   your own bubbles, buttons and the active chat, soft warm-white text, and calmer avatars.
+   ===================================================================== */
+html[data-theme="dark"] body.sb-app .msgr {
+    --m-line: var(--line);
+    --m-ink: var(--text);
+    --m-muted: var(--muted);
+    --m-tint: color-mix(in srgb, var(--text) 8%, var(--surface));
+    --m-brand: #7a010e;
+    --m-brand-text: var(--burgundy-text);
+    --m-surface: var(--surface);
+}
+html[data-theme="dark"] body.sb-app .msgr,
+html[data-theme="dark"] body.sb-app .msgr-list,
+html[data-theme="dark"] body.sb-app .messenger-header,
+html[data-theme="dark"] body.sb-app .messenger-composer { background: var(--surface); }
+html[data-theme="dark"] body.sb-app .messenger-thread { background: var(--bg); }
+html[data-theme="dark"] body.sb-app .msgr-chat--empty { background: var(--bg); }
+
+/* List */
+html[data-theme="dark"] body.sb-app .msgr-search input { background: var(--surface-alt); border-color: transparent; color: var(--m-ink); }
+html[data-theme="dark"] body.sb-app .msgr-search input:focus { background: var(--surface); border-color: var(--burgundy-text); box-shadow: 0 0 0 4px rgba(218, 92, 112, .18); }
+html[data-theme="dark"] body.sb-app a.msgr-item:hover { background: rgba(255, 255, 255, .04); }
+html[data-theme="dark"] body.sb-app .msgr-item.is-active { background: color-mix(in srgb, var(--text) 8%, var(--surface)); }
+html[data-theme="dark"] body.sb-app .msgr-item.is-active::before { background: var(--burgundy-text); }
+html[data-theme="dark"] body.sb-app .msgr-avatar,
+html[data-theme="dark"] body.sb-app .msgr-msg-avatar { background: var(--surface-alt); border-color: color-mix(in srgb, var(--text) 18%, var(--surface)); color: var(--burgundy-tint-text); }
+html[data-theme="dark"] body.sb-app .msgr-unread { background: #7a010e; box-shadow: none; }
+html[data-theme="dark"] body.sb-app .msgr-item.is-unread .msgr-item-top time { color: var(--burgundy-text); }
+
+/* Bubbles */
+html[data-theme="dark"] body.sb-app .messenger-row.incoming .messenger-bubble { background: var(--surface-alt); border-color: var(--line); color: var(--m-ink); box-shadow: none; }
+html[data-theme="dark"] body.sb-app .messenger-row.outgoing .messenger-bubble { background: #7a010e; color: #ffffff; box-shadow: none; }
+html[data-theme="dark"] body.sb-app .messenger-divider time { background: rgba(255, 255, 255, .06); color: var(--m-muted); }
+
+/* Editor, composer */
+html[data-theme="dark"] body.sb-app .messenger-bubble:has(.msgr-edit) { background: var(--surface-alt) !important; border-color: var(--burgundy-text); box-shadow: 0 0 0 4px rgba(218, 92, 112, .14); }
+html[data-theme="dark"] body.sb-app .msgr-edit textarea { background: color-mix(in srgb, var(--text) 8%, var(--surface)); border-color: color-mix(in srgb, var(--text) 18%, var(--surface)); color: var(--m-ink); }
+html[data-theme="dark"] body.sb-app .messenger-input { background: var(--surface-alt); color: var(--m-ink); }
+html[data-theme="dark"] body.sb-app .messenger-input::placeholder { color: var(--muted); }
+html[data-theme="dark"] body.sb-app .messenger-input:focus-visible { background: var(--surface); border-color: var(--burgundy-text); box-shadow: 0 0 0 4px rgba(218, 92, 112, .18); }
+html[data-theme="dark"] body.sb-app .messenger-send { background: #7a010e; color: #ffffff; box-shadow: none; }
+html[data-theme="dark"] body.sb-app .messenger-send:hover:not(:disabled) { background: #940214; }
+html[data-theme="dark"] body.sb-app .msgr-list-body,
+html[data-theme="dark"] body.sb-app .messenger-thread { scrollbar-color: color-mix(in srgb, var(--text) 18%, var(--surface)) transparent; }
+html[data-theme="dark"] body.sb-app .msgr-list-body::-webkit-scrollbar-thumb,
+html[data-theme="dark"] body.sb-app .messenger-thread::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--text) 18%, var(--surface)); }
+
+/* =====================================================================
+   Photos in chat: attach button, preview chip, photo bubbles
+   ===================================================================== */
+html body.sb-app .msgr-attach-btn { display: grid; place-items: center; flex: none; width: 46px; height: 46px; padding: 0; border: 0; border-radius: 50%; background: var(--m-tint); color: var(--m-brand-text); font-size: 1.15rem; cursor: pointer; transition: background-color 160ms ease, color 160ms ease, transform 160ms ease; }
+html body.sb-app .msgr-attach-btn:hover { background: var(--m-brand); color: #fff; }
+html body.sb-app .msgr-attach-btn:focus-visible { outline: 3px solid color-mix(in srgb, var(--m-brand) 45%, transparent); outline-offset: 2px; }
+html body.sb-app .messenger-form.has-attachment .msgr-attach-btn { background: var(--m-brand); color: #fff; }
+
+html body.sb-app .msgr-attach-preview { display: flex; align-items: center; gap: 12px; padding: 8px 12px 8px 8px; border: 1.5px solid var(--m-line); border-radius: 16px; background: var(--m-tint); animation: msgrPop 200ms ease both; }
+html body.sb-app .msgr-attach-preview[hidden] { display: none; }
+html body.sb-app .msgr-attach-preview img { width: 56px; height: 56px; flex: none; border-radius: 12px; object-fit: cover; background: var(--surface, #fff); }
+html body.sb-app .msgr-attach-meta { display: grid; min-width: 0; flex: 1 1 auto; }
+html body.sb-app .msgr-attach-meta strong { overflow: hidden; color: var(--m-ink); font-size: .88rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+html body.sb-app .msgr-attach-meta span { color: var(--m-muted); font-size: .76rem; }
+html body.sb-app .msgr-attach-remove { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border: 0; border-radius: 50%; background: transparent; color: var(--m-muted); cursor: pointer; transition: background-color 160ms ease, color 160ms ease; }
+html body.sb-app .msgr-attach-remove:hover { background: color-mix(in srgb, var(--m-ink) 10%, transparent); color: var(--m-ink); }
+html body.sb-app .messenger-composer.is-dragging { background: var(--m-tint); box-shadow: inset 0 0 0 2px var(--m-brand); }
+@keyframes msgrPop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Photo inside a bubble */
+html body.sb-app .messenger-bubble.has-photo { padding: 5px; }
+html body.sb-app .messenger-bubble.has-photo .messenger-message { padding: 6px 12px 4px; }
+html body.sb-app .messenger-bubble.has-photo .messenger-time { padding: 0 12px 4px; }
+html body.sb-app .msgr-photo { display: block; overflow: hidden; border-radius: 15px; line-height: 0; }
+html body.sb-app .msgr-photo img { display: block; width: auto; max-width: min(320px, 100%); max-height: 320px; min-width: 120px; min-height: 80px; object-fit: cover; border-radius: 15px; background: color-mix(in srgb, var(--m-ink) 8%, transparent); cursor: zoom-in; transition: filter 180ms ease; }
+html body.sb-app .msgr-photo:hover img { filter: brightness(.94); }
+html body.sb-app .messenger-bubble.is-photo-only .messenger-time { padding-top: 4px; }
+@media (prefers-reduced-motion: reduce) { html body.sb-app .msgr-attach-preview { animation: none; } }
+html[data-theme="dark"] body.sb-app .msgr-attach-btn { background: color-mix(in srgb, var(--text) 8%, var(--surface)); color: var(--burgundy-tint-text); }
+html[data-theme="dark"] body.sb-app .msgr-attach-btn:hover, html[data-theme="dark"] body.sb-app .messenger-form.has-attachment .msgr-attach-btn { background: #7a010e; color: #ffffff; }
+html[data-theme="dark"] body.sb-app .msgr-attach-preview { background: var(--surface-alt); border-color: var(--line); }
+
+/* Photo size: the bubble wraps the photo exactly (no empty maroon area) and the photo always fits the chat screen.
+   Width is capped (280px / 60% of the chat) and height by the screen (max 34vh), so it never takes over the thread. */
+html body.sb-app .msgr-msg:has(.messenger-bubble.has-photo) { width: fit-content; max-width: min(300px, 70%); }
+html body.sb-app .messenger-bubble.has-photo { width: fit-content; max-width: 100%; min-width: 0; padding: 4px; }
+html body.sb-app .messenger-bubble.has-photo .messenger-message { max-width: 100%; }
+html body.sb-app .msgr-photo { display: block; width: fit-content; max-width: 100%; }
+html body.sb-app .msgr-photo img {
+    display: block; width: auto; height: auto; min-width: 0; min-height: 0;
+    max-width: min(280px, 100%) !important; max-height: min(260px, 34vh) !important;
+    object-fit: contain; border-radius: 15px; cursor: zoom-in;
+}
+@media (max-width: 575.98px) { html body.sb-app .msgr-photo img { max-width: min(220px, 100%) !important; max-height: min(220px, 30vh) !important; } }
+
+/* Preview chip in the composer stays small too */
+html body.sb-app .msgr-attach-preview { max-width: 420px; }
+
+/* Edge to edge: no gap around the chat. The page's generic padding rules were winning over the earlier "padding: 0",
+   so the chat sat inside a dark frame. The chat now fills everything under the top bar, to the sidebar and the screen edges. */
+html body.sb-app .sb-main:has(.msgr) { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; }
+html body.sb-app .sb-main:has(.msgr) > .sb-topbar { flex: 0 0 auto; }
+html body.sb-app .sb-main:has(.msgr) > .sb-content {
+    display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; max-width: none !important; margin: 0 !important; padding: 0 !important; overflow: hidden;
+}
+html body.sb-app .sb-main:has(.msgr) > .sb-content > .msgr {
+    flex: 1 1 auto; height: auto !important; min-height: 0 !important; margin: 0 !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important;
+}
+html body.sb-app .sb-main:has(.msgr) > .sb-content > .alert { margin: 12px 16px 0; }
+@media (max-width: 767.98px) { html body.sb-app .sb-main:has(.msgr) > .sb-content > .msgr { height: auto !important; } }
+
+/* Photo messages: no colored bubble behind the photo (it was a big maroon block, hard on the eyes).
+   The photo sits on its own; a caption, if any, gets its own small bubble underneath. */
+html body.sb-app .messenger-row .messenger-bubble.has-photo,
+html[data-theme="dark"] body.sb-app .messenger-row .messenger-bubble.has-photo { background: transparent !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; color: var(--m-ink) !important; }
+html body.sb-app .msgr-photo { box-shadow: 0 0 0 1px var(--m-line), 0 8px 20px -14px rgba(0, 0, 0, .5); }
+html body.sb-app .messenger-bubble.has-photo .messenger-message { display: inline-block; max-width: 100%; margin-top: 6px; padding: 8px 14px; border-radius: 18px; }
+html body.sb-app .messenger-row.outgoing .messenger-bubble.has-photo .messenger-message { background: var(--m-brand); color: #fff; border-top-right-radius: 6px; }
+html body.sb-app .messenger-row.incoming .messenger-bubble.has-photo .messenger-message { background: var(--surface, #fff); color: var(--m-ink); border: 1px solid var(--m-line); border-top-left-radius: 6px; }
+html[data-theme="dark"] body.sb-app .messenger-row.outgoing .messenger-bubble.has-photo .messenger-message { background: #7a010e; color: #ffffff; }
+html[data-theme="dark"] body.sb-app .messenger-row.incoming .messenger-bubble.has-photo .messenger-message { background: var(--surface-alt); border-color: var(--line); color: var(--m-ink); }
+html body.sb-app .messenger-bubble.has-photo .messenger-time { padding: 4px 2px 0; color: var(--m-muted) !important; opacity: 1; }
+
+/* Remove the leftover outline box around photos (it was drawn on the link, wider than the photo itself) */
+html body.sb-app .msgr-photo { box-shadow: none !important; border-radius: 0; overflow: visible; background: transparent; }
+html body.sb-app .msgr-photo img { box-shadow: none; }
+
+/* Alignment: photo, caption and text bubbles share the same edge (right edge for you, left edge for them).
+   The photo column was a fixed 300px box, so a wider photo pushed itself off the line of the other bubbles. */
+html body.sb-app .msgr-msg:has(.messenger-bubble.has-photo) { width: auto; max-width: min(70%, 560px); }
+html body.sb-app .messenger-row.outgoing .msgr-msg { align-items: flex-end; }
+html body.sb-app .messenger-row.incoming .msgr-msg { align-items: flex-start; }
+html body.sb-app .messenger-bubble.has-photo { display: flex; flex-direction: column; width: auto; max-width: 100%; }
+html body.sb-app .messenger-row.outgoing .messenger-bubble.has-photo { align-items: flex-end; text-align: right; }
+html body.sb-app .messenger-row.incoming .messenger-bubble.has-photo { align-items: flex-start; text-align: left; }
+html body.sb-app .messenger-bubble.has-photo .msgr-photo { width: auto; max-width: 100%; }
+html body.sb-app .msgr-photo img { margin: 0; max-width: min(300px, 100%) !important; }
+html body.sb-app .messenger-bubble.has-photo .messenger-message { align-self: inherit; text-align: left; }
+
+/* The photo sits on the same edge as the text bubbles: right for you, left for them (it was left-aligned inside a wider box) */
+html body.sb-app .messenger-bubble.has-photo { width: fit-content; }
+html body.sb-app .messenger-row.outgoing .messenger-bubble.has-photo { align-self: flex-end; }
+html body.sb-app .messenger-row.incoming .messenger-bubble.has-photo { align-self: flex-start; }
+html body.sb-app .messenger-bubble.has-photo .msgr-photo { display: flex; width: 100%; max-width: 100%; }
+html body.sb-app .messenger-row.outgoing .messenger-bubble.has-photo .msgr-photo { justify-content: flex-end; }
+html body.sb-app .messenger-row.incoming .messenger-bubble.has-photo .msgr-photo { justify-content: flex-start; }
+html body.sb-app .messenger-bubble.has-photo .msgr-photo img { flex: 0 1 auto; }
+
+/* Back button in the chat header: always visible, a round outline button lined up with the avatar */
+html body.sb-app .msgr .messenger-contact { gap: 12px; }
+html body.sb-app .msgr-back { display: grid !important; place-items: center; flex: none; width: 40px; height: 40px; margin-right: 2px; border: 1.5px solid var(--m-line); border-radius: 50%; background: transparent; color: var(--m-ink); font-size: 1.1rem; text-decoration: none; transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, transform 160ms ease; }
+html body.sb-app .msgr-back:hover { background: var(--m-tint); color: var(--m-brand-text); border-color: transparent; }
+html body.sb-app .msgr-back:hover .bi { transform: translateX(-2px); }
+html body.sb-app .msgr-back .bi { transition: transform 160ms ease; }
+html body.sb-app .msgr-back:focus-visible { outline: 3px solid color-mix(in srgb, var(--m-brand) 45%, transparent); outline-offset: 2px; }
+html[data-theme="dark"] body.sb-app .msgr-back { border-color: color-mix(in srgb, var(--text) 18%, var(--surface)); color: var(--text); }
+html[data-theme="dark"] body.sb-app .msgr-back:hover { background: color-mix(in srgb, var(--text) 8%, var(--surface)); color: var(--burgundy-text); }
+@media (prefers-reduced-motion: reduce) { html body.sb-app .msgr-back, html body.sb-app .msgr-back .bi { transition: none; } }
+
+/* The round back button is removed on desktop. It stays only on phones, where the chat list is hidden while a chat is open. */
+@media (min-width: 768px) { html body.sb-app .msgr-back { display: none !important; } }

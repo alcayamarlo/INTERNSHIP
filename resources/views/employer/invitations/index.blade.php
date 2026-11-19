@@ -8,7 +8,7 @@
     <a href="{{ route('employer.students.index') }}" class="btn btn-primary"><i class="bi bi-search" aria-hidden="true"></i> Browse students</a>
 </x-page-header>
 
-<p class="sb-note">Sent today: {{ $sentToday }} of {{ $dailyLimit }}</p>
+<p class="sb-note sb-quota" role="status"><i class="bi bi-send-check" aria-hidden="true"></i> Sent today: <strong>{{ $sentToday }}</strong> of {{ $dailyLimit }}</p>
 
 <x-table-filters :action="route('employer.invitations.index')" :filters="$filters" :options="$filterOptions"
                  :showing="$invitations->total()" :total="$totalCount" target="#invitationResults" label="Filter sent invitations" />
@@ -17,7 +17,7 @@
 <span data-tf-meta data-showing="{{ number_format($invitations->total()) }}" data-total="{{ number_format($totalCount) }}" hidden></span>
 <div class="card">
     <div class="table-responsive">
-        <table class="table table-hover mb-0">
+        <table class="table table-hover mb-0 sb-cols-invitations">
             <thead>
                 <tr><th>Student</th><th>Internship</th><th>Status</th><th>Sent</th><th>Expires / responded</th><th><span class="visually-hidden">Actions</span></th></tr>
             </thead>

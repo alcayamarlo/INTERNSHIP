@@ -23,54 +23,56 @@
     ];
     $completePercent = (int) round(count(array_filter($completeness)) / count($completeness) * 100);
 @endphp
-<div class="sb-dash cp-page">
-<x-page-header title="Your Profile" subtitle="Update your personal and institution information" />
-
-<div class="cp-grid">
-
-    {{-- ===== Left: profile summary ===== --}}
-    <aside class="card cp-summary" aria-label="Profile summary">
-        <div data-coordinator-avatar>
-            <div class="cp-logo cp-logo--round">
-                <img data-coordinator-photo src="{{ $coordinatorPictureUrl ?? '' }}" alt="{{ $user->name }}" @if(!$coordinatorPictureUrl) hidden @endif onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
-                <span data-coordinator-placeholder @if($coordinatorPictureUrl) hidden @endif>{{ strtoupper($coordinatorInitials ?: 'U') }}</span>
-            </div>
-        </div>
-
+@php
+    $positionText = ($coordinatorInfo['position'] ?? null) ?: 'Coordinator';
+    $editFirst = $errors->any();
+@endphp
+<x-profile.page
+    :name="$user->name"
+    :subtitle="$positionText"
+    :meta="$coordinator->departmentName() ?? 'No department assigned'"
+    meta-icon="bi-building"
+    :tabs="[
+        ['label' => 'Overview', 'panel' => 'pfOverview', 'active' => ! $editFirst],
+        ['label' => 'Edit profile', 'panel' => 'pfEdit', 'active' => $editFirst],
+    ]">
+    <x-slot:photo>
+        <span data-coordinator-avatar style="display: contents">
+            <img data-coordinator-photo src="{{ $coordinatorPictureUrl ?? '' }}" alt="{{ $user->name }}" @if(!$coordinatorPictureUrl) hidden @endif onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+            <span data-coordinator-placeholder @if($coordinatorPictureUrl) hidden @endif>{{ strtoupper($coordinatorInitials ?: 'U') }}</span>
+        </span>
+    </x-slot:photo>
+    <x-slot:actions>
         <form method="POST" action="{{ route('coordinator.profile.update-picture') }}" enctype="multipart/form-data" id="pictureForm" class="d-none">
             @csrf
             <input type="file" name="profile_picture" id="profilePictureInput" accept="image/jpeg,image/jpg,image/png" aria-label="Profile picture">
         </form>
+        <button type="button" class="pf-btn" id="uploadCoordinatorPhoto"><i class="bi bi-camera" aria-hidden="true"></i> {{ $coordinator->profile_picture ? 'Change photo' : 'Upload photo' }}</button>
+        <x-profile.remove-photo :action="route('coordinator.profile.delete-picture')" :has-photo="(bool) $coordinator->profile_picture" />
+        <div data-coordinator-feedback class="pf-feedback" role="status" aria-live="polite"></div>
+    </x-slot:actions>
 
-        <p class="cp-name">{{ $user->name }}</p>
-        <p class="cp-role">{{ ($coordinatorInfo['position'] ?? null) ?: 'Coordinator' }}</p>
+    <x-profile.panel id="pfOverview">
+        <div class="pf-cols">
+            <x-profile.details-card :user="$user" :role-line="$positionText.' at '.($coordinator->institution->name ?? 'your institution')" note="Use the Edit profile tab to update these details.">
+                <x-profile.detail-row icon="bi-building">{{ $coordinator->departmentName() ?? 'No department assigned' }}</x-profile.detail-row>
+                @if($coordinator->office_address)<x-profile.detail-row icon="bi-geo-alt">{{ $coordinator->office_address }}</x-profile.detail-row>@endif
+            </x-profile.details-card>
 
-        <button type="button" class="cp-upload" id="uploadCoordinatorPhoto">
-            <i class="bi bi-cloud-upload" aria-hidden="true"></i> {{ $coordinator->profile_picture ? 'Change Photo' : 'Upload Photo' }}
-        </button>
-        @if($coordinator->profile_picture)
-            <form method="POST" action="{{ route('coordinator.profile.delete-picture') }}" class="cp-actions-inline">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="cp-remove" data-confirm="Remove your profile picture?" data-confirm-title="Remove profile picture" data-confirm-label="Remove">
-                    <i class="bi bi-trash" aria-hidden="true"></i> Remove
-                </button>
-            </form>
-        @endif
-        <p class="cp-note">JPG or PNG</p>
-        <div data-coordinator-feedback class="small mt-2" role="status" aria-live="polite"></div>
-
-        <div class="cp-complete">
-            <div class="cp-complete__head"><span>Profile completeness</span><strong>{{ $completePercent }}%</strong></div>
-            <div class="cp-meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $completePercent }}" aria-label="Profile completeness"><span class="cp-meter__fill" style="width: {{ $completePercent }}%"></span></div>
-            <ul class="cp-checklist">
-                @foreach($completeness as $item => $done)
-                    <li class="{{ $done ? 'is-done' : '' }}"><span class="cp-check" aria-hidden="true"></span>{{ $item }}<span class="visually-hidden"> {{ $done ? '(done)' : '(missing)' }}</span></li>
-                @endforeach
-            </ul>
+            {{-- TODO: "Assigned students" needs a list the controller does not pass yet; the saved completeness checklist is shown instead. --}}
+            <x-profile.card title="Profile completeness" :subtitle="$completePercent.'% complete'">
+                <div class="pf-meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $completePercent }}" aria-label="Profile completeness"><span style="width: {{ $completePercent }}%"></span></div>
+                <ul class="pf-check">
+                    @foreach($completeness as $item => $done)
+                        <li class="{{ $done ? 'is-done' : '' }}"><i class="bi {{ $done ? 'bi-check-circle-fill' : 'bi-circle' }}" aria-hidden="true"></i>{{ $item }}<span class="visually-hidden"> {{ $done ? '(done)' : '(missing)' }}</span></li>
+                    @endforeach
+                </ul>
+            </x-profile.card>
         </div>
-    </aside>
+    </x-profile.panel>
 
+    <x-profile.panel id="pfEdit">
+    <div class="cp-page">
     {{-- ===== Right: grouped form cards (one form) ===== --}}
     <form method="POST" action="{{ route('coordinator.profile.update') }}" enctype="multipart/form-data" data-ajax-form id="coordinatorProfileForm" class="cp-form">
         @csrf
@@ -135,7 +137,6 @@
 
         <div data-ajax-feedback class="small cp-feedback" role="status" aria-live="polite"></div>
     </form>
-</div>
 
 {{-- Sticky save bar. The submit button sits outside the form tag and points to it with form="...", so the existing ajax save works unchanged. --}}
 <div class="cp-savebar">
@@ -145,7 +146,9 @@
         <i class="bi bi-check-circle" aria-hidden="true"></i> Save Changes
     </button>
 </div>
-</div>
+    </div>
+    </x-profile.panel>
+</x-profile.page>
 @endsection
 
 @push('scripts')
@@ -184,6 +187,7 @@
             const image = avatar.querySelector('[data-coordinator-photo]');
             image.src = payload.profile_picture_url;
             image.hidden = false;
+            document.querySelector('[data-remove-photo]')?.removeAttribute('disabled');
             avatar.querySelector('[data-coordinator-placeholder]').hidden = true;
             feedback.textContent = payload.message;
             feedback.classList.add('text-success');

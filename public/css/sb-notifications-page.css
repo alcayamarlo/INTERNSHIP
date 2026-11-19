@@ -228,3 +228,16 @@ html body.sb-app .nt-card .nt-foot .page-link[aria-current="page"] { background:
 html body.sb-app .nt-card .nt-foot .page-item.disabled .page-link { opacity: .45; background: transparent; }
 html body.sb-app .nt-card .nt-foot .page-link:focus-visible { outline: 3px solid rgba(122, 0, 19, .45); outline-offset: 2px; box-shadow: none; }
 html:root:root:root:root[data-theme="dark"] body.sb-app .nt-card .nt-foot .page-link:focus-visible { outline-color: rgba(240, 138, 155, .6); }
+
+/* Edge-to-edge: the card touches the top bar and the sidebar. The generic .card rule forces a rounded corner, a border and a shadow with
+   !important, which left a visible gap at the top-left corner, so the notifications card overrides all three. */
+html body.sb-app .sb-main:has(.nt-card) > .sb-content > .nt-card.card { border: 0 !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; }
+
+/* No underline when hovering or focusing a notification row (title and message stay clean; the hover tint and title color are enough) */
+html body.sb-app .nt-card .nt-open,
+html body.sb-app .nt-card .nt-open:hover,
+html body.sb-app .nt-card .nt-open:focus,
+html body.sb-app .nt-card .nt-open:focus-visible,
+html body.sb-app .nt-card .nt-item:hover .nt-open,
+html body.sb-app .nt-card .nt-open:hover :is(.nt-title, .nt-msg),
+html body.sb-app .nt-card .nt-item:hover :is(.nt-title, .nt-msg) { text-decoration: none !important; }

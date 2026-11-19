@@ -99,3 +99,27 @@ html body.sb-app dialog.applicant-modal { position: fixed; inset: 0; margin: aut
 .sb-modal__spinner { display: inline-block; width: 16px; height: 16px; margin-right: 8px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .45); border-top-color: #fff; vertical-align: -3px; animation: sb-modal-spin .7s linear infinite; }
 @keyframes sb-modal-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .sb-modal__spinner { animation: none; } }
+
+/* ---- Smooth open / close (all pop-ups): backdrop fades, panel eases up and scales in; the reverse on close ---- */
+@keyframes sbModalIn { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes sbModalOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(8px) scale(.98); } }
+@keyframes sbBackdropIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sbBackdropOut { from { opacity: 1; } to { opacity: 0; } }
+dialog.sb-modal[open] { animation: sbModalIn 240ms cubic-bezier(.2, .8, .2, 1) both; }
+dialog.sb-modal[open]::backdrop { animation: sbBackdropIn 240ms ease both; -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+dialog.sb-modal.is-closing { animation: sbModalOut 180ms ease-in both; }
+dialog.sb-modal.is-closing::backdrop { animation: sbBackdropOut 180ms ease-in both; }
+@media (prefers-reduced-motion: reduce) {
+    dialog.sb-modal[open], dialog.sb-modal[open]::backdrop, dialog.sb-modal.is-closing, dialog.sb-modal.is-closing::backdrop { animation: none; }
+}
+
+/* Criteria pop-up */
+.sb-modal .cm-program { margin: 0 0 4px; font-size: 1.05rem; font-weight: 700; letter-spacing: -.01em; color: var(--text, #2a2125); }
+.sb-modal .cm-docs { display: grid; gap: 8px; padding: 14px 16px; border: 1px solid var(--line, #eadfe2); border-radius: 14px; background: var(--surface-alt, #f7f4f5); max-height: 200px; overflow-y: auto; scrollbar-width: thin; }
+.sb-modal fieldset legend { float: none; width: auto; padding: 0; margin: 0 0 8px; font-size: .875rem; font-weight: 600; }
+.sb-modal .form-check { display: flex; align-items: flex-start; gap: 10px; padding-left: 0; margin: 0; }
+.sb-modal .form-check .form-check-input { flex: none; margin: 3px 0 0; float: none; }
+.sb-modal .form-check-label { line-height: 1.45; }
+
+/* Keep the page exactly where it is while a pop-up is open (see the scrollbar note in sb-modal.js) */
+html.sb-modal-open, html.applicant-modal-open { padding-right: var(--sb-sbw, 0px); }

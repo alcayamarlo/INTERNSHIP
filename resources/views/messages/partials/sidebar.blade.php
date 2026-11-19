@@ -3,6 +3,10 @@
 <aside class="msgr-list" aria-label="Conversations">
     <div class="msgr-list-head">
         <h2>Chats</h2>
+        <label class="msgr-search">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input type="search" placeholder="Search people or messages" aria-label="Search chats" autocomplete="off" data-msgr-search>
+        </label>
     </div>
 
     <div class="msgr-list-body">
@@ -66,5 +70,36 @@
                 </a>
             @endforeach
         @endif
+
+        <p class="msgr-nomatch" data-msgr-nomatch hidden>No chats match your search.</p>
     </div>
 </aside>
+
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/sb-messages.css') }}?v={{ @filemtime(public_path('css/sb-messages.css')) }}">
+@endpush
+@push('scripts')
+<script>
+    (function () {
+        var input = document.querySelector('[data-msgr-search]');
+        if (!input) return;
+        var body = document.querySelector('.msgr-list-body');
+        var none = document.querySelector('[data-msgr-nomatch]');
+        input.addEventListener('input', function () {
+            var q = input.value.trim().toLowerCase(), shown = 0;
+            body.querySelectorAll('.msgr-item').forEach(function (item) {
+                var hit = !q || item.textContent.toLowerCase().indexOf(q) !== -1;
+                item.hidden = !hit;
+                if (hit) shown++;
+            });
+            // Hide a section title when none of its chats match.
+            body.querySelectorAll('.msgr-section').forEach(function (sec) {
+                var n = sec.nextElementSibling, any = false;
+                while (n && !n.classList.contains('msgr-section')) { if (n.classList.contains('msgr-item') && !n.hidden) any = true; n = n.nextElementSibling; }
+                sec.hidden = !any;
+            });
+            none.hidden = shown > 0;
+        });
+    })();
+</script>
+@endpush

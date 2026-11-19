@@ -38,7 +38,7 @@
     <div class="lm-dialog" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle" tabindex="-1">
         <header class="lm-head">
             <div class="lm-brand">
-                <span class="lm-logo" aria-hidden="true"><img class="sb-seal" src="{{ asset('images/brand/stcc-logo.png') }}?v=1" alt="St. Cecilia's College-Cebu logo" width="24" height="24"></span>
+                <span class="lm-logo" aria-hidden="true"><img class="sb-seal" src="{{ asset('images/brand/ojt-seal-160.png') }}?v=1" alt="St. Cecilia's College-Cebu logo" width="24" height="24"></span>
                 <span>SkillBridge</span>
             </div>
             <h2 id="loginModalTitle" class="lm-title"><span class="lm-t1">Welcome.</span><span class="lm-t2">Sign in to find your internship.</span></h2>

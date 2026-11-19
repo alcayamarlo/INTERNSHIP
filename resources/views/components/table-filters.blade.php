@@ -49,7 +49,7 @@
     </div>
     <div class="sb-filter-actions">
         {{-- Hidden once the script loads, since results then update on their own. --}}
-        <button type="submit" class="btn btn-primary sb-live-apply">Filter</button>
+        <button type="submit" class="btn btn-primary sb-live-apply">Search</button>
         <a href="{{ $action }}" class="btn btn-outline-secondary" data-tf-clear @if(! $filters->active()) aria-disabled="true" @endif>Clear Filters</a>
     </div>
   </div>

@@ -43,7 +43,7 @@
             </select>
         </div>
         <div class="sb-filter-actions">
-        <button type="submit" class="btn btn-primary"><i class="bi bi-funnel" aria-hidden="true"></i> Filter</button>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search" aria-hidden="true"></i> Search</button>
         @if(request('search') || request('role'))
             <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary">Clear</a>
         @endif

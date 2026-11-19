@@ -90,3 +90,58 @@ html body.sb-app .cp-card__footer { display: flex; justify-content: flex-end; pa
 
 /* Read-only value in a profile card */
 html body.sb-app .cp-value { margin: 0; font-size: 15px; line-height: 1.5; color: var(--cp-ink); overflow-wrap: anywhere; }
+
+/* =====================================================================
+   Profile pages (Company, Coordinator, Admin): tidy layout + system colors
+   ===================================================================== */
+/* Dark theme uses the system tokens, so these pages match every other dashboard */
+html[data-theme="dark"] body.sb-app .cp-page {
+    --cp-surface: var(--surface); --cp-soft: var(--surface-alt); --cp-ink: var(--text); --cp-muted: var(--muted); --cp-label: var(--muted);
+    --cp-hair: var(--line); --cp-border: color-mix(in srgb, var(--text) 18%, var(--surface)); --cp-tint: var(--burgundy-tint); --cp-red-text: var(--burgundy-text);
+    --cp-placeholder: color-mix(in srgb, var(--muted) 80%, transparent);
+}
+html[data-theme="dark"] body.sb-app .cp-page .form-control,
+html[data-theme="dark"] body.sb-app .cp-page .form-select { background-color: var(--surface-alt); }
+html[data-theme="dark"] body.sb-app .cp-page .form-control:focus,
+html[data-theme="dark"] body.sb-app .cp-page .form-select:focus { border-color: var(--burgundy-text); box-shadow: 0 0 0 4px rgba(218, 92, 112, .2); }
+html[data-theme="dark"] body.sb-app .cp-meter__fill,
+html[data-theme="dark"] body.sb-app .cp-checklist li.is-done .cp-check { background: #7a010e; border-color: #7a010e; }
+html[data-theme="dark"] body.sb-app .cp-save { background: #7a010e; border-color: #7a010e; }
+html[data-theme="dark"] body.sb-app .cp-save:hover { background: #940214; border-color: #940214; }
+
+/* Photo buttons: calm outlined buttons (no neon border) */
+html body.sb-app .cp-upload { border-color: var(--cp-border); color: var(--cp-red-text); }
+html body.sb-app .cp-upload:hover { background: var(--cp-tint); border-color: var(--cp-red-text); }
+html body.sb-app .cp-remove { color: var(--cp-muted); }
+html body.sb-app .cp-remove:hover { color: var(--cp-red-text); }
+
+/* Read-only fields (institution, department) look locked, not empty */
+html body.sb-app .cp-page .form-control[readonly],
+html body.sb-app .cp-page .form-control:disabled,
+html body.sb-app .cp-page .form-select:disabled { background-color: var(--cp-soft); color: var(--cp-muted); cursor: not-allowed; }
+
+/* Layout: even spacing, the summary card follows while you scroll the form, the page ends with room for the save bar */
+html body.sb-app .cp-grid { gap: 24px; align-items: start; }
+html body.sb-app .cp-summary { align-self: start; }
+html body.sb-app .cp-form { gap: 24px; }
+html body.sb-app .cp-card__body { gap: 20px; padding: 24px; }
+html body.sb-app .cp-row { gap: 20px 20px; }
+html body.sb-app .cp-page .form-text { margin-top: 8px; }
+
+/* Save bar: a solid bar that sits at the bottom edge with a soft shadow above it (it was see-through, so the form showed behind the buttons) */
+html body.sb-app .cp-savebar {
+    background: var(--cp-surface); border-top: 1px solid var(--cp-hair); box-shadow: 0 -14px 24px -18px rgba(0, 0, 0, .28);
+    margin-top: 28px; padding-top: 16px; padding-bottom: 16px; border-radius: 0;
+}
+html body.sb-app .cp-savebar__hint { color: var(--cp-red-text); font-weight: 600; }
+
+/* Save bar, second pass: a floating panel inside the content width (rounded, with a gap above and below), not a flat strip that cuts across the cards.
+   It stays visible while you scroll and rests under the form at the end of the page. */
+html body.sb-app .cp-savebar {
+    position: sticky; bottom: 16px; z-index: 5; margin: 28px 0 16px !important; padding: 12px 14px 12px 22px;
+    border: 1px solid var(--cp-hair); border-radius: 20px; background: var(--cp-surface);
+    box-shadow: 0 12px 32px -12px rgba(0, 0, 0, .35);
+}
+html body.sb-app .cp-savebar__hint { padding: 0; }
+@media (max-width: 991.98px) { html body.sb-app .cp-savebar { margin: 24px 0 12px !important; padding: 12px 14px; } }
+@media (max-width: 639.98px) { html body.sb-app .cp-savebar { bottom: 8px; border-radius: 16px; } }

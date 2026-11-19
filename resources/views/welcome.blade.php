@@ -53,6 +53,7 @@
     <link rel="stylesheet" href="{{ asset('css/sb-glass.css') }}?v={{ @filemtime(public_path('css/sb-glass.css')) }}">
     {{-- Brand colors only (white / burgundy / black); the landing layout and fonts are unchanged. --}}
     <link rel="stylesheet" href="{{ asset('css/sb-tokens.css') }}?v={{ @filemtime(public_path('css/sb-tokens.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/sb-wordmark.css') }}?v={{ @filemtime(public_path('css/sb-wordmark.css')) }}">
     <script defer src="{{ asset('js/sb-hero.js') }}?v={{ @filemtime(public_path('js/sb-hero.js')) }}"></script>
 </head>
 <body class="skillbridge-public sb-glass">
@@ -69,7 +70,7 @@
     @endif
     <div class="public-page">
         <nav class="sb-sticky-nav" data-sticky-nav aria-label="Sections">
-            <a class="sb-sticky-brand" href="#top" aria-label="SkillBridge, back to the top"><span class="public-brand-mark" aria-hidden="true"><img class="sb-seal" src="{{ asset('images/brand/stcc-logo.png') }}?v=1" alt="St. Cecilia's College-Cebu logo" width="36" height="36"></span><strong>SkillBridge</strong></a>
+            <a class="sb-sticky-brand" href="#top" aria-label="SkillBridge, back to the top"><span class="public-brand-mark" aria-hidden="true"><img class="sb-seal" src="{{ asset('images/brand/ojt-seal-160.png') }}?v=1" alt="St. Cecilia's College-Cebu logo" width="36" height="36"></span><strong>SkillBridge</strong></a>
             <div class="sb-sticky-links"><a href="#top">Home</a><a href="#how-it-works">How it works</a><a href="#about">About</a><a href="{{ route('internships.index') }}">Internships</a><a href="#audiences">Who it's for</a><a href="#questions">FAQs</a></div>
             <a class="sb-sticky-login" href="{{ route('login') }}">Sign in</a>
         </nav>
@@ -116,6 +117,7 @@
                         <div>
                             <p class="sb-pop-eyebrow">Open now</p>
                             <h2 id="sbPopTitle">Browse <em>internships.</em></h2>
+                            <p class="sb-pop-desc">Find open placements from partner companies. Pick your course, search by title, company or location, then apply in one click.</p>
                         </div>
                         <button type="button" class="sb-pop-close" data-pop-close aria-label="Close internships"><svg class="public-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
                     </header>
@@ -235,7 +237,7 @@
                     <div class="sb-steps-visual">
                         <div class="sb-stage3d">
                             <div class="sb-stage">
-                                <svg viewBox="0 0 1240 520" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Stylised arch bridge that is built in three stages" focusable="false">
+                                <svg viewBox="0 0 1240 520" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Stylised arch bridge that is built in three stages" focusable="false">
                                     <rect width="1240" height="520" fill="#F8EDEF"/>
                                     <rect y="368" width="1240" height="152" fill="#F1D9DD"/>
                                     <g class="sb-g1"><g fill="#0b0d12"><path d="M258 262h66l-8 150h-50z"/><path d="M916 262h66l-8 150h-50z"/></g><g fill="#4a4f5c"><rect x="200" y="246" width="320" height="18"/><rect x="720" y="246" width="320" height="18"/></g></g>

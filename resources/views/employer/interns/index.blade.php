@@ -32,7 +32,7 @@
                     @endforeach
                 </select>
             </div>
-            <noscript><div class="sb-filter-actions"><button type="submit" class="btn btn-primary">Filter</button></div></noscript>
+            <noscript><div class="sb-filter-actions"><button type="submit" class="btn btn-primary">Search</button></div></noscript>
         </div>
     </form>
     @if($withoutSupervisor > 0 && ($supervisorFilter ?? null) !== 'none')

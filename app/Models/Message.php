@@ -13,6 +13,8 @@ class Message extends Model
         'sender_id',
         'receiver_id',
         'body',
+        'attachment_path',
+        'attachment_name',
         'read_at',
         'hidden_at',
         'edited_at',
@@ -66,7 +68,17 @@ class Message extends Model
             return $viewerId !== null && $viewerId === $this->sender_id ? 'You unsent a message.' : 'This message was unsent.';
         }
 
+        // A photo sent without text reads as "Photo" in previews and reply quotes.
+        if ($this->body === '' && $this->hasAttachment()) {
+            return 'Photo';
+        }
+
         return $this->body;
+    }
+
+    public function hasAttachment(): bool
+    {
+        return $this->attachment_path !== null && $this->attachment_path !== '';
     }
 
     /** Messages this user has not removed from their own view ("Remove for you", sent or received). */

@@ -1898,3 +1898,191 @@ html body.sb-glass.skillbridge-public .about__roles li { align-content: start; }
 
 /* About feature panel: descriptions line up across cells even when a label wraps to two */
 html body.sb-glass.skillbridge-public .about__roles li { grid-row: span 3; grid-template-rows: subgrid; row-gap: 10px; }
+
+/* Internships popup: search box inside the sticky course bar */
+html body.sb-glass.skillbridge-public .sb-pop .sb-pop-search { position: relative; flex: 1 1 100%; order: 10; display: flex; align-items: center; }
+html body.sb-glass.skillbridge-public .sb-pop .sb-pop-search svg { position: absolute; left: 16px; width: 18px; height: 18px; fill: none; stroke: #535353; stroke-width: 2; stroke-linecap: round; pointer-events: none; }
+html body.sb-glass.skillbridge-public .sb-pop .sb-pop-search input { width: 100%; min-height: 44px; padding: 0 44px 0 44px; border: 1.5px solid rgba(11,13,18,.12); border-radius: 999px; background: #fff; color: #0b0d12; font: 500 14px/1 'Manrope', system-ui, sans-serif; }
+html body.sb-glass.skillbridge-public .sb-pop .sb-pop-search input:focus-visible { outline: 3px solid var(--burgundy); outline-offset: 2px; border-color: var(--burgundy); }
+html body.sb-glass.skillbridge-public .sb-pop .sb-pop-search-x { position: absolute; right: 8px; width: 30px; height: 30px; border: 0; border-radius: 50%; background: transparent; color: #535353; font-size: 20px; line-height: 1; cursor: pointer; }
+html body.sb-glass.skillbridge-public .sb-pop .sb-pop-search-x:hover { background: var(--burgundy-tint); color: var(--burgundy-text); }
+html body.sb-glass.skillbridge-public .sb-pop .public-job-card[hidden] { display: none; }
+
+/* Popup search: one clear button, one focus ring (overrides global input/button styles) */
+html body.sb-glass.skillbridge-public .sb-pop .sb-pop-search input[type="search"] { -webkit-appearance: none; appearance: none; box-shadow: none; outline: 0; height: 44px; margin: 0; }
+html body.sb-glass.skillbridge-public .sb-pop .sb-pop-search input[type="search"]::-webkit-search-cancel-button,
+html body.sb-glass.skillbridge-public .sb-pop .sb-pop-search input[type="search"]::-webkit-search-decoration,
+html body.sb-glass.skillbridge-public .sb-pop .sb-pop-search input[type="search"]::-webkit-search-results-button { -webkit-appearance: none; appearance: none; display: none; }
+html body.sb-glass.skillbridge-public .sb-pop .sb-pop-search input[type="search"]:focus,
+html body.sb-glass.skillbridge-public .sb-pop .sb-pop-search input[type="search"]:focus-visible { outline: 0; border-color: var(--burgundy); box-shadow: 0 0 0 3px rgba(122,0,25,.18); }
+html body.sb-glass.skillbridge-public .sb-pop .sb-pop-search .sb-pop-search-x { min-height: 0; min-width: 0; padding: 0; border: 0; box-shadow: none; display: grid; place-items: center; top: 50%; transform: translateY(-50%); }
+html body.sb-glass.skillbridge-public .sb-pop .sb-pop-search .sb-pop-search-x[hidden] { display: none; }
+html body.sb-glass.skillbridge-public .sb-pop .sb-pop-search .sb-pop-search-x:active { transform: translateY(-50%); }
+
+/* Popup search: cards ease in when they (re)appear */
+@keyframes sbPopIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+html body.sb-glass.skillbridge-public .sb-pop .public-job-card.sb-pop-in { animation: sbPopIn 220ms ease-out both; }
+html body.sb-glass.skillbridge-public .sb-pop .sb-course { transition: opacity 160ms ease; }
+@media (prefers-reduced-motion: reduce) { html body.sb-glass.skillbridge-public .sb-pop .public-job-card.sb-pop-in { animation: none; } }
+
+/* Internships popup header: description + colors that read clearly on the dark photo banner */
+html body.sb-glass.skillbridge-public .sb-pop-panel:not(.sb-dpanel) .sb-pop-head h2 em { color: #f4a9b6; text-shadow: 0 2px 16px rgba(11,13,18,.55); }
+html body.sb-glass.skillbridge-public .sb-pop-panel:not(.sb-dpanel) .sb-pop-desc { max-width: 52ch; margin: 12px 0 0; color: rgba(255,255,255,.86); font: 500 clamp(14px, 1.2vw, 16px)/1.55 'Manrope', system-ui, sans-serif; text-shadow: 0 1px 10px rgba(11,13,18,.6); }
+html body.sb-glass.skillbridge-public .sb-pop-panel:not(.sb-dpanel) .sb-pop-eyebrow { color: rgba(255,255,255,.92); }
+html body.sb-glass.skillbridge-public .sb-pop-panel:not(.sb-dpanel) .sb-pop-eyebrow::before { background: #f4a9b6; }
+@media (max-width: 560px) { html body.sb-glass.skillbridge-public .sb-pop-panel:not(.sb-dpanel) .sb-pop-desc { font-size: 13px; margin-top: 8px; } }
+
+/* =========================================================================================
+   About section cleanup: Prepare / Connect / Place cards + Programs offered.
+   One calm system: solid white cards, hairline border, soft neutral shadow, one burgundy accent.
+   (Replaces the pink gradients, top red bars and uneven text positions.)
+   ========================================================================================= */
+html body.sb-glass.skillbridge-public .sb-values { gap: clamp(14px, 1.6vw, 24px); align-items: stretch; }
+html body.sb-glass.skillbridge-public .sb-values .sb-card {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 0;
+    padding: 28px 28px 30px; border: 1px solid rgba(11,13,18,.09); border-radius: 22px; overflow: hidden;
+    background: #fff; box-shadow: 0 1px 2px rgba(11,13,18,.04), 0 14px 32px -20px rgba(11,13,18,.22);
+    transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+html body.sb-glass.skillbridge-public .sb-values .sb-card::before { display: none; }
+html body.sb-glass.skillbridge-public .sb-values .sb-card::after { top: 26px; right: 26px; color: rgba(11,13,18,.28); }
+html body.sb-glass.skillbridge-public .sb-values .sb-ic-wrap { grid-row: auto; flex: none; width: 48px; height: 48px; margin: 0 0 22px; border-radius: 14px; background: color-mix(in srgb, var(--burgundy) 9%, #fff); color: var(--burgundy); box-shadow: none; }
+html body.sb-glass.skillbridge-public .sb-values .sb-ic-wrap .sb-ic { width: 24px; height: 24px; stroke: currentColor; }
+html body.sb-glass.skillbridge-public .sb-values .sb-card h3 { margin: 0 0 10px; color: #0b0d12; font-size: 30px; line-height: 1.05; }
+html body.sb-glass.skillbridge-public .sb-values .sb-card p { max-width: 34ch; margin: 0; color: #4b4f5a; font-size: 15px; line-height: 1.6; }
+@media (hover: hover) {
+    html body.sb-glass.skillbridge-public .sb-values .sb-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--burgundy) 35%, transparent); box-shadow: 0 1px 2px rgba(11,13,18,.04), 0 22px 40px -22px rgba(11,13,18,.3); }
+    html body.sb-glass.skillbridge-public .sb-values .sb-card:hover .sb-ic-wrap { background: var(--burgundy); color: #fff; }
+}
+
+html body.sb-glass.skillbridge-public .sb-progs { gap: clamp(12px, 1.4vw, 18px); }
+html body.sb-glass.skillbridge-public .sb-progs li {
+    display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 16px; min-height: 0;
+    padding: 20px 22px 24px; border: 1px solid rgba(11,13,18,.09); border-radius: 18px; background: #fff;
+    box-shadow: 0 1px 2px rgba(11,13,18,.04), 0 10px 24px -18px rgba(11,13,18,.2);
+}
+html body.sb-glass.skillbridge-public .sb-prog-code { padding: 6px 12px; font-size: 11.5px; }
+html body.sb-glass.skillbridge-public .sb-prog-name { font-size: 21px; line-height: 1.22; text-wrap: balance; }
+@media (hover: hover) {
+    html body.sb-glass.skillbridge-public .sb-progs li:hover { background: #fff; border-color: color-mix(in srgb, var(--burgundy) 40%, transparent); transform: translateY(-3px); }
+    html body.sb-glass.skillbridge-public .sb-progs li:hover .sb-prog-name { color: var(--burgundy-text); }
+}
+@media (prefers-reduced-motion: reduce) { html body.sb-glass.skillbridge-public .sb-values .sb-card, html body.sb-glass.skillbridge-public .sb-progs li { transition: none; } }
+
+/* "What you can do" cards: same calm card system as Prepare / Connect / Place, with every card aligned to the same lines */
+html body.sb-glass.skillbridge-public .sb-feat-grid { align-items: stretch; }
+html body.sb-glass.skillbridge-public .sb-feat-grid .sb-card,
+html body.sb-glass.skillbridge-public .sb-feat-grid.is-students .sb-card {
+    display: flex; flex-direction: column; align-items: flex-start; grid-row: auto; grid-template-rows: none; row-gap: 0;
+    padding: 28px 26px 30px; border: 1px solid rgba(11,13,18,.09); border-radius: 22px; overflow: hidden;
+    background: #fff; box-shadow: 0 1px 2px rgba(11,13,18,.04), 0 14px 32px -20px rgba(11,13,18,.22);
+    transform: none; transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+html body.sb-glass.skillbridge-public .sb-feat-grid .sb-card::before { display: none; }
+html body.sb-glass.skillbridge-public .sb-features .sb-feat-grid .sb-card::after { top: 26px; right: 26px; color: rgba(11,13,18,.28); font-size: 12px; }
+html body.sb-glass.skillbridge-public .sb-features .sb-feat-grid .sb-ic-wrap { flex: none; width: 48px; height: 48px; margin: 0 0 22px; border-radius: 14px; background: color-mix(in srgb, var(--burgundy) 9%, #fff); color: var(--burgundy); box-shadow: none; }
+html body.sb-glass.skillbridge-public .sb-feat-grid .sb-ic-wrap .sb-ic { width: 24px; height: 24px; stroke: currentColor; }
+html body.sb-glass.skillbridge-public .sb-feat-grid .sb-card h3 { margin: 0 0 10px; color: #0b0d12; font-size: 28px; line-height: 1.08; }
+html body.sb-glass.skillbridge-public .sb-feat-grid .sb-card p { margin: 0; color: #4b4f5a; font-size: 15px; line-height: 1.6; }
+@media (hover: hover) {
+    html body.sb-glass.skillbridge-public .sb-feat-grid .sb-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--burgundy) 35%, transparent); box-shadow: 0 1px 2px rgba(11,13,18,.04), 0 22px 40px -22px rgba(11,13,18,.3); }
+    html body.sb-glass.skillbridge-public .sb-features .sb-feat-grid .sb-card:hover .sb-ic-wrap { background: var(--burgundy); color: #fff; }
+}
+@media (prefers-reduced-motion: reduce) { html body.sb-glass.skillbridge-public .sb-feat-grid .sb-card { transition: none; } }
+
+/* About band polish: cleaner type (no squeezed letters), calmer photo frame, tidier role panel */
+html body.sb-glass.skillbridge-public .about__band { background: linear-gradient(180deg, var(--red-900) 0%, color-mix(in srgb, var(--red-900) 82%, #000) 100%); }
+html body.sb-glass.skillbridge-public .about__text { gap: 24px; }
+html body.sb-glass.skillbridge-public .about__title { letter-spacing: -.005em; -webkit-text-stroke: 0; text-shadow: none; }
+html body.sb-glass.skillbridge-public .about__title em { margin-top: 4px; color: #f6c3cb; font-weight: 500; font-style: italic; letter-spacing: 0; word-spacing: .06em; -webkit-text-stroke: 0; }
+html body.sb-glass.skillbridge-public .about__lead,
+html body.sb-glass.skillbridge-public .about__support { letter-spacing: 0; word-spacing: normal; font-weight: 400; }
+html body.sb-glass.skillbridge-public .about__lead { color: #fff; font-size: clamp(17px, 1.5vw, 20px); line-height: 1.6; }
+html body.sb-glass.skillbridge-public .about__support { padding-left: 18px; border-left: 2px solid rgba(255,255,255,.35); color: rgba(255,255,255,.78); font-size: 15.5px; }
+html body.sb-glass.skillbridge-public .about__photo { border: 1px solid rgba(255,255,255,.3); border-radius: 26px; box-shadow: 0 0 0 8px rgba(255,255,255,.08), 0 30px 60px -24px rgba(0,0,0,.55); }
+html body.sb-glass.skillbridge-public .about__loc { left: 18px; bottom: 18px; background: rgba(11,13,18,.82); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+html body.sb-glass.skillbridge-public .about__roles { box-shadow: 0 1px 2px rgba(11,13,18,.05), 0 28px 56px -28px rgba(11,13,18,.4); }
+html body.sb-glass.skillbridge-public .about__roles li { transition: background-color 200ms ease; }
+html body.sb-glass.skillbridge-public .about__icon { background: color-mix(in srgb, var(--burgundy) 9%, #fff); }
+html body.sb-glass.skillbridge-public .about__role { letter-spacing: .16em; }
+html body.sb-glass.skillbridge-public .about__desc { color: #4b4f5a; line-height: 1.55; }
+@media (hover: hover) {
+    html body.sb-glass.skillbridge-public .about__roles li:hover { background: #fbf6f7; }
+    html body.sb-glass.skillbridge-public .about__roles li:hover .about__icon { background: var(--burgundy); color: #fff; }
+}
+
+/* How it works: whole bridge illustration always visible, calmer step cards, heading on two lines */
+html body.sb-glass.skillbridge-public #how-it-works .public-section-heading h2 { max-width: none; }
+html body.sb-glass.skillbridge-public .sb-steps { align-items: center; }
+html body.sb-glass.skillbridge-public .sb-steps-visual { grid-template-rows: auto auto; }
+html body.sb-glass.skillbridge-public .sb-stage3d { height: auto; min-height: 0; padding: 12px; border: 1px solid rgba(11,13,18,.09); border-radius: 26px; background: #fff; box-shadow: 0 1px 2px rgba(11,13,18,.04), 0 24px 48px -28px rgba(11,13,18,.3); }
+html body.sb-glass.skillbridge-public .sb-stage { height: auto; aspect-ratio: 1240 / 520; border-radius: 18px; background: #F8EDEF; }
+html body.sb-glass.skillbridge-public .sb-stage::after { display: none; }
+html body.sb-glass.skillbridge-public .sb-stage-cap { left: 24px; bottom: 24px; background: rgba(255,255,255,.96); box-shadow: 0 6px 18px rgba(11,13,18,.14); }
+html body.sb-glass.skillbridge-public .sb-stage-bars i { background: color-mix(in srgb, var(--burgundy) 16%, #fff); }
+html body.sb-glass.skillbridge-public .sb-stage-bars i.is-on { background: var(--burgundy); }
+
+html body.sb-glass.skillbridge-public .sb-steps-list { gap: 14px; }
+html body.sb-glass.skillbridge-public .sb-step,
+html body.sb-glass.skillbridge-public .sb-step:not([aria-pressed="true"]) {
+    border: 1px solid rgba(11,13,18,.09); border-radius: 20px; background: #fff;
+    box-shadow: 0 1px 2px rgba(11,13,18,.04), 0 10px 24px -18px rgba(11,13,18,.22);
+    transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+}
+html body.sb-glass.skillbridge-public .sb-step:not([aria-pressed="true"]) .sb-step-text { color: #4b4f5a; }
+html body.sb-glass.skillbridge-public .sb-step-no { border: 0; background: color-mix(in srgb, var(--burgundy) 9%, #fff); color: var(--burgundy); transition: background-color 200ms ease, color 200ms ease; }
+html body.sb-glass.skillbridge-public .sb-step[aria-pressed="true"] { border-color: var(--burgundy); box-shadow: 0 0 0 1px var(--burgundy), 0 22px 40px -24px color-mix(in srgb, var(--burgundy) 55%, transparent); }
+html body.sb-glass.skillbridge-public .sb-step[aria-pressed="true"]::before { display: none; }
+html body.sb-glass.skillbridge-public .sb-step[aria-pressed="true"] .sb-step-no { background: var(--burgundy); color: #fff; }
+@media (hover: hover) { html body.sb-glass.skillbridge-public .sb-step:not([aria-pressed="true"]):hover { border-color: color-mix(in srgb, var(--burgundy) 40%, transparent); transform: translateY(-2px); } }
+@media (prefers-reduced-motion: reduce) { html body.sb-glass.skillbridge-public .sb-step { transition: none; } }
+
+/* Who it's for: heading on two lines, calm cards (no 3D tilt), one consistent sign-in button style pinned to the bottom */
+html body.sb-glass.skillbridge-public #audiences .public-section-heading h2 { max-width: none; }
+html body.sb-glass.skillbridge-public #audiences .public-grid-3 { align-items: stretch; }
+html body.sb-glass.skillbridge-public #audiences .public-role-card {
+    display: flex; flex-direction: column; align-items: stretch; padding: 30px 28px 28px; border: 1px solid rgba(11,13,18,.09); border-radius: 22px; background: #fff;
+    box-shadow: 0 1px 2px rgba(11,13,18,.04), 0 14px 32px -20px rgba(11,13,18,.22); transform: none; transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+html body.sb-glass.skillbridge-public #audiences .public-role-card .role-icon { flex: none; width: 48px; height: 48px; margin-bottom: 22px; border-radius: 14px; background: color-mix(in srgb, var(--burgundy) 9%, #fff); color: var(--burgundy); transition: background-color 200ms ease, color 200ms ease; }
+html body.sb-glass.skillbridge-public #audiences .public-role-card h3 { margin: 0; color: #0b0d12; }
+html body.sb-glass.skillbridge-public #audiences .public-checks { flex: 1 1 auto; margin: 20px 0 28px; }
+html body.sb-glass.skillbridge-public #audiences .public-checks li { color: #2a2d36; }
+html body.sb-glass.skillbridge-public #audiences .public-checks .public-icon { color: var(--burgundy); }
+html body.sb-glass.skillbridge-public #audiences .public-role-card .public-button,
+html body.sb-glass.skillbridge-public #audiences .public-role-card .public-button-primary { flex: none; margin-top: 0; background: #fff; border: 1.5px solid rgba(11,13,18,.85); color: #0b0d12; box-shadow: none; transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease; }
+html body.sb-glass.skillbridge-public #audiences .public-role-card .public-button::after,
+html body.sb-glass.skillbridge-public #audiences .public-role-card .public-button-primary::after { background: #0b0d12; color: #fff; transition: background-color 200ms ease, color 200ms ease, transform 200ms ease; }
+html body.sb-glass.skillbridge-public #audiences .public-role-card .public-button:hover,
+html body.sb-glass.skillbridge-public #audiences .public-role-card .public-button-primary:hover { background: var(--burgundy); border-color: var(--burgundy); color: #fff; }
+html body.sb-glass.skillbridge-public #audiences .public-role-card .public-button:hover::after { background: #fff; color: var(--burgundy); transform: translateX(2px); }
+@media (hover: hover) {
+    html body.sb-glass.skillbridge-public #audiences .public-role-card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--burgundy) 35%, transparent); box-shadow: 0 1px 2px rgba(11,13,18,.04), 0 22px 40px -22px rgba(11,13,18,.3); }
+    html body.sb-glass.skillbridge-public #audiences .public-role-card:hover .role-icon { background: var(--burgundy); color: #fff; }
+}
+@media (prefers-reduced-motion: reduce) { html body.sb-glass.skillbridge-public #audiences .public-role-card { transition: none; } }
+
+/* FAQs: question list and answer card line up, one calm card system, clear active state */
+html body.sb-glass.skillbridge-public .sb-faq { align-items: stretch; gap: clamp(16px, 2vw, 28px); }
+html body.sb-glass.skillbridge-public .sb-faq-tabs { gap: 12px; }
+html body.sb-glass.skillbridge-public .sb-faq-panels { align-self: stretch; }
+html body.sb-glass.skillbridge-public .sb-faq-panels > div:not([hidden]) {
+    display: flex; flex-direction: column; justify-content: center; height: 100%; min-height: 0; padding: clamp(28px, 3.4vw, 48px);
+    border: 1px solid rgba(11,13,18,.09); border-radius: 22px; background: #fff;
+    box-shadow: 0 1px 2px rgba(11,13,18,.04), 0 14px 32px -20px rgba(11,13,18,.22);
+}
+html body.sb-glass.skillbridge-public .sb-faq-panels h3 { margin: 0 0 14px; padding-left: 18px; border-left: 3px solid var(--burgundy); color: #0b0d12; font-size: clamp(28px, 2.8vw, 38px); line-height: 1.1; }
+html body.sb-glass.skillbridge-public .sb-faq-panels p { max-width: 58ch; margin: 0; padding-left: 21px; color: #4b4f5a; font-size: 17px; line-height: 1.7; }
+html body.sb-glass.skillbridge-public .sb-faq-tabs button,
+html body.sb-glass.skillbridge-public .sb-faq-tabs button[aria-selected="false"] {
+    border: 1px solid rgba(11,13,18,.09); border-radius: 18px; background: #fff; color: #0b0d12;
+    box-shadow: 0 1px 2px rgba(11,13,18,.04), 0 10px 24px -18px rgba(11,13,18,.22);
+    transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+}
+html body.sb-glass.skillbridge-public .sb-faq-tabs button::after { background: color-mix(in srgb, var(--burgundy) 9%, #fff); color: var(--burgundy); transition: background-color 200ms ease, color 200ms ease, transform 200ms ease; }
+html body.sb-glass.skillbridge-public .sb-faq-tabs button[aria-selected="true"] { border: 1px solid var(--burgundy); box-shadow: 0 0 0 1px var(--burgundy), 0 20px 36px -24px color-mix(in srgb, var(--burgundy) 55%, transparent); }
+html body.sb-glass.skillbridge-public .sb-faq-tabs button[aria-selected="true"]::after { background: var(--burgundy); color: #fff; transform: translateX(2px); }
+html body.sb-glass.skillbridge-public .sb-faq-tabs button:focus-visible { outline: 3px solid color-mix(in srgb, var(--burgundy) 55%, transparent); outline-offset: 2px; }
+@media (hover: hover) { html body.sb-glass.skillbridge-public .sb-faq-tabs button[aria-selected="false"]:hover { border-color: color-mix(in srgb, var(--burgundy) 40%, transparent); transform: translateY(-2px); } }
+@media (max-width: 860px) { html body.sb-glass.skillbridge-public .sb-faq-panels > div:not([hidden]) { justify-content: flex-start; } }
+@media (prefers-reduced-motion: reduce) { html body.sb-glass.skillbridge-public .sb-faq-tabs button { transition: none; } }

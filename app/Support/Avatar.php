@@ -20,7 +20,7 @@ final class Avatar
             UserRole::Student => $user->student?->profile_picture,
             UserRole::Coordinator => $user->coordinator?->profile_picture,
             UserRole::Employer => $user->employer?->logo,
-            UserRole::Admin => $user->avatar,
+            UserRole::Admin, UserRole::Supervisor => $user->avatar,
             default => null,
         };
 

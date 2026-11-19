@@ -5,6 +5,7 @@
 @section('content')
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/employer-applicant-review.css') }}?v={{ @filemtime(public_path('css/employer-applicant-review.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/employer-applicant-review-dark.css') }}?v={{ @filemtime(public_path('css/employer-applicant-review-dark.css')) }}">
 @endpush
 @php
     $hasSkillsTab = (bool) ($profile['competencies'] || $profile['certificates'] || $profile['skills']);

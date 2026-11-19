@@ -231,3 +231,137 @@ html[data-theme="dark"] body.sb-app .ap-btn:hover, html[data-theme="dark"] body.
 html[data-theme="dark"] body.sb-app .sb-main:has(.ap-page) > .sb-content { background: #0A0A0B; }
 html[data-theme="dark"] .applicant-modal__close:hover { background: var(--ap-soft); }
 html[data-theme="dark"] .applicant-modal::backdrop { background: rgba(0, 0, 0, .7); }
+
+/* No wasted gap: the page used a centered 1160px column with 32px padding, which left a wide empty strip on the left and right of big screens.
+   It now uses the whole width next to the sidebar, with a small even padding. */
+html body.sb-app .ap-page,
+html body.sb-app .sb-content > .ap-page { max-width: none; width: 100%; margin: 0; padding: 20px 24px; }
+html body.sb-app .ap-top { margin-bottom: 14px !important; }
+@media (max-width: 639.98px) { html body.sb-app .ap-page, html body.sb-app .sb-content > .ap-page { padding: 16px; } }
+
+/* ---------- Alignment pass ---------- */
+/* Status bar: one grid, all fields on one baseline, same 48px height, Update status lined up with the inputs */
+html body.sb-app .ap-statusbar .ap-status-row { display: grid; grid-template-columns: minmax(150px, .9fr) minmax(220px, 1.25fr) minmax(200px, 2fr) auto; gap: 16px; align-items: end; }
+html body.sb-app .ap-statusbar .ap-field { align-content: start; flex: none; }
+html body.sb-app .ap-statusbar .ap-label { line-height: 1.2; }
+html body.sb-app .ap-statusbar .form-select,
+html body.sb-app .ap-statusbar .form-control,
+html body.sb-app .ap-statusbar textarea.form-control { box-sizing: border-box; height: 48px; min-height: 48px; padding-top: 0; padding-bottom: 0; line-height: 46px; resize: none; }
+html body.sb-app .ap-statusbar textarea.form-control { padding-top: 11px; line-height: 1.4; overflow: hidden; }
+html body.sb-app .ap-statusbar textarea.form-control:focus { overflow-y: auto; }
+html body.sb-app .ap-statusbar .ap-update { align-self: end; height: 48px; margin: 0; white-space: nowrap; }
+@media (max-width: 1199.98px) { html body.sb-app .ap-statusbar .ap-status-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } html body.sb-app .ap-statusbar .ap-field--notes { grid-column: 1 / -1; } html body.sb-app .ap-statusbar .ap-update { justify-self: start; } }
+@media (max-width: 639.98px) { html body.sb-app .ap-statusbar .ap-status-row { grid-template-columns: 1fr; } html body.sb-app .ap-statusbar .ap-update { width: 100%; justify-self: stretch; } }
+
+/* Header row and content line up on the same left and right edges */
+html body.sb-app .ap-top { padding: 0; }
+html body.sb-app .ap-main { gap: 20px; }
+html body.sb-app .ap-main > .ap-right { gap: 20px; }
+
+/* Overview: the three columns share one top line and equal width */
+html body.sb-app .ap-overview__body { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
+@media (max-width: 1099.98px) { html body.sb-app .ap-overview__body { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 639.98px) { html body.sb-app .ap-overview__body { grid-template-columns: 1fr; } }
+
+/* Profile card: the whole card scrolls as one piece (red band, avatar and details move together).
+   The scrollbar is hidden so it never draws over the rounded corner; wheel, touch and keyboard scrolling still work. */
+html body.sb-app .ap-main > .ap-profile { display: block; overflow-x: hidden; overflow-y: auto !important; overscroll-behavior: contain; scrollbar-width: none; -ms-overflow-style: none; }
+html body.sb-app .ap-main > .ap-profile::-webkit-scrollbar { display: none; width: 0; height: 0; }
+html body.sb-app .ap-main > .ap-profile > .ap-band { flex: none; }
+@media (max-width: 899.98px) { html body.sb-app .ap-main > .ap-profile { overflow: hidden !important; } }
+
+/* White page background (it was a light gray-pink). Uses the theme surface, so dark mode stays dark. */
+html body.sb-app .sb-main:has(.ap-page) > .sb-content,
+html body.sb-app .sb-content > .ap-page,
+html body.sb-app .ap-page { background: var(--surface, #fff) !important; }
+
+/* =====================================================================
+   Applicant profile pop-up: one scrollbar, grouped cards, calmer headings, balanced columns
+   ===================================================================== */
+.applicant-modal { width: min(1000px, 94vw); border-radius: 26px; }
+.applicant-modal__header { padding: 20px 32px; }
+.applicant-modal__avatar { width: 48px; height: 48px; font-size: 16px; }
+.applicant-modal__name { font-size: 1.2rem; letter-spacing: -.01em; }
+.applicant-modal__program { font-size: .9rem; }
+.applicant-modal__close { transition: background-color 160ms ease, color 160ms ease; }
+.applicant-modal__close:hover { background: var(--ap-soft); color: var(--ap-red-text); }
+
+/* Tabs: the bar was drawing its own scrollbar with red arrows (a 1px overflow from the active underline), so only the content scrolls now */
+.applicant-modal__tabs { padding: 0 32px; gap: 0 32px; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+.applicant-modal__tabs::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.applicant-modal__tab { min-height: 54px; margin-bottom: 0; transition: color 160ms ease, border-color 160ms ease; }
+
+.applicant-modal__body { padding: 28px 32px 32px; background: var(--ap-surface); }
+
+/* Info groups (Contact / Personal / Academic ...) become equal cards */
+html body.sb-app .applicant-modal .sb-grid--2 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-items: stretch; }
+html body.sb-app .applicant-modal .sb-grid--2 > .sb-block { padding: 20px 22px 22px; border: 1px solid var(--ap-hair); border-radius: 18px; background: var(--ap-chip); }
+html body.sb-app .applicant-modal .sb-block > h2 { margin: 0 0 16px; padding-bottom: 12px; font-size: 12.5px; letter-spacing: .14em; }
+html body.sb-app .applicant-modal .sb-block > h2::before { height: 16px; }
+html body.sb-app .applicant-modal .sb-fields { gap: 16px; }
+html body.sb-app .applicant-modal .sb-fields dt { font-size: 11px; letter-spacing: .14em; }
+html body.sb-app .applicant-modal .sb-fields dd { font-size: .95rem; line-height: 1.45; overflow-wrap: anywhere; }
+html body.sb-app .applicant-modal .sb-tab-panel > .sb-block { margin-top: 24px; padding: 20px 22px 22px; border: 1px solid var(--ap-hair); border-radius: 18px; background: var(--ap-chip); }
+html body.sb-app .applicant-modal .sb-tab-panel > .sb-block:first-child { margin-top: 0; }
+.applicant-modal .ap-award-level { max-width: none; }
+
+@media (max-width: 899.98px) { html body.sb-app .applicant-modal .sb-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 639.98px) {
+    html body.sb-app .applicant-modal .sb-grid--2 { grid-template-columns: 1fr; }
+    .applicant-modal__header, .applicant-modal__tabs, .applicant-modal__body { padding-left: 16px; padding-right: 16px; }
+}
+
+/* =====================================================================
+   Resume / file preview pop-up (employer): big preview + a tidy details card
+   ===================================================================== */
+#employerFilePreview.sb-dialog { width: min(1180px, 96vw); max-width: 96vw; height: min(90dvh, 880px); max-height: 90dvh; border-radius: 26px; }
+#employerFilePreview .sb-dialog-header { padding: 18px 28px; }
+#employerFilePreview .sb-dialog-header h2 { font-size: 1.2rem; letter-spacing: -.01em; }
+#employerFilePreview .btn-close { transition: background-color 160ms ease; }
+#employerFilePreview .btn-close:hover { background-color: var(--ds-red-tint, #f8e4e8); }
+#employerFilePreview .sb-dialog-body { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; flex: 1 1 auto; min-height: 0; margin: 0; padding: 20px 28px 24px; overflow: hidden; }
+#employerFilePreview .sb-dialog-body > * { width: auto; max-width: none; margin: 0; padding: 0; }
+#employerFilePreview .sb-file-preview { min-height: 0; min-width: 0; overflow: hidden; border: 1px solid var(--ds-hair, #eadfe2); border-radius: 18px; background: var(--ds-surface-soft, #f7f4f5); display: flex; align-items: center; justify-content: center; }
+#employerFilePreview .sb-file-preview iframe { width: 100%; height: 100%; min-height: 0; border: 0; border-radius: 0; }
+#employerFilePreview .sb-file-preview img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; border-radius: 0; }
+#employerFilePreview .sb-file-preview p { padding: 24px; margin: 0; text-align: center; color: var(--ds-muted, #695f63); }
+
+/* Details card */
+#employerFilePreview dl { display: flex; flex-direction: column; gap: 0; min-height: 0; overflow-y: auto; margin: 0; padding: 6px 20px 20px; border: 1px solid var(--ds-hair, #eadfe2); border-radius: 18px; background: var(--ds-surface, #fff); scrollbar-width: thin; }
+#employerFilePreview dt { margin: 0; padding: 14px 0 4px; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--ds-label, #695f63); }
+#employerFilePreview dd { margin: 0; padding-bottom: 14px; border-bottom: 1px solid var(--ds-hair, #eadfe2); font-size: .95rem; font-weight: 500; line-height: 1.4; color: var(--ds-ink, #2a2125); overflow-wrap: anywhere; }
+#employerFilePreview dd:last-of-type { border-bottom: 0; }
+#employerFilePreview #employerPreviewDownload { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; margin-top: auto; padding: 0 22px; border-radius: 999px; font-weight: 700; }
+#employerFilePreview #employerPreviewDownload[hidden] { display: none; }
+#employerFilePreview #employerPreviewDownload::before { font-family: "bootstrap-icons"; content: "\f30a"; }
+
+@media (max-width: 899.98px) {
+    #employerFilePreview .sb-dialog-body { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; overflow-y: auto; }
+    #employerFilePreview .sb-file-preview { min-height: 52dvh; }
+    #employerFilePreview dl { overflow: visible; }
+}
+@media (max-width: 639.98px) {
+    #employerFilePreview.sb-dialog { width: 100vw; max-width: none; height: 100dvh; max-height: none; border-radius: 0; }
+    #employerFilePreview .sb-dialog-header, #employerFilePreview .sb-dialog-body { padding-left: 16px; padding-right: 16px; }
+}
+
+/* Details card: my "reset" rule for the dialog's children also zeroed the card's own padding, so the text touched the border and the
+   Download button ran past the edge. The card padding is set again here with the same specificity. */
+#employerFilePreview .sb-dialog-body > dl { box-sizing: border-box; padding: 6px 24px 24px; }
+#employerFilePreview .sb-dialog-body > dl > dt { padding-top: 16px; }
+#employerFilePreview .sb-dialog-body > dl > dd { padding-bottom: 16px; }
+#employerFilePreview .sb-dialog-body > dl > #employerPreviewDownload { box-sizing: border-box; width: 100%; align-self: stretch; margin-top: auto; flex: none; }
+#employerFilePreview .sb-dialog-body > dl > dd:nth-last-of-type(1) { border-bottom: 0; margin-bottom: 18px; }
+
+/* Details card never scrolls: spacing scales with the screen height so all seven rows and the Download button always fit */
+#employerFilePreview .sb-dialog-body > dl { overflow: visible !important; justify-content: space-between; padding: 4px 24px clamp(14px, 2.4vh, 24px); }
+#employerFilePreview .sb-dialog-body > dl > dt { padding-top: clamp(8px, 1.7vh, 16px); font-size: clamp(10px, 1.3vh, 11px); }
+#employerFilePreview .sb-dialog-body > dl > dd { padding-bottom: clamp(8px, 1.7vh, 16px); font-size: clamp(.85rem, 1.9vh, .95rem); }
+#employerFilePreview .sb-dialog-body > dl > dd:nth-last-of-type(1) { margin-bottom: clamp(8px, 1.6vh, 18px); }
+#employerFilePreview .sb-dialog-body > dl > #employerPreviewDownload { min-height: clamp(42px, 5.6vh, 48px); }
+@media (max-height: 700px) { #employerFilePreview .sb-dialog-body { grid-template-columns: minmax(0, 1fr) 270px; } }
+
+/* One focus ring only on the status fields (Notes, Interview date, Status): the page's black focus outline was drawn on top of the
+   field's own maroon border and glow, which looked like a double line. */
+html body.sb-app .ap-page .ap-statusbar :is(select, input, textarea):focus,
+html body.sb-app .ap-page .ap-statusbar :is(select, input, textarea):focus-visible { outline: 0 !important; outline-offset: 0 !important; border-color: var(--ap-red) !important; box-shadow: 0 0 0 4px color-mix(in srgb, var(--ap-red) 16%, transparent) !important; }

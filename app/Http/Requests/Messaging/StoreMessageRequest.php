@@ -22,7 +22,9 @@ class StoreMessageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'body' => ['required', 'string', 'max:5000'],
+            // Text, a photo, or both. A photo is checked by its real content (not just the extension); SVG is not allowed.
+            'body' => ['nullable', 'string', 'max:5000', 'required_without:attachment'],
+            'attachment' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'],
             'submission_id' => ['required', 'uuid'],
             // Reply: must be a message in this same chat (checked in MessageController::store).
             'reply_to_id' => ['nullable', 'integer'],
@@ -32,7 +34,11 @@ class StoreMessageRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'body.required' => 'Message cannot be empty.',
+            'body.required_without' => 'Type a message or attach a photo.',
+            'attachment.image' => 'Only photos can be sent (JPG, PNG, WEBP or GIF).',
+            'attachment.mimes' => 'Only photos can be sent (JPG, PNG, WEBP or GIF).',
+            'attachment.max' => 'The photo must be 5 MB or smaller.',
+            'attachment.uploaded' => 'The photo could not be uploaded. It may be larger than the server allows.',
             'body.max' => 'Message must not exceed 5000 characters.',
         ];
     }

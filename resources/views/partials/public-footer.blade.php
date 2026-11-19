@@ -2,7 +2,7 @@
             <div class="public-footer-main">
                 <div class="public-footer-about">
                     <a class="public-brand" href="{{ route('home') }}">
-                        <span class="public-brand-mark" aria-hidden="true"><img class="sb-seal" src="{{ asset('images/brand/stcc-logo.png') }}?v=1" alt="St. Cecilia's College-Cebu logo" width="42" height="42"></span>
+                        <span class="public-brand-mark" aria-hidden="true"><img class="sb-seal" src="{{ asset('images/brand/ojt-seal-160.png') }}?v=1" alt="St. Cecilia's College-Cebu logo" width="42" height="42"></span>
                         <span class="public-brand-copy"><strong>SkillBridge</strong><small>St. Cecilia's College</small></span>
                     </a>
                     <p>Internship readiness and verified competencies for students, coordinators, and employers, in one shared workspace.</p>

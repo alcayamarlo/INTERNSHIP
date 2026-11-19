@@ -1,0 +1,143 @@
+/* Shared profile page (every role): header card with photo, name, subtitle, meta line and tabs,
+   then a two-column grid of cards. Built by resources/views/components/profile/*.
+   Colors come from the app tokens in sb-tokens.css (light and dark); no hard-coded hex. */
+html body.sb-app .pf {
+    --pf-surface: var(--surface);
+    --pf-soft: var(--surface-alt);
+    --pf-ink: var(--text);
+    --pf-muted: var(--muted);
+    --pf-line: var(--line);
+    --pf-red: var(--burgundy);
+    --pf-red-hover: var(--burgundy-hover);
+    --pf-red-text: var(--burgundy-text);
+    --pf-tint: var(--burgundy-tint);
+    --pf-radius: 28px;
+    --pf-radius-inner: 16px;
+    --pf-shadow: 0 10px 30px rgba(0, 0, 0, .06);
+    display: grid; gap: clamp(14px, 2vh, 22px); width: 100%; max-width: none; margin: 0;
+}
+html[data-theme="dark"] body.sb-app .pf { --pf-shadow: 0 10px 30px rgba(0, 0, 0, .35); }
+
+/* ---- Cards ---- */
+html body.sb-app .pf .pf-card { background: var(--pf-surface); border: 1px solid var(--pf-line); border-radius: var(--pf-radius); box-shadow: var(--pf-shadow); color: var(--pf-ink); }
+@media (prefers-reduced-motion: no-preference) {
+    html body.sb-app .pf .pf-card { animation: pf-rise .35s ease both; }
+    html body.sb-app .pf .pf-cols > .pf-card:nth-child(2) { animation-delay: .06s; }
+}
+@keyframes pf-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ---- Header ---- */
+html body.sb-app .pf .pf-head { overflow: hidden; padding: 0; }
+html body.sb-app .pf .pf-top { display: flex; flex-wrap: wrap; align-items: center; gap: clamp(16px, 2.4vw, 28px); padding: clamp(18px, 3vh, 32px) clamp(18px, 2.4vw, 32px); }
+html body.sb-app .pf .pf-avatar { flex: 0 0 auto; width: clamp(110px, 15vh, 150px); height: clamp(110px, 15vh, 150px); border-radius: 50%; display: grid; place-items: center; overflow: hidden; background: var(--pf-tint); color: var(--pf-red-text); font-size: clamp(38px, 5.5vh, 56px); font-weight: 800; line-height: 1; border: 1px solid var(--pf-line); }
+html body.sb-app .pf .pf-avatar img { display: block; width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: center; }
+html body.sb-app .pf .pf-avatar [hidden] { display: none; }
+html body.sb-app .pf .pf-who { flex: 1 1 260px; min-width: 0; }
+html body.sb-app .pf .pf-name { margin: 0; font-size: clamp(1.6rem, 3.2vh, 2rem); font-weight: 800; line-height: 1.15; color: var(--pf-ink); overflow-wrap: anywhere; }
+html body.sb-app .pf .pf-sub { margin: 6px 0 0; font-size: 1rem; color: var(--pf-muted); overflow-wrap: anywhere; }
+html body.sb-app .pf .pf-meta { display: flex; align-items: center; gap: 8px; margin: 6px 0 0; font-size: .95rem; color: var(--pf-muted); }
+html body.sb-app .pf .pf-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+html body.sb-app .pf .pf-actions form { margin: 0; }
+html body.sb-app .pf .pf-actions .cp-note, html body.sb-app .pf .pf-note { margin: 0; font-size: .8rem; color: var(--pf-muted); }
+html body.sb-app .pf .pf-feedback { min-height: 0; font-size: .85rem; }
+html body.sb-app .pf .pf-feedback:empty { display: none; }
+
+/* Buttons: maroon pill (primary) and outline pill */
+html body.sb-app .pf .pf-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 24px; border: 1.5px solid var(--pf-red); border-radius: 999px; background: var(--pf-red); color: #fff; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; }
+html body.sb-app .pf .pf-btn:hover { background: var(--pf-red-hover); border-color: var(--pf-red-hover); color: #fff; }
+html body.sb-app .pf .pf-btn:disabled { opacity: .7; cursor: wait; }
+html body.sb-app .pf .pf-btn--ghost { background: transparent; color: var(--pf-red-text); border-color: var(--pf-line); }
+html body.sb-app .pf .pf-btn--ghost:hover { background: var(--pf-tint); color: var(--pf-red-text); border-color: var(--pf-red-text); }
+html body.sb-app .pf :is(a, button):focus-visible { outline: 3px solid var(--pf-red-text); outline-offset: 3px; }
+
+/* ---- Tabs ---- */
+html body.sb-app .pf .pf-tabs { display: flex; gap: 4px; padding: 0 clamp(12px, 1.6vw, 22px); border-top: 1px solid var(--pf-line); overflow-x: auto; scrollbar-width: thin; }
+html body.sb-app .pf .pf-tab { flex: 0 0 auto; display: inline-flex; align-items: center; min-height: 48px; padding: 0 16px; margin-bottom: -1px; border: 0; border-bottom: 3px solid transparent; background: transparent; color: var(--pf-red-text); font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; }
+html body.sb-app .pf .pf-tab:hover { background: var(--pf-tint); }
+html body.sb-app .pf .pf-tab[aria-selected="true"], html body.sb-app .pf .pf-tab[aria-current="page"] { border-bottom-color: var(--pf-red-text); }
+
+/* ---- Content grid ---- */
+html body.sb-app .pf .pf-cols { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: clamp(14px, 2vh, 22px); align-items: start; }
+html body.sb-app .pf .pf-panel[hidden] { display: none; }
+html body.sb-app .pf .pf-body { padding: clamp(16px, 2.4vh, 24px) clamp(18px, 2vw, 28px); }
+html body.sb-app .pf .pf-title { margin: 0 0 12px; font-size: 1.2rem; font-weight: 800; color: var(--pf-ink); }
+html body.sb-app .pf .pf-sub-title { margin: -8px 0 12px; font-size: .9rem; color: var(--pf-muted); }
+html body.sb-app .pf .pf-row { display: flex; align-items: center; gap: 14px; padding: 8px 0; line-height: 1.4; color: var(--pf-ink); }
+html body.sb-app .pf .pf-row > i { flex: 0 0 auto; width: 26px; text-align: center; font-size: 1.25rem; line-height: 1; color: var(--pf-muted); }
+html body.sb-app .pf .pf-row b { font-weight: 700; }
+html body.sb-app .pf .pf-row > span { min-width: 0; overflow-wrap: anywhere; }
+html body.sb-app .pf .pf-foot { margin: 10px 0 0; font-size: .85rem; color: var(--pf-muted); }
+html body.sb-app .pf .pf-empty { margin: 0; color: var(--pf-muted); }
+html body.sb-app .pf .pf-list { display: grid; gap: 4px; }
+html body.sb-app .pf .pf-item { display: flex; align-items: center; gap: 12px; padding: 10px 8px; border-radius: var(--pf-radius-inner); color: inherit; text-decoration: none; }
+html body.sb-app a.pf-item:hover { background: var(--pf-soft); }
+html body.sb-app .pf .pf-item-av { flex: 0 0 auto; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; background: var(--pf-tint); color: var(--pf-red-text); }
+html body.sb-app .pf .pf-item small { display: block; color: var(--pf-muted); }
+
+/* Completeness meter (Coordinator and Company) */
+html body.sb-app .pf .pf-meter { height: 8px; margin: 4px 0 14px; border-radius: 999px; background: var(--pf-line); overflow: hidden; }
+html body.sb-app .pf .pf-meter > span { display: block; height: 100%; border-radius: inherit; background: var(--pf-red); }
+html body.sb-app .pf .pf-check { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+html body.sb-app .pf .pf-check li { display: flex; align-items: center; gap: 10px; padding: 4px 0; color: var(--pf-muted); }
+html body.sb-app .pf .pf-check li.is-done { color: var(--pf-ink); }
+html body.sb-app .pf .pf-check i { color: var(--pf-muted); }
+html body.sb-app .pf .pf-check li.is-done i { color: var(--pf-red-text); }
+
+/* The existing edit forms keep their own field styles; they just sit under the shared header */
+html body.sb-app .pf .cp-page { padding: 0; }
+html body.sb-app .pf .cp-savebar { margin: 20px 0 0 !important; border-radius: var(--pf-radius-inner); border: 1px solid var(--pf-line); }
+
+@media (max-width: 1099.98px) { html body.sb-app .pf .pf-cols { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 699.98px) {
+    html body.sb-app .pf .pf-top { flex-direction: column; text-align: center; }
+    html body.sb-app .pf .pf-meta { justify-content: center; }
+    html body.sb-app .pf .pf-actions { align-items: stretch; width: 100%; }
+    html body.sb-app .pf .pf-actions .pf-btn { width: 100%; }
+}
+
+/* Student profile: its own tab buttons (with complete / error markers) inside the shared header */
+html body.sb-app .student-profile-page .pf .pf-tabs .tab { position: relative; height: auto; min-height: 48px; padding: 0 16px; border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: transparent; color: var(--pf-red-text); font: inherit; font-weight: 600; }
+html body.sb-app .student-profile-page .pf .pf-tabs .tab::before, html body.sb-app .student-profile-page .pf .pf-tabs .tab::after { content: none; }
+html body.sb-app .student-profile-page .pf .pf-tabs .tab[aria-selected="true"] { color: var(--pf-red-text); border-bottom-color: var(--pf-red-text); }
+html body.sb-app .student-profile-page .pf .pf-tabs .tab:hover { background: var(--pf-tint); }
+html body.sb-app .student-profile-page .pf .pf-cols--student { grid-template-columns: minmax(0, 1fr); }
+html body.sb-app .student-profile-page .pf .pf-cols--student .pf-body { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 28px; }
+html body.sb-app .student-profile-page .pf .completion { flex: 1 1 320px; margin: 0; padding: 0; border: 0; }
+html body.sb-app .student-profile-page .pf .pf-actions-row { display: flex; flex-wrap: wrap; gap: 10px; }
+html body.sb-app .student-profile-page .pf .pf-actions-row form { margin: 0; }
+html body.sb-app .student-profile-page .pf .sp-main { min-width: 0; }
+html body.sb-app .student-profile-page .pf .avatar-error { margin: 0; font-size: .85rem; text-align: right; }
+html body.sb-app .student-profile-page .pf .avatar-error:empty { display: none; }
+
+/* Easier on the eyes: calm neutral surfaces, maroon only for the one primary action and the active tab */
+html body.sb-app .pf .pf-avatar { background: var(--pf-soft); }
+html body.sb-app .pf .pf-tabs { overflow-y: hidden; }
+html body.sb-app .pf .pf-tab, html body.sb-app .student-profile-page .pf .pf-tabs .tab { color: var(--pf-muted); }
+html body.sb-app .pf .pf-tab:hover, html body.sb-app .student-profile-page .pf .pf-tabs .tab:hover { background: var(--pf-soft); color: var(--pf-ink); }
+html body.sb-app .pf .pf-tab[aria-selected="true"], html body.sb-app .pf .pf-tab[aria-current="page"],
+html body.sb-app .student-profile-page .pf .pf-tabs .tab[aria-selected="true"] { color: var(--pf-ink); border-bottom-color: var(--pf-red-text); }
+html body.sb-app .student-profile-page .pf .pf-tabs .tab .tab-optional { margin-left: 6px; font-size: .7rem; font-weight: 600; color: var(--pf-muted); }
+html body.sb-app .student-profile-page .pf .pf-tabs .tab .tab-complete-icon { margin-left: 6px; font-size: .8rem; color: var(--pf-muted); }
+html body.sb-app .student-profile-page .privacy-consent-card { background: var(--pf-soft, var(--surface-alt)); border: 1px solid var(--line); border-left: 4px solid var(--burgundy); border-radius: 20px; }
+html body.sb-app .student-profile-page .privacy-consent-card form { grid-template-columns: minmax(0, 1fr); }
+html body.sb-app .student-profile-page .privacy-consent-card .btn-primary-profile { width: auto; justify-self: start; min-height: 44px; padding: 0 28px; border-radius: 999px; background: var(--burgundy); border-color: var(--burgundy); color: #fff; }
+html body.sb-app .student-profile-page .pf .completion-fill { background: var(--pf-red); }
+
+/* Student profile: link-style primary buttons (e.g. "Go to My Certificates") kept their link color, so the label was invisible on maroon */
+html body.sb-app .student-profile-page a.btn-primary-profile,
+html body.sb-app .student-profile-page a.btn-primary-profile:hover,
+html body.sb-app .student-profile-page a.btn-primary-profile:visited { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 22px; border-radius: 999px; background: var(--burgundy); border: 1.5px solid var(--burgundy); color: #fff; font-weight: 700; text-decoration: none; white-space: nowrap; }
+html body.sb-app .student-profile-page a.btn-primary-profile:hover { background: var(--burgundy-hover); border-color: var(--burgundy-hover); }
+html body.sb-app .student-profile-page a.btn-primary-profile,
+html body.sb-app .student-profile-page a.btn-primary-profile:hover,
+html body.sb-app .student-profile-page a.btn-primary-profile:focus,
+html body.sb-app .student-profile-page a.btn-primary-profile:visited { color: #fff !important; text-decoration: none !important; }
+
+/* Student profile: action buttons inside requirement rows (Resume, Certificates, ...) share one size and shape */
+html body.sb-app .student-profile-page .deployment-requirement > .d-flex { align-items: center; justify-content: flex-end; gap: 10px; }
+html body.sb-app .student-profile-page .deployment-requirement form { margin: 0; }
+html body.sb-app .student-profile-page .deployment-requirement :is(a.btn-profile, button.btn-primary-profile, a.btn-primary-profile) { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: auto; min-height: 44px; padding: 0 24px; border-radius: 999px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+html body.sb-app .student-profile-page .deployment-requirement a.btn-profile { background: transparent; border: 1.5px solid var(--line); color: var(--burgundy-text); }
+html body.sb-app .student-profile-page .deployment-requirement a.btn-profile:hover { background: var(--burgundy-tint); border-color: var(--burgundy-text); }
+html body.sb-app .student-profile-page .deployment-requirement button.btn-primary-profile { background: var(--burgundy); border: 1.5px solid var(--burgundy); color: #fff; }
+html body.sb-app .student-profile-page .deployment-requirement button.btn-primary-profile:hover { background: var(--burgundy-hover); border-color: var(--burgundy-hover); }

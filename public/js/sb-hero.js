@@ -180,13 +180,42 @@
                 var label = $('.sb-course-jump-label', tabs); if (label) label.remove();
                 tabs.appendChild(count);
                 var btns = $$('button[data-course]', tabs);
-                var show = function (id) {
-                    btns.forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-course') === id ? 'true' : 'false'); });
-                    groups.forEach(function (g) { g.hidden = id !== 'all' && g.getAttribute('data-course-group') !== id; });
-                    var n = id === 'all' ? total : $$('.public-job-card', groups.filter(function (g) { return g.getAttribute('data-course-group') === id; })[0] || document.createElement('i')).length;
+                // Search box (title, company, location) combined with the course tabs
+                var search = document.createElement('div');
+                search.className = 'sb-pop-search';
+                search.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>' +
+                    '<input type="search" placeholder="Search title, company or location" aria-label="Search internships" autocomplete="off">' +
+                    '<button type="button" class="sb-pop-search-x" aria-label="Clear search" hidden>&times;</button>';
+                tabs.appendChild(search);
+                var input = $('input', search), clear = $('.sb-pop-search-x', search);
+                var empty = document.createElement('p');
+                empty.className = 'sb-pop-note'; empty.hidden = true;
+                empty.textContent = 'No internships match your search.';
+                body.appendChild(empty);
+                var current = 'all';
+                var apply = function () {
+                    var q = input.value.trim().toLowerCase(), n = 0, fadeIn = [];
+                    btns.forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-course') === current ? 'true' : 'false'); });
+                    groups.forEach(function (g) {
+                        var inCourse = current === 'all' || g.getAttribute('data-course-group') === current, shown = 0;
+                        $$('.public-job-card', g).forEach(function (c) {
+                            var ok = !q || c.textContent.toLowerCase().indexOf(q) !== -1;
+                            var was = c.hidden || g.hidden;
+                            c.hidden = !ok;
+                            if (ok) { shown++; if (was) fadeIn.push(c); }
+                        });
+                        g.hidden = !inCourse || !shown;
+                        if (inCourse) n += shown;
+                    });
+                    fadeIn.forEach(function (c) { c.classList.remove('sb-pop-in'); void c.offsetWidth; c.classList.add('sb-pop-in'); });
+                    clear.hidden = !input.value;
+                    empty.hidden = n > 0;
                     count.textContent = n + ' ' + (n === 1 ? 'internship' : 'internships');
-                    body.scrollTop = 0;
                 };
+                var show = function (id) { current = id; apply(); body.scrollTop = 0; };
+                var timer = null;
+                input.addEventListener('input', function () { clear.hidden = !input.value; clearTimeout(timer); timer = setTimeout(function () { apply(); body.scrollTop = 0; }, 120); });
+                clear.addEventListener('click', function () { input.value = ''; apply(); input.focus(); });
                 btns.forEach(function (b) { b.addEventListener('click', function () { show(b.getAttribute('data-course')); }); });
             } else { body.insertBefore(count, body.firstChild); }
         };

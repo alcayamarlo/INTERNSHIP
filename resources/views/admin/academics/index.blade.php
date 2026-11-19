@@ -75,7 +75,16 @@
                             </td>
                             <td>{{ $program->coordinator?->user?->name ?? 'No coordinator assigned' }}</td>
                             <td>{{ $program->students_count }}</td>
-                            <td class="text-end text-nowrap" style="width:1%"><a class="btn btn-sm btn-outline-primary text-nowrap" href="{{ route($academicsRoute.'programs.edit', $program) }}"><i class="bi bi-pencil" aria-hidden="true"></i> Edit</a></td>
+                            <td class="text-end text-nowrap" style="width:1%"><a class="btn btn-sm btn-outline-primary text-nowrap" href="{{ route($academicsRoute.'programs.edit', $program) }}"
+                                data-open="program-edit-modal" aria-haspopup="dialog" data-program-edit
+                                    data-action="{{ route($academicsRoute.'programs.update', $program) }}"
+                                    data-id="{{ $program->id }}"
+                                    data-name="{{ $program->name }}"
+                                    data-code="{{ $program->code }}"
+                                    data-hours="{{ $program->required_internship_hours }}"
+                                    data-confirmed="{{ $program->required_hours_confirmed ? 1 : 0 }}"
+                                    data-coordinator="{{ $program->coordinator?->user?->name ?? 'No coordinator assigned' }}"
+                                    data-majors="{{ $program->majors->pluck('name')->join("\n") }}"><i class="bi bi-pencil" aria-hidden="true"></i> Edit</a></td>
                         </tr>
                     @empty
                         <tr><td colspan="6"><x-empty-state icon="bi-mortarboard" title="No programs configured" message="Add a program so students can register against it." /></td></tr>
@@ -385,9 +394,30 @@
         show(ids.indexOf(fromHash) !== -1 ? fromHash : tablist.dataset.defaultTab);
     })();
 </script>
-@if($canManagePrograms)
-    @include('admin.academics.partials.program-modal')
-@endif
+@include('admin.academics.partials.program-modal')
+    <script>
+        (function () {
+            var dialog = document.getElementById('program-edit-modal');
+            if (!dialog) return;
+            var form = dialog.querySelector('form');
+            function set(id, value) { var el = document.getElementById(id); if (el) el.value = value; }
+            // Capture phase so the fields are filled before the dialog opens.
+            document.addEventListener('click', function (e) {
+                var btn = e.target.closest && e.target.closest('[data-program-edit]');
+                if (!btn) return;
+                form.action = btn.dataset.action;
+                set('pe-id', btn.dataset.id);
+                set('pe-name', btn.dataset.name);
+                set('pe-code', btn.dataset.code);
+                set('pe-hours', btn.dataset.hours);
+                set('pe-majors', btn.dataset.majors || '');
+                document.getElementById('pe-confirmed').checked = btn.dataset.confirmed === '1';
+                document.getElementById('pe-coordinator').textContent = btn.dataset.coordinator;
+                dialog.querySelectorAll('.is-invalid').forEach(function (n) { n.classList.remove('is-invalid'); });
+                dialog.querySelectorAll('.invalid-feedback').forEach(function (n) { n.remove(); });
+            }, true);
+        })();
+    </script>
 </div>
 </div>
 @endsection

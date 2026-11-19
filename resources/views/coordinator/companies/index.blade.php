@@ -26,7 +26,7 @@
                 <option value="none" @selected(($filters['moa'] ?? '') === 'none')>No MOA on file</option>
             </select>
         </div>
-        <div class="sb-filter-actions"><button type="submit" class="btn btn-primary">Filter</button></div>
+        <div class="sb-filter-actions"><button type="submit" class="btn btn-primary">Search</button></div>
     </div>
 </form>
 

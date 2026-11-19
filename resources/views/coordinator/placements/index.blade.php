@@ -57,7 +57,7 @@
                 <option value="cleared" @selected($filter === 'cleared')>Cleared</option>
             </select>
         </div>
-        <div class="sb-filter-actions"><button type="submit" class="btn btn-outline-primary">Filter</button></div>
+        <div class="sb-filter-actions"><button type="submit" class="btn btn-outline-primary">Search</button></div>
     </div>
 </form>
 
