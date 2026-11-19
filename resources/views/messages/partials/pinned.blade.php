@@ -7,18 +7,35 @@
             <span class="msgr-pinned-text">{{ \Illuminate\Support\Str::limit($first->displayBody(auth()->id()), 120) }}</span>
         </button>
         @if($pinned->count() > 1)
-            <div class="dropdown">
-                <button type="button" class="msgr-pinned-more" data-bs-toggle="dropdown" aria-expanded="false">{{ $pinned->count() }} pinned <i class="bi bi-chevron-down" aria-hidden="true"></i></button>
-                <ul class="dropdown-menu dropdown-menu-end msgr-pinned-list">
-                    @foreach($pinned as $pin)
-                        <li>
-                            <button type="button" class="dropdown-item" data-jump-to="{{ $pin->id }}">
-                                <strong>{{ $pin->sender_id === auth()->id() ? 'You' : $pin->sender?->name }}</strong>
-                                <span>{{ \Illuminate\Support\Str::limit($pin->displayBody(auth()->id()), 70) }}</span>
-                            </button>
-                        </li>
-                    @endforeach
-                </ul>
+            <button type="button" class="msgr-pinned-more" data-bs-toggle="modal" data-bs-target="#msgrPinnedModal">View all <span>({{ $pinned->count() }})</span></button>
+            <div class="modal fade msgr-pinned-modal" id="msgrPinnedModal" tabindex="-1" aria-labelledby="msgrPinnedModalTitle" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="msgrPinnedModalTitle">Pinned messages</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-2">
+                            @foreach($pinned as $pin)
+                                <button type="button" class="msgr-pinned-item" data-jump-to="{{ $pin->id }}" data-bs-dismiss="modal">
+                                    <i class="bi bi-pin-angle-fill" aria-hidden="true"></i>
+                                    <span class="msgr-pinned-item-body">
+                                        <strong>{{ $pin->sender_id === auth()->id() ? 'You' : $pin->sender?->name }}</strong>
+                                        <span>{{ \Illuminate\Support\Str::limit($pin->displayBody(auth()->id()), 160) }}</span>
+                                    </span>
+                                    @php($at = $pin->created_at)
+                                    <small class="msgr-pinned-item-time">
+                                        @if($at->isToday()) {{ $at->format('g:i A') }}
+                                        @elseif($at->isYesterday()) Yesterday, {{ $at->format('g:i A') }}
+                                        @elseif($at->isCurrentYear()) {{ $at->format('M j, g:i A') }}
+                                        @else {{ $at->format('M j, Y, g:i A') }}
+                                        @endif
+                                    </small>
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
             </div>
         @endif
     @endif

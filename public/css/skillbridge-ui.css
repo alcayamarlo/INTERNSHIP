@@ -4698,8 +4698,14 @@ body.skillbridge-app .messenger-shell .messenger-row.outgoing .messenger-bubble 
 }
 .msgr-pinned-more { padding: 4px 8px; border: 0; border-radius: 8px; background: transparent; color: var(--sb-muted); font-size: 13px; font-weight: 600; }
 .msgr-pinned-more:hover { background: var(--sb-red-soft); color: var(--sb-brand-content); }
-.msgr-pinned-list .dropdown-item { display: flex; flex-direction: column; max-width: 320px; white-space: normal; }
-.msgr-pinned-list .dropdown-item span { color: var(--sb-muted); font-size: 13px; }
+.msgr-pinned-item { display: flex; align-items: flex-start; gap: 12px; width: 100%; padding: 12px; border: 0; border-radius: 12px; background: transparent; text-align: left; }
+.msgr-pinned-item:hover { background: var(--sb-red-soft); }
+.msgr-pinned-item > i { color: var(--burgundy-text); margin-top: 2px; }
+.msgr-pinned-item-body { display: flex; flex-direction: column; min-width: 0; }
+.msgr-pinned-item-body strong { font-size: 14px; }
+.msgr-pinned-item-body { flex: 1 1 auto; }
+.msgr-pinned-item-time { margin-left: auto; flex: 0 0 auto; padding-left: 8px; color: var(--sb-muted); font-size: 12px; font-weight: 400; white-space: nowrap; }
+.msgr-pinned-item-body span { color: var(--sb-muted); font-size: 13px; overflow-wrap: anywhere; }
 
 /* "Replying to …" bar above the message box */
 .msgr-replying {
