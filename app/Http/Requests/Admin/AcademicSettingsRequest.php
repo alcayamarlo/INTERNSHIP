@@ -48,8 +48,7 @@ class AcademicSettingsRequest extends FormRequest
             'require_fourth_year_standing' => ['nullable', 'boolean'],
             'require_major_subjects_passed' => ['nullable', 'boolean'],
             'academic_year_start_month' => ['required', 'integer', 'between:1,12'],
-            'summer_enabled' => ['nullable', 'boolean'],
-            'current_term_override' => ['nullable', 'in:first,second,summer'],
+            'current_term_override' => ['nullable', 'in:first,second'],
             'first_semester_start_month' => ['required', 'integer', 'between:1,12'],
             'first_semester_start_day' => ['required', 'integer', 'between:1,31'],
             'first_semester_end_month' => ['required', 'integer', 'between:1,12'],
@@ -58,10 +57,6 @@ class AcademicSettingsRequest extends FormRequest
             'second_semester_start_day' => ['required', 'integer', 'between:1,31'],
             'second_semester_end_month' => ['required', 'integer', 'between:1,12'],
             'second_semester_end_day' => ['required', 'integer', 'between:1,31'],
-            'summer_start_month' => ['required', 'integer', 'between:1,12'],
-            'summer_start_day' => ['required', 'integer', 'between:1,31'],
-            'summer_end_month' => ['required', 'integer', 'between:1,12'],
-            'summer_end_day' => ['required', 'integer', 'between:1,31'],
             'required_ojt_hours' => ['sometimes', 'required', 'integer', 'between:1,2000'],
             // Monthly Evaluation "Period of Evaluation" name per month (1-12). Blank uses the month name.
             // Null (never saved) keeps the defaults: Jan Prelim, Feb Midterm, Mar Prefinals, Apr Finals.
@@ -79,7 +74,7 @@ class AcademicSettingsRequest extends FormRequest
     {
         $validator->after(function ($validator): void {
             $ranges = [];
-            foreach (['first_semester' => 'first', 'second_semester' => 'second', 'summer' => 'summer'] as $prefix => $key) {
+            foreach (['first_semester' => 'first', 'second_semester' => 'second'] as $prefix => $key) {
                 $ranges[$key] = [
                     'start_month' => (int) $this->input($prefix.'_start_month'),
                     'start_day' => (int) $this->input($prefix.'_start_day'),
@@ -94,10 +89,6 @@ class AcademicSettingsRequest extends FormRequest
 
             if ((int) $this->input('first_semester_start_month') !== (int) $this->input('academic_year_start_month')) {
                 $validator->errors()->add('academic_year_start_month', 'The academic year start month must match the 1st semester start month. Update both settings together.');
-            }
-
-            if ($this->input('current_term_override') === 'summer' && ! $this->boolean('summer_enabled')) {
-                $validator->errors()->add('current_term_override', 'Enable Summer before using it as the current term override.');
             }
         });
     }

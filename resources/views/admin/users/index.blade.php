@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="sb-dash">
-<x-page-header title="User Management" subtitle="Manage accounts and preserve archived user records">
+<x-page-header title="User Management" subtitle="Manage accounts, roles and access">
     <a href="{{ route('admin.students.import.create') }}" class="btn btn-outline-primary">
         <i class="bi bi-upload" aria-hidden="true"></i> Import Students
     </a>
@@ -15,11 +15,8 @@
 
 <nav class="sb-section-tabs mb-0" aria-label="User status">
     <a href="{{ route('admin.users.index', request()->except('page', 'view')) }}"
-       class="sb-section-tab {{ $view === 'active' ? 'active' : '' }}"
-       @if($view === 'active') aria-current="true" @endif>Active</a>
-    <a href="{{ route('admin.users.index', [...request()->except('page'), 'view' => 'archived']) }}"
-       class="sb-section-tab {{ $view === 'archived' ? 'active' : '' }}"
-       @if($view === 'archived') aria-current="true" @endif>Archived</a>
+       class="sb-section-tab {{ $view === 'all' ? 'active' : '' }}"
+       @if($view === 'all') aria-current="true" @endif>All users</a>
     <a href="{{ route('admin.users.index', [...request()->except('page'), 'view' => 'suspended']) }}"
        class="sb-section-tab {{ $view === 'suspended' ? 'active' : '' }}"
        @if($view === 'suspended') aria-current="true" @endif>Suspended</a>
@@ -92,8 +89,10 @@
                                 @endif
                             </td>
                             <td data-label="Status" class="sb-stack-block">
-                                @if($user->archived_at)
-                                    <x-status-badge status="inactive" label="Archived" />
+                                @if($user->anonymised_at)
+                                    <x-status-badge status="inactive" label="Deleted (anonymised)" />
+                                @elseif($user->archived_at)
+                                    <x-status-badge status="inactive" label="Inactive" />
                                 @elseif($user->is_active ?? true)
                                     <x-status-badge status="active" label="Active" />
                                 @else
@@ -120,20 +119,6 @@
                                             <i class="bi bi-folder2-open" aria-hidden="true"></i>
                                         </a>
                                     @endif
-                                    @if($view === 'archived')
-                                        <form action="{{ route('admin.users.restore', $user) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-outline-primary" title="Restore user" aria-label="Restore {{ $user->name }}">
-                                                <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Restore
-                                            </button>
-                                        </form>
-                                        <form action="{{ route('admin.users.force-delete', $user) }}" method="POST" class="d-inline" data-confirm="Permanently delete {{ $user->name }} and their associated records? This cannot be undone." data-confirm-title="Permanently delete user" data-confirm-label="Delete permanently">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Permanently delete user" aria-label="Permanently delete {{ $user->name }}">
-                                                <i class="bi bi-trash" aria-hidden="true"></i> Delete permanently
-                                            </button>
-                                        </form>
-                                    @else
                                         @if($user->email !== null && ! $user->hasVerifiedEmail())
                                             <form action="{{ route('admin.users.verify-email', $user) }}" method="POST" class="d-inline">
                                                 @csrf
@@ -179,20 +164,13 @@
                                             <i class="bi bi-pencil" aria-hidden="true"></i>
                                         </button>
                                         @if($user->id !== auth()->id())
-                                            <form action="{{ route('admin.users.archive', $user) }}" method="POST" class="d-inline" data-confirm="Archive {{ $user->name }}? They will no longer be able to sign in. You can restore the account later." data-confirm-title="Archive user" data-confirm-label="Archive">
-                                                @csrf
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Archive user" aria-label="Archive {{ $user->name }}">
-                                                    <i class="bi bi-archive" aria-hidden="true"></i>
-                                                </button>
-                                            </form>
-                                            <form action="{{ route('admin.users.delete-now', $user) }}" method="POST" class="d-inline" data-confirm="Permanently delete {{ $user->name }}? This cannot be undone. An account that has OJT records (placements, applications, invitations) cannot be deleted; archive it instead." data-confirm-title="Delete user" data-confirm-label="Delete permanently">
+                                            <form action="{{ route('admin.users.delete-now', $user) }}" method="POST" class="d-inline" data-confirm="Permanently delete {{ $user->name }}? This cannot be undone. An account that has OJT records (placements, applications, invitations) cannot be deleted; set it to Inactive instead." data-confirm-title="Delete user" data-confirm-label="Delete permanently">
                                                 @csrf @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-danger" title="Delete user" aria-label="Delete {{ $user->name }}">
                                                     <i class="bi bi-trash" aria-hidden="true"></i>
                                                 </button>
                                             </form>
                                         @endif
-                                    @endif
                                 </span>
                             </td>
                         </tr>
@@ -292,7 +270,7 @@
                                     <option value="{{ $department->id }}" @selected((int) $currentDepartmentId === (int) $department->id)>{{ $department->display_name }}</option>
                                 @endforeach
                             </select>
-                            <small class="form-text text-muted">Only departments with room (up to 2 coordinators each) are listed. The coordinator cannot change this.</small>
+                            <small class="form-text text-muted">Only programs without a coordinator yet are listed. The coordinator cannot change this.</small>
                         </div>
                         <div class="mb-3" data-student-id-field @unless($user->role === \App\Enums\UserRole::Student) hidden @endunless>
                             <label class="form-label" for="editStudentId{{ $user->id }}">Student ID Number</label>

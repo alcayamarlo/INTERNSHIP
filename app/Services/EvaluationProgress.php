@@ -59,12 +59,12 @@ class EvaluationProgress
             ->withQueryString();
     }
 
-    /** Final evaluations: placements the coordinator requested one for, or that already have one. */
+    /** Final evaluations: every validated placement, with or without a request yet (so none is missing from the list). */
     public function final(Coordinator $coordinator, ?string $status): LengthAwarePaginator
     {
         $query = Placement::query()
             ->tap(fn (Builder $placement) => $this->inScope($placement, $coordinator))
-            ->where(fn (Builder $requested) => $requested->whereNotNull('rating_requested_at')->orWhereHas('evaluation'))
+            ->where(fn (Builder $open) => $open->whereIn('status', [Placement::STATUS_ACTIVE, Placement::STATUS_COMPLETED])->orWhereNotNull('rating_requested_at')->orWhereHas('evaluation'))
             ->with(['student.user', 'employer', 'evaluation.evaluator:id,name']);
 
         $reviewed = fn (Builder $evaluation) => $evaluation->where('coordinator_review_status', 'reviewed');

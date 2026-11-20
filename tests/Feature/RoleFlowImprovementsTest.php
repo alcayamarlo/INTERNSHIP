@@ -145,7 +145,7 @@ it('lets the coordinator request the final evaluation only once the OJT is valid
     expect($placement->fresh()->rating_requested_at)->not->toBeNull();
 });
 
-it('shows the weekly report sections, not the old accomplishments field, on Report Reviews', function () {
+it('shows the weekly report sections, not the old accomplishments field, on Evaluation Reviews', function () {
     $institution = Institution::create(['name' => 'Review University']);
     $coordinatorUser = User::factory()->create(['role' => UserRole::Coordinator]);
     $coordinator = Coordinator::create(['user_id' => $coordinatorUser->id, 'institution_id' => $institution->id]);

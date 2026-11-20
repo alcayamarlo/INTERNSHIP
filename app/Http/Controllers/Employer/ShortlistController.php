@@ -20,7 +20,7 @@ class ShortlistController extends Controller
 
     public function store(Request $request, Student $student): JsonResponse|RedirectResponse
     {
-        abort_unless($this->eligibility->constrain(Student::query()->discoverable())->whereKey($student->id)->exists(), 404);
+        abort_unless(Student::query()->discoverable()->whereKey($student->id)->exists(), 404);
         Auth::user()->employer->shortlistedStudents()->syncWithoutDetaching([$student->id]);
 
         return $this->respond($request, true, 'Added to your shortlist.');

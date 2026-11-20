@@ -44,6 +44,14 @@ return [
         'reserved_suffixes' => ['.test', '.example', '.invalid', '.localhost'],
     ],
 
+    // App\Services\VirusScanner: ClamAV scan of uploaded documents. OFF while CLAMAV_PATH is empty. When set, a file that
+    // is infected or cannot be scanned is refused (fail closed). Point it at clamscan, or at clamdscan if the daemon runs.
+    'clamav' => [
+        'path' => env('CLAMAV_PATH'),
+        'options' => ['--no-summary', '--stdout'],
+        'timeout' => 30,
+    ],
+
     // IDLE_TIMEOUT=false turns it off (the test suite does, because its tests move the clock by hours and days).
     'idle_timeout' => (bool) env('IDLE_TIMEOUT', true),
     'idle_minutes' => [

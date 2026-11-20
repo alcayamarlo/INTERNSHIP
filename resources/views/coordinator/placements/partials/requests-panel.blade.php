@@ -31,7 +31,8 @@
                 </select>
             </div>
             <div class="col-md-8 d-flex flex-wrap align-items-center gap-2">
-                <button type="submit" class="btn btn-outline-primary"><i class="bi bi-bell" aria-hidden="true"></i> Remind students and supervisors</button>
+                <button type="submit" name="audience" value="students" class="btn btn-outline-primary"><i class="bi bi-bell" aria-hidden="true"></i> Remind students</button>
+                <button type="submit" name="audience" value="supervisors" class="btn btn-outline-primary"><i class="bi bi-bell" aria-hidden="true"></i> Remind supervisors</button>
             </div>
             @foreach($help as $key => $text)
                 <p class="col-12 small text-muted mb-0" data-ojt-for="{{ $key }}" @if($key !== $selected) hidden @endif>{{ $text }}</p>

@@ -178,6 +178,7 @@ it('does not count the background idle check as activity, and Stay signed in doe
 });
 
 it('tells the page how long is left', function () {
+    $this->freezeTime(); // exact seconds are asserted
     $this->actingAs(asUser(UserRole::Admin))->get(route('account.devices'))
         ->assertSee('data-idle-timeout', false)->assertSee('data-seconds-left="1800"', false)->assertSee('js/idle-timeout.js', false);
     expect(EndIdleSession::limitFor(asUser()))->toBe(120);

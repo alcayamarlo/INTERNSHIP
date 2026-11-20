@@ -39,7 +39,7 @@ function departmentStudent(array $d, ?Program $program): Student
     ]);
 }
 
-it('requires a department with room when an admin creates a coordinator, and allows 2 per department', function () {
+it('requires a program without a coordinator when an admin creates one, and allows only one per program', function () {
     $d = departmentSetup();
     $payload = fn (string $email, ?int $programId) => [
         'name' => 'New Coordinator', 'email' => $email, 'password' => 'Password#2026x', 'password_confirmation' => 'Password#2026x',
@@ -53,29 +53,24 @@ it('requires a department with room when an admin creates a coordinator, and all
     $this->post(route('admin.users.store'), $payload('it@example.test', $d['bsit']->id))->assertSessionHasNoErrors();
     expect(User::where('email', 'it@example.test')->firstOrFail()->coordinator->program_id)->toBe($d['bsit']->id);
 
-    // BSIT has one coordinator and room for a second.
-    $this->get(route('admin.users.create'))->assertOk()->assertSee('BS Information Technology (BSIT)')->assertSee('BS Business Administration (BSBA)');
-    $this->post(route('admin.users.store'), $payload('it2@example.test', $d['bsit']->id))->assertSessionHasNoErrors();
-    expect(Coordinator::where('program_id', $d['bsit']->id)->count())->toBe(2);
-
-    // Now BSIT is full: the form lists only BSBA, and a third BSIT coordinator is refused.
+    // BSIT now has its coordinator: the form lists only BSBA, and a second BSIT coordinator is refused.
     $this->get(route('admin.users.create'))->assertOk()
         ->assertSee('BS Business Administration (BSBA)')
         ->assertDontSee('BS Information Technology (BSIT)');
-    $this->post(route('admin.users.store'), $payload('it3@example.test', $d['bsit']->id))
-        ->assertSessionHasErrors(['program_id' => 'This department already has 2 coordinators.']);
-    expect(User::where('email', 'it3@example.test')->exists())->toBeFalse();
+    $this->post(route('admin.users.store'), $payload('it2@example.test', $d['bsit']->id))
+        ->assertSessionHasErrors(['program_id' => 'This program already has a coordinator.']);
+    expect(User::where('email', 'it2@example.test')->exists())->toBeFalse()
+        ->and(Coordinator::where('program_id', $d['bsit']->id)->count())->toBe(1);
 });
 
-it('lets two coordinators share a department, and blocks deleting a department that has coordinators', function () {
+it('gives a program one coordinator, and blocks deleting a program that has one', function () {
     $d = departmentSetup();
     departmentCoordinator($d, $d['bsit']);
-    departmentCoordinator($d, $d['bsit'], 'Second Coordinator');
     $student = departmentStudent($d, $d['bsit']);
 
     expect(Coordinator::departmentHasRoom($d['bsit']->id))->toBeFalse()->and(Coordinator::departmentHasRoom($d['bsba']->id))->toBeTrue()
-        ->and($d['bsit']->coordinators()->count())->toBe(2)
-        // Both coordinators see the department's students.
+        ->and($d['bsit']->coordinators()->count())->toBe(1)
+        // The coordinator sees the department's students.
         ->and($d['bsit']->coordinators->every(fn (Coordinator $coordinator) => $coordinator->canAccessStudent($student)))->toBeTrue()
         ->and(fn () => $d['bsit']->delete())->toThrow(QueryException::class)
         ->and($d['bsba']->delete())->toBeTrue(); // no coordinator, so it can go
@@ -126,10 +121,9 @@ it('shows the department on the dashboard, profile, users list and department li
         ->assertSee('No coordinator assigned'); // BSBA
 });
 
-it('lets an admin reassign a coordinator only to a department with room, and frees a place when the coordinator is deleted or changes role', function () {
+it('lets an admin reassign a coordinator only to a program without one, and frees a place when the coordinator is deleted or changes role', function () {
     $d = departmentSetup();
     $first = departmentCoordinator($d, $d['bsit'], 'First Coordinator');
-    $third = departmentCoordinator($d, $d['bsit'], 'Third Coordinator');
     $second = departmentCoordinator($d, $d['bsba'], 'Second Coordinator');
     $bscs = Program::create(['name' => 'BS Computer Science', 'code' => 'BSCS', 'required_internship_hours' => 486]);
     $update = fn (User $user, array $changes) => $this->put(route('admin.users.update', $user), [
@@ -138,18 +132,18 @@ it('lets an admin reassign a coordinator only to a department with room, and fre
     $this->actingAs($d['admin']);
 
     $update($second, ['program_id' => $d['bsit']->id])
-        ->assertSessionHasErrors(['program_id' => 'This department already has 2 coordinators.']);
+        ->assertSessionHasErrors(['program_id' => 'This program already has a coordinator.']);
     $update($second, ['program_id' => $bscs->id])->assertSessionHasNoErrors();
     expect($second->coordinator->fresh()->program_id)->toBe($bscs->id);
 
-    // Deleting (archiving) the first coordinator frees a place in BSIT for the second.
+    // Deleting the first coordinator frees a place in BSIT for the second.
     $this->delete(route('admin.users.destroy', $first))->assertRedirect();
-    expect($first->coordinator->fresh()->program_id)->toBeNull();
+    expect(User::find($first->id))->toBeNull()->and(Coordinator::where('user_id', $first->id)->exists())->toBeFalse();
     $update($second, ['program_id' => $d['bsit']->id])->assertSessionHasNoErrors();
 
-    // No longer a coordinator: a place is free again (BSIT keeps the third coordinator; BSBA and BSCS have none).
+    // No longer a coordinator: a place is free again (BSIT, BSBA and BSCS have none).
     $update($second, ['role' => 'employer'])->assertSessionHasNoErrors();
     expect($second->coordinator->fresh()->program_id)->toBeNull()
-        ->and(Program::whereDoesntHave('coordinator')->count())->toBe(2)
+        ->and(Program::whereDoesntHave('coordinator')->count())->toBe(3)
         ->and(Coordinator::departmentHasRoom($d['bsit']->id))->toBeTrue();
 });

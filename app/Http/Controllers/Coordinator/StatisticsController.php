@@ -87,11 +87,6 @@ class StatisticsController extends Controller
         $writer->addRow(Row::fromValues(['Placement rate (%)', $stats['rates']['placement']]));
         $writer->addRow(Row::fromValues(['Completion rate (%)', $stats['rates']['completion']]));
         $writer->addRow(Row::fromValues([]));
-        $writer->addRow(Row::fromValues(['Program', 'Enrolled', 'Placed', 'Completed']));
-        foreach ($stats['programs'] as $row) {
-            $writer->addRow(Row::fromValues(CsvCell::row([$row['program'], $row['enrolled'], $row['placed'], $row['completed']])));
-        }
-        $writer->addRow(Row::fromValues([]));
         $writer->addRow(Row::fromValues(['Company', 'Interns', 'Completed', 'Average evaluation (1-5)', 'Would hire (%)']));
         foreach ($stats['companies'] as $row) {
             // Company names are typed by companies, so a leading "=" must not become a formula.

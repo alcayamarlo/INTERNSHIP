@@ -27,11 +27,9 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        $view = in_array($request->query('view'), ['archived', 'suspended'], true) ? $request->query('view') : 'active';
+        $view = $request->query('view') === 'suspended' ? 'suspended' : 'all';
         $query = User::with(['student', 'employer', 'coordinator.program', 'supervisor.employer'])
-            ->when($view === 'archived', fn ($query) => $query->whereNotNull('archived_at'))
-            ->when($view === 'active', fn ($query) => $query->whereNull('archived_at'))
-            ->when($view === 'suspended', fn ($query) => $query->whereNull('archived_at')->whereNotNull('suspended_at')->where(fn ($active) => $active->whereNull('suspended_until')->orWhere('suspended_until', '>', now())));
+            ->when($view === 'suspended', fn ($query) => $query->whereNotNull('suspended_at')->where(fn ($active) => $active->whereNull('suspended_until')->orWhere('suspended_until', '>', now())));
 
         if ($role = $request->get('role')) {
             $query->where('role', $role);
@@ -58,7 +56,6 @@ class UserController extends Controller
     public function create()
     {
         return view('admin.users.create', [
-            'institutions' => Institution::query()->whereNotNull('verified_at')->orderBy('name')->get(),
             'roles' => UserRole::assignable(),
             // Only departments that still need a coordinator.
             'departments' => Program::query()->acceptingCoordinators()->orderBy('code')->get(),
@@ -91,13 +88,13 @@ class UserController extends Controller
                 $this->assertDepartmentHasRoom((int) $validated['program_id']);
                 Coordinator::create([
                     'user_id' => $user->id,
-                    'institution_id' => $validated['institution_id'],
+                    'institution_id' => Institution::primary()->id, // fixed: the school
                     'program_id' => $validated['program_id'],
                 ]);
             } else {
                 $student = Student::create([
                     'user_id' => $user->id,
-                    'institution_id' => $validated['institution_id'],
+                    'institution_id' => Institution::primary()->id, // fixed: the school
                     'student_id_number' => mb_strtoupper(trim($validated['student_id_number'])),
                     'student_id_locked' => true,
                 ]);
@@ -251,41 +248,7 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        return $this->archive($user);
-    }
-
-    public function archive(User $user)
-    {
-        $this->authorize('archive', $user);
-
-        $actor = Auth::user();
-        DB::transaction(function () use ($user, $actor) {
-            $user = User::query()->lockForUpdate()->findOrFail($user->id);
-
-            if ($user->role === UserRole::Admin && $user->is_active) {
-                $activeAdmins = User::query()
-                    ->where('role', UserRole::Admin->value)
-                    ->where('is_active', true)
-                    ->whereNull('archived_at')
-                    ->lockForUpdate()
-                    ->get();
-
-                if ($activeAdmins->count() <= 1) {
-                    throw ValidationException::withMessages([
-                        'role' => 'The last active administrator cannot be archived.',
-                    ]);
-                }
-            }
-
-            $user->update(['archived_at' => now()]);
-            // Deleting (archiving) a coordinator frees their department for another coordinator.
-            if ($user->coordinator?->program_id) {
-                $user->coordinator->update(['program_id' => null]);
-            }
-            $this->activityLog->log($actor, 'admin_archive_user', ['user_id' => $user->id]);
-        });
-
-        return back()->with('success', 'User archived successfully.');
+        return $this->deleteNow($user);
     }
 
     public function verifyEmail(User $user)
@@ -342,19 +305,9 @@ class UserController extends Controller
         return back()->with('success', "{$employer->company_name} is no longer verified.");
     }
 
-    public function restore(User $user)
-    {
-        $this->authorize('restore', $user);
-
-        $user->update(['archived_at' => null]);
-        $this->activityLog->log(Auth::user(), 'admin_restore_user', ['user_id' => $user->id]);
-
-        return back()->with('success', 'User restored successfully.');
-    }
-
     /**
      * Delete from the Active list, in one step. Refused (with the reasons) for an account that has OJT records,
-     * for your own account and for the last active administrator; those are archived instead.
+     * for your own account and for the last active administrator; set those to Inactive instead.
      */
     public function deleteNow(User $user)
     {
@@ -379,7 +332,7 @@ class UserController extends Controller
 
             $blockers = $user->deletionBlockers();
             if ($blockers !== []) {
-                return "{$user->name} cannot be deleted because the account has ".implode(', ', $blockers).'. Archive the account instead.';
+                return "{$user->name} cannot be deleted because the account has ".implode(', ', $blockers).'. Set the account to Inactive (Edit) instead.';
             }
 
             $userId = $user->id;
@@ -392,22 +345,6 @@ class UserController extends Controller
         return $blocked === null
             ? back()->with('success', 'User permanently deleted.')
             : back()->with('error', $blocked);
-    }
-
-    public function forceDelete(User $user)
-    {
-        $this->authorize('forceDelete', $user);
-
-        $actor = Auth::user();
-        DB::transaction(function () use ($user, $actor): void {
-            $user = User::query()->lockForUpdate()->findOrFail($user->id);
-            abort_unless($user->archived_at, 404);
-            $userId = $user->id;
-            $user->forceDelete();
-            $this->activityLog->log($actor, 'admin_permanently_delete_user', ['user_id' => $userId]);
-        });
-
-        return back()->with('success', 'Archived user permanently deleted.');
     }
 
     /**

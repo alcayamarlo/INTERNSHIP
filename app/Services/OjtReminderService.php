@@ -208,13 +208,18 @@ class OjtReminderService
     /**
      * Reminds everyone whose turn it is on the coordinator's ongoing OJTs, as often as it is called.
      *
+     * $audience limits it to one group: 'students' or 'supervisors' (null = both).
+     *
      * @return array{students: int, supervisors: int}
      */
-    public function remindAll(User $coordinator, string $type): array
+    public function remindAll(User $coordinator, string $type, ?string $audience = null): array
     {
         [$label, $kind, $section, $overview] = self::TYPES[$type];
         $recipients = []; // user id => ['user' => User, 'student' => bool, 'lines' => list<string>, 'placements' => list<int>]
-        $add = function (User $user, bool $isStudent, Placement $placement, string $line) use (&$recipients) {
+        $add = function (User $user, bool $isStudent, Placement $placement, string $line) use (&$recipients, $audience) {
+            if ($audience !== null && $audience !== ($isStudent ? 'students' : 'supervisors')) {
+                return;
+            }
             $recipients[$user->id] ??= ['user' => $user, 'student' => $isStudent, 'lines' => [], 'placements' => []];
             $recipients[$user->id]['lines'][] = $line;
             $recipients[$user->id]['placements'][$placement->id] = $placement->id;
@@ -265,7 +270,7 @@ class OjtReminderService
             $counts[$recipient['student'] ? 'students' : 'supervisors']++;
         }
 
-        $this->activityLog->log($coordinator, 'coordinator_bulk_remind', ['type' => $type, ...$counts]);
+        $this->activityLog->log($coordinator, 'coordinator_bulk_remind', ['type' => $type, 'audience' => $audience ?? 'both', ...$counts]);
 
         return $counts;
     }

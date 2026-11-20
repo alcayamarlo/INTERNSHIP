@@ -108,7 +108,7 @@
                         <span class="lm-spin" aria-hidden="true"></span>
                         <span class="lm-submit-label">Sign in</span>
                     </button>
-                    <p class="lm-trust">{!! $icoShield !!} Secure sign in</p>
+                    <p class="lm-trust">{!! $icoShield !!} Secure sign in &middot; <a href="{{ route('pages.privacy') }}" class="lm-link" target="_blank" rel="noopener">Privacy notice</a></p>
                 </form>
 
                 <div class="lm-info">{!! $icoInfo !!}<span>Don't have an account? Contact your coordinator or administrator.</span></div>

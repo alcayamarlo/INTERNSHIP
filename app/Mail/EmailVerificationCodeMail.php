@@ -16,7 +16,7 @@ class EmailVerificationCodeMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'Your Skill Bridge verification code');
+        return new Envelope(subject: 'Your Skill Bridge verification Code');
     }
 
     public function content(): Content

@@ -438,6 +438,7 @@ class VerificationController extends Controller
                     : 'Your submission "'.$itemTitle.'" was rejected by the coordinator. Note: '.$change['model']->review_notes,
                 [
                     'verification_type' => $change['type'],
+                    'is_required_document' => $change['type'] === 'portfolio' && filled($change['model']->deployment_requirement_id ?? null),
                     'item_name' => $itemTitle,
                     'status' => $change['status'],
                     'review_notes' => $change['model']->review_notes,

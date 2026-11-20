@@ -47,7 +47,49 @@ class SystemController extends Controller
 
         return view('admin.system.reports', [
             'reports' => Report::with('generator')->latest()->paginate(10),
+            'backups' => $this->backupFiles(),
         ]);
+    }
+
+    /** The encrypted backups kept on this server, newest first. */
+    private function backupFiles(): array
+    {
+        $disk = Storage::disk('local');
+
+        return collect($disk->files('backups'))
+            ->filter(fn (string $file) => preg_match('/^backups\/backup_[0-9_-]+\.zip$/', $file))
+            ->map(fn (string $file) => ['name' => basename($file), 'size' => $disk->size($file), 'at' => \Illuminate\Support\Carbon::createFromTimestamp($disk->lastModified($file))])
+            ->sortByDesc(fn (array $backup) => $backup['at']->getTimestamp())->take(10)->values()->all();
+    }
+
+    /** Download one backup kept on this server. Only names this system makes are accepted. */
+    public function downloadBackup(string $name)
+    {
+        $path = $this->backupPath($name);
+        $this->activityLog->log(Auth::user(), 'database_backup_downloaded', ['filename' => $name]);
+
+        return response()->download($path, $name);
+    }
+
+    /** Opens a backup with BACKUP_PASSWORD and reports what is inside (the same check as `php artisan backup:verify`). */
+    public function verifyBackup(string $name, BackupArchive $backups)
+    {
+        try {
+            $result = $backups->inspect($this->backupPath($name));
+        } catch (\RuntimeException $exception) {
+            return back()->with('error', 'Backup check failed: '.$exception->getMessage());
+        }
+        $manifest = $result['manifest'];
+        $this->activityLog->log(Auth::user(), 'database_backup_verified', ['filename' => $name]);
+
+        return back()->with('success', "{$name} opens with BACKUP_PASSWORD: ".count($manifest['rows'] ?? []).' tables, '.array_sum($manifest['rows'] ?? [])." rows, {$result['files']} uploaded files (".($manifest['rows']['users'] ?? 0).' users, '.($manifest['rows']['students'] ?? 0).' students).');
+    }
+
+    private function backupPath(string $name): string
+    {
+        abort_unless(preg_match('/^backup_[0-9_-]+\.zip$/', $name) && Storage::disk('local')->exists('backups/'.$name), 404);
+
+        return Storage::disk('local')->path('backups/'.$name);
     }
 
     /** An encrypted backup of the whole database and every uploaded file, downloaded and kept in storage/app/backups. */
@@ -62,10 +104,8 @@ class SystemController extends Controller
         } catch (\RuntimeException $exception) {
             report($exception);
 
-            // The messages of BackupArchive are written for admins (a missing password, a failed check).
-            return back()->with('error', str_starts_with($exception->getMessage(), 'mysqldump')
-                ? 'Backup failed. Check MYSQLDUMP_PATH in the environment settings and the database connection.'
-                : $exception->getMessage());
+            // The messages of BackupArchive and DatabaseBackup are written for admins (the real reason, never a password).
+            return back()->with('error', 'Backup failed: '.$exception->getMessage());
         } catch (\Throwable $exception) {
             report($exception);
 

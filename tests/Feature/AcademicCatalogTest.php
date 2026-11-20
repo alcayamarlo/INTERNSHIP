@@ -44,20 +44,22 @@ it('seeds the confirmed programs, majors, and editable default internship hours'
         ->assertSee('value="^SCC-\\d{2}-\\d{8}$"', false)
         ->assertSee('1st semester')
         ->assertSee('2nd semester')
-        ->assertSee('Summer');
+        ->assertDontSee('Summer');
 });
 
-it('hides the Summer term date section when Summer is disabled', function () {
+it('has no Summer term: only the two semesters, covering the whole year', function () {
     $admin = User::factory()->create(['role' => UserRole::Admin]);
-    AcademicSetting::current()->update(['summer_enabled' => false]);
 
     $this->actingAs($admin)
         ->get(route('admin.academics.index'))
         ->assertOk()
         ->assertSee('1st semester')
         ->assertSee('2nd semester')
-        ->assertDontSee('<h4 class="h6 mb-0">Summer</h4>', false)
-        ->assertDontSee('name="summer_start_month"', false);
+        ->assertDontSee('Summer')
+        ->assertDontSee('summer_', false);
+    expect(array_keys(app(AcademicCalendar::class)->termOptions()))->toBe(['first', 'second'])
+        ->and(array_keys(AcademicSetting::current()->termRanges()))->toBe(['first', 'second'])
+        ->and(app(AcademicCalendar::class)->rangesAreContinuous(AcademicSetting::current()->termRanges()))->toBeTrue(); // a new settings row: 2nd semester runs to Jul 31
 });
 
 it('redirects the admin settings GET alias and sends successful saves to the academics page', function () {
@@ -66,7 +68,6 @@ it('redirects the admin settings GET alias and sends successful saves to the aca
     $payload = $settings->only([
         'student_id_pattern',
         'academic_year_start_month',
-        'summer_enabled',
         'current_term_override',
         'first_semester_start_month',
         'first_semester_start_day',
@@ -76,10 +77,6 @@ it('redirects the admin settings GET alias and sends successful saves to the aca
         'second_semester_start_day',
         'second_semester_end_month',
         'second_semester_end_day',
-        'summer_start_month',
-        'summer_start_day',
-        'summer_end_month',
-        'summer_end_day',
     ]);
     $payload['student_id_pattern'] = '^SCC-\d{2}-\d{8}$';
 
@@ -95,13 +92,14 @@ it('redirects the admin settings GET alias and sends successful saves to the aca
 
 it('generates school years and date-based terms from the editable calendar settings', function () {
     $settings = AcademicSetting::current();
+    $settings->forceFill(['current_term_override' => null])->save(); // the suite pins the 2nd semester; this test is about the dates
     $calendar = app(AcademicCalendar::class);
     $cases = [
         ['2026-10-12', '2026-2027', 'first'],
         ['2027-01-15', '2026-2027', 'second'],
-        ['2027-06-20', '2026-2027', 'summer'],
+        ['2027-06-20', '2026-2027', 'second'],
         ['2027-08-01', '2027-2028', 'first'],
-        ['2027-07-31', '2026-2027', 'summer'],
+        ['2027-07-31', '2026-2027', 'second'],
     ];
 
     foreach ($cases as [$date, $schoolYear, $semester]) {
@@ -111,9 +109,6 @@ it('generates school years and date-based terms from the editable calendar setti
 
     expect($calendar->schoolYears(CarbonImmutable::parse('2026-10-12'), $settings))
         ->toBe(['2025-2026', '2026-2027', '2027-2028', '2028-2029', '2029-2030']);
-
-    $settings->update(['summer_enabled' => false]);
-    expect($calendar->defaults(CarbonImmutable::parse('2027-06-20'), $settings)['semester'])->toBe('second');
 
     $settings->update(['current_term_override' => 'first']);
     expect($calendar->defaults(CarbonImmutable::parse('2027-01-15'), $settings)['semester'])->toBe('first');
@@ -125,7 +120,6 @@ it('rejects overlapping or gapped academic term ranges in admin settings', funct
     $payload = $settings->only([
         'student_id_pattern',
         'academic_year_start_month',
-        'summer_enabled',
         'current_term_override',
         'first_semester_start_month',
         'first_semester_start_day',
@@ -135,17 +129,13 @@ it('rejects overlapping or gapped academic term ranges in admin settings', funct
         'second_semester_start_day',
         'second_semester_end_month',
         'second_semester_end_day',
-        'summer_start_month',
-        'summer_start_day',
-        'summer_end_month',
-        'summer_end_day',
     ]);
 
     $this->actingAs($admin)
         ->post(route('admin.academics.settings.update'), array_merge($payload, $overrides))
         ->assertSessionHasErrors('term_ranges');
 })->with([
-    'overlap' => [['summer_start_month' => 5, 'summer_start_day' => 1]],
+    'overlap' => [['second_semester_end_month' => 9, 'second_semester_end_day' => 1]],
     'gap' => [['second_semester_end_month' => 4, 'second_semester_end_day' => 30]],
 ]);
 
@@ -157,7 +147,6 @@ it('saves the full academic settings form with the default student ID regex with
         'require_fourth_year_standing',
         'require_major_subjects_passed',
         'academic_year_start_month',
-        'summer_enabled',
         'current_term_override',
         'first_semester_start_month',
         'first_semester_start_day',
@@ -167,10 +156,6 @@ it('saves the full academic settings form with the default student ID regex with
         'second_semester_start_day',
         'second_semester_end_month',
         'second_semester_end_day',
-        'summer_start_month',
-        'summer_start_day',
-        'summer_end_month',
-        'summer_end_day',
     ]);
     $payload['student_id_pattern'] = '^SCC-\d{2}-\d{8}$';
 
@@ -188,7 +173,6 @@ it('persists internship eligibility checkboxes and the student ID regex across r
     $payload = $settings->only([
         'student_id_pattern',
         'academic_year_start_month',
-        'summer_enabled',
         'current_term_override',
         'first_semester_start_month',
         'first_semester_start_day',
@@ -198,10 +182,6 @@ it('persists internship eligibility checkboxes and the student ID regex across r
         'second_semester_start_day',
         'second_semester_end_month',
         'second_semester_end_day',
-        'summer_start_month',
-        'summer_start_day',
-        'summer_end_month',
-        'summer_end_day',
     ]);
     $payload['student_id_pattern'] = '^SCC-\d{2}-\d{8}$';
 
@@ -384,7 +364,7 @@ it('only accepts configured student ID patterns and majors belonging to the sele
             'program_id' => $it->id,
             'major_id' => $baMajor->id,
             'school_year' => '2035-2036',
-            'semester' => 'summer',
+            'semester' => 'second',
             'expected_graduation' => '',
         ])
         ->assertUnprocessable()
@@ -824,7 +804,6 @@ it('gives coordinators Academic Settings from their own sidebar, and keeps stude
         'required_ojt_hours', 'student_id_pattern', 'current_term_override', 'academic_year_start_month',
         'first_semester_start_month', 'first_semester_start_day', 'first_semester_end_month', 'first_semester_end_day',
         'second_semester_start_month', 'second_semester_start_day', 'second_semester_end_month', 'second_semester_end_day',
-        'summer_start_month', 'summer_start_day', 'summer_end_month', 'summer_end_day',
     ]);
     $payload['student_id_pattern'] = '^SCC-\d{2}-\d{8}$';
     $payload['required_ojt_hours'] = 450;
@@ -864,4 +843,52 @@ it('gives coordinators Academic Settings from their own sidebar, and keeps stude
     $student = User::factory()->create(['role' => UserRole::Student]);
     $this->actingAs($student)->get(route('coordinator.academics.index'))->assertForbidden();
     $this->post(route('coordinator.academics.settings.update'), $payload)->assertForbidden();
+});
+
+it('lets an admin pick a coordinator in the add and edit program dialogs', function () {
+    $admin = User::factory()->create(['role' => UserRole::Admin]);
+    $coordUser = User::factory()->create(['role' => UserRole::Coordinator, 'name' => 'Pick Me Coordinator']);
+    Coordinator::create(['user_id' => $coordUser->id]);
+
+    $this->actingAs($admin)->get(route('admin.academics.index'))
+        ->assertOk()->assertSee('Pick Me Coordinator')->assertSee('pe-coordinator-select', false);
+
+    $this->post(route('admin.academics.programs.store'), [
+        'name' => 'BS Test', 'code' => 'BSTEST', 'required_internship_hours' => 400,
+        'coordinators_submitted' => '1', 'coordinators' => [(string) $coordUser->id],
+    ])->assertSessionHasNoErrors();
+
+    expect(Coordinator::where('user_id', $coordUser->id)->value('program_id'))->toBe(Program::where('code', 'BSTEST')->value('id'));
+
+    $this->put(route('admin.academics.programs.update', Program::where('code', 'BSTEST')->first()), [
+        'name' => 'BS Test', 'code' => 'BSTEST', 'required_internship_hours' => 400,
+        'coordinators_submitted' => '1', 'coordinators' => [''],
+    ])->assertSessionHasNoErrors();
+
+    expect(Coordinator::where('user_id', $coordUser->id)->value('program_id'))->toBeNull();
+});
+
+it('assigns a coordinator from the Assign coordinator dialog', function () {
+    $admin = User::factory()->create(['role' => UserRole::Admin]);
+    $u = User::factory()->create(['role' => UserRole::Coordinator]);
+    Coordinator::create(['user_id' => $u->id]);
+    $program = Program::create(['name' => 'BS X', 'code' => 'BSX', 'required_internship_hours' => 300, 'required_hours_confirmed' => true]);
+
+    $this->actingAs($admin)->get(route('admin.academics.index'))->assertSee('assign-coordinator-modal', false);
+    $this->post(route('admin.academics.programs.coordinator', $program), ['coordinators_submitted' => 1, 'coordinators' => [(string) $u->id]])->assertSessionHasNoErrors();
+    expect(Coordinator::where('user_id', $u->id)->value('program_id'))->toBe($program->id);
+    $this->post(route('admin.academics.programs.coordinator', $program), ['coordinators' => ['']])->assertSessionHasNoErrors();
+    expect(Coordinator::where('user_id', $u->id)->value('program_id'))->toBeNull();
+});
+
+it('lets an admin delete a program with no students and blocks one that has students', function () {
+    $admin = User::factory()->create(['role' => UserRole::Admin]);
+    $empty = Program::create(['name' => 'BS Empty', 'code' => 'BSE', 'required_internship_hours' => 300, 'required_hours_confirmed' => true]);
+    $used = Program::create(['name' => 'BS Used', 'code' => 'BSU', 'required_internship_hours' => 300, 'required_hours_confirmed' => true]);
+    Student::create(['user_id' => User::factory()->create(['role' => UserRole::Student])->id, 'program_id' => $used->id]);
+
+    $this->actingAs($admin)->delete(route('admin.academics.programs.destroy', $empty))->assertRedirect();
+    $this->delete(route('admin.academics.programs.destroy', $used))->assertRedirect();
+
+    expect(Program::find($empty->id))->toBeNull()->and(Program::find($used->id))->not->toBeNull();
 });

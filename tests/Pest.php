@@ -13,6 +13,8 @@
 
 pest()->extend(Tests\TestCase::class)
     ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    // Internships open in the 2nd semester for every program but BSHM, so tests run in the 2nd semester unless they say otherwise.
+    ->beforeEach(fn () => App\Models\AcademicSetting::current()->forceFill(['current_term_override' => 'second'])->save())
     ->in('Feature');
 
 /*

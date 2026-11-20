@@ -24,7 +24,7 @@ class Resume extends Model
     protected function casts(): array
     {
         return [
-            'content' => 'array',
+            'content' => 'encrypted:array', // holds the student's name, phone and address (App\Support\SensitiveColumns)
             'generated_at' => 'datetime',
             'category' => PortfolioCategory::class,
             'reviewed_at' => 'datetime',

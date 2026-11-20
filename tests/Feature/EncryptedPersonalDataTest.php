@@ -274,11 +274,11 @@ it('re-encrypts with the new key after a rotation, so the old key can be dropped
 /* ---------- Safety nets ---------- */
 
 it('lists every encrypted column in the models and in the support list', function () {
-    $models = ['students' => new Student, 'users' => new User, 'character_references' => new CharacterReference];
+    $models = ['students' => new Student, 'users' => new User, 'character_references' => new CharacterReference, 'resumes' => new \App\Models\Resume, 'journal_entries' => new \App\Models\JournalEntry, 'appraisals' => new \App\Models\Appraisal, 'evaluations' => new \App\Models\Evaluation];
     foreach (SensitiveColumns::COLUMNS as $table => $columns) {
         foreach ($columns as $column) {
             $cast = $models[$table]->getCasts()[$column] ?? null;
-            expect($cast)->toBeIn(['encrypted', \App\Casts\EncryptedDate::class], "{$table}.{$column} must be an encrypted cast");
+            expect($cast)->toBeIn(['encrypted', 'encrypted:array', \App\Casts\EncryptedDate::class], "{$table}.{$column} must be an encrypted cast");
         }
     }
 });

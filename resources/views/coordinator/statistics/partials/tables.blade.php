@@ -55,35 +55,6 @@
 <div class="st-panels st-panels--tables">
 <section class="st-panel st-panel--table">
     <header class="st-panel-head">
-        <span class="st-panel-icon" aria-hidden="true"><i class="bi bi-mortarboard"></i></span>
-        <div class="st-panel-heading">
-            <h2 class="st-panel-title">By program</h2>
-            <p class="st-panel-hint">Enrolled, placed and completed per program</p>
-        </div>
-    </header>
-<div class="table-responsive st-panel-table">
-@else
-<h3 class="h6 mt-4">By program</h3>
-<div class="table-responsive">
-@endif
-<table class="table table-sm stats-table">
-    <thead><tr><th>Program</th><th class="text-end">Enrolled</th><th class="text-end">Placed</th><th class="text-end">Completed</th></tr></thead>
-    <tbody>
-        @forelse($stats['programs'] as $row)
-            <tr><td class="st-name">{{ $row['program'] }}</td><td class="text-end st-num {{ $row['enrolled'] ? '' : 'is-zero' }}">{{ $row['enrolled'] }}</td><td class="text-end st-num {{ $row['placed'] ? '' : 'is-zero' }}">{{ $row['placed'] }}</td><td class="text-end st-num {{ $row['completed'] ? '' : 'is-zero' }}">{{ $row['completed'] }}</td></tr>
-        @empty
-            <tr><td colspan="4">No students yet.</td></tr>
-        @endforelse
-    </tbody>
-</table>
-</div>
-@if(!empty($twoCol))
-</section>
-@endif
-
-@if(!empty($twoCol))
-<section class="st-panel st-panel--table">
-    <header class="st-panel-head">
         <span class="st-panel-icon" aria-hidden="true"><i class="bi bi-building"></i></span>
         <div class="st-panel-heading">
             <h2 class="st-panel-title">Partner companies</h2>

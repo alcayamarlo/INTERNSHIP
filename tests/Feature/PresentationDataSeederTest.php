@@ -61,9 +61,9 @@ it('seeds the presentation data without touching what is already there, and agai
         ->and($seededStudents->groupBy('program_id')->map->count()->values()->all())->toBe([14, 14, 14, 14, 14])
         ->and(Employer::count())->toBe(10)
         ->and(Supervisor::count())->toBe(10)
-        ->and(Coordinator::count())->toBe(10);
+        ->and(Coordinator::count())->toBe(5);
     foreach (Program::all() as $program) {
-        expect(Coordinator::where('program_id', $program->id)->count())->toBe(2, "department {$program->code} has 2 coordinators");
+        expect(Coordinator::where('program_id', $program->id)->count())->toBe(1, "program {$program->code} has one coordinator");
     }
     expect(Coordinator::find($existingCoordinator->coordinator->id)->program_id)->toBe($bsit->id);
 
@@ -72,14 +72,14 @@ it('seeds the presentation data without touching what is already there, and agai
 
     // Realistic gmail.com emails (none left on example.com), the system's own emails to them switched off, the password "password" (hashed), signed in without a code.
     $seededUsers = User::whereNotIn('id', [$admin->id, $claire->id, $existingCoordinator->id])->get();
-    expect($seededUsers)->toHaveCount(99) // 70 students + 10 HR + 10 supervisors + 9 coordinators
-        ->and($seededUsers->pluck('email')->unique())->toHaveCount(99)
+    expect($seededUsers)->toHaveCount(94) // 70 students + 10 HR + 10 supervisors + 4 coordinators (BSIT already has one)
+        ->and($seededUsers->pluck('email')->unique())->toHaveCount(94)
         ->and($seededUsers->every(fn (User $user) => str_ends_with($user->email, '@gmail.com') && ! $user->email_notifications))->toBeTrue()
         // Flagged, so two-factor codes are never emailed to these made-up mailboxes.
         ->and($seededUsers->every(fn (User $user) => $user->demo_account))->toBeTrue()
         ->and($legacy->fresh()->email)->toBe('hazel.villaflor@gmail.com')->and(User::where('name', 'Hazel Villaflor')->count())->toBe(1)
         ->and($seededUsers->every(fn (User $user) => Hash::check('password', $user->password) && $user->email_verified_at !== null && ! $user->must_change_password))->toBeTrue()
-        ->and($seededUsers->groupBy(fn (User $user) => $user->role->value)->map->count()->all())->toEqualCanonicalizing(['student' => 70, 'employer' => 10, 'coordinator' => 9, 'supervisor' => 10]);
+        ->and($seededUsers->groupBy(fn (User $user) => $user->role->value)->map->count()->all())->toEqualCanonicalizing(['student' => 70, 'employer' => 10, 'coordinator' => 4, 'supervisor' => 10]);
 
     // ---- companies: logo, 3 photos that exist, supervisor of the same company
     foreach (Employer::with('photos')->get() as $employer) {

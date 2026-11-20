@@ -4,12 +4,42 @@
 
 @section('content')
 <div class="sb-dash">
-<x-page-header title="System Reports" subtitle="Generate platform-wide reports and an encrypted backup of all data and files">
+<x-page-header title="System Reports" subtitle="Generate platform-wide reports, and back up all users' data">
     <form action="{{ route('admin.backup') }}" method="POST">
         @csrf
-        <button type="submit" class="btn btn-outline-secondary"><i class="bi bi-database-down" aria-hidden="true"></i> Encrypted Backup</button>
+        <button type="submit" class="btn btn-outline-secondary" data-loading-text="Backing up... this can take a minute"><i class="bi bi-database-down" aria-hidden="true"></i> Back up all users' data</button>
     </form>
 </x-page-header>
+
+<div class="card mb-4" data-backups-card>
+    <div class="card-header"><h2><i class="bi bi-shield-lock" aria-hidden="true"></i> Encrypted backups</h2></div>
+    <div class="card-body">
+        <p class="small mb-2"><strong>What a backup holds:</strong> every user of every role (admins, coordinators, students, companies, supervisors), student profiles, resumes, certificates, portfolio and ID files, company logos and photos, messages, applications, OJT records and the system settings. It is one AES-256 encrypted file; it opens only with <code>BACKUP_PASSWORD</code>.</p>
+        <p class="small text-muted mb-3"><strong>Not in it:</strong> the <code>.env</code> file and <code>APP_KEY</code> (keep those with the password, away from this server: personal data in a restored backup can only be read with the same <code>APP_KEY</code>). Check a backup from a terminal with <code>php artisan backup:verify &lt;file&gt;</code>, or with Verify below.</p>
+        @if(count($backups))
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th scope="col">Backup</th><th scope="col">Made (Philippine time)</th><th scope="col">Size</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+                    <tbody>
+                        @foreach($backups as $backup)
+                            <tr>
+                                <td>{{ $backup['name'] }}</td>
+                                <td>{{ $backup['at']->timezone('Asia/Manila')->format('M d, Y h:i A') }}</td>
+                                <td>{{ number_format($backup['size'] / 1048576, 1) }} MB</td>
+                                <td class="text-nowrap">
+                                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.backups.download', $backup['name']) }}"><i class="bi bi-download" aria-hidden="true"></i> Download</a>
+                                    <form action="{{ route('admin.backups.verify', $backup['name']) }}" method="POST" class="d-inline">@csrf<button type="submit" class="btn btn-sm btn-outline-primary"><i class="bi bi-patch-check" aria-hidden="true"></i> Verify</button></form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <p class="small text-muted mb-0">No backups on this server yet. A backup is also made every night at 2:00 AM.</p>
+        @endif
+    </div>
+</div>
 
 <div class="row g-4">
     <div class="col-lg-4">

@@ -1,7 +1,6 @@
 {{-- Create User pop-up (shared <x-modal> shell). Same fields, names, old() values and errors as the Create User page; posts to the same store route. --}}
 @php
     $createRoles = \App\Enums\UserRole::assignable();
-    $createInstitutions = \App\Models\Institution::query()->whereNotNull('verified_at')->orderBy('name')->get();
     // Coordinators only: departments that still need a coordinator.
     $createDepartments = \App\Models\Program::query()->acceptingCoordinators()->orderBy('code')->get();
     // The Edit User forms on this page also send "role", but they always send "is_active" too, so a create attempt is told apart by its absence.
@@ -40,14 +39,9 @@
             @error('company_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
         <div id="cu-institution-field">
-            <label for="cu-institution" class="form-label">Institution</label>
-            <select id="cu-institution" name="institution_id" class="form-select @error('institution_id') is-invalid @enderror">
-                <option value="">Select institution</option>
-                @foreach($createInstitutions as $institution)
-                    <option value="{{ $institution->id }}" {{ old('institution_id') == $institution->id ? 'selected' : '' }}>{{ $institution->name }}</option>
-                @endforeach
-            </select>
-            @error('institution_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            <span class="form-label d-block">Institution</span>
+            <p class="form-control-plaintext mb-0" data-fixed-institution>{{ \App\Models\Institution::NAME }}</p>
+            <div class="form-text">Fixed: SkillBridge serves this school only.</div>
         </div>
         <div id="cu-department-field" hidden>
             <label for="cu-department" class="form-label">Department <span class="text-danger" aria-hidden="true">*</span></label>
@@ -98,7 +92,6 @@
     var institutionField = document.getElementById('cu-institution-field');
     var studentIdField = document.getElementById('cu-student-id-field');
     var company = document.getElementById('cu-company');
-    var institution = document.getElementById('cu-institution');
     var studentId = document.getElementById('cu-student-id');
     var departmentField = document.getElementById('cu-department-field');
     var department = document.getElementById('cu-department');
@@ -106,12 +99,10 @@
     function updateFields() {
         var isEmployer = role.value === 'employer';
         var isStudent = role.value === 'student';
-        var needsInstitution = role.value === 'coordinator' || isStudent;
         companyField.hidden = !isEmployer;
         institutionField.hidden = isEmployer;
         studentIdField.hidden = !isStudent;
         company.required = isEmployer;
-        institution.required = needsInstitution;
         studentId.required = isStudent;
         departmentField.hidden = role.value !== 'coordinator';
         department.required = role.value === 'coordinator';

@@ -127,19 +127,22 @@ it('does not let an admin suspend themselves', function () {
     expect($admin->fresh()->isSuspended())->toBeFalse();
 });
 
-// 3. Institutions (the admin Institutions page was removed; St. Cecilia's is the only school)
-it('only lets verified institutions be picked for new accounts', function () {
+// 3. Institutions: the system is for St. Cecilia's College-Cebu, Inc. only. It is shown, never chosen.
+it('locks every new account to St. Cecilia\'s College and ignores any other institution', function () {
     $admin = adminUser();
     $this->actingAs($admin);
+    $other = Institution::create(['name' => 'New College', 'verified_at' => now()]);
 
-    $institution = Institution::create(['name' => 'New College']);
-    expect($institution->isVerified())->toBeFalse();
-    $this->get(route('admin.users.create'))->assertOk()->assertDontSee('value="'.$institution->id.'"', false);
-    $this->post(route('admin.users.store'), ['name' => 'Coord', 'email' => 'c@example.test', 'role' => 'coordinator', 'institution_id' => $institution->id, 'password' => 'Secret123!', 'password_confirmation' => 'Secret123!'])
-        ->assertSessionHasErrors('institution_id');
+    foreach ([route('admin.users.create'), route('admin.users.index'), route('admin.students.import.create')] as $page) {
+        $this->get($page)->assertOk()->assertSee('data-fixed-institution', false)->assertSee('St. Cecilia\'s College-Cebu, Inc.', false)
+            ->assertDontSee('Select institution')->assertDontSee('name="institution_id"', false)->assertDontSee('New College');
+    }
 
-    $institution->update(['verified_at' => now()]);
-    $this->get(route('admin.users.create'))->assertSee('value="'.$institution->id.'"', false);
+    // A posted institution is ignored: the student, and the coordinator, belong to the school.
+    $this->post(route('admin.users.store'), ['name' => 'Stu Dent', 'email' => 'stu@example.test', 'role' => 'student', 'student_id_number' => 'SCC-26-00000077', 'institution_id' => $other->id, 'password' => 'Secret123!Aa', 'password_confirmation' => 'Secret123!Aa']);
+    $student = Student::where('student_id_number', 'SCC-26-00000077')->first();
+    expect($student)->not->toBeNull()->and($student->institution_id)->toBe(Institution::primary()->id)->and($student->institution_id)->not->toBe($other->id);
+    expect(Institution::where('name', Institution::NAME)->count())->toBe(1);
 });
 
 // 4. Reports and moderation

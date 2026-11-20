@@ -22,11 +22,12 @@
                     <h3>Account</h3>
                     <ul>
                         <li><a href="{{ route('login') }}">Sign in</a></li>
+                        <li><a href="{{ route('pages.privacy') }}">Privacy notice</a></li>
                     </ul>
                 </nav>
             </div>
             <div class="public-footer-bottom">
                 <span>&copy; {{ date('Y') }} SkillBridge &middot; St. Cecilia's College</span>
-                <span>Student Development and Internship Placement</span>
+                <span><a href="{{ route('pages.privacy') }}">Privacy notice</a> &middot; Student Development and Internship Placement</span>
             </div>
         </footer>

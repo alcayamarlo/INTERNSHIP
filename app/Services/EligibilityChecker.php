@@ -25,6 +25,13 @@ class EligibilityChecker
         $rules = $this->criteria->forStudent($student);
         $lines = [];
 
+        // Every program except BSHM can only be eligible in the 2nd semester.
+        $program = $student->program_id ? \App\Models\Program::query()->find($student->program_id) : null;
+        if ($program?->limitedToSecondSemester()) {
+            $term = $this->criteria->currentTerm()['term'];
+            $lines[] = $this->line('semester', 'Eligible in the 2nd semester', $term === \App\Models\Program::ELIGIBLE_TERM, $term === \App\Models\Program::ELIGIBLE_TERM ? 'It is the 2nd semester' : 'It is the 1st semester', 'Internship applications for your program open in the 2nd semester.');
+        }
+
         if ($rules['require_fourth_year']) {
             $passed = $student->year_level === '4th Year';
             $lines[] = $this->line('fourth_year', '4th Year standing', $passed, $student->year_level ?: 'Year level not set', 'You must be in 4th Year to apply.');

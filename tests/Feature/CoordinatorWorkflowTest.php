@@ -66,7 +66,7 @@ it('shows a pass/fail line for every rule, including required documents', functi
     ], $w['coordinatorUser']]);
 
     $check = app(EligibilityChecker::class)->check($w['student']);
-    expect(collect($check['rules'])->pluck('passed', 'key')->all())->toBe(['fourth_year' => true, 'major_subjects' => true, 'documents' => false])
+    expect(collect($check['rules'])->pluck('passed', 'key')->all())->toBe(['semester' => true, 'fourth_year' => true, 'major_subjects' => true, 'documents' => false])
         ->and($check['eligible'])->toBeFalse();
 
     Portfolio::create(['student_id' => $w['student']->id, 'title' => 'COR', 'type' => 'transcript', 'deployment_requirement_id' => $cor->id, 'file_path' => 'docs/cor.pdf', 'verification_status' => 'submitted']);

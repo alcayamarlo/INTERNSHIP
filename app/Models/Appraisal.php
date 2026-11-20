@@ -74,7 +74,7 @@ class Appraisal extends Model
             'period_month' => 'date',
             'period_start' => 'date',
             'period_end' => 'date',
-            'header_snapshot' => 'array',
+            'header_snapshot' => 'encrypted:array', // name, school ID, phone, address (App\Support\SensitiveColumns)
             'due_on' => 'date',
             'self_scores' => 'array',
             'supervisor_scores' => 'array',

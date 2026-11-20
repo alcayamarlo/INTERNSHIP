@@ -26,9 +26,8 @@ class StoreUserRequest extends FormRequest
                 UserRole::assignable()
             ))],
             'phone' => ['nullable', 'string', 'max:20'],
-            'institution_id' => ['required_if:role,coordinator,student', 'nullable', \Illuminate\Validation\Rule::exists('institutions', 'id')->whereNotNull('verified_at')],
             'company_name' => ['required_if:role,employer', 'nullable', 'string', 'max:255'],
-            // Coordinators only: one department each, and at most 2 coordinators per department.
+            // Coordinators only: one department each, and one coordinator per program.
             'program_id' => [
                 'exclude_unless:role,coordinator',
                 'required',

@@ -14,6 +14,14 @@ class AcademicProgramRequest extends FormRequest
         return auth()->user()?->isRole(UserRole::Admin, UserRole::Coordinator) ?? false;
     }
 
+    protected function prepareForValidation(): void
+    {
+        // The coordinator dropdown sends "" for "No coordinator".
+        if ($this->has('coordinators')) {
+            $this->merge(['coordinators' => array_values(array_filter((array) $this->input('coordinators'), fn ($v) => $v !== '' && $v !== null))]);
+        }
+    }
+
     public function rules(): array
     {
         $program = $this->route('program');
@@ -24,7 +32,16 @@ class AcademicProgramRequest extends FormRequest
             'required_internship_hours' => ['required', 'integer', 'min:1', 'max:10000'],
             'required_hours_confirmed' => ['nullable', 'boolean'],
             'majors' => ['nullable', 'string', 'max:5000'],
+            // Admin only: the department's coordinators. At most \App\Models\Coordinator::MAX_PER_DEPARTMENT, and only users with
+            // the coordinator role. (A coordinator editing their own program does not send, and is not allowed to change, this.)
+            'coordinators' => [Rule::excludeIf(! (auth()->user()?->isRole(UserRole::Admin) ?? false)), 'nullable', 'array', 'max:'.\App\Models\Coordinator::MAX_PER_DEPARTMENT],
+            'coordinators.*' => ['integer', 'distinct', Rule::exists('users', 'id')->where('role', UserRole::Coordinator->value)->where('is_active', true)->whereNull('archived_at')->whereNull('anonymised_at')],
         ];
+    }
+
+    public function messages(): array
+    {
+        return ["coordinators.max" => "A program has one coordinator. Untick the others."];
     }
 
     public function withValidator($validator): void

@@ -40,7 +40,7 @@ class JournalEntry extends Model
             'week_start' => 'date',
             'week_number' => 'integer',
             'daily_snapshot' => 'array',
-            'header_snapshot' => 'array',
+            'header_snapshot' => 'encrypted:array', // name, school ID, phone, address (App\Support\SensitiveColumns)
             'header_overrides' => 'array',
             'reviewed_at' => 'datetime',
             'coordinator_reviewed_at' => 'datetime',

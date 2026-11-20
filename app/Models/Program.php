@@ -25,7 +25,17 @@ class Program extends Model
         return $this->hasMany(Major::class);
     }
 
-    /** The department's first coordinator (a department has up to 2: see coordinators()). */
+    /** BSHM keeps its own rule (any semester); every other program may only be eligible in the 2nd semester. */
+    public const ANY_SEMESTER_CODE = 'BSHM';
+
+    public const ELIGIBLE_TERM = 'second';
+
+    public function limitedToSecondSemester(): bool
+    {
+        return strtoupper((string) $this->code) !== self::ANY_SEMESTER_CODE;
+    }
+
+    /** The department's first coordinator (one per program: see coordinators()). */
     public function coordinator(): HasOne
     {
         return $this->hasOne(Coordinator::class)->oldestOfMany();

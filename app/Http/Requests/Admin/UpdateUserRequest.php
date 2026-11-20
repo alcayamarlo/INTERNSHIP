@@ -26,7 +26,7 @@ class UpdateUserRequest extends FormRequest
             'role' => ['required', Rule::enum(UserRole::class)],
             'is_active' => ['required', 'boolean'],
             'password' => ['nullable', 'confirmed', Password::defaults()],
-            // Coordinators only: one department each, and at most 2 coordinators per department.
+            // Coordinators only: one department each, and one coordinator per program.
             'program_id' => [
                 'exclude_unless:role,coordinator',
                 'required',

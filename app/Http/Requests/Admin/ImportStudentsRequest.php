@@ -16,7 +16,6 @@ class ImportStudentsRequest extends FormRequest
     {
         return [
             'file' => ['required', 'file', 'mimes:csv,txt', 'max:10240'],
-            'institution_id' => ['required', \Illuminate\Validation\Rule::exists('institutions', 'id')->whereNotNull('verified_at')],
         ];
     }
 }

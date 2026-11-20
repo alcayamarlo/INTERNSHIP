@@ -81,10 +81,10 @@ class StudentBrowseController extends Controller
         ]);
     }
 
-    /** Students who agreed to the privacy consent, allow companies to find them, and may apply. */
+    /** Students who agreed to the privacy consent and allow companies to find them. Eligibility to apply is checked when inviting. */
     private function browsable(): Builder
     {
-        return $this->eligibility->constrain(Student::query()->discoverable());
+        return Student::query()->discoverable();
     }
 
     /**

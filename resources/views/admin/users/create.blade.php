@@ -48,14 +48,9 @@
             </div>
 
             <div class="col-md-6" id="institution-field">
-                <label for="institution_id" class="form-label">Institution</label>
-                <select id="institution_id" name="institution_id" class="form-select @error('institution_id') is-invalid @enderror">
-                    <option value="">Select institution</option>
-                    @foreach($institutions as $institution)
-                        <option value="{{ $institution->id }}" {{ old('institution_id') == $institution->id ? 'selected' : '' }}>{{ $institution->name }}</option>
-                    @endforeach
-                </select>
-                @error('institution_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                <span class="form-label d-block">Institution</span>
+                <p class="form-control-plaintext mb-0" data-fixed-institution>{{ \App\Models\Institution::NAME }}</p>
+                <div class="form-text">Fixed: SkillBridge serves this school only.</div>
             </div>
 
             <div class="col-md-6" id="department-field" hidden>
@@ -110,7 +105,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const institutionField = document.getElementById('institution-field');
     const studentIdField = document.getElementById('student-id-field');
     const company = document.getElementById('company_name');
-    const institution = document.getElementById('institution_id');
     const studentId = document.getElementById('student_id_number');
     const departmentField = document.getElementById('department-field');
     const department = document.getElementById('program_id');
@@ -118,12 +112,10 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateFields() {
         const isEmployer = role.value === 'employer';
         const isStudent = role.value === 'student';
-        const needsInstitution = role.value === 'coordinator' || isStudent;
         companyField.hidden = !isEmployer;
         institutionField.hidden = isEmployer;
         studentIdField.hidden = !isStudent;
         company.required = isEmployer;
-        institution.required = needsInstitution;
         studentId.required = isStudent;
         departmentField.hidden = role.value !== 'coordinator';
         department.required = role.value === 'coordinator';

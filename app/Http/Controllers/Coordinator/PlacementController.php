@@ -72,9 +72,10 @@ class PlacementController extends Controller
         return view('coordinator.placements.index', compact('placements', 'summary', 'filter', 'search', 'deadlines', 'dailyLog', 'panel'));
     }
 
-    public function show(Placement $placement)
+    public function show(Request $request, Placement $placement)
     {
         $this->authorize('view', $placement);
+        $back = $this->backLink($request, $placement);
 
         $placement->load([
             'student.user',
@@ -96,7 +97,41 @@ class PlacementController extends Controller
             ? app(AppraisalService::class)->monthsFor($placement)->reject(fn ($month) => in_array($month->format('Y-m'), $requested, true))->values()
             : collect();
 
-        return view('coordinator.placements.show', compact('placement', 'validationChecks', 'requestMonths'));
+        return view('coordinator.placements.show', compact('placement', 'validationChecks', 'requestMonths', 'back'));
+    }
+
+    /**
+     * Where "Back" goes: the coordinator page the student was opened from (Evaluation Reviews with its tab and filters, the
+     * Students list, ...), remembered across the page's own actions. Only same-site coordinator pages are ever used.
+     *
+     * @return array{url: string, label: string}
+     */
+    private function backLink(Request $request, Placement $placement): array
+    {
+        $key = 'placement_back.'.$placement->id;
+        $referer = (string) $request->headers->get('referer');
+        $parts = parse_url($referer) ?: [];
+        // A list page can name where it was ("?back=/coordinator/reviews?..."), which works even when the browser sends no Referer.
+        $back = (string) $request->query('back');
+        if ($back !== '' && preg_match('#^/coordinator/[A-Za-z0-9/_\-]*(\?[^\s\\\\]*)?$#', $back) && ! str_starts_with($back, '/coordinator/placements/'.$placement->id)) {
+            $request->session()->put($key, $back);
+        }
+        $own = $request->getHost() === ($parts['host'] ?? null)
+            && str_starts_with($parts['path'] ?? '', '/coordinator/')
+            && ! str_starts_with($parts['path'] ?? '', '/coordinator/placements/'.$placement->id);
+        if ($own && $back === '') {
+            $request->session()->put($key, ($parts['path'] ?? '').(isset($parts['query']) ? '?'.$parts['query'] : ''));
+        }
+        $url = (string) $request->session()->get($key, route('coordinator.placements.index', [], false));
+        $path = (string) parse_url($url, PHP_URL_PATH);
+        $label = match (true) {
+            str_starts_with($path, '/coordinator/reviews') => 'Back to Evaluation Reviews',
+            str_starts_with($path, '/coordinator/students') => 'Back to Students',
+            str_starts_with($path, '/coordinator/dashboard') => 'Back to Dashboard',
+            default => 'Back to placements',
+        };
+
+        return ['url' => $url, 'label' => $label];
     }
 
     public function clear(Request $request, Placement $placement)

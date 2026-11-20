@@ -27,13 +27,12 @@ class StudentImportController extends Controller
     public function create()
     {
         return view('admin.students.import', [
-            'institutions' => Institution::query()->whereNotNull('verified_at')->orderBy('name')->get(),
         ]);
     }
 
     public function store(ImportStudentsRequest $request)
     {
-        $institutionId = (int) $request->validated('institution_id');
+        $institutionId = Institution::primary()->id; // the school is fixed; a posted institution is ignored
         $rows = $this->readCsv($request->file('file')->getRealPath());
         $results = [];
 
@@ -113,10 +112,10 @@ class StudentImportController extends Controller
             return [...$base, 'status' => 'error', 'message' => 'Date of birth could not be read (expected YYYY-MM-DD or MM/DD/YYYY).'];
         }
 
-        // Stored as first/second/summer (what the profile form uses); registrar files often say "1st Semester".
+        // Stored as first/second (what the profile form uses); registrar files often say "1st Semester".
         $semester = $this->parseSemester((string) ($row['semester'] ?? ''));
         if ($semester === false) {
-            return [...$base, 'status' => 'error', 'message' => 'Semester could not be read (use 1st Semester, 2nd Semester or Summer).'];
+            return [...$base, 'status' => 'error', 'message' => 'Semester could not be read (use 1st Semester or 2nd Semester).'];
         }
         $schoolYear = preg_replace('/\s+/', '', (string) ($row['school_year'] ?? ''));
         if ($schoolYear !== '' && ! preg_match('/^\d{4}-\d{4}$/', $schoolYear)) {
@@ -206,7 +205,7 @@ class StudentImportController extends Controller
         ]);
     }
 
-    /** @return string|null|false first/second/summer, null when empty, false when unreadable */
+    /** @return string|null|false first/second, null when empty, false when unreadable */
     private function parseSemester(string $value): string|null|false
     {
         $value = strtolower(trim($value));
@@ -215,7 +214,6 @@ class StudentImportController extends Controller
             $value === '' => null,
             (bool) preg_match('/^(1|1st|first)(\s*(sem|semester))?$/', $value) => 'first',
             (bool) preg_match('/^(2|2nd|second)(\s*(sem|semester))?$/', $value) => 'second',
-            (bool) preg_match('/^(summer|midyear|mid-year)(\s*(term|class|classes))?$/', $value) => 'summer',
             default => false,
         };
     }

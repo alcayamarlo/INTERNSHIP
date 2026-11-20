@@ -96,7 +96,7 @@ class Evaluation extends Model
         return [
             'scores' => 'array',
             'form_version' => 'integer',
-            'header_snapshot' => 'array',
+            'header_snapshot' => 'encrypted:array', // name, school ID, phone, address (App\Support\SensitiveColumns)
             'work_scores' => 'array',
             'trait_scores' => 'array',
             'work_total' => 'integer',

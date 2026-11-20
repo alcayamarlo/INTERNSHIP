@@ -43,79 +43,6 @@ function currentTermQuery(): array
     return app(EligibilityCriteria::class)->currentTerm();
 }
 
-it('lets a coordinator set criteria for their program, saving each edit as a new version', function () {
-    [$user, , $program] = criteriaCoordinator();
-    $term = currentTermQuery();
-    $this->actingAs($user);
-
-    $this->get(route('coordinator.criteria.index'))->assertOk()->assertSee('BSIT')->assertSee('Set criteria');
-
-    $payload = ['school_year' => $term['school_year'], 'term' => $term['term'], 'require_fourth_year' => '1', 'require_major_subjects_passed' => '1', 'required_hours' => '500'];
-    // Saving goes back to the program list for the same term.
-    $this->post(route('coordinator.criteria.store', $program), $payload)
-        ->assertRedirect(route('coordinator.criteria.index', $term))
-        ->assertSessionHas('success', "Criteria saved for {$program->display_name}.");
-    $this->post(route('coordinator.criteria.store', $program), [...$payload, 'required_hours' => '520', 'notes' => 'Raised for the new term'])
-        ->assertRedirect(route('coordinator.criteria.index', $term));
-
-    $versions = EligibilityCriterion::query()->forTerm($program->id, $term['school_year'], $term['term'])->orderBy('version')->get();
-    expect($versions)->toHaveCount(2)
-        ->and($versions[0]->required_hours)->toBe(500)
-        ->and($versions[1]->required_hours)->toBe(520)
-        ->and(app(EligibilityCriteria::class)->latestFor($program->id, $term['school_year'], $term['term'])->version)->toBe(2);
-
-    // Versions are kept in the database, but the pages no longer show a version history.
-    $this->get(route('coordinator.criteria.index', $term))
-        ->assertOk()
-        ->assertSee('520 OJT hours')
-        ->assertDontSee('Version 2');
-    $this->get(route('coordinator.criteria.show', [$program, ...$term]))
-        ->assertOk()
-        ->assertSee('value="520"', false)
-        ->assertSee('Raised for the new term')
-        ->assertDontSee('Version history');
-    $this->assertDatabaseHas('system_logs', ['action' => 'eligibility_criteria_saved']);
-});
-
-it('keeps each term separate', function () {
-    [$user, , $program] = criteriaCoordinator();
-    $term = currentTermQuery();
-    $other = $term['term'] === 'first' ? 'second' : 'first';
-    $this->actingAs($user);
-
-    $this->post(route('coordinator.criteria.store', $program), ['school_year' => $term['school_year'], 'term' => $other, 'required_hours' => '400'])->assertRedirect();
-
-    expect(app(EligibilityCriteria::class)->latestFor($program->id, $term['school_year'], $term['term']))->toBeNull()
-        ->and(app(EligibilityCriteria::class)->latestFor($program->id, $term['school_year'], $other)->version)->toBe(1);
-});
-
-it('does not let a coordinator manage another coordinator\'s program, but admins can', function () {
-    [, , $program] = criteriaCoordinator();
-    $outsider = User::factory()->create(['role' => UserRole::Coordinator]);
-    Coordinator::create(['user_id' => $outsider->id, 'institution_id' => Institution::create(['name' => 'Other'])->id]);
-    $term = currentTermQuery();
-
-    $this->actingAs($outsider)->get(route('coordinator.criteria.index'))->assertOk()->assertDontSee('BSIT');
-    $this->get(route('coordinator.criteria.show', $program))->assertForbidden();
-    $this->post(route('coordinator.criteria.store', $program), [...$term, 'required_hours' => '400'])->assertForbidden();
-    expect(EligibilityCriterion::count())->toBe(0);
-
-    $admin = User::factory()->create(['role' => UserRole::Admin]);
-    $this->actingAs($admin)->get(route('admin.criteria.index'))->assertOk()->assertSee('BSIT');
-    $this->post(route('admin.criteria.store', $program), [...$term, 'required_hours' => '450'])->assertRedirect(route('admin.criteria.index', $term));
-    expect(EligibilityCriterion::count())->toBe(1);
-});
-
-it('validates the criteria', function () {
-    [$user, , $program] = criteriaCoordinator();
-    $term = currentTermQuery();
-
-    $this->actingAs($user)
-        ->post(route('coordinator.criteria.store', $program), [...$term, 'required_hours' => '0', 'required_document_ids' => [999999], 'term' => 'winter'])
-        ->assertSessionHasErrors(['required_hours', 'required_document_ids.0', 'term']);
-    expect(EligibilityCriterion::count())->toBe(0);
-});
-
 it('applies the program criteria to eligibility and falls back to the school-wide rules', function () {
     AcademicSetting::current()->update(['require_fourth_year_standing' => true, 'require_major_subjects_passed' => false]);
     [$user, , $program] = criteriaCoordinator();
@@ -159,13 +86,9 @@ it('uses the criteria hours for new placements', function () {
     expect(app(PlacementService::class)->openForApplication($application)->required_hours)->toBe(520);
 });
 
-it('offers only student-uploaded, non-on-request documents', function () {
-    [$user, , $program] = criteriaCoordinator();
-    $student = DeploymentRequirement::create(['code' => 'test-cor', 'name' => 'Test COR', 'is_active' => true, 'on_request' => false, 'upload_source' => DeploymentRequirement::SOURCE_STUDENT, 'sort_order' => 1]);
-    $onRequest = DeploymentRequirement::where('on_request', true)->first();
+it('no longer offers Eligibility Criteria to coordinators', function () {
+    [$user] = criteriaCoordinator();
 
-    $this->actingAs($user)->get(route('coordinator.criteria.show', $program))
-        ->assertOk()
-        ->assertSee('Test COR')
-        ->assertDontSee($onRequest?->name ?? 'never-shown');
+    $this->actingAs($user)->get('/coordinator/criteria')->assertNotFound();
+    $this->get(route('coordinator.dashboard'))->assertOk()->assertDontSee('Eligibility Criteria');
 });

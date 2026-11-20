@@ -7,16 +7,11 @@
 @endphp
 
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-    <div class="sb-pill-tabs" role="group" aria-label="Evaluation type">
-        @foreach([Progress::TYPE_MONTHLY => 'Monthly evaluations', Progress::TYPE_FINAL => 'Final evaluations'] as $key => $label)
-            <a href="{{ route('coordinator.reviews.index', array_filter(['tab' => 'evaluations', 'type' => $key, 'status' => $progressStatus])) }}" class="sb-pill-tab {{ $progressType === $key ? 'is-active' : '' }}" @if($progressType === $key) aria-current="true" @endif>{{ $label }}</a>
-        @endforeach
-    </div>
     <div class="sb-pill-tabs" role="group" aria-label="Filter by status">
-        <a href="{{ route('coordinator.reviews.index', ['tab' => 'evaluations', 'type' => $progressType]) }}" class="sb-pill-tab {{ $progressStatus ? '' : 'is-active' }}" @unless($progressStatus) aria-current="true" @endunless>All</a>
+        <a href="{{ route('coordinator.reviews.index', ['tab' => $progressType]) }}" class="sb-pill-tab {{ $progressStatus ? '' : 'is-active' }}" @unless($progressStatus) aria-current="true" @endunless>All</a>
         @foreach(Progress::STATUSES as $key => $label)
             {{-- Clicking the active status again clears the filter. --}}
-            <a href="{{ route('coordinator.reviews.index', array_filter(['tab' => 'evaluations', 'type' => $progressType, 'status' => $progressStatus === $key ? null : $key])) }}" class="sb-pill-tab {{ $progressStatus === $key ? 'is-active' : '' }}" @if($progressStatus === $key) aria-current="true" @endif>{{ $label }}</a>
+            <a href="{{ route('coordinator.reviews.index', array_filter(['tab' => $progressType, 'status' => $progressStatus === $key ? null : $key])) }}" class="sb-pill-tab {{ $progressStatus === $key ? 'is-active' : '' }}" @if($progressStatus === $key) aria-current="true" @endif>{{ $label }}</a>
         @endforeach
     </div>
 </div>
@@ -133,7 +128,7 @@
                                     <button type="submit" class="btn btn-sm btn-outline-secondary">Remind</button>
                                 </form>
                             @endif
-                            <a class="btn btn-sm btn-outline-primary" href="{{ $turn === Progress::WAITING_COORDINATOR && $isFinal ? '#final-reviews' : route('coordinator.placements.show', $placement).'#evaluations' }}">{{ $turn === Progress::WAITING_COORDINATOR ? ($isFinal ? 'Review' : 'Rate') : 'Open' }}</a>
+                            <a class="btn btn-sm btn-outline-primary" href="{{ $turn === Progress::WAITING_COORDINATOR && $isFinal ? '#final-reviews' : route('coordinator.placements.show', ['placement' => $placement, 'back' => request()->getRequestUri()]).'#evaluations' }}">{{ $turn === Progress::WAITING_COORDINATOR ? ($isFinal ? 'Review' : 'Rate') : 'Open' }}</a>
                         </td>
                     </tr>
                 @empty

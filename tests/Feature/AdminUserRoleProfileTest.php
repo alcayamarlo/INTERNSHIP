@@ -46,7 +46,7 @@ it('allows admins to create a student account with its student profile', functio
 
     expect($studentUser->role)->toBe(UserRole::Student)
         ->and($student)->toBeInstanceOf(Student::class)
-        ->and($student->institution_id)->toBe($institution->id)
+        ->and($student->institution_id)->toBe(\App\Models\Institution::primary()->id) // fixed: the school, whatever was posted
         ->and($student->student_id_number)->toBe('SCC-26-00000042')
         ->and($student->student_id_locked)->toBeTrue()
         ->and($student->profile_completion)->toBe($student->profileCompletionSummary()['percentage']);

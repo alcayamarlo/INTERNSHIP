@@ -115,15 +115,10 @@ final class Data
     public static function coordinators(): array
     {
         return [
-            ['name' => 'Ramon Quijano', 'program' => 'BSIT', 'position' => 'OJT Co-Coordinator'],
             ['name' => 'Lorna Estenzo', 'program' => 'BSHM', 'position' => 'OJT Coordinator'],
-            ['name' => 'Victor Sumalinog', 'program' => 'BSHM', 'position' => 'OJT Co-Coordinator'],
             ['name' => 'Mylene Cuizon', 'program' => 'BSTM', 'position' => 'OJT Coordinator'],
-            ['name' => 'Arnel Bacalso', 'program' => 'BSTM', 'position' => 'OJT Co-Coordinator'],
             ['name' => 'Gina Abellana', 'program' => 'BSBA', 'position' => 'OJT Coordinator'],
-            ['name' => 'Rodel Mangubat', 'program' => 'BSBA', 'position' => 'OJT Co-Coordinator'],
             ['name' => 'Teresita Lapinig', 'program' => 'BSMA', 'position' => 'OJT Coordinator'],
-            ['name' => 'Efren Ouano', 'program' => 'BSMA', 'position' => 'OJT Co-Coordinator'],
         ];
     }
 

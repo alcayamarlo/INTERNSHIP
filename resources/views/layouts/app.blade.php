@@ -183,11 +183,10 @@
             ],
             'Manage' => [
                 ['coordinator.students.index', 'coordinator.students.*', 'bi-mortarboard', 'Students'],
-                ['coordinator.criteria.index', 'coordinator.criteria.*', 'bi-list-check', 'Eligibility Criteria'],
-                ['coordinator.academics.index', 'coordinator.academics.*', 'bi-mortarboard', 'Academic settings'],
+                ['coordinator.academics.index', 'coordinator.academics.*', 'bi-file-earmark-check', 'Deployment requirements'],
                 ['coordinator.applications.index', 'coordinator.applications.*', 'bi-kanban', 'Applications'],
                 ['coordinator.companies.index', 'coordinator.companies.*', 'bi-buildings', 'Partner Companies'],
-                ['coordinator.reviews.index', 'coordinator.reviews.*', 'bi-journal-check', 'Evaluation Reports'],
+                ['coordinator.reviews.index', 'coordinator.reviews.*', 'bi-journal-check', 'Evaluation Reviews'],
                 ['coordinator.statistics.index', 'coordinator.statistics.*', 'bi-pie-chart', 'Statistics & Reports'],
                 ['coordinator.verification.index', 'coordinator.verification.*', 'bi-shield-check', 'Verification'],
                 ['coordinator.placements.index', 'coordinator.placements.*', 'bi-clock-history', 'OJT Monitoring'],
@@ -211,6 +210,8 @@
                 ['admin.moderation.index', 'admin.moderation.*', 'bi-flag', 'Reported Content'],
                 ['admin.logs', 'admin.logs*', 'bi-journal-text', 'Audit & Security Log'],
                 ['admin.data-access', 'admin.data-access', 'bi-eye', 'Data Access'],
+                ['admin.deletion-requests.index', 'admin.deletion-requests.*', 'bi-person-x', 'Deletion Requests'],
+                ['admin.retention', 'admin.retention*', 'bi-hourglass-split', 'Retention Review'],
                 ['admin.health', 'admin.health', 'bi-activity', 'Usage & Health'],
                 ['admin.reports', 'admin.reports', 'bi-file-earmark-bar-graph', 'Reports'],
             ],
@@ -571,6 +572,15 @@
                             </a>
                         </li>
 
+                    @endif
+
+                    @if($currentUser && $currentUser->isRole(UserRole::Student))
+                        <li>
+                            <a class="dropdown-item" href="{{ route('student.privacy.index') }}">
+                                <i class="bi bi-person-lock" aria-hidden="true"></i>
+                                Privacy and my data
+                            </a>
+                        </li>
                     @endif
 
                     @if($currentUser)

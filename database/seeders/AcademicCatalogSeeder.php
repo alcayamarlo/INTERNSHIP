@@ -71,7 +71,6 @@ class AcademicCatalogSeeder extends Seeder
             'require_fourth_year_standing' => true,
             'require_major_subjects_passed' => true,
             'academic_year_start_month' => 8,
-            'summer_enabled' => true,
             'current_term_override' => null,
             'first_semester_start_month' => 8,
             'first_semester_start_day' => 1,
@@ -79,12 +78,9 @@ class AcademicCatalogSeeder extends Seeder
             'first_semester_end_day' => 31,
             'second_semester_start_month' => 1,
             'second_semester_start_day' => 1,
-            'second_semester_end_month' => 5,
+            // The 2nd semester runs up to the day before the 1st starts: the two terms cover the whole year (no summer term).
+            'second_semester_end_month' => 7,
             'second_semester_end_day' => 31,
-            'summer_start_month' => 6,
-            'summer_start_day' => 1,
-            'summer_end_month' => 7,
-            'summer_end_day' => 31,
         ]);
     }
 }

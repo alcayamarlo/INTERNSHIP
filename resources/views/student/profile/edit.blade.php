@@ -103,7 +103,7 @@
     @unless($hasPrivacyConsent)
         <section class="privacy-consent-card" id="privacyConsentCard" aria-labelledby="privacyConsentHeading">
             <h2 class="panel-heading" id="privacyConsentHeading"><i class="bi bi-shield-lock" aria-hidden="true"></i> Your privacy</h2>
-            <p class="portfolio-description">Before you save your profile, let us know you agree to how SkillBridge uses your information.</p>
+            <p class="portfolio-description">Before you save your profile, let us know you agree to how SkillBridge uses your information. Read the <a href="{{ route('pages.privacy') }}" target="_blank" rel="noopener">privacy notice</a>.</p>
             <form method="POST" action="{{ route('student.profile.consent') }}" id="privacyConsentForm" novalidate>
                 @csrf
                 <div class="form-check">

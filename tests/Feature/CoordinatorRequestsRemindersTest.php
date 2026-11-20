@@ -121,23 +121,23 @@ it('reminds every student who has not logged today, skipping those who did and t
     crLogToday($logged);
     $this->actingAs($f['coordinatorUser']);
 
-    $this->post(route('coordinator.ojt.reminders'), ['type' => 'daily'])
+    $this->post(route('coordinator.ojt.reminders'), ['type' => 'daily', 'audience' => 'students'])
         ->assertSessionHas('success', 'Reminded 2 students to log today\'s time.');
     expect(crNotes($f['mineUser'], CR_DAILY))->toBe(1)->and(crNotes($f['freeUser'], CR_DAILY))->toBe(1)->and(crNotes($logged->student->user))->toBe(0);
 
     // Again at once: nobody new, and the message says why.
-    $this->post(route('coordinator.ojt.reminders'), ['type' => 'daily'])
+    $this->post(route('coordinator.ojt.reminders'), ['type' => 'daily', 'audience' => 'students'])
         ->assertSessionHas('success', fn (string $m) => str_contains($m, 'Reminded 0 students') && str_contains($m, '2 students were reminded in the last 8 hours'));
     expect(crNotes($f['mineUser'], CR_DAILY))->toBe(1);
 
     $this->travel(8)->hours();
-    $this->post(route('coordinator.ojt.reminders'), ['type' => 'daily'])->assertSessionHas('success', 'Reminded 2 students to log today\'s time.');
+    $this->post(route('coordinator.ojt.reminders'), ['type' => 'daily', 'audience' => 'students'])->assertSessionHas('success', 'Reminded 2 students to log today\'s time.');
     expect(crNotes($f['mineUser'], CR_DAILY))->toBe(2);
 
     // Everyone logged: nothing to do.
     crLogToday($f['mine']);
     crLogToday($f['free']);
-    $this->post(route('coordinator.ojt.reminders'), ['type' => 'daily'])->assertSessionHas('status', fn (string $m) => str_contains($m, 'Nobody to remind'));
+    $this->post(route('coordinator.ojt.reminders'), ['type' => 'daily', 'audience' => 'students'])->assertSessionHas('status', fn (string $m) => str_contains($m, 'Nobody to remind'));
 });
 
 // ------------------------------------------------------------------ daily time record, automatic
@@ -193,8 +193,14 @@ it('reminds whoever\'s turn it is on the monthly evaluations, one notification p
     crAppraisal($f['free'], ['self_submitted_at' => now()]); // waiting for HR (no supervisor)
     $this->actingAs($f['coordinatorUser']);
 
-    $this->post(route('coordinator.ojt.reminders'), ['type' => 'monthly'])
-        ->assertSessionHas('success', 'Reminded 1 student and 2 supervisors about the monthly evaluation.');
+    // Each button reminds only its own group.
+    $this->post(route('coordinator.ojt.reminders'), ['type' => 'monthly', 'audience' => 'students'])
+        ->assertSessionHas('success', 'Reminded 1 student about the monthly evaluation.');
+    expect(crNotes($f['sam'], 'Reminder: monthly evaluations to finish'))->toBe(0)->and(crNotes($f['hrUser'], 'Reminder: monthly evaluations to finish'))->toBe(0);
+    $this->post(route('coordinator.ojt.reminders'), ['type' => 'monthly', 'audience' => 'supervisors'])
+        ->assertSessionHas('success', 'Reminded 2 supervisors about the monthly evaluation.');
+    expect(crNotes($f['mineUser'], 'Reminder: monthly evaluation'))->toBe(1);
+    $this->post(route('coordinator.ojt.reminders'), ['type' => 'monthly'])->assertSessionHasErrors('audience'); // a group is required
 
     expect(crNotes($f['mineUser'], 'Reminder: monthly evaluation'))->toBe(1)
         ->and(crNotes($f['sam'], 'Reminder: monthly evaluations to finish'))->toBe(1) // two interns, one notification
@@ -211,9 +217,9 @@ it('reminds whoever\'s turn it is on the monthly evaluations, one notification p
 
     // No limit: again and again.
     $this->actingAs($f['coordinatorUser']);
-    $this->post(route('coordinator.ojt.reminders'), ['type' => 'monthly'])->assertSessionHas('success');
-    $this->post(route('coordinator.ojt.reminders'), ['type' => 'monthly'])->assertSessionHas('success');
-    expect(crNotes($f['sam'], 'Reminder: monthly evaluations to finish'))->toBe(3)->and(crNotes($f['mineUser'], 'Reminder: monthly evaluation'))->toBe(3);
+    $this->post(route('coordinator.ojt.reminders'), ['type' => 'monthly', 'audience' => 'supervisors'])->assertSessionHas('success');
+    $this->post(route('coordinator.ojt.reminders'), ['type' => 'monthly', 'audience' => 'students'])->assertSessionHas('success');
+    expect(crNotes($f['sam'], 'Reminder: monthly evaluations to finish'))->toBe(2)->and(crNotes($f['mineUser'], 'Reminder: monthly evaluation'))->toBe(2);
 });
 
 it('reminds the supervisors about final evaluations that are requested and not submitted', function () {
@@ -224,8 +230,8 @@ it('reminds the supervisors about final evaluations that are requested and not s
     Evaluation::create(['placement_id' => $done->id, 'form_version' => 2, 'scores' => [], 'average_score' => 4, 'submitted_at' => now()]);
     $this->actingAs($f['coordinatorUser']);
 
-    $this->post(route('coordinator.ojt.reminders'), ['type' => 'final'])
-        ->assertSessionHas('success', 'Reminded 0 students and 1 supervisor about the final evaluation.');
+    $this->post(route('coordinator.ojt.reminders'), ['type' => 'final', 'audience' => 'supervisors'])
+        ->assertSessionHas('success', 'Reminded 1 supervisor about the final evaluation.');
     expect(crNotes($f['sam'], 'Reminder: final evaluations to finish'))->toBe(1);
     $notice = AppNotification::where('user_id', $f['sam']->id)->sole();
     $this->actingAs($f['sam'])->get(route('notifications.show', $notice))
@@ -233,7 +239,7 @@ it('reminds the supervisors about final evaluations that are requested and not s
 
     // Nothing requested: nobody to remind.
     $f['mine']->update(['rating_requested_at' => null, 'rating_due_on' => null]);
-    $this->actingAs($f['coordinatorUser'])->post(route('coordinator.ojt.reminders'), ['type' => 'final'])->assertSessionHas('status', fn (string $m) => str_contains($m, 'Nobody to remind'));
+    $this->actingAs($f['coordinatorUser'])->post(route('coordinator.ojt.reminders'), ['type' => 'final', 'audience' => 'supervisors'])->assertSessionHas('status', fn (string $m) => str_contains($m, 'Nobody to remind'));
 });
 
 it('reminds students about weekly reports not submitted and supervisors about reports waiting to be certified', function () {
@@ -241,7 +247,8 @@ it('reminds students about weekly reports not submitted and supervisors about re
     JournalEntry::create(['placement_id' => $f['mine']->id, 'week_start' => '2026-02-02', 'week_number' => 1, 'title' => 'Week 1', 'accomplishments' => 'x', 'challenges' => 'x', 'actions_taken' => 'x', 'learnings' => 'x', 'status' => JournalEntry::STATUS_SUBMITTED]);
     $this->actingAs($f['coordinatorUser']);
 
-    $this->post(route('coordinator.ojt.reminders'), ['type' => 'weekly'])->assertSessionHas('success');
+    $this->post(route('coordinator.ojt.reminders'), ['type' => 'weekly', 'audience' => 'students'])->assertSessionHas('success');
+    $this->post(route('coordinator.ojt.reminders'), ['type' => 'weekly', 'audience' => 'supervisors'])->assertSessionHas('success');
 
     $student = AppNotification::where('user_id', $f['mineUser']->id)->sole();
     expect($student->title)->toBe('Reminder: weekly report')->and($student->message)->toContain('Week 2 report')->toContain('overdue since');
@@ -312,7 +319,7 @@ it('shows the requests and reminders panel and the Remind to log time button on 
     $page->assertSee('Requests and reminders')
         ->assertSee('Daily time record')->assertSee('Weekly report')->assertSee('Monthly evaluation')->assertSee('Final evaluation')
         ->assertSee('Students with no time logged today: 2')
-        ->assertSee('Remind students and supervisors')->assertSee('Request monthly evaluation')->assertSee('Request final evaluation')
+        ->assertSee('Remind students')->assertSee('Remind supervisors')->assertSee('Request monthly evaluation')->assertSee('Request final evaluation')
         ->assertSee(route('coordinator.ojt.requests'), false)->assertSee(route('coordinator.ojt.reminders'), false)
         ->assertSee(route('coordinator.placements.remind-daily-log', $f['mine']), false)->assertSee(route('coordinator.placements.remind-daily-log', $f['free']), false)
         ->assertDontSee(route('coordinator.placements.remind-daily-log', $logged), false);
@@ -332,7 +339,7 @@ it('keeps requests and reminders to coordinators', function () {
     $f = crSetup();
     $routes = [
         fn () => $this->post(route('coordinator.ojt.requests'), ['type' => 'final', 'due_on' => now()->addWeek()->toDateString()]),
-        fn () => $this->post(route('coordinator.ojt.reminders'), ['type' => 'daily']),
+        fn () => $this->post(route('coordinator.ojt.reminders'), ['type' => 'daily', 'audience' => 'students']),
         fn () => $this->post(route('coordinator.placements.remind-daily-log', $f['mine'])),
     ];
 
@@ -347,4 +354,17 @@ it('keeps requests and reminders to coordinators', function () {
         $call()->assertRedirect(route('login'));
     }
     expect(crNotes($f['mineUser']))->toBe(0);
+});
+
+it('sends Back to the page the student was opened from, and remembers it', function () {
+    $f = crSetup();
+    $placement = $f['mine'];
+    $show = route('coordinator.placements.show', $placement);
+
+    $this->actingAs($f['coordinatorUser'])->get($show, ['Referer' => url('/coordinator/reviews?tab=evaluations&type=monthly&status=waiting')])
+        ->assertOk()->assertSee('Back to Evaluation Reviews')->assertSee('/coordinator/reviews?tab=evaluations&amp;type=monthly&amp;status=waiting', false);
+    // After an action on the page the referer is the page itself: the remembered place stays.
+    $this->get($show, ['Referer' => $show])->assertSee('Back to Evaluation Reviews');
+    // Another site is never used.
+    $this->get(route('coordinator.placements.show', $placement), ['Referer' => 'https://evil.example/coordinator/x'])->assertSee('Back to Evaluation Reviews');
 });

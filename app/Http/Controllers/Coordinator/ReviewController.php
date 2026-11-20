@@ -26,27 +26,52 @@ class ReviewController extends Controller
 
     public const RETURNED = 'returned';
 
+    public const REPORT_FILTERS = [
+        'waiting' => 'Waiting for you',
+        'supervisor' => 'Waiting for supervisor',
+        'reviewed' => 'Reviewed',
+        'returned' => 'Returned',
+        'all' => 'All',
+    ];
+
     public function __construct(private ActivityLogService $activityLog, private NotificationService $notifications, private EvaluationProgress $progress) {}
 
     public function index(Request $request)
     {
         $coordinator = Auth::user()->coordinator;
         abort_unless($coordinator, 403);
-        $tab = in_array($request->query('tab'), ['reports', 'evaluations', 'attendance'], true) ? $request->query('tab') : 'reports';
+        $requestedTab = $request->query('tab') === 'attendance' ? 'logs' : $request->query('tab'); // old links
+        // Tabs: logs, reports, monthly, final. Monthly and final share the evaluations code; 'evaluations' is the old link.
+        $requestedTab = in_array($requestedTab, ['monthly', 'final'], true) ? 'evaluations' : $requestedTab;
+        $tab = in_array($requestedTab, ['reports', 'evaluations', 'logs'], true) ? $requestedTab : 'reports';
         $inScope = fn ($query) => $query->whereIn('student_id', $coordinator->scopedStudentsQuery()->select('id'));
 
-        $reports = JournalEntry::query()
-            ->whereHas('placement', $inScope)
-            ->where('status', JournalEntry::STATUS_ACKNOWLEDGED)
-            ->whereNull('coordinator_review_status');
+        // Weekly reports: what waits for this coordinator by default, but reports already handled, returned or
+        // still with the supervisor can be listed too (they used to vanish from the page).
+        $reportScope = JournalEntry::query()->whereHas('placement', $inScope);
+        $reports = (clone $reportScope)->where('status', JournalEntry::STATUS_ACKNOWLEDGED)->whereNull('coordinator_review_status');
+        $show = array_key_exists((string) $request->query('show'), self::REPORT_FILTERS) ? $request->query('show') : 'waiting';
+        $reportList = match ($show) {
+            'supervisor' => (clone $reportScope)->where('status', JournalEntry::STATUS_SUBMITTED),
+            'reviewed' => (clone $reportScope)->where('coordinator_review_status', self::REVIEWED),
+            'returned' => (clone $reportScope)->where('coordinator_review_status', self::RETURNED),
+            'all' => (clone $reportScope)->whereIn('status', [JournalEntry::STATUS_SUBMITTED, JournalEntry::STATUS_ACKNOWLEDGED]),
+            default => clone $reports,
+        };
         $evaluations = Evaluation::query()->whereHas('placement', $inScope)->whereNull('coordinator_review_status');
-        $attendance = AttendanceLog::query()
-            ->whereHas('placement', $inScope)
-            ->whereDate('work_date', '>=', now()->subDays(14)->toDateString());
+        // Daily logs: every time entry of the department's students (not just the last 14 days), filterable.
+        $logScope = AttendanceLog::query()->whereHas('placement', $inScope);
+        $logStatus = in_array($request->query('log_status'), [AttendanceLog::STATUS_PENDING, AttendanceLog::STATUS_APPROVED, AttendanceLog::STATUS_REJECTED], true) ? $request->query('log_status') : null;
+        $from = $this->dateOrNull($request->query('from'));
+        $to = $this->dateOrNull($request->query('to'));
+        $logs = (clone $logScope)
+            ->when($logStatus, fn ($q) => $q->where('status', $logStatus))
+            ->when($from, fn ($q) => $q->whereDate('work_date', '>=', $from))
+            ->when($to, fn ($q) => $q->whereDate('work_date', '<=', $to));
 
         // Evaluations tab: every requested evaluation and whose turn it is (monthly and final), plus the
         // final evaluations the supervisor submitted that wait for this coordinator's review.
-        $type = $request->query('type') === EvaluationProgress::TYPE_FINAL ? EvaluationProgress::TYPE_FINAL : EvaluationProgress::TYPE_MONTHLY;
+        $type = ($request->query('tab') === 'final' || $request->query('type') === EvaluationProgress::TYPE_FINAL) ? EvaluationProgress::TYPE_FINAL : EvaluationProgress::TYPE_MONTHLY;
         $status = array_key_exists((string) $request->query('status'), EvaluationProgress::STATUSES) ? $request->query('status') : null;
         $progress = $tab === 'evaluations'
             ? ($type === EvaluationProgress::TYPE_FINAL ? $this->progress->final($coordinator, $status) : $this->progress->monthly($coordinator, $status))
@@ -57,17 +82,27 @@ class ReviewController extends Controller
             'progress' => $progress,
             'progressType' => $type,
             'progressStatus' => $status,
+            'show' => $show,
+            'reportFilters' => self::REPORT_FILTERS,
+            'logStatus' => $logStatus,
+            'from' => $from,
+            'to' => $to,
             'counts' => [
                 'reports' => (clone $reports)->count(),
                 'evaluations' => $this->progress->waitingForCoordinator($coordinator),
-                'attendance' => (clone $attendance)->where('status', AttendanceLog::STATUS_REJECTED)->count(),
+                'logs' => (clone $logScope)->where('status', AttendanceLog::STATUS_PENDING)->count(),
             ],
             'items' => match ($tab) {
                 'evaluations' => $evaluations->with(['placement.student.user', 'placement.employer', 'evaluator:id,name'])->latest('submitted_at')->paginate(10, ['*'], 'review_page')->withQueryString(),
-                'attendance' => $attendance->with(['placement.student.user', 'placement.employer', 'reviewer:id,name'])->latest('work_date')->paginate(10)->withQueryString(),
-                default => $reports->with(['placement.student.user', 'placement.employer'])->latest('week_start')->paginate(10)->withQueryString(),
+                'logs' => $logs->with(['placement.student.user', 'placement.employer', 'reviewer:id,name'])->latest('work_date')->paginate(15)->withQueryString(),
+                default => $reportList->with(['placement.student.user', 'placement.employer'])->latest('week_start')->paginate(10)->withQueryString(),
             },
         ]);
+    }
+
+    private function dateOrNull(mixed $value): ?string
+    {
+        return is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) && strtotime($value) ? $value : null;
     }
 
     /** "Remind": nudges whoever's turn it is on one evaluation, each time it is clicked. */

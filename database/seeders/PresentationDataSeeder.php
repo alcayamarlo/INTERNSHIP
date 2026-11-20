@@ -132,7 +132,7 @@ class PresentationDataSeeder extends Seeder
     }
 
     /**
-     * Up to two coordinators per department: the ones already there stay, and the new ones fill the free places.
+     * One coordinator per program: one already there stays, otherwise the first listed fills the place.
      *
      * @return array<string, list<Coordinator>> department code => coordinators, oldest first
      */
@@ -146,7 +146,7 @@ class PresentationDataSeeder extends Seeder
             $user = $this->user($row['name'], UserRole::Coordinator);
             $existing = Coordinator::query()->where('user_id', $user->id)->first();
             if (! $existing && ! Coordinator::departmentHasRoom($program->id)) {
-                continue; // the department already has 2 coordinators
+                continue; // the program already has a coordinator
             }
             Coordinator::query()->firstOrCreate(['user_id' => $user->id], [
                 'institution_id' => $institution->id,

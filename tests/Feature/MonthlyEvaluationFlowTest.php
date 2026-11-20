@@ -263,7 +263,7 @@ it('shows the Monthly Evaluation on each role\'s OJT page with the form only on 
     $this->actingAs($admin)->get(route('admin.placements.show', $f['placement']))->assertOk()
         ->assertSee('Monthly Evaluation: Midterm')->assertDontSee('Request a monthly evaluation');
     $this->actingAs($f['coordinatorUser'])->get(route('coordinator.placements.index'))->assertOk()
-        ->assertSee('Requests and reminders')->assertSee('Request monthly evaluation')->assertSee('Remind students and supervisors');
+        ->assertSee('Requests and reminders')->assertSee('Request monthly evaluation')->assertSee('Remind students')->assertSee('Remind supervisors');
 });
 
 it('saves the month names from the Academic settings form', function () {

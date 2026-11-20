@@ -112,6 +112,9 @@ class FileUploadService
 
     private function storeFile(UploadedFile $file, string $directory, string $prefix, string $extension, string $disk): string
     {
+        // Antivirus first (off unless CLAMAV_PATH is set): an infected or unscannable file is refused before anything is stored.
+        app(VirusScanner::class)->assertClean($file);
+
         $filename = trim($prefix, '_').'_'.now()->timestamp.'_'.Str::random(8).'.'.$extension;
 
         // Photos of certificates and IDs taken on a phone carry the camera, the date and often the GPS location.

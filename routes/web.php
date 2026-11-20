@@ -74,6 +74,7 @@ Route::view('/how-it-works', 'public.pages.how')->name('pages.how');
 Route::view('/students', 'public.pages.role', ['role' => 'students'])->name('pages.students');
 Route::view('/coordinators', 'public.pages.role', ['role' => 'coordinators'])->name('pages.coordinators');
 Route::view('/faqs', 'public.pages.faqs')->name('pages.faqs');
+Route::view('/privacy', 'public.pages.privacy')->name('pages.privacy'); // privacy notice (RA 10173), linked from the footer and sign-in
 Route::get('/internships/{internship}/apply', [PublicInternshipController::class, 'apply'])->name('internships.apply');
 
 Route::middleware('guest')->group(function () {
@@ -204,6 +205,10 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
             Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
             Route::post('/profile/consent', [ProfileController::class, 'consent'])->name('profile.consent');
+            // Privacy and my data: what is held, and a request to delete the account (an admin approves it).
+            Route::get('/privacy', [App\Http\Controllers\Student\PrivacyController::class, 'index'])->name('privacy.index');
+            Route::post('/privacy/deletion-request', [App\Http\Controllers\Student\PrivacyController::class, 'store'])->middleware('throttle:privacy-requests')->name('privacy.deletion-request');
+            Route::delete('/privacy/deletion-request', [App\Http\Controllers\Student\PrivacyController::class, 'cancel'])->middleware('throttle:privacy-requests')->name('privacy.deletion-cancel');
             Route::post('/profile/change-requests', [StudentChangeRequestController::class, 'store'])->name('profile.change-requests.store');
             Route::get('/profile/skills/suggest', [StudentSkillController::class, 'suggest'])->name('skills.suggest');
             Route::post('/profile/skills', [StudentSkillController::class, 'store'])->name('skills.store');
@@ -384,9 +389,6 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
                 ->name('verification.update');
             Route::post('/verification/batch', [CoordinatorDashboardController::class, 'batchVerify'])->name('verification.batch');
             Route::post('/verification/portfolios/{portfolio}', [VerificationController::class, 'reviewPortfolio'])->name('verification.reviewPortfolio');
-            Route::get('/criteria', [EligibilityCriteriaController::class, 'index'])->name('criteria.index');
-            Route::get('/criteria/{program}', [EligibilityCriteriaController::class, 'show'])->name('criteria.show');
-            Route::post('/criteria/{program}', [EligibilityCriteriaController::class, 'store'])->name('criteria.store');
             // Reports now live on the Statistics & Reports page; old bookmarks land there.
             Route::permanentRedirect('/reports', '/coordinator/statistics');
             Route::get('/analytics', fn () => view('coordinator.analytics'))->name('analytics');
@@ -460,12 +462,9 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             Route::post('/students/import', [StudentImportController::class, 'store'])->name('students.import.store');
             Route::post('/users', [AdminUserController::class, 'store'])->name('users.store');
             Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
-            Route::post('/users/{user}/archive', [AdminUserController::class, 'archive'])->name('users.archive');
-            Route::post('/users/{user}/restore', [AdminUserController::class, 'restore'])->name('users.restore');
             Route::post('/users/{user}/verify-email', [AdminUserController::class, 'verifyEmail'])->name('users.verify-email');
             Route::post('/users/{user}/verify-company', [AdminUserController::class, 'verifyCompany'])->name('users.verify-company');
             Route::post('/users/{user}/unverify-company', [AdminUserController::class, 'unverifyCompany'])->name('users.unverify-company');
-            Route::delete('/users/{user}/permanent', [AdminUserController::class, 'forceDelete'])->name('users.force-delete');
             Route::delete('/users/{user}/delete-now', [AdminUserController::class, 'deleteNow'])->name('users.delete-now');
             Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
             Route::get('/announcements', [AdminAnnouncementController::class, 'index'])->name('announcements.index');
@@ -479,6 +478,13 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             // Audit and security log (kept 1 year).
             Route::get('/logs', [AuditLogController::class, 'index'])->name('logs');
             Route::get('/logs/export', [AuditLogController::class, 'export'])->name('logs.export');
+            // Account deletion: the approval queue (approving anonymises the account, after an encrypted backup), and the
+            // student accounts past the retention period (listing only: nothing is deleted without approval).
+            Route::get('/deletion-requests', [App\Http\Controllers\Admin\DeletionRequestController::class, 'index'])->name('deletion-requests.index');
+            Route::post('/deletion-requests/{deletionRequest}/approve', [App\Http\Controllers\Admin\DeletionRequestController::class, 'approve'])->middleware('throttle:privacy-requests')->name('deletion-requests.approve');
+            Route::post('/deletion-requests/{deletionRequest}/reject', [App\Http\Controllers\Admin\DeletionRequestController::class, 'reject'])->name('deletion-requests.reject');
+            Route::get('/retention', [App\Http\Controllers\Admin\RetentionController::class, 'index'])->name('retention');
+            Route::post('/retention/{student}/request', [App\Http\Controllers\Admin\RetentionController::class, 'store'])->whereNumber('student')->name('retention.request');
             // Who opened which student's data (kept 1 year).
             Route::get('/data-access', [App\Http\Controllers\Admin\DataAccessController::class, 'index'])->name('data-access');
             // End a lock after too many wrong passwords (also: php artisan user:unlock {email}).
@@ -499,6 +505,8 @@ Route::middleware(['auth', 'active', 'password.current'])->group(function () {
             Route::delete('/skill-tags/{skillTag}', [SkillTagController::class, 'destroy'])->name('skill-tags.destroy');
             Route::match(['get', 'post'], '/reports', [AdminSystemController::class, 'reports'])->name('reports');
             Route::post('/backup', [AdminSystemController::class, 'backup'])->name('backup');
+            Route::get('/backups/{name}/download', [AdminSystemController::class, 'downloadBackup'])->where('name', 'backup_[0-9_-]+\.zip')->name('backups.download');
+            Route::post('/backups/{name}/verify', [AdminSystemController::class, 'verifyBackup'])->where('name', 'backup_[0-9_-]+\.zip')->middleware('throttle:account-security')->name('backups.verify');
         });
     });
 });

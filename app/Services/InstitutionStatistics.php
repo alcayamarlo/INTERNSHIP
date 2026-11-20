@@ -45,30 +45,9 @@ class InstitutionStatistics
                 'placement' => $enrolled ? round($placed / $enrolled * 100, 1) : 0.0,
                 'completion' => $placed ? round($completed / $placed * 100, 1) : 0.0,
             ],
-            'programs' => $this->byProgram($coordinator, $studentIds->all()),
             'companies' => $this->byCompany($studentIds->all()),
             'generated_at' => now('Asia/Manila'),
         ];
-    }
-
-    /** @return list<array{program: string, enrolled: int, placed: int, completed: int}> */
-    private function byProgram(Coordinator $coordinator, array $studentIds): array
-    {
-        $students = Student::query()->whereIn('id', $studentIds)->get(['id', 'program_id', 'program']);
-        $placements = Placement::query()->whereIn('student_id', $studentIds)->get(['student_id', 'status']);
-        $programNames = Program::query()->pluck('code', 'id');
-
-        return $students
-            ->groupBy(fn (Student $student) => $student->program_id ? ($programNames[$student->program_id] ?? 'Unknown') : ($student->program ?: 'Not set'))
-            ->map(fn ($group, string $program) => [
-                'program' => $program,
-                'enrolled' => $group->count(),
-                'placed' => $placements->whereIn('student_id', $group->modelKeys())->pluck('student_id')->unique()->count(),
-                'completed' => $placements->whereIn('student_id', $group->modelKeys())->where('status', Placement::STATUS_COMPLETED)->pluck('student_id')->unique()->count(),
-            ])
-            ->sortBy('program')
-            ->values()
-            ->all();
     }
 
     /** Companies hosting these students, with the supervisors' average evaluation score. */

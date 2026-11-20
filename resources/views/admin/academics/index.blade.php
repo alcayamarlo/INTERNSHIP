@@ -10,19 +10,24 @@
         'calendar' => ['Calendar and student ID', 'bi-calendar3'],
     ];
 
+    // Coordinators only manage the deployment requirements; programs and the calendar are admin-only.
+    if (! ($canManagePrograms ?? false)) {
+        $academicTabs = array_intersect_key($academicTabs, ['requirements' => true]);
+    }
+
     // Without a hash, open the tab whose form failed validation.
-    $settingsFields = ['require_fourth_year_standing', 'require_major_subjects_passed', 'student_id_pattern', 'required_ojt_hours', 'academic_year_start_month', 'current_term_override', 'summer_enabled', 'term_ranges', 'journal_due_days'];
+    $settingsFields = ['require_fourth_year_standing', 'require_major_subjects_passed', 'student_id_pattern', 'required_ojt_hours', 'academic_year_start_month', 'current_term_override', 'term_ranges', 'journal_due_days'];
     $defaultTab = match (true) {
-        collect($settingsFields)->contains(fn ($field) => $errors->has($field)) || collect($errors->keys())->contains(fn ($key) => preg_match('/^(first_semester|second_semester|summer)_|^evaluation_period_labels/', $key)) => 'calendar',
+        collect($settingsFields)->contains(fn ($field) => $errors->has($field)) || collect($errors->keys())->contains(fn ($key) => preg_match('/^(first_semester|second_semester)_|^evaluation_period_labels/', $key)) => 'calendar',
         $errors->hasAny(['name', 'upload_source', 'sort_order', 'is_active']) => 'requirements',
-        default => 'programs',
+        default => array_key_first($academicTabs),
     };
 @endphp
 
 @section('content')
 <div>
 <div class="sb-dash">
-<x-page-header title="Academic settings" subtitle="Manage school programs, majors, internship hours, and academic calendar defaults.">
+<x-page-header :title="$canManagePrograms ? 'Academic settings' : 'Deployment requirements'" :subtitle="$canManagePrograms ? 'Manage school programs, majors, internship hours, and academic calendar defaults.' : 'Manage the documents students need before deployment.'">
     @if($canManagePrograms)
         <a href="{{ route($academicsRoute.'programs.create') }}" class="btn btn-primary" data-open="program-modal" aria-haspopup="dialog"><i class="bi bi-plus-lg" aria-hidden="true"></i> Add program</a>
     @endif
@@ -82,9 +87,15 @@
                                     data-name="{{ $program->name }}"
                                     data-code="{{ $program->code }}"
                                     data-hours="{{ $program->required_internship_hours }}"
-                                    data-confirmed="{{ $program->required_hours_confirmed ? 1 : 0 }}"
                                     data-coordinator="{{ $program->coordinator?->user?->name ?? 'No coordinator assigned' }}"
-                                    data-majors="{{ $program->majors->pluck('name')->join("\n") }}"><i class="bi bi-pencil" aria-hidden="true"></i> Edit</a></td>
+                                    data-coordinator-id="{{ $program->coordinator?->user_id }}"
+                                    data-majors="{{ $program->majors->pluck('name')->join("\n") }}"><i class="bi bi-pencil" aria-hidden="true"></i> Edit</a>
+                                @if($canManagePrograms)
+                                    <form method="POST" action="{{ route($academicsRoute.'programs.destroy', $program) }}" class="d-inline" onsubmit="return confirm('Delete {{ e($program->name) }}? This removes its majors and unassigns its coordinator.');">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger text-nowrap" @disabled($program->students_count > 0) @if($program->students_count > 0) title="Students are enrolled in this program" @endif><i class="bi bi-trash" aria-hidden="true"></i> Delete</button>
+                                    </form>
+                                @endif</td>
                         </tr>
                     @empty
                         <tr><td colspan="6"><x-empty-state icon="bi-mortarboard" title="No programs configured" message="Add a program so students can register against it." /></td></tr>
@@ -211,7 +222,7 @@
                             <span>Term</span><span>Start month</span><span>Start day</span><span>End month</span><span>End day</span>
                         </div>
                         <?php foreach ($termOptions as $termKey => $termHeading):
-                            $prefix = ['first' => 'first_semester', 'second' => 'second_semester', 'summer' => 'summer'][$termKey];
+                            $prefix = ['first' => 'first_semester', 'second' => 'second_semester'][$termKey];
                         ?>
                             <div class="sb-matrix-row">
                                 <h3 class="sb-matrix-name">{{ $termHeading }}</h3>
@@ -234,13 +245,6 @@
                             </div>
                         <?php endforeach; ?>
                     </div>
-
-                    <div class="form-check mt-3">
-                        <input type="hidden" name="summer_enabled" value="0">
-                        <input class="form-check-input" type="checkbox" id="summer_enabled" name="summer_enabled" value="1" @checked(old('summer_enabled', $settings->summer_enabled))>
-                        <label class="form-check-label" for="summer_enabled">Enable Summer term</label>
-                    </div>
-                    @error('summer_enabled')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
 
                     <hr>
 
@@ -411,8 +415,16 @@
                 set('pe-code', btn.dataset.code);
                 set('pe-hours', btn.dataset.hours);
                 set('pe-majors', btn.dataset.majors || '');
-                document.getElementById('pe-confirmed').checked = btn.dataset.confirmed === '1';
-                document.getElementById('pe-coordinator').textContent = btn.dataset.coordinator;
+                var coordSelect = document.getElementById('pe-coordinator-select');
+                if (coordSelect) {
+                    Array.prototype.forEach.call(coordSelect.options, function (o) {
+                        var p = o.dataset.program, show = !o.value || !p || p === btn.dataset.id;
+                        o.hidden = !show; o.disabled = !show;
+                    });
+                    coordSelect.value = btn.dataset.coordinatorId || '';
+                }
+                var coordText = document.getElementById('pe-coordinator');
+                if (coordText) coordText.textContent = btn.dataset.coordinator;
                 dialog.querySelectorAll('.is-invalid').forEach(function (n) { n.classList.remove('is-invalid'); });
                 dialog.querySelectorAll('.invalid-feedback').forEach(function (n) { n.remove(); });
             }, true);

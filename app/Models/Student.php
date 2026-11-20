@@ -50,6 +50,12 @@ class Student extends Model
         'privacy_consent', 'privacy_consent_at', 'discoverable',
     ];
 
+    /** Students whose account was not anonymised (their OJT records stay, but there is no one left to list). */
+    public function scopeNotAnonymised(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->whereDoesntHave('user', fn ($user) => $user->whereNotNull('anonymised_at'));
+    }
+
     /**
      * Encryption makes a new random ciphertext every time, so saving the same birth date again would look like a
      * change (a pointless UPDATE, and "date_of_birth changed" for anything that watches dirty fields). Compare the

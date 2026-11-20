@@ -57,6 +57,7 @@ class LoginController extends Controller
         }
 
         $blocked = match (true) {
+            (bool) $user->anonymised_at => ['anonymised', 'This account was deleted.'],
             (bool) $user->archived_at => ['archived', 'This account has been archived. Please contact the administrator.'],
             ! $user->is_active => ['deactivated', 'Your account has been deactivated. Please contact support.'],
             $user->isSuspended() => ['suspended', $user->suspensionMessage()],

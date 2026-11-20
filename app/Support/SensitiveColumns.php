@@ -21,6 +21,11 @@ final class SensitiveColumns
         ],
         'users' => ['phone'],
         'character_references' => ['contact_number'],
+        // JSON copies of the student's name, school ID, phone and address (encrypted:array: the stored text is the JSON).
+        'resumes' => ['content'],
+        'journal_entries' => ['header_snapshot'],
+        'appraisals' => ['header_snapshot'],
+        'evaluations' => ['header_snapshot'],
     ];
 
     /** True when the value has the shape of an encrypted payload (base64 of JSON with iv, value and mac or tag). */

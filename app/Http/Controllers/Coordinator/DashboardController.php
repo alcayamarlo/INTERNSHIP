@@ -33,7 +33,7 @@ class DashboardController extends Controller
             $applications = InternshipApplication::whereIn('student_id', $studentIds)->get();
 
             return [
-                'total_students' => $studentIds->count(),
+                'total_students' => $coordinator->scopedStudentsQuery()->notAnonymised()->count(), // anonymised accounts keep their OJT records, not a place in this count
                 'total_applications' => $applications->count(),
                 'accepted' => $applications->where('status', ApplicationStatus::Accepted)->count(),
                 'placement_rate' => $this->calculatePlacementRate($applications),
@@ -41,7 +41,7 @@ class DashboardController extends Controller
         });
 
         $recentStudents = Cache::remember(DashboardCacheInvalidator::coordinatorKey('recent_students', $coordinator->id, $institutionId), 300, function () use ($coordinator) {
-            return $coordinator->scopedStudentsQuery()->with('user')->latest()->take(5)->get();
+            return $coordinator->scopedStudentsQuery()->notAnonymised()->with('user')->latest()->take(5)->get();
         });
 
         $recentApplications = Cache::remember(DashboardCacheInvalidator::coordinatorKey('recent_apps', $coordinator->id, $institutionId), 300, function () use ($coordinator) {
@@ -81,7 +81,7 @@ class DashboardController extends Controller
 
         $search = trim($validated['search'] ?? '');
         $sort = $validated['sort'] ?? 'name';
-        $scope = $coordinator->scopedStudentsQuery();
+        $scope = $coordinator->scopedStudentsQuery()->notAnonymised(); // the directory: anonymised accounts are not listed (their OJT records stay under OJT Monitoring)
 
         $summary = [
             'total' => (clone $scope)->count(),
@@ -89,14 +89,11 @@ class DashboardController extends Controller
             'below_50' => (clone $scope)->where('profile_completion', '<', 50)->count(),
         ];
 
-        $programs = (clone $scope)
-            ->whereNotNull('program')
-            ->where('program', '<>', '')
-            ->distinct()
-            ->orderBy('program')
-            ->pluck('program');
+        // The Program filter is locked to the coordinator's own program (the list is already limited to it).
+        $programs = collect([$coordinator->program?->name ?? $coordinator->program?->code])->filter()->values();
 
         $query = $coordinator->scopedStudentsQuery()
+            ->notAnonymised()
             ->with('user:id,name,email')
             ->withCount([
                 'competencies',
@@ -105,7 +102,6 @@ class DashboardController extends Controller
                 'certificates as verified_certificates_count' => fn ($query) => $query->where('verification_status', 'verified'),
                 'portfolios as verified_portfolios_count' => fn ($query) => $query->where('verification_status', 'verified'),
             ])
-            ->when(isset($validated['program']) && $validated['program'] !== '', fn ($query) => $query->where('program', $validated['program']))
             ->when($validated['year_level'] ?? null, fn ($query, string $year) => $query->where('year_level', $year))
             ->when($validated['status'] ?? null, function ($query, string $status) use ($coordinator) {
                 $eligibleIds = fn () => app(\App\Services\InternshipEligibility::class)->constrain($coordinator->scopedStudentsQuery())->select('students.id');
@@ -166,7 +162,7 @@ class DashboardController extends Controller
             'programs' => $programs,
             'filters' => [
                 'search' => $search,
-                'program' => $validated['program'] ?? '',
+                'program' => $programs->first() ?? '',
                 'sort' => $sort,
                 'year_level' => $validated['year_level'] ?? '',
                 'status' => $validated['status'] ?? '',

@@ -42,6 +42,7 @@ class SystemLog extends Model
         'two_factor_enabled',
         'two_factor_disabled',
         'two_factor_reset',
+        'account_anonymised',
     ];
 
     /** Failed sign-ins from one account or IP within this window count as repeated. */

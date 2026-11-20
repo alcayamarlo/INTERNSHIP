@@ -322,7 +322,7 @@ ready.
 1. Open **OJT Monitoring**, select the **For clearance** card, and open the
    placement.
 2. Confirm that the required hours have been approved and the employer
-   evaluation is submitted. Use the separate **Report Reviews** page for any
+   evaluation is submitted. Use the separate **Evaluation Reviews** page for any
    weekly journals or evaluations requiring the coordinator's second review.
 3. If the record is complete, choose **Clear and issue certificate**. Add
    optional clearance remarks and confirm the action. Clearing the OJT issues

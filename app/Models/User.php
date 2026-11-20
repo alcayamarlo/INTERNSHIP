@@ -61,6 +61,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'is_active' => 'boolean',
             'archived_at' => 'datetime',
+            'anonymised_at' => 'datetime',
             'email_notifications' => 'boolean',
             'must_change_password' => 'boolean',
             'suspended_at' => 'datetime',
@@ -184,6 +185,17 @@ class User extends Authenticatable implements MustVerifyEmail
             new EmailVerificationCodeMail($code),
             'email_verification'
         );
+    }
+
+    /** Requests to delete (anonymise) this account. */
+    public function deletionRequests(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(AccountDeletionRequest::class);
+    }
+
+    public function isAnonymised(): bool
+    {
+        return $this->anonymised_at !== null;
     }
 
     public function student(): HasOne

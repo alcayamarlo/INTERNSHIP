@@ -55,9 +55,18 @@ class OjtRequestController extends Controller
     public function remindAll(Request $request): RedirectResponse
     {
         abort_unless(Auth::user()->coordinator, 403);
-        $type = $request->validate(['type' => ['required', Rule::in(array_keys(OjtReminderService::TYPES))]])['type'];
+        $data = $request->validate([
+            'type' => ['required', Rule::in(array_keys(OjtReminderService::TYPES))],
+            'audience' => ['required', Rule::in(['students', 'supervisors'])],
+        ]);
+        $type = $data['type'];
+        $audience = $data['audience'];
 
         if ($type === 'daily') {
+            if ($audience === 'supervisors') {
+                return back()->with('status', 'Daily time logs are only the student\'s to fill in, so there is no supervisor reminder for them.');
+            }
+
             $result = $this->reminders->remindDailyLogs(Auth::user(), 'manual', Auth::user());
             $waiting = $result['waiting']
                 ? ' '.$result['waiting'].' student'.($result['waiting'] === 1 ? ' was' : 's were').' reminded in the last '.OjtReminderService::waitHours().' hours and can be reminded again later.'
@@ -68,14 +77,14 @@ class OjtRequestController extends Controller
                 : 'Nobody to remind: every ongoing OJT has logged time today (or today is not a work day).');
         }
 
-        $counts = $this->reminders->remindAll(Auth::user(), $type);
+        $counts = $this->reminders->remindAll(Auth::user(), $type, $audience);
         $label = mb_strtolower(OjtReminderService::TYPES[$type][0]);
-        if ($counts['students'] + $counts['supervisors'] === 0) {
-            return back()->with('status', "Nobody to remind about the {$label}: nothing is waiting on a student or supervisor.");
+        $sent = $counts[$audience];
+        if ($sent === 0) {
+            return back()->with('status', "Nobody to remind about the {$label}: nothing is waiting on a ".rtrim($audience, 's').'.');
         }
 
-        return back()->with('success', 'Reminded '.$counts['students'].' student'.($counts['students'] === 1 ? '' : 's')
-            .' and '.$counts['supervisors'].' supervisor'.($counts['supervisors'] === 1 ? '' : 's')." about the {$label}.");
+        return back()->with('success', 'Reminded '.$sent.' '.($sent === 1 ? rtrim($audience, 's') : $audience)." about the {$label}.");
     }
 
     /** One student: "Remind to log time", at most once every 8 hours. */

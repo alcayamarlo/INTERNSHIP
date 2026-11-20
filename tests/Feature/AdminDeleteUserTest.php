@@ -27,7 +27,7 @@ it('deletes an account that has no OJT records, in one step', function () {
     $this->assertDatabaseHas('system_logs', ['user_id' => $admin->id, 'action' => 'admin_permanently_delete_user']);
 });
 
-it('refuses to delete an account that has OJT records and tells the admin to archive it', function () {
+it('refuses to delete an account that has OJT records and tells the admin to set it to Inactive', function () {
     $admin = User::factory()->create(['role' => UserRole::Admin]);
     ['employer' => $employer] = svCompany();
     $supervisor = svSupervisor($employer);
@@ -37,7 +37,7 @@ it('refuses to delete an account that has OJT records and tells the admin to arc
     // The intern, the company's HR account and the supervisor all keep their account.
     foreach ([$studentUser, $employer->user, $supervisor] as $user) {
         $this->actingAs($admin)->delete(route('admin.users.delete-now', $user))
-            ->assertRedirect()->assertSessionHas('error', fn ($message) => str_contains($message, 'Archive the account instead.'));
+            ->assertRedirect()->assertSessionHas('error', fn ($message) => str_contains($message, 'Set the account to Inactive (Edit) instead.'));
         $this->assertDatabaseHas('users', ['id' => $user->id]);
     }
     $this->assertDatabaseHas('placements', ['id' => $placement->id]);

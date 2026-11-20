@@ -171,11 +171,18 @@ class NotificationTarget
 
     private function portfolio(array $data, User $viewer): ?string
     {
-        $portfolio = ($id = $this->id($data, 'portfolio_id')) ? Portfolio::find($id) : null;
+        // A reviewed file arrives as portfolio_id (coordinator) or file_id (admin). It opens where that kind of file lives.
+        $portfolio = ($id = $this->id($data, 'portfolio_id') ?? $this->id($data, 'file_id')) ? Portfolio::find($id) : null;
+        if (! $portfolio || ! $viewer->isRole(UserRole::Student) || ! Gate::forUser($viewer)->allows('view', $portfolio)) {
+            return null;
+        }
 
-        return $portfolio && $viewer->isRole(UserRole::Student) && Gate::forUser($viewer)->allows('view', $portfolio)
-            ? route('student.portfolio.show', $portfolio)
-            : null;
+        return match (true) {
+            $portfolio->category === \App\Enums\PortfolioCategory::DeploymentDocument || filled($portfolio->deployment_requirement_id) => route('student.profile.edit').'#documents',
+            $portfolio->category === \App\Enums\PortfolioCategory::Certificate => route('student.competencies.index'),
+            $portfolio->category === \App\Enums\PortfolioCategory::Resume => route('student.resume.index'),
+            default => route('student.portfolio.show', $portfolio),
+        };
     }
 
     private function certificate(array $data, User $viewer): ?string
@@ -228,13 +235,42 @@ class NotificationTarget
             // viewer may not open is left alone (it shows the notification itself).
             $notification->type === 'ojt_update' && $this->id($data, 'placement_id') === null && $viewer->isRole(UserRole::Supervisor) => route('supervisor.interns.index'),
             $notification->type === 'ojt_update' && $this->id($data, 'placement_id') === null && $viewer->isRole(UserRole::Employer) => route('employer.interns.index'),
+            // Notices with no record of their own open the page they are about.
+            $notification->type === 'company_verified' && $viewer->isRole(UserRole::Employer) => route('employer.profile.edit'),
+            $notification->type === 'account_security' => route('account.security'),
+            $notification->type === 'profile_change_request' && $viewer->isRole(UserRole::Student) => route('student.profile.edit'),
+            $notification->type === 'content_report' && $viewer->isRole(UserRole::Admin) => route('admin.moderation.index'),
+            // Account deletion: an admin opens the queue, the student opens their privacy page.
+            $notification->type === 'deletion_request' && $viewer->isRole(UserRole::Admin) => route('admin.deletion-requests.index'),
+            $notification->type === 'retention_review' && $viewer->isRole(UserRole::Admin) => route('admin.retention'),
+            $notification->type === 'deletion_decision' && $viewer->isRole(UserRole::Student) => route('student.privacy.index'),
             // Eligibility decides which internships the student may apply for.
             $notification->type === 'eligibility_decision' && $viewer->isRole(UserRole::Student) => route('student.internships.index'),
             // A coordinator's review of a portfolio file or a competency.
-            $notification->type === 'verification' && $viewer->isRole(UserRole::Student) && ($data['verification_type'] ?? null) === 'competencies' => route('student.competencies.index'),
-            $notification->type === 'verification' && $viewer->isRole(UserRole::Student) => route('student.portfolio.index'),
+            // Each kind of reviewed item opens the page where the student sees it: certificates and competencies in My
+            // Certificates, resumes in Resume, required documents in the profile's Documents tab, projects in Portfolio.
+            $notification->type === 'verification' && $viewer->isRole(UserRole::Student) => match (true) {
+                in_array($data['verification_type'] ?? null, ['competencies', 'certificates'], true) => route('student.competencies.index'),
+                ($data['verification_type'] ?? null) === 'resumes' => route('student.resume.index'),
+                $this->isRequiredDocument($data, $viewer) => route('student.profile.edit').'#documents',
+                default => route('student.portfolio.index'),
+            },
             default => null,
         };
+    }
+
+    /** A required document (requirement file). Older notices have no flag, so the item is found by its name. */
+    private function isRequiredDocument(array $data, User $viewer): bool
+    {
+        if (array_key_exists('is_required_document', $data)) {
+            return (bool) $data['is_required_document'];
+        }
+        $studentId = $viewer->student?->id;
+        if (! $studentId || ($data['verification_type'] ?? null) !== 'portfolio' || ! filled($data['item_name'] ?? null)) {
+            return false;
+        }
+
+        return \App\Models\Portfolio::query()->where('student_id', $studentId)->where('title', $data['item_name'])->whereNotNull('deployment_requirement_id')->exists();
     }
 
     private function conversation(array $data, User $viewer): ?string

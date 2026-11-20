@@ -31,6 +31,12 @@ class InternshipEligibility
             ->where('d.decision', \App\Models\EligibilityDecision::REJECTED)
             ->whereRaw('d.id = (select max(d2.id) from eligibility_decisions d2 where d2.student_id = students.id)'));
 
+        // Outside the 2nd semester only students without a program or in BSHM can still be eligible.
+        if ($this->criteria->currentTerm()['term'] !== \App\Models\Program::ELIGIBLE_TERM) {
+            $exempt = \App\Models\Program::query()->where('code', \App\Models\Program::ANY_SEMESTER_CODE)->pluck('id')->all();
+            $students->where(fn (Builder $open) => $open->whereNull('program_id')->orWhereIn('program_id', $exempt));
+        }
+
         return $students->where(function (Builder $query) use ($byProgram, $global): void {
             foreach ($byProgram as $programId => $rules) {
                 $query->orWhere(fn (Builder $match) => $this->applyRules($match->where('program_id', $programId), $rules));

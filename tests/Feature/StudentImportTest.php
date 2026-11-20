@@ -81,7 +81,7 @@ it('stores registrar semester names the way the profile form does and rejects un
     $admin = User::factory()->create(['role' => UserRole::Admin]);
     $institution = Institution::create(['name' => 'Semester Institution', 'address' => null, 'verified_at' => now()]);
 
-    // "1st Semester" used to be saved as typed, which MariaDB refused (the column holds first/second/summer).
+    // "1st Semester" used to be saved as typed, which MariaDB refused (the column holds first/second).
     $csv = <<<'CSV'
     school_id,last_name,first_name,middle_name,date_of_birth,program,year_level,section,school_year,semester
     SCC-26-00000011,Uno,Ana,,2003-05-14,,4th Year,A,2026-2027,1st Semester
@@ -95,12 +95,12 @@ it('stores registrar semester names the way the profile form does and rejects un
         'institution_id' => $institution->id,
         'file' => studentImportCsv($csv),
     ])->assertOk()
-        ->assertSee('Semester could not be read (use 1st Semester, 2nd Semester or Summer).')
+        ->assertSee('Semester could not be read (use 1st Semester or 2nd Semester).')
         ->assertSee('School year must look like 2026-2027.')
         ->assertDontSee('SQLSTATE');
 
     expect(Student::where('student_id_number', 'SCC-26-00000011')->value('semester'))->toBe('first')
         ->and(Student::where('student_id_number', 'SCC-26-00000012')->first()->only(['semester', 'school_year']))->toBe(['semester' => 'second', 'school_year' => '2026-2027'])
-        ->and(Student::where('student_id_number', 'SCC-26-00000013')->value('semester'))->toBe('summer')
-        ->and(Student::whereIn('student_id_number', ['SCC-26-00000014', 'SCC-26-00000015'])->exists())->toBeFalse();
+        // Summer no longer exists: that row is refused like any other unreadable semester.
+        ->and(Student::whereIn('student_id_number', ['SCC-26-00000013', 'SCC-26-00000014', 'SCC-26-00000015'])->exists())->toBeFalse();
 });

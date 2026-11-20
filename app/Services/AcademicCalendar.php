@@ -10,19 +10,12 @@ class AcademicCalendar
 {
     public function termOptions(?AcademicSetting $settings = null): array
     {
-        $settings ??= AcademicSetting::current();
-        $options = $this->termLabels();
-
-        if (! $settings->summer_enabled) {
-            unset($options['summer']);
-        }
-
-        return $options;
+        return $this->termLabels();
     }
 
     public function termLabels(): array
     {
-        return ['first' => '1st semester', 'second' => '2nd semester', 'summer' => 'Summer'];
+        return ['first' => '1st semester', 'second' => '2nd semester'];
     }
 
     public function schoolYears(?CarbonImmutable $date = null, ?AcademicSetting $settings = null): array
@@ -66,10 +59,6 @@ class AcademicCalendar
                 : $monthDay >= $start || $monthDay <= $end;
 
             if ($matches) {
-                if ($term === 'summer' && ! $settings->summer_enabled) {
-                    return 'second';
-                }
-
                 return $term;
             }
         }

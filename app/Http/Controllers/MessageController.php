@@ -144,6 +144,7 @@ class MessageController extends Controller
         $attachmentPath = null;
         $attachmentName = null;
         if ($photo = $request->file('attachment')) {
+            app(\App\Services\VirusScanner::class)->assertClean($photo, 'attachment'); // off unless CLAMAV_PATH is set
             $attachmentPath = $photo->store('message-attachments', 'local');
             $attachmentName = \Illuminate\Support\Str::limit(basename(str_replace('\\', '/', (string) $photo->getClientOriginalName())), 140, '');
         }

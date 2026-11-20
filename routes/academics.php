@@ -24,3 +24,5 @@ Route::get('/academics/programs/create', [AcademicCatalogController::class, 'cre
 Route::post('/academics/programs', [AcademicCatalogController::class, 'store'])->name('academics.programs.store');
 Route::get('/academics/programs/{program}/edit', [AcademicCatalogController::class, 'edit'])->name('academics.programs.edit');
 Route::put('/academics/programs/{program}', [AcademicCatalogController::class, 'update'])->name('academics.programs.update');
+Route::post('/academics/programs/{program}/coordinator', [AcademicCatalogController::class, 'assignCoordinator'])->name('academics.programs.coordinator');
+Route::delete('/academics/programs/{program}', [AcademicCatalogController::class, 'destroy'])->name('academics.programs.destroy');

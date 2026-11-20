@@ -336,3 +336,53 @@ it('opens notices that are not about one record on the list they belong to, and 
     // An announcement has no page behind it: the notification itself is shown.
     $this->get(route('notifications.show', $send('announcement')))->assertOk();
 });
+
+it('opens the page where the student sees the reviewed item, not always the portfolio', function () {
+    $student = \App\Models\User::factory()->create(['role' => \App\Enums\UserRole::Student, 'email_verified_at' => now(), 'must_change_password' => false]);
+    \App\Models\Student::create(['user_id' => $student->id]);
+    $send = fn (array $data) => app(\App\Services\NotificationService::class)->send($student, 'verification', 'Approved', 'x', $data, false, false);
+
+    $expected = [
+        [['verification_type' => 'competencies'], route('student.competencies.index')],
+        [['verification_type' => 'certificates'], route('student.competencies.index')],
+        [['verification_type' => 'resumes'], route('student.resume.index')],
+        [['verification_type' => 'portfolio', 'is_required_document' => true], route('student.profile.edit').'#documents'],
+        [['verification_type' => 'portfolio', 'is_required_document' => false], route('student.portfolio.index')],
+    ];
+    foreach ($expected as [$data, $url]) {
+        $this->actingAs($student)->get(route('notifications.show', $send($data)))->assertRedirect($url);
+    }
+});
+
+it('routes an older approval notice (no flag) for a required document to the Documents tab', function () {
+    $student = \App\Models\User::factory()->create(['role' => \App\Enums\UserRole::Student, 'email_verified_at' => now(), 'must_change_password' => false]);
+    $profile = \App\Models\Student::create(['user_id' => $student->id]);
+    $req = \App\Models\DeploymentRequirement::create(['code' => 'nbi', 'name' => 'NBI Clearance', 'upload_source' => 'student']);
+    \App\Models\Portfolio::create(['student_id' => $profile->id, 'title' => 'NBI Clearance', 'type' => 'project', 'deployment_requirement_id' => $req->id, 'verification_status' => 'verified']);
+    $old = app(\App\Services\NotificationService::class)->send($student, 'verification', 'Document Approved', 'x', ['verification_type' => 'portfolio', 'item_name' => 'NBI Clearance'], false, false);
+    $other = app(\App\Services\NotificationService::class)->send($student, 'verification', 'Approved', 'x', ['verification_type' => 'portfolio', 'item_name' => 'My App'], false, false);
+
+    $this->actingAs($student)->get(route('notifications.show', $old))->assertRedirect(route('student.profile.edit').'#documents');
+    $this->get(route('notifications.show', $other))->assertRedirect(route('student.portfolio.index'));
+});
+
+it('sends every kind of notice to a page, and files by their real category', function () {
+    $svc = app(\App\Services\NotificationService::class);
+    $student = \App\Models\User::factory()->create(['role' => \App\Enums\UserRole::Student, 'email_verified_at' => now(), 'must_change_password' => false]);
+    $profile = \App\Models\Student::create(['user_id' => $student->id]);
+    $file = fn (\App\Enums\PortfolioCategory $c, array $extra = []) => \App\Models\Portfolio::create(['student_id' => $profile->id, 'title' => 'F '.$c->value, 'type' => 'project', 'category' => $c, 'verification_status' => 'verified'] + $extra);
+    $go = fn ($user, string $type, array $data = []) => $this->actingAs($user)->get(route('notifications.show', $svc->send($user, $type, 't', 'm', $data, false, false)));
+
+    // Admin approvals send file_id + category; coordinator ones send portfolio_id.
+    $doc = $file(\App\Enums\PortfolioCategory::DeploymentDocument);
+    $go($student, 'verification', ['file_id' => $doc->id, 'category' => 'deployment_document'])->assertRedirect(route('student.profile.edit').'#documents');
+    $go($student, 'verification', ['portfolio_id' => $doc->id])->assertRedirect(route('student.profile.edit').'#documents');
+    $go($student, 'verification', ['file_id' => $file(\App\Enums\PortfolioCategory::Certificate)->id])->assertRedirect(route('student.competencies.index'));
+    $project = $file(\App\Enums\PortfolioCategory::Project);
+    $go($student, 'verification', ['file_id' => $project->id])->assertRedirect(route('student.portfolio.show', $project));
+
+    $go($student, 'account_security')->assertRedirect(route('account.security'));
+    $go($student, 'profile_change_request')->assertRedirect(route('student.profile.edit'));
+    $admin = \App\Models\User::factory()->create(['role' => \App\Enums\UserRole::Admin]);
+    $go($admin, 'content_report')->assertRedirect(route('admin.moderation.index'));
+});

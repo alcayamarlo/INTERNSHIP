@@ -92,6 +92,7 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('two-factor-verify', fn (Request $request) => Limit::perMinute(10)->by('verify|'.$pendingTwoFactor($request)));
         RateLimiter::for('two-factor-resend', fn (Request $request) => Limit::perMinute(3)->by('resend|'.$pendingTwoFactor($request)));
         RateLimiter::for('account-security', fn (Request $request) => Limit::perMinute(5)->by('security|'.($request->user()?->id ?: \App\Support\IpHash::limiterKey($request->ip()))));
+        RateLimiter::for('privacy-requests', fn (Request $request) => Limit::perMinute(10)->by('privacy|'.($request->user()?->id ?: \App\Support\IpHash::limiterKey($request->ip()))));
         RateLimiter::for('session-keep-alive', fn (Request $request) => Limit::perMinute(30)->by('keep-alive|'.($request->user()?->id ?: \App\Support\IpHash::limiterKey($request->ip()))));
 
         RateLimiter::for('content-reports', fn (Request $request) => Limit::perHour(20)->by('content-reports:'.($request->user()?->id ?: \App\Support\IpHash::limiterKey($request->ip()))));

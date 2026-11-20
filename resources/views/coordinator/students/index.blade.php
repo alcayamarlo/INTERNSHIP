@@ -41,12 +41,13 @@
             </div>
             <div class="sb-filter-field">
                 <label class="form-label" for="studentProgram">Program</label>
-                <select id="studentProgram" class="form-select">
-                    <option value="">All programs</option>
+                {{-- Locked: a coordinator only ever sees their own program. --}}
+                <select id="studentProgram" class="form-select" disabled aria-describedby="studentProgramHint">
                     @foreach($programs as $program)
-                        <option value="{{ $program }}" @selected($filters['program'] === $program)>{{ $program }}</option>
+                        <option value="{{ $program }}" selected>{{ $program }}</option>
                     @endforeach
                 </select>
+                <span id="studentProgramHint" class="visually-hidden">Locked to your program</span>
             </div>
             <div class="sb-filter-field sb-filter-field--sm">
                 <label class="form-label" for="studentYear">Year level</label>

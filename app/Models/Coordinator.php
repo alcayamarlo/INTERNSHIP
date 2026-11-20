@@ -9,15 +9,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Coordinator extends Model
 {
-    /** A department has at most this many coordinators (both see the same students). */
-    public const MAX_PER_DEPARTMENT = 2;
+    /** A program (department) has exactly one coordinator at most. */
+    public const MAX_PER_DEPARTMENT = 1;
 
-    public const DEPARTMENT_TAKEN = 'This department already has 2 coordinators.';
+    public const DEPARTMENT_TAKEN = 'This program already has a coordinator.';
 
     protected $fillable = [
         'user_id',
         'institution_id',
-        // The one department (program) this coordinator handles; a department has up to 2 coordinators. Only an admin sets it.
+        // The one department (program) this coordinator handles; one coordinator per program. Only an admin sets it.
         'program_id',
         'office_address',
         'profile_picture',

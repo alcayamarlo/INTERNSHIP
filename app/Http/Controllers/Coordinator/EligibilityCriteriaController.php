@@ -80,6 +80,10 @@ class EligibilityCriteriaController extends Controller
             'required_hours.between' => 'Enter required hours between 1 and 2,000.',
         ]);
 
+        if ($program->limitedToSecondSemester() && $validated['term'] !== Program::ELIGIBLE_TERM) {
+            return back()->withInput()->withErrors(['term' => $program->code.' is eligible in the 2nd semester only, so its criteria are set for the 2nd semester.']);
+        }
+
         $criterion = $this->criteria->saveVersion($program, $validated['school_year'], $validated['term'], [
             'require_fourth_year' => $request->boolean('require_fourth_year'),
             'require_major_subjects_passed' => $request->boolean('require_major_subjects_passed'),

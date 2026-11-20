@@ -103,8 +103,7 @@ it('shows employers only company-visible fields when browsing', function () {
     $this->get(route('employer.students.show', $noConsent))->assertNotFound();
 });
 
-it('filters students by skill and hides students who do not meet the school rules', function () {
-    AcademicSetting::current()->update(['require_fourth_year_standing' => true]);
+it('filters students by skill and lists every discoverable student, eligible or not', function () {
     [$employerUser] = inviteEmployer();
     $match = inviteStudent();
     $other = inviteStudent();
@@ -117,7 +116,7 @@ it('filters students by skill and hides students who do not meet the school rule
         ->assertOk()
         ->assertSee($match->user->name)
         ->assertDontSee($other->user->name);
-    $this->get(route('employer.students.index'))->assertDontSee($thirdYear->user->name);
+    $this->get(route('employer.students.index'))->assertSee($thirdYear->user->name);
 });
 
 it('sends an invitation with a bell notification and email to the student', function () {

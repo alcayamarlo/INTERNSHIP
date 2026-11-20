@@ -14,7 +14,6 @@ class AcademicSetting extends Model
         'require_fourth_year_standing',
         'require_major_subjects_passed',
         'academic_year_start_month',
-        'summer_enabled',
         'current_term_override',
         'first_semester_start_month',
         'first_semester_start_day',
@@ -24,10 +23,6 @@ class AcademicSetting extends Model
         'second_semester_start_day',
         'second_semester_end_month',
         'second_semester_end_day',
-        'summer_start_month',
-        'summer_start_day',
-        'summer_end_month',
-        'summer_end_day',
         'required_ojt_hours',
         'evaluation_period_labels',
         'journal_due_days',
@@ -39,7 +34,6 @@ class AcademicSetting extends Model
         return [
             'academic_year_start_month' => 'integer',
             'required_ojt_hours' => 'integer',
-            'summer_enabled' => 'boolean',
             'require_fourth_year_standing' => 'boolean',
             'require_major_subjects_passed' => 'boolean',
             'evaluation_period_labels' => 'array',
@@ -109,12 +103,6 @@ class AcademicSetting extends Model
                 'start_day' => (int) $this->second_semester_start_day,
                 'end_month' => (int) $this->second_semester_end_month,
                 'end_day' => (int) $this->second_semester_end_day,
-            ],
-            'summer' => [
-                'start_month' => (int) $this->summer_start_month,
-                'start_day' => (int) $this->summer_start_day,
-                'end_month' => (int) $this->summer_end_month,
-                'end_day' => (int) $this->summer_end_day,
             ],
         ];
     }

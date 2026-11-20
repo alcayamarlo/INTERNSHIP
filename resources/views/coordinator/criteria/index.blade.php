@@ -50,6 +50,9 @@
                         </td>
                         <td class="text-end">
                             @php $cur = $row['current']; @endphp
+                            @if($row['program']->limitedToSecondSemester() && $term !== \App\Models\Program::ELIGIBLE_TERM)
+                                <span class="text-muted small">Eligible in the 2nd semester only. Choose the 2nd semester to set criteria.</span>
+                            @else
                             <a href="{{ route($routePrefix.'.criteria.show', [$row['program'], 'school_year' => $schoolYear, 'term' => $term]) }}" class="btn btn-sm btn-outline-primary"
                                data-open="criteria-modal" aria-haspopup="dialog" data-criteria-edit
                                data-action="{{ route($routePrefix.'.criteria.store', $row['program']) }}"
@@ -62,6 +65,7 @@
                                data-program-hours="{{ $row['program']->required_internship_hours ?: 'not set' }}"
                                data-docs="{{ implode(',', $cur?->requiredDocumentIds() ?? []) }}"
                                data-notes="{{ $cur?->notes }}">{{ $row['current'] ? 'Edit' : 'Set criteria' }}</a>
+                            @endif
                         </td>
                     </tr>
                 @empty

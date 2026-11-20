@@ -9,7 +9,7 @@
     $recordName = $placement->student?->user?->name ?? 'Student';
 @endphp
 <div class="sb-dash ojt-record">
-<a href="{{ route('coordinator.placements.index') }}" class="btn btn-outline-secondary btn-sm" style="justify-self:start;width:fit-content"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to placements</a>
+<a href="{{ $back['url'] }}" class="btn btn-outline-secondary btn-sm" style="justify-self:start;width:fit-content" data-back-link><i class="bi bi-arrow-left" aria-hidden="true"></i> {{ $back['label'] }}</a>
 <x-profile-header :name="$recordName" :avatar="$recordAvatar" eyebrow="OJT record">
     <x-slot:badge><x-status-badge :status="$placement->statusKey()" :label="$placement->statusLabel()" /></x-slot:badge>
     <span class="sb-pheader__strong">{{ $placement->internship?->title ?? 'Internship' }}</span>

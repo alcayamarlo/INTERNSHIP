@@ -18,6 +18,8 @@ Schedule::command('company-invitations:expire')->hourly()->withoutOverlapping();
 Schedule::command('moa:remind')->dailyAt('07:00');
 Schedule::command('internships:remind-deadlines')->dailyAt('08:30')->withoutOverlapping();
 Schedule::command('logs:prune')->dailyAt('03:00');
+// Student accounts past the retention period are listed for an admin to review. Nothing is deleted automatically.
+Schedule::command('retention:review --notify')->monthlyOn(1, '06:00')->timezone('Asia/Manila')->withoutOverlapping();
 // Weekly reports, monthly and final evaluations: remind whoever's turn it is (Philippine time).
 // The industry list is about 115 API calls; once a week is plenty (the free plan allows 5,000 a month).
 Schedule::command('industries:refresh')->weeklyOn(0, '03:30')->withoutOverlapping();

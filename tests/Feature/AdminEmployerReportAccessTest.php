@@ -38,7 +38,7 @@ function internshipFormData(array $overrides = []): array
     ], $overrides);
 }
 
-it('allows an admin to create, update, and archive users', function () {
+it('allows an admin to create, update, and delete users', function () {
     $admin = User::factory()->create(['role' => UserRole::Admin]);
     $institution = Institution::create(['name' => 'Admin CRUD University']);
 
@@ -67,18 +67,13 @@ it('allows an admin to create, update, and archive users', function () {
         ->and($managedUser->coordinator)->toBeInstanceOf(Coordinator::class)
         ->and($managedUser->coordinator->program_id)->not->toBeNull();
 
+    // Delete is permanent, and frees the department; there is no archive any more.
     $this->delete(route('admin.users.destroy', $managedUser))->assertRedirect();
-    expect($managedUser->fresh()->archived_at)->not->toBeNull()
-        // Deleting (archiving) a coordinator frees the department.
-        ->and($managedUser->coordinator->fresh()->program_id)->toBeNull();
-    $this->assertDatabaseHas('users', ['id' => $managedUser->id]);
-
-    $this->post(route('admin.users.restore', $managedUser))->assertRedirect();
-    expect($managedUser->fresh()->archived_at)->toBeNull();
-
-    $this->post(route('admin.users.archive', $managedUser))->assertRedirect();
-    $this->delete(route('admin.users.force-delete', $managedUser))->assertRedirect();
     $this->assertDatabaseMissing('users', ['id' => $managedUser->id]);
+    $this->assertDatabaseMissing('coordinators', ['user_id' => $managedUser->id]);
+    foreach (['admin.users.archive', 'admin.users.restore', 'admin.users.force-delete'] as $gone) {
+        expect(\Illuminate\Support\Facades\Route::has($gone))->toBeFalse("{$gone} must be removed");
+    }
 });
 
 it('allows employers to create, update, and delete only their own opportunities', function () {

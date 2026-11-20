@@ -152,9 +152,7 @@ class StudentProfileRequest extends FormRequest
             'year_level' => ['required', 'string', 'in:1st Year,2nd Year,3rd Year,4th Year'],
             'section' => ['nullable', 'string', 'max:50'],
             'school_year' => ['nullable', 'string', Rule::in(app(AcademicCalendar::class)->schoolYears())],
-            'semester' => ['nullable', Rule::in(AcademicSetting::current()->summer_enabled
-                ? ['first', 'second', 'summer']
-                : ['first', 'second'])],
+            'semester' => ['nullable', Rule::in(['first', 'second'])],
             'enrollment_status' => ['nullable', 'string', 'in:Regular,Irregular'],
             'gwa' => ['nullable', 'numeric', 'between:1,5', 'decimal:0,2'],
             'expected_graduation' => ['required', 'date_format:Y-m-d'],
